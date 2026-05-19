@@ -1,0 +1,12 @@
+@use '../abstracts/' as *;
+
+.glassmorphism {
+    backdrop-filter: blur(10px); /* Desenfoque del fondo */
+    -webkit-backdrop-filter: blur(10px); /* Safari */
+    background: rgba(255, 255, 255, 0.05); /* Fondo translúcido */
+    border: 1px solid rgba(255, 255, 255, 0.2); /* Borde tenue */
+    border-radius: 16px;
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.05); /* Glow leve */
+    padding: 1rem;
+    color: white;
+}

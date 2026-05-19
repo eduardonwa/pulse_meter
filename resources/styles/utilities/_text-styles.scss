@@ -1,0 +1,17 @@
+@use '../abstracts/' as *;
+
+.no-decor {
+    text-decoration: none;
+}
+
+.underline {
+    text-decoration: underline;
+}
+
+.italic {
+    font-family: $font-family-base-italic;
+}
+
+.uppercase {
+    text-transform: uppercase;
+}

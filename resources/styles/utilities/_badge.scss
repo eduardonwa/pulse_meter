@@ -1,0 +1,16 @@
+@use '../abstracts/' as *;
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: .35em;
+    padding: $size-2;
+    border-radius: $border-radius-1;
+    line-height: 1;
+    font-size: 14px;
+    font-weight: 500;
+    white-space: nowrap;
+    width: fit-content;
+
+    svg, img { width: 1em; height: 1em; }
+}
