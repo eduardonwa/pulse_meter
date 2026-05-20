@@ -29,26 +29,17 @@ export function state(steps) {
         secondsOptions: Array.from({ length: 60 }, (_, i) => i),
         bpmOptions: Array.from({ length: 271 }, (_, i) => i + 30),
 
-        newStep: {
+        stepFormMode: 'create',
+        stepFormIndex: null,
+
+        stepForm: {
             name: '',
             bpm: 100,
             mode: 'timer',
             duration_seconds: 60,
         },
 
-        newStepMinutes: 1,
-        newStepSeconds: 0,
-
-        editStepIndex: null,
-
-        editStep: {
-            name: '',
-            bpm: 100,
-            mode: 'timer',
-            duration_seconds: 60,
-        },
-
-        editStepMinutes: 1,
-        editStepSeconds: 0,
+        stepFormMinutes: 1,
+        stepFormSeconds: 0,
     }
 }

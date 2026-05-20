@@ -61,10 +61,20 @@
     
             .time-display {
                 margin-block: $size-5;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                gap: $size-2;
+
+                .time-picker,
+                .timer-readout {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: $size-2;
+                }
+
+                .timer-readout {
+                    height: 44px;
+                    font-size: $font-size-700;
+                    font-variant-numeric: tabular-nums;
+                }
     
                 .colon {
                     font-size: $font-size-600;

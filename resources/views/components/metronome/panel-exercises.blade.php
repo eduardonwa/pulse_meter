@@ -126,51 +126,13 @@
             </div>
         </div>
 
-        <dialog x-ref="addStepDialog">
-            <form @submit.prevent="saveNewStep()">
-                <h3>New exercise</h3>
+        <dialog x-ref="stepDialog">
+            <form @submit.prevent="saveStepForm()">
+                <h3 x-text="stepFormMode === 'edit' ? 'Edit exercise' : 'New exercise'"></h3>
 
                 <label>
                     Name
-                    <input type="text" x-model="newStep.name">
-                </label>
-
-                <label>
-                    BPM
-                    <input type="number" min="30" max="300" x-model.number="newStep.bpm">
-                </label>
-
-                <label>
-                    Type
-                    <select x-model="newStep.mode">
-                        <option value="timer">Timer</option>
-                        <option value="manual">Manual</option>
-                    </select>
-                </label>
-
-                <div x-show="newStep.mode === 'timer'">
-                    <label>
-                        Length
-                        <input type="number" min="0" max="5" x-model.number="newStepMinutes">
-                        <span>m</span>
-
-                        <input type="number" min="0" max="59" x-model.number="newStepSeconds">
-                        <span>s</span>
-                    </label>
-                </div>
-
-                <button type="submit">Save</button>
-                <button type="button" @click="$refs.addStepDialog.close()">Cancel</button>
-            </form>
-        </dialog>
-
-        <dialog x-ref="editStepDialog">
-            <form @submit.prevent="saveEditStep()">
-                <h3>Edit exercise</h3>
-
-                <label>
-                    Name
-                    <input type="text" x-model="editStep.name">
+                    <input type="text" x-model="stepForm.name">
                 </label>
 
                 <label>
@@ -179,19 +141,19 @@
                         type="number"
                         min="30"
                         max="300"
-                        x-model.number="editStep.bpm"
+                        x-model.number="stepForm.bpm"
                     >
                 </label>
 
                 <label>
                     Type
-                    <select x-model="editStep.mode">
+                    <select x-model="stepForm.mode">
                         <option value="timer">Timer</option>
                         <option value="manual">Manual</option>
                     </select>
                 </label>
 
-                <div x-show="editStep.mode === 'timer'">
+                <div x-show="stepForm.mode === 'timer'">
                     <label>
                         Length
 
@@ -199,7 +161,7 @@
                             type="number"
                             min="0"
                             max="5"
-                            x-model.number="editStepMinutes"
+                            x-model.number="stepFormMinutes"
                         >
                         <span>m</span>
 
@@ -207,17 +169,20 @@
                             type="number"
                             min="0"
                             max="59"
-                            x-model.number="editStepSeconds"
+                            x-model.number="stepFormSeconds"
                         >
                         <span>s</span>
                     </label>
                 </div>
 
-                <button type="submit">Save changes</button>
+                <button
+                    type="submit"
+                    x-text="stepFormMode === 'edit' ? 'Save changes' : 'Save'"
+                ></button>
 
                 <button
                     type="button"
-                    @click="$refs.editStepDialog.close()"
+                    @click="$refs.stepDialog.close(); resetStepForm()"
                 >
                     Cancel
                 </button>

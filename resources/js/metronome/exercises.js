@@ -1,18 +1,5 @@
 export function exercises() {
     return {
-        addStep() {
-            if (this.steps.length >= this.maxSteps) {
-                return
-            }
-
-            this.steps.push({
-                name: `Exercise #${this.steps.length + 1}`,
-                bpm: 100,
-                mode: 'manual',
-                duration_seconds: null,
-            })
-        },
-
         removeCurrentStep() {
             if (this.steps.length <= 1) {
                 return
@@ -23,6 +10,27 @@ export function exercises() {
             if (this.currentIndex > this.steps.length - 1) {
                 this.currentIndex = this.steps.length - 1
             }
+
+            this.saveToLocalStorage()
+
+            this.$nextTick(() => {
+                window.dispatchEvent(new Event('picker:sync'))
+            })
+        },
+
+        resetStepForm() {
+            this.stepFormMode = 'create'
+            this.stepFormIndex = null
+
+            this.stepForm = {
+                name: `Ejercicio ${this.steps.length + 1}`,
+                bpm: this.metronome.bpm,
+                mode: 'timer',
+                duration_seconds: 60,
+            }
+
+            this.stepFormMinutes = 1
+            this.stepFormSeconds = 0
         },
 
         openAddStepModal() {
@@ -30,92 +38,75 @@ export function exercises() {
                 return
             }
 
-            this.newStep = {
-                name: `Ejercicio ${this.steps.length + 1}`,
-                bpm: this.metronome.bpm,
-                mode: 'timer',
-                duration_seconds: 60,
-            }
+            this.resetStepForm()
 
-            this.newStepMinutes = 1
-            this.newStepSeconds = 0
-
-            this.$refs.addStepDialog.showModal()
-        },
-
-        saveNewStep() {
-            if (this.steps.length >= this.maxSteps) {
-                return
-            }
-
-            let duration = null
-
-            if (this.newStep.mode === 'timer') {
-                duration = (this.newStepMinutes * 60) + this.newStepSeconds
-
-                if (duration > 300) duration = 300
-                if (duration < 1) duration = 1
-            }
-
-            this.steps.push({
-                name: this.newStep.name || `Ejercicio ${this.steps.length + 1}`,
-                bpm: this.newStep.bpm || 100,
-                mode: this.newStep.mode,
-                duration_seconds: duration,
+            this.$nextTick(() => {
+                this.$refs.stepDialog.showModal()
             })
-
-            this.$refs.addStepDialog.close()
         },
 
         openEditStepModal(index) {
             const step = this.steps[index]
-            
-            this.editStepIndex = index
 
-            this.editStep = {
+            this.stepFormMode = 'edit'
+            this.stepFormIndex = index
+
+            this.stepForm = {
                 name: step.name,
                 bpm: Number(step.bpm),
                 mode: step.mode,
                 duration_seconds: Number(step.duration_seconds ?? 60),
             }
 
-            this.editStepMinutes = Math.floor(this.editStep.duration_seconds / 60)
-            this.editStepSeconds = this.editStep.duration_seconds % 60
+            this.stepFormMinutes = Math.floor(this.stepForm.duration_seconds / 60)
+            this.stepFormSeconds = this.stepForm.duration_seconds % 60
 
             this.$nextTick(() => {
-                this.$refs.editStepDialog.showModal()
+                this.$refs.stepDialog.showModal()
             })
         },
 
-        saveEditStep() {
-            if (this.editStepIndex === null) {
-                return
+        saveStepForm() {
+            const duration = (Number(this.stepFormMinutes) * 60) + Number(this.stepFormSeconds)
+
+            const payload = {
+                name: this.stepForm.name,
+                bpm: Number(this.stepForm.bpm),
+                mode: this.stepForm.mode,
+                duration_seconds: this.stepForm.mode === 'timer' ? duration : null,
             }
 
-            const duration = (Number(this.editStepMinutes) * 60) + Number(this.editStepSeconds)
+            if (this.stepFormMode === 'edit') {
+                if (this.stepFormIndex === null) {
+                    return
+                }
 
-            this.steps[this.editStepIndex] = {
-                ...this.steps[this.editStepIndex],
-                name: this.editStep.name,
-                bpm: Number(this.editStep.bpm),
-                mode: this.editStep.mode,
-                duration_seconds: this.editStep.mode === 'timer' ? duration : 0,
+                this.steps[this.stepFormIndex] = {
+                    ...this.steps[this.stepFormIndex],
+                    ...payload,
+                }
+
+                if (this.activeExerciseIndex === this.stepFormIndex && this.isPlaying) {
+                    this.metronome.bpm = payload.bpm
+                    this.startMetronome(payload.bpm)
+                }
+            } else {
+                if (this.steps.length >= this.maxSteps) {
+                    return
+                }
+
+                this.steps.push(payload)
             }
 
             this.saveToLocalStorage()
 
-            if (this.activeExerciseIndex === this.editStepIndex && this.isPlaying) {
-                this.metronome.bpm = Number(this.editStep.bpm)
-                this.startMetronome(Number(this.editStep.bpm))
-            }
-
-            this.$refs.editStepDialog.close()
+            this.$refs.stepDialog.close()
 
             this.$nextTick(() => {
                 window.dispatchEvent(new Event('picker:sync'))
             })
 
-            this.editStepIndex = null
+            this.resetStepForm()
         },
 
         startExercise(index) {
@@ -144,6 +135,8 @@ export function exercises() {
         updateExerciseBpm(index, bpm) {
             this.currentIndex = index
             this.steps[index].bpm = Number(bpm)
+
+            this.saveToLocalStorage()
 
             if (this.activeExerciseIndex === index && this.isPlaying) {
                 this.metronome.bpm = Number(bpm)
