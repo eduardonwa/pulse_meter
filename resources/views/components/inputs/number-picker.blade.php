@@ -18,8 +18,10 @@
         disabled: () => {{ $disabled }},
         format: {{ $format }},
     })"
-    x-effect="syncExternalValue()"
-    @scroll.debounce.150ms="syncFromScroll"
+    x-init="init()"
+    x-effect="$nextTick(() => syncExternalValue())"
+    @picker:sync.window="$nextTick(() => syncExternalValue())"
+    @scroll.debounce.150ms="syncFromScroll()"
 >
     <template x-for="option in options" :key="option">
         <div
