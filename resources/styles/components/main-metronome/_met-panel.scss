@@ -142,7 +142,7 @@
                 .exercises-table__head,
                 .exercise-row {
                     display: grid;
-                    grid-template-columns: 2.5rem 2.5rem minmax(9rem, 1fr) 5.5rem 8rem;
+                    grid-template-columns: 2.5rem 2.5rem minmax(9rem, 1fr) 5.5rem 4rem;
                     align-items: center;
                     gap: $size-2;
                     padding: $size-2 $size-3;
@@ -156,7 +156,7 @@
                     .bpm-field {
                         display: flex;
                         align-items: center;
-                        justify-content: center;
+                        justify-content: flex-start;
                         gap: $size-1;
                     }
                 }
@@ -204,18 +204,17 @@
                         }
                     }
 
-
                     &__actions {
                         display: flex;
-                        gap: $size-1;
                         justify-content: flex-end;
+                        gap: $size-3;
                         white-space: nowrap;
 
                         .button {
-                            padding: $size-2;
+                            padding: 0;
                             font-size: $font-size-300;
 
-                            &:focus { border: 1px solid; }
+                            &:hover { border: 1px solid transparent; }
                         }
                     }
                 }

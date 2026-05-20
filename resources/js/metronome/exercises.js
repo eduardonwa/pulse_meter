@@ -143,5 +143,52 @@ export function exercises() {
                 this.startMetronome(this.metronome.bpm)
             }
         },
+
+        formatTime(seconds) {
+            const value = Number(seconds ?? 0)
+
+            const minutes = Math.floor(value / 60)
+            const remainingSeconds = value % 60
+
+            return `${minutes}:${String(remainingSeconds).padStart(2, '0')}`
+        },
+
+        getStepTimeLabel(step, index) {
+            if (!step) {
+                return ''
+            }
+
+            if (step.mode === 'manual') {
+                return 'Manual'
+            }
+
+            if (this.activeExerciseIndex === index && this.isPlaying) {
+                return this.formatTime(this.remaining ?? step.duration_seconds)
+            }
+
+            return this.formatTime(step.duration_seconds)
+        },
+
+        getActiveExerciseName() {
+            if (this.activeExerciseIndex === null) {
+                return ''
+            }
+
+            return this.steps[this.activeExerciseIndex]?.name ?? ''
+        },
+
+        getActiveExerciseTimeLabel() {
+            if (this.activeExerciseIndex === null) {
+                return ''
+            }
+
+            const step = this.steps[this.activeExerciseIndex]
+
+            if (!step) {
+                return ''
+            }
+
+            return this.getStepTimeLabel(step, this.activeExerciseIndex)
+        },
     }
 }

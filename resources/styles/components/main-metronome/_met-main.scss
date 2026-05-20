@@ -141,5 +141,15 @@
                 }
             }
         }
+
+        .current-exercise-readout {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            font-variant-numeric: tabular-nums;
+
+            &__time { font-weight: 600; }
+        }
     }
 }

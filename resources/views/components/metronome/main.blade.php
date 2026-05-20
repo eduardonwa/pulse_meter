@@ -35,6 +35,19 @@
             x-model.number="metronome.bpm"
             @change="isPlaying && restartMetronomeSession()"
         >
+
+        <div
+            class="current-exercise-readout"
+            x-show="activeTab === 'exercises' && activeExerciseIndex !== null"
+        >
+            <span x-text="getActiveExerciseName()"></span>
+
+            <span
+                class="current-exercise-readout__time"
+                :class="{ 'is-counting': isPlaying && steps[activeExerciseIndex]?.mode === 'timer' }"
+                x-text="getActiveExerciseTimeLabel()"
+            ></span>
+        </div>
     </div>
 
     <div class="play">
