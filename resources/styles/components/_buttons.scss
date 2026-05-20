@@ -34,4 +34,79 @@
       color: $button-primary-color-hover;
     }
   }
+
+  // PLAY
+  &[data-type="play-metronome"] {
+    font-weight: normal;
+    width: 233px;
+    background: $color-neutral-900;
+    color: $color-neutral-100;
+  }
+
+  // TAB
+  &[data-type="tab-btn"] {
+    position: relative;
+
+    text-transform: none;
+    font-weight: normal;
+    padding: 0 2px 4px 0;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+
+    display: inline-flex;
+    align-items: center;
+    gap: $size-2;
+
+    opacity: .6;
+    color: $color-neutral-900;
+
+    transition:
+      opacity 180ms ease,
+      color 180ms ease;
+
+    svg {
+      width: 24px;
+      height: 24px;
+      flex-shrink: 0;
+      color: currentColor;
+    }
+
+    &::after {
+      content: "";
+      position: absolute;
+      inset-inline: 0;
+      inset-block-end: 0;
+
+      block-size: 2px;
+      background: $color-neutral-900;
+
+      transform: scaleX(0);
+      transform-origin: center;
+      transition: transform 180ms ease;
+    }
+
+    &.is-active {
+      opacity: 1;
+
+      &::after {
+        transform: scaleX(1);
+      }
+    }
+  }
+
+  // EXERCISES
+  &[data-type="action-exercise"] {
+    padding: $size-2;
+    background: transparent;
+    border: 1px solid transparent;
+
+    &:hover {
+      border: 1px solid;
+    }
+
+    svg {
+      width: 24px;
+    }
+  }
 }

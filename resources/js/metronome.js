@@ -3,132 +3,181 @@ window.routinePlayer = function (steps) {
         steps,
         storageKey: 'pulse_meter_routine',
 
+        metronome: {
+            bpm: 100,
+            mode: 'timer',
+            duration_seconds: 60,
+        },
+
+        currentIndex: 0,
+        activeTab: 'types',
+
+        isPlaying: false,
+        audioContext: null,
+        intervalId: null,
+        timerId: null,
+        remaining: null,
+
+        activeExerciseIndex: null,
+        autoAdvance: true,
+        maxSteps: 5,
+
+        beatsPerMeasure: 4,
+        currentBeat: 1,
+
+        minutesOptions: [0, 1, 2, 3, 4, 5],
+        secondsOptions: Array.from({ length: 60 }, (_, i) => i),
+
+        newStep: {
+            name: '',
+            bpm: 100,
+            mode: 'timer',
+            duration_seconds: 60,
+        },
+
+        newStepMinutes: 1,
+        newStepSeconds: 0,
+
         init() {
             this.loadFromLocalStorage()
 
             this.$watch('steps', () => {
                 this.saveToLocalStorage()
             })
-        },
 
-        saveToLocalStorage() {
-            localStorage.setItem(this.storageKey, JSON.stringify(this.steps))
-        },
+            this.$watch('metronomeMinutes', value => {
+                this.scrollPickerToValue('minutes', value)
+            })
 
-        loadFromLocalStorage() {
-            const saved = localStorage.getItem(this.storageKey)
+            this.$watch('metronomeSeconds', value => {
+                this.scrollPickerToValue('seconds', value)
+            })
 
-            if (saved) {
-                this.steps = JSON.parse(saved)
-            }
+            this.$nextTick(() => {
+                this.scrollPickers()
+            })
         },
-
-        currentIndex: 0,
-        isPlaying: false,
-        audioContext: null,
-        intervalId: null,
-        timerId: null,
-        remaining: null,
-        autoAdvance: true,
-        nextKey: 'ArrowRight',
-        previousKey: 'ArrowLeft',
-        maxSteps: 10,
-        newStep: {
-            name: '',
-            bpm: 100,
-            mode: 'timer',
-            duration_seconds: 60
-        },
-        newStepMinutes: 1,
-        newStepSeconds: 0,
 
         get currentStep() {
             return this.steps[this.currentIndex]
         },
 
-        get formattedRemaining() {
-            if (this.remaining === null) {
-                return '--:--'
+        get activeDuration() {
+            if (this.isPlaying && this.remaining !== null) {
+                return this.remaining
             }
 
-            const minutes = Math.floor(this.remaining / 60)
-            const seconds = this.remaining % 60
-
-            return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
+            return this.metronome.duration_seconds
         },
 
-        get durationMinutes() {
-            return Math.floor(this.currentStep.duration_seconds / 60)
+        get metronomeMinutes() {
+            return Math.floor(this.activeDuration / 60)
         },
 
-        set durationMinutes(value) {
-            const seconds = this.durationSeconds
-            this.currentStep.duration_seconds = (value * 60) + seconds
+        set metronomeMinutes(value) {
+            const seconds = this.metronome.duration_seconds % 60
+            this.metronome.duration_seconds = (Number(value) * 60) + seconds
+            this.clampMetronomeDuration()
+            this.remaining = null
+            this.scrollPickers()
         },
 
-        get durationSeconds() {
-            return this.currentStep.duration_seconds % 60
+        get metronomeSeconds() {
+            return this.activeDuration % 60
         },
 
-        set durationSeconds(value) {
-            const minutes = this.durationMinutes
-            this.currentStep.duration_seconds = (minutes * 60) + value
-        },
-
-        updateDurationFromInputs() {
-            if (this.durationSeconds > 59) {
-                this.durationSeconds = 59
-            }
-
-            if (this.durationSeconds < 0) {
-                this.durationSeconds = 0
-            }
-
-            if (this.currentStep.duration_seconds > 300) {
-                this.currentStep.duration_seconds = 300
-            }
-
-            if (this.currentStep.duration_seconds < 1) {
-                this.currentStep.duration_seconds = 1
-            }
+        set metronomeSeconds(value) {
+            const minutes = Math.floor(this.metronome.duration_seconds / 60)
+            
+            this.metronome.duration_seconds = (minutes * 60) + Number(value)
+            this.clampMetronomeDuration()
+            
+            this.remaining = null
+            this.scrollPickers()
         },
 
         toggle() {
-            this.isPlaying ? this.stop() : this.start()
+            this.isPlaying ? this.stop() : this.startMetronomeSession()
         },
 
-        start() {
+        startMetronomeSession() {
             this.audioContext ??= new AudioContext()
             this.isPlaying = true
 
-            this.startMetronome()
+            this.startMetronome(this.metronome.bpm)
 
-            if (this.currentStep.mode == 'timer') {
-                this.startTimer()
+            if (this.metronome.mode === 'timer') {
+                this.startTimer(this.metronome.duration_seconds)
             }
+        },
+
+        restartMetronomeSession() {
+            const wasPlaying = this.isPlaying
+
+            this.stop()
+
+            if (wasPlaying) {
+                this.startMetronomeSession()
+            }
+        },
+
+        startMetronome(bpm) {
+            clearInterval(this.intervalId)
+            
+            this.currentBeat = 1
+            this.tick(true)
+
+            this.intervalId = setInterval(() => {
+                this.currentBeat++
+
+                if (this.currentBeat > this.beatsPerMeasure) {
+                    this.currentBeat = 1
+                }
+
+                this.tick(this.currentBeat === 1)
+            }, 60000 / bpm)
+        },
+
+        startTimer(duration) {
+            clearInterval(this.timerId)
+
+            this.remaining = duration
+            this.scrollPickers()
+
+            this.timerId = setInterval(() => {
+                this.remaining--
+                this.scrollPickers()
+
+                if (this.remaining <= 0) {
+                    this.finishMetronomeSession()
+                }
+            }, 1000)
         },
 
         stop() {
             clearInterval(this.intervalId)
             clearInterval(this.timerId)
+
+            this.intervalId = null
+            this.timerId = null
             this.isPlaying = false
+            this.remaining = null
+            this.activeExerciseIndex = null
+
+            this.scrollPickers()
         },
 
-        startMetronome() {
-            clearInterval(this.intervalId)
-
-            this.tick()
-
-            this.intervalId = setInterval(() => {
-                this.tick()
-            }, 60000 / this.currentStep.bpm)
+        finishMetronomeSession() {
+            this.stop()
+            this.playFinishSound()
         },
 
-        tick() {
+        tick(isAccent = false) {
             const osc = this.audioContext.createOscillator()
             const gain = this.audioContext.createGain()
 
-            osc.frequency.value = 900
+            osc.frequency.value = isAccent ? 1300 : 900
+
             gain.gain.setValueAtTime(1, this.audioContext.currentTime)
             gain.gain.exponentialRampToValueAtTime(
                 0.001,
@@ -140,65 +189,6 @@ window.routinePlayer = function (steps) {
 
             osc.start(this.audioContext.currentTime)
             osc.stop(this.audioContext.currentTime + 0.05)
-        },
-
-        startTimer() {
-            clearInterval(this.timerId)
-
-            this.remaining = this.currentStep.duration_seconds
-
-            this.timerId = setInterval(() => {
-                this.remaining--
-
-                if (this.remaining <= 0) {
-                    this.finishStep()
-                }
-            }, 1000)
-        },
-
-        nextStep(keepPlaying = true) {
-            if (this.currentIndex < this.steps.length - 1) {
-                this.currentIndex++
-
-                if (keepPlaying) {
-                    this.restartCurrentStep()
-                } else {
-                    this.remaining = this.currentStep.duration_seconds
-                }
-            }
-        },
-
-        previousStep() {
-            if (this.currentIndex > 0) {
-                this.currentIndex--
-                this.restartCurrentStep()
-            }
-        },
-
-        restartCurrentStep() {
-            const wasPlaying = this.isPlaying
-            this.stop()
-
-            if(wasPlaying) {
-                this.start()
-            }
-        },
-
-        finishStep() {
-            this.stop()
-            this.playFinishSound()
-
-            if (this.autoAdvance) {
-                this.nextStep(false)
-            }
-        },
-
-        changeMode() {
-            if (this.currentStep.mode === 'timer' && !this.currentStep.duration_seconds) {
-                this.currentStep.duration_seconds = 60
-            }
-
-            this.restartCurrentStep()
         },
 
         playFinishSound() {
@@ -222,36 +212,62 @@ window.routinePlayer = function (steps) {
             osc.stop(this.audioContext.currentTime + 0.25)
         },
 
-        handleHotKey(event) {
-            if (event.key === this.nextKey) {
-                this.nextStep()
+        clampMetronomeDuration() {
+            if (this.metronome.duration_seconds > 300) {
+                this.metronome.duration_seconds = 300
             }
 
-            if (event.key === this.previousKey) {
-                this.previousStep()
+            if (this.metronome.duration_seconds < 1) {
+                this.metronome.duration_seconds = 1
             }
         },
 
-        clampDuration() {
-            if (this.currentStep.duration_seconds > 300) {
-                this.currentStep.duration_seconds = 300
-            }
+        scrollPickers() {
+            this.scrollPickerToValue('minutes', this.metronomeMinutes)
+            this.scrollPickerToValue('seconds', this.metronomeSeconds)
+        },
 
-            if (this.currentStep.duration_seconds < 1) {
-                this.currentStep.duration_seconds = 1
+        scrollPickerToValue(type, value) {
+            this.$nextTick(() => {
+                const picker = type === 'minutes'
+                    ? this.$refs.minutesPicker
+                    : this.$refs.secondsPicker
+
+                if (!picker) return
+
+                const option = picker.querySelector(`[data-value="${value}"]`)
+
+                if (!option) return
+
+                option.scrollIntoView({
+                    block: 'center',
+                    behavior: 'smooth',
+                })
+            })
+        },
+
+        saveToLocalStorage() {
+            localStorage.setItem(this.storageKey, JSON.stringify(this.steps))
+        },
+
+        loadFromLocalStorage() {
+            const saved = localStorage.getItem(this.storageKey)
+
+            if (saved) {
+                this.steps = JSON.parse(saved)
             }
         },
 
         addStep() {
-            if (this.steps.length >=  this.maxSteps) {
+            if (this.steps.length >= this.maxSteps) {
                 return
             }
 
             this.steps.push({
-                name: `Ejercicio ${this.steps.length + 1}`,
+                name: `Exercise #${this.steps.length + 1}`,
                 bpm: 100,
                 mode: 'manual',
-                duration_seconds: null
+                duration_seconds: null,
             })
         },
 
@@ -265,8 +281,6 @@ window.routinePlayer = function (steps) {
             if (this.currentIndex > this.steps.length - 1) {
                 this.currentIndex = this.steps.length - 1
             }
-
-            this.stop()
         },
 
         openAddStepModal() {
@@ -276,9 +290,9 @@ window.routinePlayer = function (steps) {
 
             this.newStep = {
                 name: `Ejercicio ${this.steps.length + 1}`,
-                bpm: this.currentStep?.bpm ?? 100,
+                bpm: this.metronome.bpm,
                 mode: 'timer',
-                duration_seconds: 60
+                duration_seconds: 60,
             }
 
             this.newStepMinutes = 1
@@ -305,10 +319,70 @@ window.routinePlayer = function (steps) {
                 name: this.newStep.name || `Ejercicio ${this.steps.length + 1}`,
                 bpm: this.newStep.bpm || 100,
                 mode: this.newStep.mode,
-                duration_seconds: duration
+                duration_seconds: duration,
             })
 
             this.$refs.addStepDialog.close()
         },
+
+        syncPickerFromScroll(type) {
+            if (this.isPlaying) return
+
+            const picker = type === 'minutes'
+                ? this.$refs.minutesPicker
+                : this.$refs.secondsPicker
+
+            if (!picker) return
+
+            const pickerRect = picker.getBoundingClientRect()
+            const pickerCenter = pickerRect.top + (pickerRect.height / 2)
+
+            const options = [...picker.querySelectorAll('.picker-option')]
+
+            const closest = options.reduce((selected, option) => {
+                const optionRect = option.getBoundingClientRect()
+                const optionCenter = optionRect.top + (optionRect.height / 2)
+
+                const selectedRect = selected.getBoundingClientRect()
+                const selectedCenter = selectedRect.top + (selectedRect.height / 2)
+
+                return Math.abs(optionCenter - pickerCenter) < Math.abs(selectedCenter - pickerCenter)
+                    ? option
+                    : selected
+            })
+
+            const value = Number(closest.dataset.value)
+
+            if (type === 'minutes') {
+                this.metronomeMinutes = value
+            }
+
+            if (type === 'seconds') {
+                this.metronomeSeconds = value
+            }
+        },
+
+        startExercise(index) {
+            const step = this.steps[index]
+
+            this.stop()
+
+            this.currentIndex = index
+            this.activeExerciseIndex = index
+            this.activeTab = 'exercises'
+
+            this.metronome.bpm = step.bpm
+            this.metronome.mode = step.mode
+            this.metronome.duration_seconds = step.duration_seconds ?? 60
+
+            this.audioContext ??= new AudioContext()
+            this.isPlaying = true
+
+            this.startMetronome(this.metronome.bpm)
+
+            if (this.metronome.mode === 'timer' && this.metronome.duration_seconds) {
+                this.startTimer(this.metronome.duration_seconds)
+            }
+        }
     }
 }

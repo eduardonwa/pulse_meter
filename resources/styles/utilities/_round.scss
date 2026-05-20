@@ -1,4 +1,5 @@
 .round {
   border-radius: 50%;
   aspect-ratio: 1 / 1;
+  inline-size: var(--round-size, 2.5rem);
 }

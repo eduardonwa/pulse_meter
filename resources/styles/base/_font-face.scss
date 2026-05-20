@@ -1,24 +1,15 @@
 @font-face {
-  font-family: "Urbanist VariableItalic";
+  font-family: "Inter";
   font-weight: 100 900;
   font-display: swap;
-  src: url("/public/fonts/Urbanist-Italic-VariableFont_wght.woff2") format("woff2"),
-    url("/public/fonts/Urbanist-Italic-VariableFont_wght.woff") format("woff");
+  src: url("/public/fonts/Inter-VariableFont_opsz,wght.woff2") format("woff2"),
+    url("/public/fonts/Inter-VariableFont_opsz,wght.woff") format("woff");
 }
 
 @font-face {
-  font-family: "Urbanist Variable";
+  font-family: "Inter italica";
   font-weight: 100 900;
   font-display: swap;
-  src: url("/public/fonts/Urbanist-VariableFont_wght.woff2") format("woff2"),
-    url("/public/fonts/Urbanist-VariableFont_wght.woff") format("woff");
-}
-
-
-@font-face {
-  font-family: "Unbounded Variable";
-  font-weight: 100 900;
-  font-display: swap;
-  src: url("/public/fonts/Unbounded-VariableFont_wght.woff2") format("woff2"),
-    url("/public/fonts/Unbounded-VariableFont_wght.woff") format("woff");
+  src: url("/public/fonts/Inter-Italic-VariableFont_opsz,wght.woff2") format("woff2"),
+    url("/public/fonts/Inter-Italic-VariableFont_opsz,wght.woff") format("woff");
 }
