@@ -67,6 +67,57 @@ export function exercises() {
             this.$refs.addStepDialog.close()
         },
 
+        openEditStepModal(index) {
+            const step = this.steps[index]
+            
+            this.editStepIndex = index
+
+            this.editStep = {
+                name: step.name,
+                bpm: Number(step.bpm),
+                mode: step.mode,
+                duration_seconds: Number(step.duration_seconds ?? 60),
+            }
+
+            this.editStepMinutes = Math.floor(this.editStep.duration_seconds / 60)
+            this.editStepSeconds = this.editStep.duration_seconds % 60
+
+            this.$nextTick(() => {
+                this.$refs.editStepDialog.showModal()
+            })
+        },
+
+        saveEditStep() {
+            if (this.editStepIndex === null) {
+                return
+            }
+
+            const duration = (Number(this.editStepMinutes) * 60) + Number(this.editStepSeconds)
+
+            this.steps[this.editStepIndex] = {
+                ...this.steps[this.editStepIndex],
+                name: this.editStep.name,
+                bpm: Number(this.editStep.bpm),
+                mode: this.editStep.mode,
+                duration_seconds: this.editStep.mode === 'timer' ? duration : 0,
+            }
+
+            this.saveToLocalStorage()
+
+            if (this.activeExerciseIndex === this.editStepIndex && this.isPlaying) {
+                this.metronome.bpm = Number(this.editStep.bpm)
+                this.startMetronome(Number(this.editStep.bpm))
+            }
+
+            this.$refs.editStepDialog.close()
+
+            this.$nextTick(() => {
+                window.dispatchEvent(new Event('picker:sync'))
+            })
+
+            this.editStepIndex = null
+        },
+
         startExercise(index) {
             const step = this.steps[index]
 

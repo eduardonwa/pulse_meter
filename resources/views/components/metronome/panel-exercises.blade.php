@@ -164,6 +164,66 @@
             </form>
         </dialog>
 
+        <dialog x-ref="editStepDialog">
+            <form @submit.prevent="saveEditStep()">
+                <h3>Edit exercise</h3>
+
+                <label>
+                    Name
+                    <input type="text" x-model="editStep.name">
+                </label>
+
+                <label>
+                    BPM
+                    <input
+                        type="number"
+                        min="30"
+                        max="300"
+                        x-model.number="editStep.bpm"
+                    >
+                </label>
+
+                <label>
+                    Type
+                    <select x-model="editStep.mode">
+                        <option value="timer">Timer</option>
+                        <option value="manual">Manual</option>
+                    </select>
+                </label>
+
+                <div x-show="editStep.mode === 'timer'">
+                    <label>
+                        Length
+
+                        <input
+                            type="number"
+                            min="0"
+                            max="5"
+                            x-model.number="editStepMinutes"
+                        >
+                        <span>m</span>
+
+                        <input
+                            type="number"
+                            min="0"
+                            max="59"
+                            x-model.number="editStepSeconds"
+                        >
+                        <span>s</span>
+                    </label>
+                </div>
+
+                <button type="submit">Save changes</button>
+
+                <button
+                    type="button"
+                    @click="$refs.editStepDialog.close()"
+                >
+                    Cancel
+                </button>
+            </form>
+        </dialog>
+
         <p class="total-exercises">
             <span x-text="steps.length"></span> / <span x-text="maxSteps"></span> exercises
         </p>

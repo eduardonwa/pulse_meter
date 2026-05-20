@@ -38,5 +38,17 @@ export function state(steps) {
 
         newStepMinutes: 1,
         newStepSeconds: 0,
+
+        editStepIndex: null,
+
+        editStep: {
+            name: '',
+            bpm: 100,
+            mode: 'timer',
+            duration_seconds: 60,
+        },
+
+        editStepMinutes: 1,
+        editStepSeconds: 0,
     }
 }
