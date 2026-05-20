@@ -1,0 +1,214 @@
+@use "../../abstracts" as *;
+
+@mixin styles {
+    &__panel {
+        margin-block-start: $size-8;
+
+        .tabs {
+            padding: $size-4;
+            display: flex;
+            align-items: center;
+            gap: $size-4;
+            border: 1px solid $color-neutral-400;
+
+            .is-active {
+                border-block-end: $color-neutral-900;
+                opacity: 1;
+            }
+        }
+
+        .modes {
+            margin-block-start: $size-4;
+            padding-inline: $size-3;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            
+            .header {
+                display: flex;            
+                align-items: center;
+                justify-content: space-between;
+                width: 100%;
+                padding: $size-3;
+
+                h2 {
+                    text-transform: uppercase;
+                    color: $color-neutral-800;
+                    opacity: .7;
+                }
+    
+                .mode-selector {
+                    cursor: pointer;
+                    border: 1px solid $color-neutral-500;
+                }
+            }
+    
+            .mode-timer { width: 100%; }
+    
+            .current-exercise {
+                display: flex;
+                flex-direction: column;
+                text-transform: uppercase;
+                font-size: 14px;
+                font-weight: 600;
+    
+                input {
+                    padding: $size-2;
+                    border: 1px solid $color-neutral-300;
+                }
+            }
+    
+            .time-display {
+                margin-block: $size-5;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: $size-2;
+    
+                .colon {
+                    font-size: $font-size-600;
+                    font-weight: bold;
+                }
+            }
+        }
+
+        .settings {
+            margin-block-start: $size-4;
+
+            .timer-options {
+                display: flex;
+                flex-direction: column;
+                padding-inline: $size-4;
+            }
+
+            .option-field { font-weight: normal; }
+        }
+
+        .exercises {
+            margin-block-start: $size-4;
+
+            &__list {
+                .heading-bar {
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    margin: $size-3;
+                    padding: $size-3;
+
+                    .header {
+                        font-weight: 500;
+                        text-transform: uppercase;
+                        color: $color-neutral-800;
+                        opacity: .7;
+                    }
+
+                    .add-exercise {
+                        border: 1px solid $color-neutral-600;
+                        text-transform: none;
+                        font-weight: normal;
+                        display: flex;
+                        align-items: center;
+                        gap: $size-2;
+                        font-size: $font-size-300;
+                    }
+                }
+
+                .exercises-table-wrapper {
+                    overflow-x: auto;
+                    width: 100%;
+
+                    @include mq(large) {
+                        overflow-x: visible;
+                        overflow-y: visible;
+                    }
+                }
+
+                .exercises-table {
+                    width: 100%;
+                    min-width: 32rem;
+                }
+
+                .exercises-table__head,
+                .exercise-row {
+                    display: grid;
+                    grid-template-columns: 2.5rem 2.5rem minmax(9rem, 1fr) 5.5rem 8rem;
+                    align-items: center;
+                    gap: $size-2;
+                    padding: $size-2 $size-3;
+                }
+
+                .exercises-table__head {
+                    font-size: $font-size-300;
+                    font-weight: 500;
+                    border-block-end: 1px solid $color-neutral-300;
+
+                    .bpm-field {
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        gap: $size-1;
+                    }
+                }
+
+                .exercises-table__body {
+                    list-style: none;
+                    padding: 0;
+                    margin: 0;
+                }
+
+                .exercise-row {
+                    cursor: pointer;
+
+                    &.is-active { background: $color-neutral-200; }
+
+                    input,
+                    select { min-width: 0; }
+
+                    &__playback {
+                        &:focus { border: 1px solid; }
+                    }
+
+                    &__number {
+                        inline-size: 2rem;
+                        display: grid;
+                        place-items: center;
+                    }
+
+                    &__name {
+                        width: 100%;
+                        padding: $size-1 $size-2;
+                        border: 1px solid $color-neutral-400;
+                        color: $color-neutral-700;
+                    }
+
+                    &__bpm {
+                        width: 100%;
+                        font-size: $font-size-400;
+                        border: 1px solid $color-neutral-400;
+                        color: $color-neutral-700;
+                    }
+
+                    &__actions {
+                        display: flex;
+                        gap: $size-1;
+                        justify-content: flex-end;
+                        white-space: nowrap;
+
+                        .button {
+                            padding: $size-2;
+                            font-size: $font-size-300;
+
+                            &:focus { border: 1px solid; }
+                        }
+                    }
+                }
+
+                .total-exercises {
+                    margin: $size-4;
+                    text-align: center;
+                }
+            }
+        }
+    }
+}

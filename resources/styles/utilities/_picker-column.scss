@@ -1,0 +1,25 @@
+@use "../abstracts" as *;
+
+.picker-column {
+    width: 56px;
+    height: 44px;
+    overflow-y: auto;
+    scroll-snap-type: y mandatory;
+    text-align: center;
+
+    border: 2px solid $color-neutral-300;
+    border-radius: $border-radius-1;
+    background: $color-neutral-200;
+
+    font-size: $font-size-700;
+    line-height: 44px;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar { display: none; }
+
+    .picker-option {
+        height: 44px;
+        scroll-snap-align: center;
+        cursor: pointer;
+    }
+}

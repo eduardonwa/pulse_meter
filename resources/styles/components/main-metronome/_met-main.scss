@@ -1,0 +1,145 @@
+@use "../../abstracts" as *;
+
+@mixin styles {
+    &__main {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        gap: $size-8;
+        padding: $size-4;
+    
+        .current-beat {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: $font-size-700;
+            aspect-ratio: 1;
+            border-radius: 50%;
+            background: $color-primary-500;
+            color: $color-neutral-100;
+            padding: $size-2;
+        }
+        
+        .beats {
+            display: flex;
+            gap: $size-12;
+            padding: $size-2;
+        }
+    
+        .beat-mark {
+            flex-direction: row;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: $font-size-500;
+            transition:
+                transform 120ms ease-out,
+                opacity 120ms ease-out;
+            opacity: 0.55;
+
+            &.is-active {
+                font-weight: 700;
+                transform: scale(1.25);
+                opacity: 1;
+            }
+        }
+    
+        .tempo-control {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: $size-2;
+            width: 100%;
+    
+            // NUMERO + BPM
+            .tempo-display {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                margin-block: $size-8;
+            }
+            
+            // NUMERO
+            .tempo-input {
+                font-size: $font-size-900;
+                background: transparent;
+                appearance: textfield;
+                -moz-appearance: textfield;
+                text-align: center;
+                border: none;
+                padding: 0;
+
+                letter-spacing: 4px;
+    
+                inline-size: 4ch;
+                min-inline-size: 0;
+                line-height: 1;
+            }
+    
+            // BPM
+            .tempo-unit {
+                font-size: $font-size-700;
+                font-weight: 400;
+                line-height: 1;
+            }
+    
+            .tempo-range {
+                --track-height: 0.5rem;
+                --thumb-size: 1.5rem;
+    
+                width: 100%;
+    
+                appearance: none;
+                -webkit-appearance: none;
+    
+                background: transparent;
+                cursor: pointer;
+    
+                &:focus-visible {
+                    outline: 3px solid $color-primary-300;
+                    outline-offset: 0.35rem;
+                }
+    
+                // Chrome, Edge, Safari
+                &::-webkit-slider-runnable-track {
+                    height: var(--track-height);
+                    background: $color-neutral-200;
+                    border: 1px solid $color-neutral-1000;
+                    border-radius: 999rem;
+                }
+    
+                &::-webkit-slider-thumb {
+                    appearance: none;
+                    -webkit-appearance: none;
+    
+                    width: var(--thumb-size);
+                    height: var(--thumb-size);
+    
+                    margin-top: calc((var(--track-height) - var(--thumb-size)) / 2);
+    
+                    background-color: $color-neutral-1000;
+                    border: 2px solid $color-primary-300;
+                    border-radius: 999rem;
+                }
+    
+                // Firefox
+                &::-moz-range-track {
+                    height: var(--track-height);
+                    background: $color-neutral-300;
+                    border: 1px solid $color-neutral-300;
+                    border-radius: 999rem;
+                }
+    
+                &::-moz-range-thumb {
+                    width: var(--thumb-size);
+                    height: var(--thumb-size);
+    
+                    background: $color-primary-500;
+                    border: 2px solid transparent;
+                    border-radius: 999rem;
+                }
+            }
+        }
+    }
+}
