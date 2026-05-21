@@ -35,6 +35,48 @@
     }
   }
 
+  &[data-type="secondary"] {
+    text-transform: none;
+    font-weight: normal;
+    font-size: $font-size-300;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: $size-2;
+    padding: $size-2;
+    background: transparent;
+    border: 1px solid $color-neutral-400;
+
+    svg {
+      width: 24px;
+      height: 24px;
+    }
+  }
+
+  &[data-type="danger-zone"] {
+    background: #b81616;
+    font-weight: normal;
+    text-transform: none;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: $size-2;
+    padding: $size-2;
+    font-size: $font-size-300;
+    color: $color-neutral-100;
+
+    &:hover {
+      background: #a83232;
+    }
+
+    svg {
+      width: 24px;
+      height: 24px;
+    }
+  }
+
   // PLAY
   &[data-type="play-metronome"] {
     font-weight: normal;

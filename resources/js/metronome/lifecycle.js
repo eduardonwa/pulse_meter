@@ -7,6 +7,8 @@ export function lifecycle() {
                 this.saveToLocalStorage()
             })
 
+            this.loadRecentSessions()
+
             this.loadClickSounds?.()
 
             this.$nextTick(() => {

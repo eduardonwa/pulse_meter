@@ -101,16 +101,6 @@
                         color: $color-neutral-800;
                         opacity: .7;
                     }
-
-                    .add-exercise {
-                        border: 1px solid $color-neutral-600;
-                        text-transform: none;
-                        font-weight: normal;
-                        display: flex;
-                        align-items: center;
-                        gap: $size-2;
-                        font-size: $font-size-300;
-                    }
                 }
 
                 .exercises-table-wrapper {
@@ -222,18 +212,23 @@
         .settings {
             margin-block: $size-4;
             padding-block-end: $size-8;
+
             display: flex;
             flex-direction: column;
-            gap: $size-6;
+            gap: $size-4;
 
             .setting-option {
                 padding-inline: $size-4;
-                display: block;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
             }
 
             .timer-options {
                 display: flex;
-                flex-direction: column;
+                align-items: center;
+                font-size: $font-size-300;
+                font-weight: 600;
 
                 .auto-advance-field {
                     font-weight: normal;
@@ -241,14 +236,37 @@
                 }
             }
 
-            .select-click-profile {
-                padding: $size-2;
-                margin-block-start: $size-2;
-                border: 1px solid $color-neutral-600;
-                cursor: pointer;
-                width: 200px;
+            .click-profile {
+                font-weight: 600;
+                font-size: $font-size-300;
+
+                .select-click-profile {
+                    padding: $size-2;
+                    margin-block-start: $size-2;
+                    border: 1px solid $color-neutral-400;
+                    cursor: pointer;
+                    width: fit-content;
+                    font-size: $font-size-300;
+                }
+            }
+
+            .sessions {
+                font-weight: 600;
+                font-size: $font-size-300;
+
+                .button {
+                    margin-block-start: $size-2;
+                }
+            }
+
+            .danger-zone {
+                font-weight: 600;
+                font-size: $font-size-300;
+
+                .button {
+                    margin-block-start: $size-2;
+                }
             }
         }
-
     }
 }

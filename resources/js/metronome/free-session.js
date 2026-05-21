@@ -6,6 +6,8 @@ export function freeSession() {
 
         startMetronomeSession() {
             this.ensureAudioContext()
+            
+            this.saveCurrentSession()
 
             this.activeExerciseIndex = null
             this.isPlaying = true

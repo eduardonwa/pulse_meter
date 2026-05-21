@@ -23,7 +23,7 @@ export function exercises() {
             this.stepFormIndex = null
 
             this.stepForm = {
-                name: `Ejercicio ${this.steps.length + 1}`,
+                name: `Exercise ${this.steps.length + 1}`,
                 bpm: this.metronome.bpm,
                 mode: 'timer',
                 duration_seconds: 60,

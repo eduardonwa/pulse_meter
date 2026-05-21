@@ -1,3 +1,35 @@
+/* APP DEFAULTS */
+export function defaultSteps() {
+    return [
+        {
+            name: 'Alternate Picking',
+            bpm: 100,
+            mode: 'timer',
+            duration_seconds: 5,
+        },
+        {
+            name: 'Legato',
+            bpm: 80,
+            mode: 'timer',
+            duration_seconds: 5,
+        },
+        {
+            name: 'Sweep Picking',
+            bpm: 90,
+            mode: 'timer',
+            duration_seconds: null,
+        },
+    ]
+}
+
+export function defaultMetronome() {
+    return {
+        bpm: 100,
+        mode: 'timer',
+        duration_seconds: 60,
+    }
+}
+
 export function state(steps) {    
     const savedDawProfile = localStorage.getItem('pulse_meter_daw_profile')
     const activeDawProfileKey = savedDawProfile ?? 'cubase'
@@ -5,11 +37,13 @@ export function state(steps) {
     return {
         steps,
         storageKey: 'pulse_meter_routine',
+        recentSessionsStorageKey: 'pulse_meter_recent_sessions',
 
-        metronome: {
-            bpm: 100,
-            mode: 'timer',
-            duration_seconds: 60,
+        metronome: defaultMetronome(),
+
+        recentSessions: {
+            manual: [],
+            timer: [],
         },
 
         currentIndex: 0,

@@ -1,3 +1,5 @@
+import { defaultSteps, defaultMetronome } from './state'
+
 export function storage() {
     return {
         saveToLocalStorage() {
@@ -10,6 +12,36 @@ export function storage() {
             if (saved) {
                 this.steps = JSON.parse(saved)
             }
+        },
+
+        clearAllAppStorage() {
+            const confirmed = window.confirm(
+                'Reset app? This will delete your custom exercises and all recent sessions.'
+            )
+
+            if (!confirmed) {
+                return
+            }
+
+            this.stop?.()
+
+            localStorage.removeItem(this.storageKey)
+            localStorage.removeItem(this.recentSessionsStorageKey)
+
+            this.steps = defaultSteps()
+            this.metronome = defaultMetronome()
+
+            this.recentSessions = {
+                manual: [],
+                timer: [],
+            }
+
+            this.currentIndex = 0
+            this.activeExerciseIndex = null
+            this.remaining = null
+
+            this.saveToLocalStorage?.()
+            this.saveRecentSessions?.()
         },
     }
 }
