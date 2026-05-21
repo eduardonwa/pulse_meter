@@ -13,6 +13,7 @@ export function numberPicker({
         format,
 
         isSyncingScroll: false,
+        hasSyncedInitialValue: false,
 
         init() {
             this.$nextTick(() => {
@@ -46,6 +47,10 @@ export function numberPicker({
             }
 
             this.scrollToIndex(index)
+
+            setTimeout(() => {
+                this.hasSyncedInitialValue = true
+            }, 200)
         },
 
         scrollToIndex(index) {
@@ -68,7 +73,11 @@ export function numberPicker({
         },
 
         syncFromScroll() {
-            if (this.isSyncingScroll || this.disabled()) {
+            if (
+                !this.hasSyncedInitialValue ||
+                this.isSyncingScroll ||
+                this.disabled()
+            ) {
                 return
             }
 

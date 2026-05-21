@@ -10,12 +10,12 @@
         <div class="form-group fields">
             <label class="exercise-bpm-wrapper">
                 <p class="exercise-form-label">BPM</p>
+
                 <x-inputs.number-picker
                     class="exercise-row__bpm"
                     options="bpmOptions"
                     model="stepForm.bpm"
                     format="(value) => value"
-                    after-change="updateExerciseBpm(index, value)"
                 />
             </label>
     
@@ -34,23 +34,22 @@
 
                 <article class="length-inputs">
                     <div class="minutes">
-                        <input
-                            type="number"
-                            min="0"
-                            max="5"
-                            x-model.number="stepFormMinutes"
-                        >
-                        <span>m</span>
+                        <x-inputs.number-picker
+                            options="minutesOptions"
+                            model="stepFormMinutes"
+                        />
+                        <span class="unit">m</span>
                     </div>
-    
+                    
+                    <span class="colon">:</span>
+                    
                     <div class="seconds">
-                        <input
-                            type="number"
-                            min="0"
-                            max="59"
-                            x-model.number="stepFormSeconds"
-                        >
-                        <span>s</span>
+                        <x-inputs.number-picker
+                            options="secondsOptions"
+                            model="stepFormSeconds"
+                            format="(value) => String(value).padStart(2, '0')"
+                        />
+                        <span class="unit">s</span>
                     </div>
                 </article>
             </label>

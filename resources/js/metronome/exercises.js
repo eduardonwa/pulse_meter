@@ -42,6 +42,10 @@ export function exercises() {
 
             this.$nextTick(() => {
                 this.$refs.stepDialog.showModal()
+                
+                requestAnimationFrame(() => {
+                    window.dispatchEvent(new Event('picker:sync'))
+                })
             })
         },
 
@@ -63,6 +67,10 @@ export function exercises() {
 
             this.$nextTick(() => {
                 this.$refs.stepDialog.showModal()
+
+                requestAnimationFrame(() => {
+                    window.dispatchEvent(new Event('picker:sync'))
+                })
             })
         },
 
