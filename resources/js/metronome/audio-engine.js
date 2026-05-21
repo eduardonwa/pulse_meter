@@ -4,8 +4,63 @@ export function audioEngine() {
             this.audioContext ??= new AudioContext()
         },
 
-        startMetronome(bpm) {
+        async loadAudioBuffer(path) {
+            this.ensureAudioContext()
+
+            const response = await fetch(path)
+
+            if (!response.ok) {
+                throw new Error(`Could not load audio file: ${path}`)
+            }
+
+            const arrayBuffer = await response.arrayBuffer()
+
+            return await this.audioContext.decodeAudioData(arrayBuffer)
+        },
+
+        async loadClickSounds() {
+            if (this.clickBuffer && this.accentBuffer && this.finishBuffer) {
+                return
+            }
+
+            const profile = this.currentDawProfile
+
+            if (!profile?.click || !profile?.accent || !profile?.finish) {
+                console.warn('Missing click profile audio paths', profile)
+                return
+            }
+
+            this.clickBuffer = await this.loadAudioBuffer(profile.click)
+            this.accentBuffer = await this.loadAudioBuffer(profile.accent)
+            this.finishBuffer = await this.loadAudioBuffer(profile.finish)
+        },
+
+        playBuffer(buffer, volume = 1) {
+            this.ensureAudioContext()
+
+            const now = this.audioContext.currentTime
+            const source = this.audioContext.createBufferSource()
+            const gain = this.audioContext.createGain()
+
+            source.buffer = buffer
+
+            gain.gain.setValueAtTime(volume, now)
+
+            source.connect(gain)
+            gain.connect(this.audioContext.destination)
+
+            source.start(now)
+
+            source.onended = () => {
+                source.disconnect()
+                gain.disconnect()
+            }
+        },
+
+        async startMetronome(bpm) {
             clearInterval(this.intervalId)
+
+            await this.loadClickSounds()
 
             this.currentBeat = 1
             this.tick(true)
@@ -22,45 +77,19 @@ export function audioEngine() {
         },
 
         tick(isAccent = false) {
-            this.ensureAudioContext()
+            const buffer = isAccent ? this.accentBuffer : this.clickBuffer
 
-            const osc = this.audioContext.createOscillator()
-            const gain = this.audioContext.createGain()
+            if (!buffer) {
+                return
+            }
 
-            osc.frequency.value = isAccent ? 1300 : 900
-
-            gain.gain.setValueAtTime(1, this.audioContext.currentTime)
-            gain.gain.exponentialRampToValueAtTime(
-                0.001,
-                this.audioContext.currentTime + 0.05
-            )
-
-            osc.connect(gain)
-            gain.connect(this.audioContext.destination)
-
-            osc.start(this.audioContext.currentTime)
-            osc.stop(this.audioContext.currentTime + 0.05)
+            this.playBuffer(buffer, isAccent ? 1 : 0.9)
         },
 
-        playFinishSound() {
-            this.ensureAudioContext()
+        async playFinishSound() {
+            await this.loadClickSounds()
 
-            const osc = this.audioContext.createOscillator()
-            const gain = this.audioContext.createGain()
-
-            osc.frequency.value = 1300
-
-            gain.gain.setValueAtTime(1, this.audioContext.currentTime)
-            gain.gain.exponentialRampToValueAtTime(
-                0.001,
-                this.audioContext.currentTime + 0.25
-            )
-
-            osc.connect(gain)
-            gain.connect(this.audioContext.destination)
-
-            osc.start(this.audioContext.currentTime)
-            osc.stop(this.audioContext.currentTime + 0.25)
+            this.playBuffer(this.finishBuffer, 1)
         },
 
         stop() {
@@ -72,6 +101,7 @@ export function audioEngine() {
             this.isPlaying = false
             this.remaining = null
             this.activeExerciseIndex = null
+            this.currentBeat = 1
         },
     }
 }

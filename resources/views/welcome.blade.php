@@ -12,8 +12,8 @@
 <body>
 
     <header class="main-heading">
-        <h2 class="heading-2">Routine keeper</h2>
-        <p>A metronome for the practicing musician</p>
+        <h2 class="heading-2" style="text-transform: lowercase; font-weight: normal;">focuus</h2>
+        <p>A practice timer for focused musicians</p>
     </header>
 
     <main class="metronome"

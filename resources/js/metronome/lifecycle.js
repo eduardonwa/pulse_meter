@@ -7,6 +7,8 @@ export function lifecycle() {
                 this.saveToLocalStorage()
             })
 
+            this.loadClickSounds?.()
+
             this.$nextTick(() => {
                 // Aquí ya no tienes que forzar todos los pickers globales.
                 // Cada numberPicker puede centrarse solo.
@@ -15,6 +17,10 @@ export function lifecycle() {
 
         get currentStep() {
             return this.steps[this.currentIndex]
+        },
+
+        get currentDawProfile() {
+            return this.dawProfiles[this.activeDawProfileKey]
         },
     }
 }

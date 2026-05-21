@@ -7,6 +7,7 @@ import { freeSession } from './free-session'
 import { timerDuration } from './timer-duration'
 import { exercises } from './exercises'
 import { numberPicker } from './number-picker'
+import { clickProfiles } from './click-profiles'
 
 window.routinePlayer = function (steps) {
     return compose(
@@ -16,7 +17,8 @@ window.routinePlayer = function (steps) {
         audioEngine(),
         freeSession(),
         timerDuration(),
-        exercises()
+        exercises(),
+        clickProfiles()
     )
 }
 

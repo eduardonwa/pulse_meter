@@ -41,5 +41,29 @@ export function state(steps) {
 
         stepFormMinutes: 1,
         stepFormSeconds: 0,
+
+        dawProfiles: {
+            ableton: {
+                label: 'Ableton',
+                click: '/audio/click-profiles/ableton/click.wav',
+                accent: '/audio/click-profiles/ableton/accent.wav',
+                finish: '/audio/click-profiles/ableton/accent.wav',
+                beatsPerMeasure: 4,
+            },
+
+            cubase: {
+                label: 'Cubase',
+                click: '/audio/click-profiles/cubase/click.wav',
+                accent: '/audio/click-profiles/cubase/accent.wav',
+                finish: '/audio/click-profiles/cubase/accent.wav',
+                beatsPerMeasure: 4,
+            },
+        },
+
+        activeDawProfileKey: localStorage.getItem('pulse_meter_daw_profile') ?? 'cubase',
+
+        clickBuffer: null,
+        accentBuffer: null,
+        finishBuffer: null,
     }
 }

@@ -85,14 +85,32 @@
 
         .settings {
             margin-block-start: $size-4;
+            display: flex;
+            flex-direction: column;
+            gap: $size-6;
+
+            .setting-option {
+                padding-inline: $size-4;
+                display: block;
+            }
 
             .timer-options {
                 display: flex;
                 flex-direction: column;
-                padding-inline: $size-4;
+
+                .auto-advance-field {
+                    font-weight: normal;
+                    margin-block-start: $size-2;
+                }
             }
 
-            .option-field { font-weight: normal; }
+            .select-click-profile {
+                padding: $size-2;
+                margin-block-start: $size-2;
+                border: 1px solid $color-neutral-600;
+                cursor: pointer;
+                width: 200px;
+            }
         }
 
         .exercises {
