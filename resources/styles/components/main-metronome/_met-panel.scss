@@ -171,7 +171,9 @@
                         width: 100%;
                         padding: $size-1 $size-2;
                         border: 1px solid $color-neutral-400;
-                        color: $color-neutral-700;
+                        color: $color-neutral-900;
+                        font-size: $font-size-300;
+                        font-weight: normal;
                     }
 
                     &__bpm {
