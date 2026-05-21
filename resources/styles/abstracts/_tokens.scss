@@ -97,9 +97,9 @@ $footer-link-text-decoration: none;
 
 // buttons
 $button-font-family: $body-font-family;
-$button-font-size: $font-size-400;
-$button-font-weight: $font-weight-bold;
-$button-text-transform: uppercase;
+$button-font-size: $font-size-300;
+$button-font-weight: normal;
+$button-text-transform: none;
 $button-padding: 0.75em 2em;
 $button-border: 0;
 $button-border-radius: $border-radius-1;
@@ -112,6 +112,12 @@ $button-primary-color: $color-neutral-100;
 $button-primary-background: $color-primary-700;
 $button-primary-color-hover: $color-neutral-100;
 $button-primary-background-hover: $color-primary-800;
+
+$button-outline-background: transparent;
+$button-outline-color: $color-neutral-600;
+$button-outline-background-hover: $color-neutral-200;
+$button-outline-color-hover: none;
+$button-outline-border: 1px solid $color-neutral-300;
 
 // cards
 $card-flow-spacing: $size-2;
@@ -134,11 +140,11 @@ $form-label-font-size: $body-font-size;
 $form-input-color: $body-text-color;
 $form-input-font-family: $body-font-family;
 $form-input-font-weight: $font-weight-semi-bold;
-$form-input-font-size: $body-font-size;
+$form-input-font-size: $font-size-300;
 $form-input-background-color: $color-neutral-100;
-$form-input-border-default: 3px solid $color-primary-200;
+$form-input-border-default: 1px solid $color-neutral-300;
 $form-input-border-focus: 3px solid $color-primary-400;
-$form-input-padding: $size-3;
+$form-input-padding: $size-2;
 $form-input-border-radius: $border-radius-1;
 
 $form-placeholder-color: $color-primary-300;

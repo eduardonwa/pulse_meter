@@ -1,0 +1,13 @@
+@use '../abstracts/' as *;
+
+.new-exercise-modal {
+  border: 0;
+  width: 100%;
+  max-width: 400px;
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+
+  margin: 0 auto;
+  top: 50%;
+  transform: translateY(-50%);
+}

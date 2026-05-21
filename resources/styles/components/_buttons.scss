@@ -54,6 +54,17 @@
     }
   }
 
+  &[data-type="outline"] {
+    background-color: $button-outline-background;
+    color: $button-outline-color;
+    border: $button-outline-border;
+
+    &:is(:hover, :focus) {
+      background-color: $button-outline-background-hover;
+      color: $button-outline-color-hover;
+    }
+  }
+
   &[data-type="danger-zone"] {
     background: #b81616;
     font-weight: normal;

@@ -47,7 +47,7 @@ export function state(steps) {
         },
 
         currentIndex: 0,
-        activeTab: 'sessions',
+        activeTab: 'exercises',
 
         isPlaying: false,
         audioContext: null,
