@@ -13,16 +13,12 @@
         <select
             class="select-click-profile"
             x-model="activeDawProfileKey"
-            @change="changeDawProfile(activeDawProfileKey)"
+            x-effect="$el.value = activeDawProfileKey"
+            @change="changeDawProfile($event.target.value)"
             :disabled="isPlaying"
         >
-            <template x-for="(profile, key) in dawProfiles" :key="key">
-                <option
-                    class="option-click-profile"
-                    :value="key"
-                    x-text="profile.label"
-                ></option>
-            </template>
+            <option value="ableton">Ableton</option>
+            <option value="cubase">Cubase</option>
         </select>
     </label>
 </div>

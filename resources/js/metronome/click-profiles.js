@@ -5,10 +5,6 @@ export function clickProfiles() {
                 return
             }
 
-            if (this.isPlaying) {
-                return
-            }
-
             this.activeDawProfileKey = key
 
             const profile = this.dawProfiles[key]

@@ -1,4 +1,7 @@
-export function state(steps) {
+export function state(steps) {    
+    const savedDawProfile = localStorage.getItem('pulse_meter_daw_profile')
+    const activeDawProfileKey = savedDawProfile ?? 'cubase'
+    
     return {
         steps,
         storageKey: 'pulse_meter_routine',
@@ -60,7 +63,7 @@ export function state(steps) {
             },
         },
 
-        activeDawProfileKey: localStorage.getItem('pulse_meter_daw_profile') ?? 'cubase',
+        activeDawProfileKey,
 
         clickBuffer: null,
         accentBuffer: null,
