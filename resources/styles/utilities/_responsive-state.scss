@@ -1,0 +1,19 @@
+@use "../abstracts" as *;
+
+.mobile-only {
+    display: inline-flex;
+}
+
+.desktop-only {
+    display: none;
+}
+
+@include mq(large) {
+    .mobile-only {
+        display: none;
+    }
+
+    .desktop-only {
+        display: block;
+    }
+}

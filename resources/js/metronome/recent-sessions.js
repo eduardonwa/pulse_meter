@@ -36,6 +36,10 @@ export function recentSessions() {
         },
 
         saveCurrentSession() {
+            if (this.activeSessionType !== 'free') {
+                return
+            }
+
             const session = {
                 id: this.createSessionId(),
                 type: this.metronome.mode,

@@ -7,6 +7,8 @@ export function freeSession() {
         startMetronomeSession() {
             this.ensureAudioContext()
             
+            this.activeSessionType = 'free'
+
             this.saveCurrentSession()
 
             this.activeExerciseIndex = null
@@ -38,9 +40,18 @@ export function freeSession() {
                 this.remaining--
 
                 if (this.remaining <= 0) {
-                    this.finishMetronomeSession()
+                    this.finishCurrentTimedSession()
                 }
             }, 1000)
+        },
+
+        finishCurrentTimedSession() {
+            if (this.activeSessionType === 'exercise') {
+                this.finishExerciseSession()
+                return
+            }
+
+            this.finishMetronomeSession()
         },
 
         finishMetronomeSession() {

@@ -39,14 +39,7 @@ export function exercises() {
             }
 
             this.resetStepForm()
-
-            this.$nextTick(() => {
-                this.$refs.stepDialog.showModal()
-                
-                requestAnimationFrame(() => {
-                    window.dispatchEvent(new Event('picker:sync'))
-                })
-            })
+            this.openStepFormModal()
         },
 
         openEditStepModal(index) {
@@ -65,13 +58,23 @@ export function exercises() {
             this.stepFormMinutes = Math.floor(this.stepForm.duration_seconds / 60)
             this.stepFormSeconds = this.stepForm.duration_seconds % 60
 
+            this.openStepFormModal()
+        },
+
+        openStepFormModal() {
             this.$nextTick(() => {
+                this.isStepFormOpen = true
                 this.$refs.stepDialog.showModal()
 
                 requestAnimationFrame(() => {
                     window.dispatchEvent(new Event('picker:sync'))
                 })
             })
+        },
+
+        closeStepFormModal() {
+            this.isStepFormOpen = false
+            this.$refs.stepDialog.close()
         },
 
         saveStepForm() {
@@ -108,7 +111,7 @@ export function exercises() {
 
             this.saveToLocalStorage()
 
-            this.$refs.stepDialog.close()
+            this.closeStepFormModal()
 
             this.$nextTick(() => {
                 window.dispatchEvent(new Event('picker:sync'))
@@ -121,6 +124,8 @@ export function exercises() {
             const step = this.steps[index]
 
             this.stop()
+
+            this.activeSessionType = 'exercise'
 
             this.currentIndex = index
             this.activeExerciseIndex = index
@@ -198,5 +203,78 @@ export function exercises() {
 
             return this.getStepTimeLabel(step, this.activeExerciseIndex)
         },
+
+        finishExerciseSession() {
+            this.playFinishSound()
+
+            if (!this.autoAdvance) {
+                this.stop()
+                return
+            }
+
+            const nextIndex = this.activeExerciseIndex + 1
+
+            if (nextIndex >= this.steps.length) {
+                this.stop()
+                this.openPracticeReviewModal()
+                return
+            }
+
+            this.stop()
+
+            this.nextExerciseIndex = nextIndex
+            this.isWaitingForNextExercise = true
+
+            this.$nextTick(() => {
+                document.activeElement?.blur()
+            })
+        },
+
+        continueToNextExercise() {
+            if (!this.isWaitingForNextExercise) {
+                return
+            }
+
+            if (this.nextExerciseIndex === null) {
+                return
+            }
+
+            const index = this.nextExerciseIndex
+
+            this.isWaitingForNextExercise = false
+            this.nextExerciseIndex = null
+
+            this.startExercise(index)
+        },
+
+        openPracticeReviewModal() {
+            this.isWaitingForNextExercise = false
+            this.nextExerciseIndex = null
+
+            this.practiceFeeling = null
+            this.practiceFeelingConfirmation = ''
+            this.isPracticeReviewOpen = true
+
+            this.$nextTick(() => {
+                document.activeElement?.blur()
+            })
+        },
+
+        selectPracticeFeeling(value) {
+            this.practiceFeeling = value
+
+            const confirmation = {
+                estranged: 'Some days feel detached. Still counts.',
+                sad: 'Heavy day. You still showed up.',
+                happy: 'Good. Keep that energy.',
+                optimistic: 'Nice. That means something is clicking.',
+            }
+            
+            this.practiceFeelingConfirmation = confirmation[value] ?? 'Logged'
+        },
+
+        closePracticeReviewModal() {
+            this.isPracticeReviewOpen = false
+        }
     }
 }

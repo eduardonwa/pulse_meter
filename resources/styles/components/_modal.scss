@@ -1,0 +1,69 @@
+@use '../abstracts/' as *;
+
+.modal-shell {
+    position: fixed;
+    z-index: 100;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    padding: $size-4;
+    background: rgba(0, 0, 0, 0.20);
+}
+
+.modal-panel {
+    border: 0;
+    width: 100%;
+    max-width: 400px;
+    padding: $size-6;
+    border-radius: $border-radius-1;
+
+    &[data-type="advance"] {
+        z-index: 100;
+        
+        .button {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: $size-4;
+
+            svg {
+                width: 24px;
+                height: 24px;
+            }
+        }
+    }
+
+    &[data-type="practice-review"] {
+        z-index: 110;
+
+        .practice-review,
+        .review-confirmation {
+            text-align: center;
+            background: $color-neutral-100;
+            padding: $size-2;
+            border-radius: $border-radius-1;
+
+            .heading {
+                font-size: $font-size-400;
+                color: $color-neutral-800;
+                font-weight: 500;
+                padding-block: $size-3;
+            }
+
+            &__options {
+                margin: $size-3;
+                display: flex;
+                flex-direction: column;
+                gap: $size-4;
+
+                .button {
+                    display: flex;
+                    align-items: center;
+                    justify-content: flex-start;
+                    font-size: $font-size-400;
+                }
+            }
+        }
+    }
+}

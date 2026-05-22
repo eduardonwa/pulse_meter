@@ -1,6 +1,9 @@
 import Alpine from 'alpinejs'
+import focus from '@alpinejs/focus'
+
 import './metronome'
 
-window.Alpine = Alpine
- 
+Alpine.plugin(focus)
+
+window.Alpine = Alpine 
 Alpine.start()

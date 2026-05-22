@@ -56,7 +56,6 @@ export function state(steps) {
         remaining: null,
 
         activeExerciseIndex: null,
-        autoAdvance: true,
         maxSteps: 5,
 
         beatsPerMeasure: 4,
@@ -68,6 +67,7 @@ export function state(steps) {
 
         stepFormMode: 'create',
         stepFormIndex: null,
+        isStepFormOpen: false,
 
         stepForm: {
             name: '',
@@ -102,5 +102,15 @@ export function state(steps) {
         clickBuffer: null,
         accentBuffer: null,
         finishBuffer: null,
+
+        activeSessionType: null,
+
+        autoAdvance: true,
+        isWaitingForNextExercise: false,
+        nextExerciseIndex: null,
+
+        isPracticeReviewOpen: false,
+        practiceFeeling: null,
+        practiceFeelingConfirmation: ''
     }
 }

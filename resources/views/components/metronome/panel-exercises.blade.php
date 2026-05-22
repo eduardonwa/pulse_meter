@@ -1,4 +1,8 @@
-<div class="exercises" x-show="activeTab === 'exercises'" x-cloak>
+<div class="exercises"
+    x-show="activeTab === 'exercises'"
+    @keydown.space.window.prevent="isWaitingForNextExercise && continueToNextExercise()"
+    x-cloak
+>
     <article class="exercises__list">
         <header class="heading-bar">
             <h2 class="header">My exercises</h2>
@@ -40,7 +44,11 @@
             </div>
         </div>
 
-        <x-metronome.exercise-modal />
+        <x-metronome.step-form-modal />
+
+        <x-metronome.advance-modal />
+
+        <x-metronome.practice-review-modal />
 
         <p class="total-exercises">
             <span x-text="steps.length"></span> / <span x-text="maxSteps"></span> exercises

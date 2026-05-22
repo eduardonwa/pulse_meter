@@ -43,6 +43,22 @@ select {
   flex-direction: column;
   gap: $size-2;
 
+  .heading {
+    .button {
+      padding: 0;
+      display: block;
+      margin-left: auto;
+      border: 1px solid transparent;
+      background: transparent;
+
+      svg {
+        width: 28px;
+        height: 28px;
+        stroke: $color-neutral-600;
+      }
+    }
+  }
+
   .form-group {
     display: grid;
     gap: $size-4;

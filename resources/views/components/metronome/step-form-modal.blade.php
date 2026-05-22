@@ -1,6 +1,22 @@
-<dialog class="new-exercise-modal" x-ref="stepDialog">
+<dialog class="dialog-shell"
+    x-ref="stepDialog"
+    x-trap.noscroll="isStepFormOpen"
+    @close="isStepFormOpen = false"
+>
     <form class="new-exercise-form" @submit.prevent="saveStepForm()">
-        <h3 x-text="stepFormMode === 'edit' ? 'Edit exercise' : 'New exercise'"></h3>
+        <header class="heading">
+            <button
+                class="button"
+                data-type="outline"
+                @click="closeStepFormModal()"
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                </svg>
+            </button>
+            
+            <h3 x-text="stepFormMode === 'edit' ? 'Edit exercise' : 'New exercise'"></h3>
+        </header>
 
         <label class="exercise-name-wrapper">
             <p class="exercise-form-label">Name</p>
@@ -60,7 +76,7 @@
                 type="button"
                 class="button"
                 data-type="outline"
-                @click="$refs.stepDialog.close(); resetStepForm()"
+                @click="closeStepFormModal()"
             >
                 Cancel
             </button>
