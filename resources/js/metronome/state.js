@@ -35,11 +35,13 @@ export function state(steps) {
     const activeDawProfileKey = savedDawProfile ?? 'cubase'
     
     return {
-        steps,
+        steps: steps?.length ? steps : defaultSteps(),
+        
         storageKey: 'pulse_meter_routine',
         recentSessionsStorageKey: 'pulse_meter_recent_sessions',
 
         metronome: defaultMetronome(),
+        defaultSteps,
 
         recentSessions: {
             manual: [],

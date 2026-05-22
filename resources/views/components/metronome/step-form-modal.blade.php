@@ -6,6 +6,7 @@
     <form class="new-exercise-form" @submit.prevent="saveStepForm()">
         <header class="heading">
             <button
+                type="button"
                 class="button"
                 data-type="outline"
                 @click="closeStepFormModal()"

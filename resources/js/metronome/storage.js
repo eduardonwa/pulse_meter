@@ -9,8 +9,19 @@ export function storage() {
         loadFromLocalStorage() {
             const saved = localStorage.getItem(this.storageKey)
 
-            if (saved) {
-                this.steps = JSON.parse(saved)
+            if (!saved) {
+                this.steps = defaultSteps()
+                return
+            }
+
+            try {
+                const parsedSteps = JSON.parse(saved)
+
+                this.steps = Array.isArray(parsedSteps) && parsedSteps.length
+                    ? parsedSteps
+                    : defaultSteps()
+            } catch (error) {
+                this.steps = defaultSteps()
             }
         },
 
