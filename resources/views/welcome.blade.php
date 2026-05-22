@@ -16,7 +16,7 @@
         <p>A practice timer for focused musicians</p>
     </header>
 
-    <main class="metronome" x-data="routinePlayer()">
+    <main class="metronome | container" data-type="wide" data-spacing="none" x-data="routinePlayer()">
         <x-metronome.main />
 
         <x-metronome.panel />
