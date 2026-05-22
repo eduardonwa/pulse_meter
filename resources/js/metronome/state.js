@@ -56,7 +56,7 @@ export function state(steps) {
         remaining: null,
 
         activeExerciseIndex: null,
-        maxSteps: 5,
+        maxSteps: 10,
 
         beatsPerMeasure: 4,
         currentBeat: 1,

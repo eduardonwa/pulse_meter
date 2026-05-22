@@ -51,7 +51,7 @@
         <x-metronome.practice-review-modal />
 
         <p class="total-exercises">
-            <span x-text="steps.length"></span> / <span x-text="maxSteps"></span> exercises
+            <span x-text="steps.length"></span> <span>/</span> <span x-text="maxSteps"></span> exercises
         </p>
     </article>
 </div>
