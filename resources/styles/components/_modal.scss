@@ -19,6 +19,21 @@
 
     &[data-type="advance"] {
         z-index: 100;
+
+        text-align: center;
+        padding: $size-2;
+        border-radius: $border-radius-1;
+
+        @include mq(large) {
+            background: $color-neutral-900;
+        }
+
+        .heading {
+            color: $color-neutral-100;
+            padding-block: $size-3;
+            font-size: $font-size-400;
+            font-weight: 600;
+        }
         
         .button {
             width: 100%;
@@ -26,6 +41,10 @@
             align-items: center;
             justify-content: center;
             gap: $size-4;
+
+            @include mq(large) {
+                display: none;
+            }
 
             svg {
                 width: 24px;

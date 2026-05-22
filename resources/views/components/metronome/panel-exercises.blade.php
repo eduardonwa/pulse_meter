@@ -1,8 +1,4 @@
-<div class="exercises"
-    x-show="activeTab === 'exercises'"
-    @keydown.space.window.prevent="isWaitingForNextExercise && continueToNextExercise()"
-    x-cloak
->
+<div class="exercises" x-show="activeTab === 'exercises'" x-cloak>
     <article class="exercises__list">
         <header class="heading-bar">
             <h2 class="header">My exercises</h2>

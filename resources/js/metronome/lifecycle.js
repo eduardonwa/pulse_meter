@@ -1,3 +1,5 @@
+import { isTypingInField } from '../helpers'
+
 export function lifecycle() {
     return {
         init() {
@@ -12,9 +14,26 @@ export function lifecycle() {
             this.loadClickSounds?.()
 
             this.$nextTick(() => {
-                // Aquí ya no tienes que forzar todos los pickers globales.
                 // Cada numberPicker puede centrarse solo.
             })
+        },
+
+        handleKeydown(event) {
+            if (isTypingInField(event)) {
+                return
+            }
+
+            if (event.code !== 'Space') {
+                return
+            }
+
+            if (!this.isWaitingForNextExercise) {
+                return
+            }
+
+            event.preventDefault()
+
+            this.continueToNextExercise()
         },
 
         get currentStep() {

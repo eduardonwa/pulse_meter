@@ -8,7 +8,7 @@
     <div class="modal-panel"
         data-type="advance"
     >
-        <p class="desktop-only">PRESS SPACEBAR TO CONTINUE</p>
+        <h2 class="heading | desktop-only">PRESS SPACEBAR TO CONTINUE</h2>
     
         <button
             type="button"
