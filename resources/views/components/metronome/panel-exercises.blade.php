@@ -1,8 +1,6 @@
 <div class="exercises" x-show="activeTab === 'exercises'" x-cloak>
     <article class="exercises__list">
         <header class="heading-bar">
-            <h2 class="header">My exercises</h2>
-
             <button
                 type="button"
                 class="add-exercise | button"
@@ -17,7 +15,11 @@
             </button>
         </header>
 
-        <div class="exercises-table-wrapper">
+        <ul>
+            <x-metronome.panel-exercises-compact />
+        </ul>
+
+        {{-- <div class="exercises-table-wrapper">
             <div class="exercises-table">
                 <div class="exercises-table__head">
                     <span></span>
@@ -38,7 +40,7 @@
                     <x-metronome.panel-exercises-list />
                 </ul>
             </div>
-        </div>
+        </div> --}}
 
         <x-metronome.step-form-modal />
 
