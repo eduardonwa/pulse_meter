@@ -56,6 +56,7 @@ export function state(steps) {
         intervalId: null,
         timerId: null,
         remaining: null,
+        showResetAppModal: false,
 
         activeExerciseIndex: null,
         maxSteps: 10,

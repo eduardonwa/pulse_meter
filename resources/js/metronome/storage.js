@@ -25,16 +25,13 @@ export function storage() {
             }
         },
 
+        requestClearAllAppStorage() {
+            this.showResetAppModal = true
+        },
+
         clearAllAppStorage() {
-            const confirmed = window.confirm(
-                'Reset app? This will delete your custom exercises and all recent sessions.'
-            )
-
-            if (!confirmed) {
-                return
-            }
-
             this.stop?.()
+            this.resetAudio?.()
 
             localStorage.removeItem(this.storageKey)
             localStorage.removeItem(this.recentSessionsStorageKey)
@@ -53,6 +50,8 @@ export function storage() {
 
             this.saveToLocalStorage?.()
             this.saveRecentSessions?.()
-        },
+
+            this.showResetAppModal = false
+        }
     }
 }

@@ -16,10 +16,18 @@
     max-width: 400px;
     padding: $size-6;
     border-radius: $border-radius-1;
+    background: $color-neutral-100;
+
+    &__actions {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: $size-4;
+    }
 
     &[data-type="advance"] {
         z-index: 100;
-
+        background: transparent;
         text-align: center;
         padding: $size-2;
         border-radius: $border-radius-1;
@@ -82,6 +90,29 @@
                     justify-content: flex-start;
                     font-size: $font-size-400;
                 }
+            }
+        }
+    }
+
+    &[data-type="danger"] {
+
+        .heading {
+            color: $color-neutral-100;
+            padding-block: $size-3;
+            font-size: $font-size-400;
+            font-weight: 600;
+            text-align: center;
+            margin-block-end: $size-6;
+
+            svg {
+                margin: auto;
+                width: 55px;
+                height: 55px;
+                fill: $color-secondary-500;
+            }
+
+            .group__header {
+                color: $color-neutral-900;
             }
         }
     }

@@ -42,11 +42,11 @@
             </div>
         </div> --}}
 
-        <x-metronome.step-form-modal />
+        <x-windows.step-form-modal />
 
-        <x-metronome.advance-modal />
+        <x-windows.advance-modal />
 
-        <x-metronome.practice-review-modal />
+        <x-windows.practice-review-modal />
 
         <p class="total-exercises">
             <span x-text="steps.length"></span> <span>/</span> <span x-text="maxSteps"></span> exercises
