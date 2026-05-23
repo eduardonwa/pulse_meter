@@ -22,7 +22,7 @@
         x-data="routinePlayer()"
         @keydown.window="handleKeydown($event)"
     >
-        <x-metronome.main />
+        <x-metronome.main-metro />
 
         <x-metronome.panel />
     </main>

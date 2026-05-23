@@ -1,5 +1,5 @@
 <section class="metronome__main">
-    <h4 class="current-beat" x-text="currentBeat"></h4>
+    <h2 class="current-beat" x-text="currentBeat"></h2>
     
     <article class="beats">
         <template x-for="beat in beatsPerMeasure" :key="beat">
@@ -51,8 +51,12 @@
     </div>
 
     <div class="play">
-        <button class="button uppercase" data-type="play-metronome" @click="toggle()">
-            <span x-text="isPlaying ? 'Stop' : 'Start'"></span>
+        <button class="button uppercase"
+            data-type="play-metronome"
+            :data-state="isPlaying ? 'stop' : 'start'"
+            @click="toggle()"
+        >
+            <span class="play-label" x-text="isPlaying ? 'Stop' : 'Start'"></span>
         </button>
     </div>
 </section>

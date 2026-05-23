@@ -86,8 +86,9 @@
             .recent-sessions {
                 padding: $size-3;
                 border: 1px solid $color-neutral-300;
+                width: 100%;
 
-                @include mq(large) {
+                @include mq(extraLarge) {
                     width: 100%;
 
                     display: flex;

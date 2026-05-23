@@ -102,9 +102,28 @@
   // PLAY
   &[data-type="play-metronome"] {
     font-weight: normal;
-    width: 233px;
+    width: 100%;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     background: $color-neutral-900;
     color: $color-neutral-100;
+
+    transition:
+      transform 250ms ease,
+      box-shadow 250ms ease;
+
+    &:active {
+      transform: scale(0.96);
+    }
+
+    @include mq(medium) {
+      width: 80%;
+      margin: auto;
+    }
+
+    @include mq(large) { width: 50%; }
   }
 
   // TAB
