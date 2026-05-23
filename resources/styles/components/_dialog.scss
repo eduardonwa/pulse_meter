@@ -9,4 +9,17 @@
   margin: 0 auto;
   top: 50%;
   transform: translateY(-50%);
+
+  &[data-variant="dark"] {
+    background: $color-neutral-800;
+    color: $color-neutral-100;
+
+    .button[data-type="outline"] {
+      color: $color-neutral-100;
+      
+      &:hover {
+        color: $color-neutral-900;
+      }
+    }
+  }
 }

@@ -96,9 +96,29 @@
                     padding: $size-3;
                 }
 
+                /* COMPACT */
                 .exercise-layout {
                     display: grid;
                     grid-template-columns: 89px 1fr;
+                    border: 1px solid $color-neutral-400;
+                    border-block-end: 0;
+                    
+                    &.is-active {
+                        border-color: $color-neutral-900;
+                        border-block-end: 1px solid $color-neutral-900;
+                    }
+
+                    &.is-active + .exercise-layout {
+                        border-block-start: 0;
+                    }
+
+                    &:last-child {
+                        border-block-end: 1px solid $color-neutral-400;
+                    }
+
+                    &.is-active:last-child {
+                        border-block-end-color: $color-neutral-900;
+                    }
 
                     &__bpm {
                         display: flex;
@@ -107,7 +127,10 @@
                         background: $color-neutral-200;
                         color: $color-accent-100;
                         font-size: $font-size-500;
-                        border-inline-end: 1px solid $color-neutral-600;
+
+                        .picker-column {
+                            border: 1px solid $color-neutral-500;
+                        }
                     }
 
                     &__info {
@@ -136,12 +159,16 @@
                                 align-items: center;
                                 gap: $size-3;
 
-                                .button { padding: 0; }
+                                .button {
+                                    padding: 0;
+
+                                    &:hover { border: 1px solid transparent; }
+                                }
 
                                 .timer {
                                     display: block;
                                     margin-left: auto;
-                                    font-size: $font-size-400;
+                                    font-size: $font-size-300;
                                 }
                             }
                         }
@@ -155,8 +182,7 @@
                                 border-radius: 0;
                                 display: grid;
                                 place-items: center;
-                                background: $color-neutral-900;
-                                color: $color-neutral-50;
+                                background: $color-neutral-200;
 
                                 &:hover, &:focus {
                                     background: $color-primary-400;
@@ -167,6 +193,7 @@
                     }
                 }
 
+                /* TABLE */
                 .exercises-table-wrapper {
                     overflow-x: auto;
                     width: 100%;
@@ -242,7 +269,7 @@
 
                     &__bpm {
                         font-size: $font-size-400;
-                        border: 1px solid $color-neutral-400;
+                        border: 1px solid $color-neutral-300;
                         color: $color-neutral-700;
                     
                         .picker-column {
