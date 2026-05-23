@@ -58,6 +58,7 @@ $-clr-yellow-600: hsl(48 75% 40%);
 $-clr-yellow-700: hsl(48 75% 30%);
 $-clr-yellow-800: hsl(48 75% 17.5%);
 $-clr-yellow-900: hsl(48 75% 7.5%);
+$-clr-yellowgreen-50: hsl(72 75% 97.5%);
 $-clr-yellowgreen-100: hsl(72 75% 95%);
 $-clr-yellowgreen-200: hsl(72 75% 82.5%);
 $-clr-yellowgreen-300: hsl(72 75% 70%);
@@ -67,6 +68,7 @@ $-clr-yellowgreen-600: hsl(72 75% 40%);
 $-clr-yellowgreen-700: hsl(72 75% 30%);
 $-clr-yellowgreen-800: hsl(72 75% 17.5%);
 $-clr-yellowgreen-900: hsl(72 75% 7.5%);
+$-clr-yellowgreen-950: hsl(72 75% 4%);
 $-clr-green-100: hsl(96 75% 95%);
 $-clr-green-200: hsl(96 75% 82.5%);
 $-clr-green-300: hsl(96 75% 70%);
@@ -183,19 +185,6 @@ $light: (
     "950": $-clr-neutral-950,
     "1000": $-clr-black,
   ),
-  "accent": (
-    "50": $-clr-crusta-50,
-    "100": $-clr-crusta-100,
-    "200": $-clr-crusta-200,
-    "300": $-clr-crusta-300,
-    "400": $-clr-crusta-400,
-    "500": $-clr-crusta-500,
-    "600": $-clr-crusta-600,
-    "700": $-clr-crusta-700,
-    "800": $-clr-crusta-800,
-    "900": $-clr-crusta-900,
-    "950": $-clr-crusta-950,
-  ),
   "primary": (
     "50": $-clr-radiance-50,
     "100": $-clr-radiance-100,
@@ -208,6 +197,32 @@ $light: (
     "800": $-clr-radiance-800,
     "900": $-clr-radiance-900,
     "950": $-clr-radiance-950,
+  ),
+  "secondary": (
+    "50": $-clr-crusta-50,
+    "100": $-clr-crusta-100,
+    "200": $-clr-crusta-200,
+    "300": $-clr-crusta-300,
+    "400": $-clr-crusta-400,
+    "500": $-clr-crusta-500,
+    "600": $-clr-crusta-600,
+    "700": $-clr-crusta-700,
+    "800": $-clr-crusta-800,
+    "900": $-clr-crusta-900,
+    "950": $-clr-crusta-950,
+  ),
+  "accent": (
+    "50": $-clr-yellowgreen-50,
+    "100": $-clr-yellowgreen-100,
+    "200": $-clr-yellowgreen-200,
+    "300": $-clr-yellowgreen-300,
+    "400": $-clr-yellowgreen-400,
+    "500": $-clr-yellowgreen-500,
+    "600": $-clr-yellowgreen-600,
+    "700": $-clr-yellowgreen-700,
+    "800": $-clr-yellowgreen-800,
+    "900": $-clr-yellowgreen-900,
+    "950": $-clr-yellowgreen-950,
   ),
 );
 
@@ -268,19 +283,6 @@ $color-neutral-900: var(--neutral-900);
 $color-neutral-950: var(--neutral-950);
 $color-neutral-1000: var(--neutral-1000);
 
-// Crusta
-$color-accent-50: var(--accent-50);
-$color-accent-100: var(--accent-100);
-$color-accent-200: var(--accent-200);
-$color-accent-300: var(--accent-300);
-$color-accent-400: var(--accent-400);
-$color-accent-500: var(--accent-500);
-$color-accent-600: var(--accent-600);
-$color-accent-700: var(--accent-700);
-$color-accent-800: var(--accent-800);
-$color-accent-900: var(--accent-900);
-$color-accent-950: var(--accent-950);
-
 // Radiance
 $color-primary-50: var(--primary-50);
 $color-primary-100: var(--primary-100);
@@ -293,3 +295,29 @@ $color-primary-700: var(--primary-700);
 $color-primary-800: var(--primary-800);
 $color-primary-900: var(--primary-900);
 $color-primary-950: var(--primary-950);
+
+// Crusta
+$color-secondary-50: var(--secondary-50);
+$color-secondary-100: var(--secondary-100);
+$color-secondary-200: var(--secondary-200);
+$color-secondary-300: var(--secondary-300);
+$color-secondary-400: var(--secondary-400);
+$color-secondary-500: var(--secondary-500);
+$color-secondary-600: var(--secondary-600);
+$color-secondary-700: var(--secondary-700);
+$color-secondary-800: var(--secondary-800);
+$color-secondary-900: var(--secondary-900);
+$color-secondary-950: var(--secondary-950);
+
+// Las Palmas
+$color-accent-50: var(--accent-50);
+$color-accent-100: var(--accent-100);
+$color-accent-200: var(--accent-200);
+$color-accent-300: var(--accent-300);
+$color-accent-400: var(--accent-400);
+$color-accent-500: var(--accent-500);
+$color-accent-600: var(--accent-600);
+$color-accent-700: var(--accent-700);
+$color-accent-800: var(--accent-800);
+$color-accent-900: var(--accent-900);
+$color-accent-950: var(--accent-950);

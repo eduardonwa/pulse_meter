@@ -8,8 +8,8 @@ $enable-media-query-dark-mode: false;
 // Contextual
 $color-text-default: $color-neutral-700;
 $color-background-default: $color-neutral-100;
-$color-text-interactive-default: $color-accent-400;
-$color-text-interactive-hover: $color-accent-500;
+$color-text-interactive-default: $color-secondary-400;
+$color-text-interactive-hover: $color-secondary-500;
 
 // set to 0 to disable
 $letter-spacing-loose: 0;
@@ -105,9 +105,9 @@ $button-border: 0;
 $button-border-radius: $border-radius-1;
 
 $button-accent-color: $color-neutral-100;
-$button-accent-background: $color-accent-400;
+$button-accent-background: $color-secondary-400;
 $button-accent-color-hover: $color-neutral-100;
-$button-accent-background-hover: $color-accent-500;
+$button-accent-background-hover: $color-secondary-500;
 $button-primary-color: $color-neutral-100;
 $button-primary-background: $color-primary-700;
 $button-primary-color-hover: $color-neutral-100;

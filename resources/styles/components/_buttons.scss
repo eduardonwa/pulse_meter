@@ -44,9 +44,10 @@
     align-items: center;
     justify-content: center;
     gap: $size-2;
-    padding: $size-2;
-    background: transparent;
-    border: 1px solid $color-neutral-900;
+    padding: $size-3;
+    background: $color-accent-400;
+
+    &:hover { background: $color-accent-500; }
 
     svg {
       width: 24px;
