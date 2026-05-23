@@ -1,0 +1,12 @@
+@use "../abstracts/" as *;
+
+.subheading {
+    text-transform: uppercase;
+    color: $color-neutral-800;
+    opacity: .7;
+
+    &[data-type="mini"] {
+        font-size: 13px;
+        font-weight: 600;
+    }
+}

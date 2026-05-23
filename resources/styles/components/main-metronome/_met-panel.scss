@@ -82,6 +82,45 @@
                     font-weight: bold;
                 }
             }
+
+            .recent-sessions {
+                padding: $size-3;
+                border: 1px solid $color-neutral-300;
+
+                @include mq(large) {
+                    width: 100%;
+
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                }
+
+                &__list {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: $size-4;
+                    flex-wrap: wrap;
+
+                    .button[data-type="outline"] {
+                        border: 1px solid $color-primary-300;
+                        background: $color-primary-100;
+                        color: $color-primary-900;
+                    }
+
+                    .duration-label { margin-inline-start: $size-2; }
+                }
+
+                .footer {
+                    display: flex;
+                    justify-content: center;
+                    margin-block-start: $size-6;
+
+                    @include mq(large) {
+                        height: 100%;
+                    }
+                }
+            }
         }
 
         .exercises {
@@ -100,36 +139,16 @@
                 .exercise-layout {
                     display: grid;
                     grid-template-columns: 89px 1fr;
-                    border: 1px solid $color-neutral-400;
-                    border-block-end: 0;
-                    
-                    &.is-active {
-                        border-color: $color-neutral-900;
-                        border-block-end: 1px solid $color-neutral-900;
-                    }
-
-                    &.is-active + .exercise-layout {
-                        border-block-start: 0;
-                    }
-
-                    &:last-child {
-                        border-block-end: 1px solid $color-neutral-400;
-                    }
-
-                    &.is-active:last-child {
-                        border-block-end-color: $color-neutral-900;
-                    }
+                    border: 1px solid $color-neutral-200;
 
                     &__bpm {
                         display: flex;
                         align-items: center;
                         justify-content: center;
-                        background: $color-neutral-200;
-                        color: $color-accent-100;
                         font-size: $font-size-500;
 
                         .picker-column {
-                            border: 1px solid $color-neutral-500;
+                            border: 1px solid $color-neutral-400;
                         }
                     }
 
@@ -139,7 +158,6 @@
                         .summary {
                             flex: 3;
                             padding: $size-2;
-                            background: $color-neutral-200;
 
                             display: flex;
                             flex-direction: column;
@@ -148,10 +166,10 @@
                             .name {
                                 width: 100%;
                                 padding: $size-1 $size-2;
-                                border: 1px solid $color-neutral-400;
                                 color: $color-neutral-900;
                                 font-size: $font-size-300;
                                 font-weight: normal;
+                                border: 1px solid $color-neutral-400;
                             }
 
                             .bottom {
@@ -182,7 +200,7 @@
                                 border-radius: 0;
                                 display: grid;
                                 place-items: center;
-                                background: $color-neutral-200;
+                                background: $color-primary-100;
 
                                 &:hover, &:focus {
                                     background: $color-primary-400;
