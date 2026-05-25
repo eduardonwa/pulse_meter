@@ -1,7 +1,6 @@
 <template x-for="(step, index) in steps" :key="index">
     <li class="exercise-layout"
-        :class="{ 'is-active': currentIndex === index }"
-        @click="currentIndex = index"
+        :class="{ 'is-active': isPlaying && activeSessionType === 'exercise' && currentIndex === index }"
     >
         <div class="exercise-layout__bpm">
             <x-inputs.number-picker
@@ -20,7 +19,6 @@
                     type="text"
                     x-model="step.name"
                     @click.stop
-                    @focus="currentIndex = index"
                 >
                 
                 <div class="bottom">
@@ -39,7 +37,7 @@
                         type="button"
                         class="button"
                         data-type="action-exercise"
-                        @click.stop="currentIndex = index; removeCurrentStep()"
+                        @click.stop="removeStep(index)"
                         :disabled="steps.length <= 1"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="error">
@@ -49,7 +47,7 @@
                     <span
                         class="timer"
                         :class="{ 
-                            'is-counting': currentIndex === index && isPlaying && step.mode === 'timer',
+                            'is-counting': isPlaying && activeSessionType === 'exercise' && currentIndex === index && step.mode === 'timer',
                             'badge': step.mode === 'manual'
                         }"
                         x-text="getStepTimeLabel(step, index)"
@@ -62,6 +60,7 @@
                     type="button"
                     class="exercise-row__playback | button"
                     data-type="action-exercise"
+                    :class="{ 'is-active': isPlaying && activeSessionType === 'exercise' && currentIndex === index }"
                     @click.stop="activeExerciseIndex === index && isPlaying ? stop() : startExercise(index)"
                 >
                     <!-- Pause icon -->

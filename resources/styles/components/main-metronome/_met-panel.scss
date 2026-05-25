@@ -140,7 +140,11 @@
                 .exercise-layout {
                     display: grid;
                     grid-template-columns: 89px 1fr;
-                    border: 1px solid $color-neutral-200;
+                    // border: 1px solid $color-neutral-200;
+
+                    &.is-active {
+                        background: $color-neutral-900;
+                    }
 
                     &__bpm {
                         display: flex;
@@ -188,6 +192,10 @@
                                     display: block;
                                     margin-left: auto;
                                     font-size: $font-size-300;
+
+                                    &.is-counting {
+                                        color: $color-neutral-200;
+                                    }
                                 }
                             }
                         }
@@ -206,6 +214,10 @@
                                 &:hover, &:focus {
                                     background: $color-primary-400;
                                     border: 1px solid transparent;
+                                }
+
+                                &.is-active {
+                                    background: $color-primary-400;
                                 }
                             }
                         }

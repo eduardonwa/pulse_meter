@@ -1,11 +1,11 @@
 export function exercises() {
     return {
-        removeCurrentStep() {
+        removeStep(index) {
             if (this.steps.length <= 1) {
                 return
             }
 
-            this.steps.splice(this.currentIndex, 1)
+            this.steps.splice(this.index, 1)
 
             if (this.currentIndex > this.steps.length - 1) {
                 this.currentIndex = this.steps.length - 1
