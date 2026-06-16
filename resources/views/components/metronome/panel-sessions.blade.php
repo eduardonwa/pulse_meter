@@ -5,7 +5,7 @@
         <label for="mode">
             <select class="mode-selector" x-model="metronome.mode">
                 <option value="timer">Timer</option>
-                <option value="manual">Manual</option>
+                <option value="manual">Classic</option>
             </select>
         </label>
     </div>
@@ -65,7 +65,7 @@
             </template>
         </div>
 
-        <div class="footer">            
+        <div class="footer">
             <span class="link" @click="clearRecentSessionsForCurrentMode()">
                 Clear
             </span>

@@ -14,30 +14,21 @@
     <div class="tempo-control">
         <div class="tempo-display">
             <label for="bpm">
-                <input
-                    class="tempo-input"
-                    type="number"
-                    min="30"
-                    max="400"
-                    x-model.number="metronome.bpm"
-                    @change="isPlaying && restartMetronomeSession()"
-                >
+                <span class="tempo-value" x-text="`${metronome.bpm}`"></span>
                 <span class="tempo-unit | uppercase">bpm</span>
             </label>
         </div>
 
-        <input
-            class="tempo-range"
+        <input class="tempo-range"
             type="range"
             min="30"
             max="400"
             value="100"
             x-model.number="metronome.bpm"
-            @change="isPlaying && restartMetronomeSession()"
+            @change="handleBpmChange()"
         >
 
-        <div
-            class="current-exercise-readout"
+        <div class="current-exercise-readout"
             x-show="activeTab === 'exercises' && activeExerciseIndex !== null"
         >
             <span x-text="getActiveExerciseName()"></span>

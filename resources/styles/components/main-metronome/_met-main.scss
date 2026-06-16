@@ -63,7 +63,7 @@
             }
             
             // NUMERO
-            .tempo-input {
+            .tempo-value {
                 font-size: $font-size-900;
                 background: transparent;
                 appearance: textfield;
@@ -71,6 +71,7 @@
                 text-align: center;
                 border: none;
                 padding: 0;
+                font-weight: 400;
 
                 letter-spacing: 4px;
     

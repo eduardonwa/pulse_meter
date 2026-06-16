@@ -25,7 +25,7 @@ export function defaultSteps() {
 export function defaultMetronome() {
     return {
         bpm: 100,
-        mode: 'timer',
+        mode: 'manual',
         duration_seconds: 60,
     }
 }
@@ -54,6 +54,7 @@ export function state(steps) {
         isPlaying: false,
         audioContext: null,
         intervalId: null,
+        bpmChangeTimeoutId: null,
         timerId: null,
         remaining: null,
         showResetAppModal: false,
@@ -114,6 +115,14 @@ export function state(steps) {
 
         isPracticeReviewOpen: false,
         practiceFeeling: null,
-        practiceFeelingConfirmation: ''
+        practiceFeelingConfirmation: '',
+
+        confirmModal: {
+            isOpen: false,
+            title: '',
+            message: '',
+            confirmLabel: 'Confirm',
+            action: null,
+        },
     }
 }

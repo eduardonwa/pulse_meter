@@ -40,6 +40,8 @@
         <x-metronome.main-metro />
 
         <x-metronome.panel />
+
+        <x-windows.confirm-modal />
     </main>
 </body>
 </html>

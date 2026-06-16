@@ -92,16 +92,22 @@ export function audioEngine() {
             this.playBuffer(this.finishBuffer, 1)
         },
 
-        stop() {
+        stopMetronome() {
             clearInterval(this.intervalId)
-            clearInterval(this.timerId)
 
             this.intervalId = null
+            this.currentBeat = 1
+        },
+
+        stop() {
+            this.stopMetronome()
+
+            clearInterval(this.timerId)
+
             this.timerId = null
             this.isPlaying = false
             this.remaining = null
             this.activeExerciseIndex = null
-            this.currentBeat = 1
         },
     }
 }

@@ -43,5 +43,35 @@ export function lifecycle() {
         get currentDawProfile() {
             return this.dawProfiles[this.activeDawProfileKey]
         },
+
+        openConfirmModal({
+            title,
+            message,
+            confirmLabel = 'Confirm',
+            action,
+        }) {
+            this.confirmModal = {
+                isOpen: true,
+                title,
+                message,
+                confirmLabel,
+                action,
+            }
+        },
+
+        closeConfirmModal() {
+            this.confirmModal.isOpen = false
+            this.confirmModal.action = null
+        },
+
+        confirmModalAction() {
+            const action = this.confirmModal.action
+
+            this.closeConfirmModal()
+
+            if (typeof action === 'function') {
+                action()
+            }
+        },
     }
 }

@@ -65,34 +65,31 @@ export function recentSessions() {
         clearRecentSessionsForCurrentMode() {
             const mode = this.metronome.mode
 
-            const confirmed = window.confirm(
-                `Do you want to clear recent ${mode} sessions?`
-            )
-
-            if (!confirmed) {
-                return
-            }
-
-            this.recentSessions[mode] = []
-
-            this.saveRecentSessions()
+            this.openConfirmModal({
+                title: `Clear recent ${mode} sessions?`,
+                message: `This will delete all recent ${mode} sessions.`,
+                confirmLabel: 'Clear',
+                action: () => {
+                    this.recentSessions[mode] = []
+                    this.saveRecentSessions()
+                },
+            })
         },
 
         clearAllRecentSessions() {
-            const confirmed = window.confirm(
-                'Do you want to clear all recent sessions?'
-            )
+            this.openConfirmModal({
+                title: 'Clear all recent sessions?',
+                message: 'This will delete all Classic and Timer recent sessions.',
+                confirmLabel: 'Clear all',
+                action: () => {
+                    this.recentSessions = {
+                        manual: [],
+                        timer: [],
+                    }
 
-            if (!confirmed) {
-                return
-            }
-
-            this.recentSessions = {
-                manual: [],
-                timer: [],
-            }
-
-            this.saveRecentSessions()
+                    this.saveRecentSessions()
+                },
+            })
         },
 
         isSameSession(a, b) {

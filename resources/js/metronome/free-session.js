@@ -31,6 +31,26 @@ export function freeSession() {
             }
         },
 
+        handleBpmChange() {
+            clearTimeout(this.bpmChangeTimeoutId)
+
+            if (!this.isPlaying) {
+                return
+            }
+
+            this.bpmChangeTimeoutId = setTimeout(() => {
+                this.bpmChangeTimeoutId = null
+                this.restartMetronome()
+                
+                this.saveCurrentSession()
+            }, 500)
+        },
+
+        restartMetronome() {
+            this.stopMetronome()
+            this.startMetronome(this.metronome.bpm)
+        },
+
         startTimer(duration) {
             clearInterval(this.timerId)
 

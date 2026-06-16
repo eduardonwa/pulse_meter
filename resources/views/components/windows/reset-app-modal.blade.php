@@ -3,7 +3,7 @@
     x-show="showResetAppModal"
     x-trap.noscroll="showResetAppModal"
     x-transition
-    @click.self="showRestAppModal = false"
+    @click.self="showResetAppModal = false"
     x-cloak
 >
     <div class="modal-panel"
