@@ -4,21 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
-    <title>focuus</title>
-    <meta name="title" content="If you practice every day... this is for YOU">
-    <meta property="og:description" content="A focused practice tool for musicians with a metronome, timer, and exercises to help you stay consistent every day.">
-    
+    <title>DoreLog - Save your drills. Keep your tempo.</title>
+
+    <meta name="title" content="DoreLog - The metronome that remembers your drills.">
+    <meta name="description" content="Save your exercises, BPMs, and practice routines so you can pick up exactly where you left off.">
+
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://focuus.coelloweb.dev/">
-    <meta property="og:title" content="If you practice every day... this is for YOU">
-    <meta property="og:description" content="A focused practice tool for musicians with a metronome, timer, and exercises to help you stay consistent every day.">
-    <meta property="og:image" content="https://focuus.coelloweb.dev/og-image.png">
+    <meta property="og:url" content="https://dorelog.com/">
+    <meta property="og:title" content="DoreLog - Save your drills. Keep your tempo.">
+    <meta property="og:description" content="Save your exercises, BPMs, and practice routines so you can pick up exactly where you left off.">
+    <meta property="og:image" content="https://dorelog.com/og-image.png">
 
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:url" content="https://focuus.coelloweb.dev/">
-    <meta name="twitter:title" content="If you practice every day... this is for YOU">
-    <meta property="og:description" content="A focused practice tool for musicians with a metronome, timer, and exercises to help you stay consistent every day.">
-    <meta name="twitter:image" content="https://focuus.coelloweb.dev/og-image.png">
+    <meta name="twitter:url" content="https://dorelog.com/">
+    <meta name="twitter:title" content="DoreLog - Save your drills. Keep your tempo.">
+    <meta name="twitter:description" content="Save your exercises, BPMs, and practice routines so you can pick up exactly where you left off.">
+    <meta name="twitter:image" content="https://dorelog.com/og-image.png">
 
     @vite(['resources/styles/main.scss', 'resources/js/app.js'])
     
@@ -27,8 +28,8 @@
 <body>
 
     <header class="main-heading">
-        <h2 class="heading-2" style="text-transform: lowercase; font-weight: normal;">focuus</h2>
-        <p>A practice timer for focused musicians</p>
+        <h2 class="heading-2" style="text-transform: lowercase; font-weight: normal;">dorelog</h2>
+        <p>Save your drills. Keep your tempo.</p>
     </header>
 
     <main class="metronome | container"
