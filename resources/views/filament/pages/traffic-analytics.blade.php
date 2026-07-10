@@ -171,60 +171,99 @@
                     </p>
                 </div>
 
-                <div class="flex flex-wrap items-center gap-2 border-b border-gray-200 p-5 dark:border-gray-800">
-                    @foreach ($cards as $card)
-                        @php
-                            $key = $card['key'];
-                            $isActive = $this->sessionTypeFilters[$key] ?? false;
-                        @endphp
+                <div class="sticky top-16 z-20 border-b border-gray-200 bg-white/95 backdrop-blur dark:border-gray-800 dark:bg-gray-900/95">
+                    {{-- DIAS --}}
+                    <div class="flex items-center justify-between p-5">
+                        <button
+                            type="button"
+                            wire:click="nextSessionDay"
+                            @disabled(! $this->canGoToNextSessionDay())
+                            class="rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:text-gray-200"
+                        >
+                            Next day
+                        </button>
+
+                        <div class="text-center">
+                            <div class="text-sm font-semibold text-gray-950 dark:text-white">
+                                {{ $this->selectedSessionDateLabel }}
+                            </div>
+
+                            <div class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                {{ $this->selectedDateSessionsCount }} sessions
+                            </div>
+                        </div>
 
                         <button
                             type="button"
-                            wire:click="toggleSessionTypeFilter('{{ $key }}')"
-                            class="rounded-full px-3 py-1.5 text-xs font-medium ring-1 ring-inset transition
-                                {{ $isActive
-                                    ? 'bg-primary-600 text-white ring-primary-600'
-                                    : 'bg-gray-100 text-gray-500 ring-gray-300 dark:bg-gray-800 dark:text-gray-400 dark:ring-gray-700'
-                                }}"
+                            wire:click="previousSessionDay"
+                            @disabled(! $this->canGoToPreviousSessionDay())
+                            class="rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:text-gray-200"
                         >
-                            {{ $card['label'] }}
+                            Previous day
                         </button>
-                    @endforeach
-
-                    <button
-                        type="button"
-                        wire:click="resetSessionTypeFilters"
-                        class="rounded-full bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-600 ring-1 ring-gray-300 dark:bg-gray-800 dark:text-gray-300 dark:ring-gray-700"
-                    >
-                        Reset
-                    </button>
-                </div>
-
-                <div class="flex items-center justify-between border-b border-gray-200 p-5 dark:border-gray-800">
-                    <button
-                        type="button"
-                        wire:click="previousSessionsPage"
-                        @disabled($this->sessionsPage <= 1)
-                        class="rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:text-gray-200"
-                    >
-                        Anterior
-                    </button>
-
-                    <div class="text-sm text-gray-500 dark:text-gray-400">
-                        Página {{ $this->sessionsPage }} de {{ $this->getTotalSessionPages() }}
                     </div>
 
-                    <button
-                        type="button"
-                        wire:click="nextSessionsPage"
-                        @disabled($this->sessionsPage >= $this->getTotalSessionPages())
-                        class="rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:text-gray-200"
-                    >
-                        Siguiente
-                    </button>
+                    {{-- ENTRADAS --}}
+                    <div class="flex items-center justify-between border-t border-gray-200 px-5 py-3 dark:border-gray-800">
+                        <button
+                            type="button"
+                            wire:click="nextSessionsPage"
+                            @disabled($this->sessionsPage >= $this->getTotalSessionPages())
+                            class="rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:text-gray-200"
+                        >
+                            Next
+                        </button>
+
+                        <div class="text-sm text-gray-500 dark:text-gray-400">
+                            Page {{ $this->sessionsPage }} of {{ $this->getTotalSessionPages() }} for this day
+                        </div>
+
+                        <button
+                            type="button"
+                            wire:click="previousSessionsPage"
+                            @disabled($this->sessionsPage <= 1)
+                            class="rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:text-gray-200"
+                        >
+                            Previous
+                        </button>
+                    </div>
+
+                    {{-- FILTROS --}}
+                    <div class="flex flex-wrap items-center gap-2 border-b border-gray-200 p-5 dark:border-gray-800">
+                        @foreach ($cards as $card)
+                            @php
+                                $key = $card['key'];
+                                $isActive = $this->sessionTypeFilters[$key] ?? false;
+                            @endphp
+
+                            <button
+                                type="button"
+                                wire:click="toggleSessionTypeFilter('{{ $key }}')"
+                                class="rounded-full px-3 py-1.5 text-xs font-medium ring-1 ring-inset transition
+                                    {{ $isActive
+                                        ? 'bg-primary-600 text-white ring-primary-600'
+                                        : 'bg-gray-100 text-gray-500 ring-gray-300 dark:bg-gray-800 dark:text-gray-400 dark:ring-gray-700'
+                                    }}"
+                            >
+                                {{ $card['label'] }}
+                            </button>
+                        @endforeach
+
+                        <button
+                            type="button"
+                            wire:click="resetSessionTypeFilters"
+                            class="rounded-full bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-600 ring-1 ring-gray-300 dark:bg-gray-800 dark:text-gray-300 dark:ring-gray-700"
+                        >
+                            Reset
+                        </button>
+                    </div>
                 </div>
 
                 <div class="divide-y divide-gray-200 dark:divide-gray-800">
+                    @php
+                        $currentSessionDate = null;
+                    @endphp
+                    
                     @forelse ($this->paginatedSessions as $session)
                         @php
                             $classification = $session['classification'] ?? 'unknown';
@@ -247,7 +286,27 @@
                             $durationLabel = \App\Services\UserDateFormatter::duration(
                                 $session['duration_seconds'] ?? 0
                             );
+
+                            $sessionDateLabel = $lastSeenParts['date'] ?? 'Unavailable date';
+
+                            $shouldShowDateHeader = $sessionDateLabel !== $currentSessionDate;
+
+                            if ($shouldShowDateHeader) {
+                                $currentSessionDate = $sessionDateLabel;
+                            }
                         @endphp
+
+                        @if ($shouldShowDateHeader)
+                            <div class="bg-gray-50 px-5 py-3 dark:bg-gray-950">
+                                <div class="text-sm font-semibold text-gray-950 dark:text-white">
+                                    {{ $this->selectedSessionDateLabel }}
+                                </div>
+
+                                <div class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                    {{ $this->selectedDateSessionsCount }} sessions
+                                </div>
+                            </div>
+                        @endif
 
                         <div class="p-5">
                             <div class="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
@@ -375,48 +434,11 @@
                         </div>
                     @empty
                         <div class="p-6 text-sm text-gray-500 dark:text-gray-400">
-                            No hay sesiones todavía.
+                            No sessions yet.
                         </div>
                     @endforelse
-                </div>
-
-                <div class="flex items-center justify-between border-t border-gray-200 p-5 dark:border-gray-800">
-                    <button
-                        type="button"
-                        wire:click="previousSessionsPage"
-                        @disabled($this->sessionsPage <= 1)
-                        class="rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:text-gray-200"
-                    >
-                        Anterior
-                    </button>
-
-                    <div class="text-sm text-gray-500 dark:text-gray-400">
-                        Página {{ $this->sessionsPage }} de {{ $this->getTotalSessionPages() }}
-                    </div>
-
-                    <button
-                        type="button"
-                        wire:click="nextSessionsPage"
-                        @disabled($this->sessionsPage >= $this->getTotalSessionPages())
-                        class="rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:text-gray-200"
-                    >
-                        Siguiente
-                    </button>
                 </div>
             </div>
         </div>
     @endif
-
-    @script
-        <script>
-            $wire.on('traffic-sessions-page-changed', () => {
-                setTimeout(() => {
-                    window.scrollTo({
-                        top: 0,
-                        behavior: 'smooth',
-                    });
-                }, 100);
-            });
-        </script>
-    @endscript
 </x-filament-panels::page>

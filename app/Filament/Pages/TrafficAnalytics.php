@@ -3,6 +3,8 @@
 namespace App\Filament\Pages;
 
 use Filament\Pages\Page;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
 class TrafficAnalytics extends Page
@@ -19,6 +21,8 @@ class TrafficAnalytics extends Page
 
     public array $traffic = [];
 
+    public ?string $selectedSessionDate = null;
+
     public int $sessionsPage = 1;
 
     public int $sessionsPerPage = 5;
@@ -27,7 +31,9 @@ class TrafficAnalytics extends Page
     {
         $path = 'traffic/traffic-summary.json';
 
-        $this->traffic = Storage::disk('local')->exists($path)
+        $exists = Storage::disk('local')->exists($path);
+
+        $this->traffic = $exists
             ? json_decode(Storage::disk('local')->get($path), true) ?? []
             : [];
 
@@ -38,11 +44,13 @@ class TrafficAnalytics extends Page
             is_array($savedFilters) ? $savedFilters : []
         );
 
-        if (! Storage::disk('local')->exists($path)) {
+        if (! $exists) {
             $this->traffic = [];
 
             return;
         }
+
+        $this->syncSelectedSessionDate();
     }
 
     public array $sessionTypeFilters = [
@@ -54,12 +62,42 @@ class TrafficAnalytics extends Page
         'unknown' => true,
     ];
 
+    private function getFilteredSessions(): array
+    {
+        $sessions = $this->traffic['sessions'] ?? [];
+
+        return collect($sessions)
+            ->filter(function ($session) {
+                $classification = $session['classification'] ?? 'unknown';
+
+                return $this->sessionTypeFilters[$classification] ?? false;
+            })
+            ->values()
+            ->all();
+    }
+
+    public function getTotalSessionPages(): int
+    {
+        $total = count($this->selectedDateSessions);
+
+        return max(1, (int) ceil($total / $this->sessionsPerPage));
+    }
+
+    public function getPaginatedSessionsProperty(): array
+    {
+        $sessions = $this->selectedDateSessions;
+
+        return array_slice(
+            $sessions,
+            ($this->sessionsPage - 1) * $this->sessionsPerPage,
+            $this->sessionsPerPage
+        );
+    }
+
     public function nextSessionsPage(): void
     {
         if ($this->sessionsPage < $this->getTotalSessionPages()) {
             $this->sessionsPage++;
-
-            $this->dispatch('traffic-sessions-page-changed');
         }
     }
 
@@ -67,8 +105,6 @@ class TrafficAnalytics extends Page
     {
         if ($this->sessionsPage > 1) {
             $this->sessionsPage--;
-
-            $this->dispatch('traffic-sessions-page-changed');
         }
     }
 
@@ -85,6 +121,7 @@ class TrafficAnalytics extends Page
         ]);
 
         $this->sessionsPage = 1;
+        $this->syncSelectedSessionDate();
     }
 
     public function resetSessionTypeFilters(): void
@@ -103,37 +140,132 @@ class TrafficAnalytics extends Page
         ]);
 
         $this->sessionsPage = 1;
+        $this->syncSelectedSessionDate();
     }
 
-    public function getPaginatedSessionsProperty(): array
+    public function previousSessionDay(): void
     {
-        $sessions = $this->getFilteredSessions();
+        $dates = $this->getAvailableSessionDates();
 
-        return array_slice(
-            $sessions,
-            ($this->sessionsPage - 1) * $this->sessionsPerPage,
-            $this->sessionsPerPage
-        );
+        $index = array_search($this->selectedSessionDate, $dates, true);
+
+        if ($index === false || $index >= count($dates) - 1) {
+            return;
+        }
+
+        $this->selectedSessionDate = $dates[$index + 1];
+        $this->sessionsPage = 1;
     }
 
-    public function getTotalSessionPages(): int
+    public function nextSessionDay(): void
     {
-        $total = count($this->getFilteredSessions());
+        $dates = $this->getAvailableSessionDates();
 
-        return max(1, (int) ceil($total / $this->sessionsPerPage));
+        $index = array_search($this->selectedSessionDate, $dates, true);
+
+        if ($index === false || $index <= 0) {
+            return;
+        }
+
+        $this->selectedSessionDate = $dates[$index - 1];
+        $this->sessionsPage = 1;
     }
 
-    private function getFilteredSessions(): array
+    public function canGoToPreviousSessionDay(): bool
     {
-        $sessions = $this->traffic['sessions'] ?? [];
+        $dates = $this->getAvailableSessionDates();
 
-        return collect($sessions)
-            ->filter(function ($session) {
-                $classification = $session['classification'] ?? 'unknown';
+        $index = array_search($this->selectedSessionDate, $dates, true);
 
-                return $this->sessionTypeFilters[$classification] ?? false;
-            })
+        return $index !== false && $index < count($dates) - 1;
+    }
+
+    public function canGoToNextSessionDay(): bool
+    {
+        $dates = $this->getAvailableSessionDates();
+
+        $index = array_search($this->selectedSessionDate, $dates, true);
+
+        return $index !== false && $index > 0;
+    }
+
+    public function getSelectedSessionDateLabelProperty(): string
+    {
+        $session = $this->selectedDateSessions[0] ?? null;
+
+        if ($session === null) {
+            return 'No date';
+        }
+
+        return \App\Services\UserDateFormatter::dateTimeParts(
+            $session['last_seen'] ?? $session['last_seen_timestamp'] ?? null,
+            Auth::user()
+        )['date'];
+    }
+
+    public function getSelectedDateSessionsProperty(): array
+    {
+        if ($this->selectedSessionDate === null) {
+            return [];
+        }
+
+        return collect($this->getFilteredSessions())
+            ->filter(fn ($session) => $this->getSessionDateKey($session) === $this->selectedSessionDate)
             ->values()
             ->all();
+    }
+
+    public function getSelectedDateSessionsCountProperty(): int
+    {
+        return count($this->selectedDateSessions);
+    }
+
+    public function getAvailableSessionDatesProperty(): array
+    {
+        return $this->getAvailableSessionDates();
+    }
+
+    public function getAvailableSessionDates(): array
+    {
+        return collect($this->getFilteredSessions())
+            ->map(fn ($session) => $this->getSessionDateKey($session))
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+    private function syncSelectedSessionDate(): void
+    {
+        $dates = $this->getAvailableSessionDates();
+
+        if (empty($dates)) {
+            $this->selectedSessionDate = null;
+
+            return;
+        }
+
+        if ($this->selectedSessionDate === null || ! in_array($this->selectedSessionDate, $dates, true)) {
+            $this->selectedSessionDate = $dates[0];
+        }
+    }
+
+    private function getSessionDateKey(array $session): ?string
+    {
+        $timezone = Auth::user()?->timezone ?: config('app.timezone');
+
+        if (! empty($session['last_seen_timestamp'])) {
+            return Carbon::createFromTimestamp((int) $session['last_seen_timestamp'])
+                ->timezone($timezone)
+                ->toDateString();
+        }
+
+        if (! empty($session['last_seen'])) {
+            return Carbon::parse($session['last_seen'])
+                ->timezone($timezone)
+                ->toDateString();
+        }
+
+        return null;
     }
 }

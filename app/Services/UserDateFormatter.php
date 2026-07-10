@@ -57,10 +57,10 @@ class UserDateFormatter
 
         $date = $date
             ->timezone($timezone)
-            ->locale('es');
+            ->locale('en');
 
         return [
-            'date' => $date->translatedFormat('j \d\e F, Y'),
+            'date' => $date->translatedFormat('j F, Y'),
             'time' => $date->format('h:i A'),
             'timezone' => $timezone,
         ];
@@ -89,5 +89,18 @@ class UserDateFormatter
         return $remainingMinutes > 0
             ? "{$hours} h {$remainingMinutes} min"
             : "{$hours} h";
+    }
+
+    public static function dateOnly(string|null $value, ?\App\Models\User $user = null): string
+    {
+        if (blank($value)) {
+            return '—';
+        }
+
+        $timezone = $user?->timezone ?: 'America/Hermosillo';
+
+        return \Illuminate\Support\Carbon::createFromFormat('Y-m-d', $value, $timezone)
+            ->locale('en')
+            ->translatedFormat('j F, Y');
     }
 }
