@@ -87,18 +87,18 @@
 
                     <div class="rounded-xl bg-gray-50 px-4 py-3 text-sm dark:bg-gray-950">
                         <div class="text-gray-500 dark:text-gray-400">Last update</div>
-                        
-                        <div class="flex flex-col gap-0.5">
+
+                        <div class="mt-1 flex flex-col gap-0.5">
                             <div class="font-medium text-gray-950 dark:text-white">
-                                {{ $generatedAtParts['date'] }}
+                                {{ $generatedAtParts['date'] ?? '—' }}
                             </div>
 
                             <div class="text-sm text-gray-600 dark:text-gray-400">
-                                {{ $generatedAtParts['time'] }}
+                                {{ $generatedAtParts['time'] ?? '—' }}
                             </div>
 
                             <div class="text-xs text-gray-500 dark:text-gray-500">
-                                {{ $generatedAtParts['timezone'] }}
+                                {{ $generatedAtParts['timezone'] ?? '—' }}
                             </div>
                         </div>
                     </div>
@@ -226,6 +226,20 @@
                             $visiblePaths = array_slice($paths, 0, 12);
                             $hiddenPathsCount = max(0, count($paths) - count($visiblePaths));
                             $sensitivePaths = $session['sensitive_paths'] ?? [];
+
+                            $firstSeenParts = \App\Services\UserDateFormatter::dateTimeParts(
+                                $session['first_seen'] ?? $session['first_seen_timestamp'] ?? null,
+                                auth()->user()
+                            );
+
+                            $lastSeenParts = \App\Services\UserDateFormatter::dateTimeParts(
+                                $session['last_seen'] ?? $session['last_seen_timestamp'] ?? null,
+                                auth()->user()
+                            );
+
+                            $durationLabel = \App\Services\UserDateFormatter::duration(
+                                $session['duration_seconds'] ?? 0
+                            );
                         @endphp
 
                         <div class="p-5">
@@ -245,7 +259,7 @@
                                         </span>
 
                                         <span class="text-xs text-gray-500 dark:text-gray-400">
-                                            {{ $session['duration_seconds'] ?? 0 }}s
+                                            {{ $durationLabel }}
                                         </span>
                                     </div>
 
@@ -332,15 +346,23 @@
                                 </div>
                             </div>
 
-                            <div class="mt-4 grid gap-3 text-xs text-gray-500 dark:text-gray-400 md:grid-cols-2">
+                            <div class="mt-4 grid gap-3 text-xs text-gray-500 dark:text-gray-400 md:grid-cols-3">
                                 <div>
-                                    <span class="font-medium text-gray-700 dark:text-gray-300">First seen:</span>
-                                    {{ $session['first_seen'] ?? '—' }}
+                                    <div class="font-medium text-gray-700 dark:text-gray-300">Inicio</div>
+                                    <div>{{ $firstSeenParts['date'] }}</div>
+                                    <div>{{ $firstSeenParts['time'] }}</div>
                                 </div>
 
                                 <div>
-                                    <span class="font-medium text-gray-700 dark:text-gray-300">Last seen:</span>
-                                    {{ $session['last_seen'] ?? '—' }}
+                                    <div class="font-medium text-gray-700 dark:text-gray-300">Última actividad</div>
+                                    <div>{{ $lastSeenParts['date'] }}</div>
+                                    <div>{{ $lastSeenParts['time'] }}</div>
+                                </div>
+
+                                <div>
+                                    <div class="font-medium text-gray-700 dark:text-gray-300">Duración observada</div>
+                                    <div>{{ $durationLabel }}</div>
+                                    <div>{{ $firstSeenParts['timezone'] }}</div>
                                 </div>
                             </div>
                         </div>
