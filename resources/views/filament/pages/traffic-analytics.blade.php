@@ -176,11 +176,11 @@
                     <div class="flex items-center justify-between p-5">
                         <button
                             type="button"
-                            wire:click="nextSessionDay"
-                            @disabled(! $this->canGoToNextSessionDay())
+                            wire:click="previousSessionDay"
+                            @disabled(! $this->canGoToPreviousSessionDay())
                             class="rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:text-gray-200"
                         >
-                            Next day
+                            Previous day
                         </button>
 
                         <div class="text-center">
@@ -192,14 +192,14 @@
                                 {{ $this->selectedDateSessionsCount }} sessions
                             </div>
                         </div>
-
+                        
                         <button
                             type="button"
-                            wire:click="previousSessionDay"
-                            @disabled(! $this->canGoToPreviousSessionDay())
+                            wire:click="nextSessionDay"
+                            @disabled(! $this->canGoToNextSessionDay())
                             class="rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:text-gray-200"
                         >
-                            Previous day
+                            Next day
                         </button>
                     </div>
 
@@ -207,24 +207,24 @@
                     <div class="flex items-center justify-between border-t border-gray-200 px-5 py-3 dark:border-gray-800">
                         <button
                             type="button"
-                            wire:click="nextSessionsPage"
-                            @disabled($this->sessionsPage >= $this->getTotalSessionPages())
+                            wire:click="previousSessionsPage"
+                            @disabled($this->sessionsPage <= 1)
                             class="rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:text-gray-200"
                         >
-                            Next
+                            Previous
                         </button>
-
+                        
                         <div class="text-sm text-gray-500 dark:text-gray-400">
                             Page {{ $this->sessionsPage }} of {{ $this->getTotalSessionPages() }} for this day
                         </div>
 
                         <button
                             type="button"
-                            wire:click="previousSessionsPage"
-                            @disabled($this->sessionsPage <= 1)
+                            wire:click="nextSessionsPage"
+                            @disabled($this->sessionsPage >= $this->getTotalSessionPages())
                             class="rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:text-gray-200"
                         >
-                            Previous
+                            Next
                         </button>
                     </div>
 
@@ -258,6 +258,45 @@
                         </button>
                     </div>
                 </div>
+
+                <div class="rounded-xl bg-gray-950 p-4 font-mono text-xs text-gray-300">
+                <div>Auth user ID: {{ auth()->id() }}</div>
+                <div>Auth timezone: {{ auth()->user()?->timezone ?? 'null' }}</div>
+                <div>Config timezone: {{ config('app.timezone') }}</div>
+                <div>PHP timezone: {{ date_default_timezone_get() }}</div>
+                <div>Selected date: {{ $this->selectedSessionDate }}</div>
+                <div>Available dates: {{ implode(', ', $this->availableSessionDates) }}</div>
+                <div>Selected date sessions: {{ $this->selectedDateSessionsCount }}</div>
+
+                <div class="mt-3">
+                    Page session dates:
+                    @foreach ($this->paginatedSessions as $debugSession)
+                        @php
+                            $debugTimezone = auth()->user()?->timezone ?: 'America/Hermosillo';
+
+                            $debugLocalDateFromTimestamp = ! empty($debugSession['last_seen_timestamp'])
+                                ? \Illuminate\Support\Carbon::createFromTimestamp((int) $debugSession['last_seen_timestamp'], 'UTC')
+                                    ->timezone($debugTimezone)
+                                    ->toDateString()
+                                : 'no timestamp';
+
+                            $debugLocalDateFromString = ! empty($debugSession['last_seen'])
+                                ? \Illuminate\Support\Carbon::parse($debugSession['last_seen'])
+                                    ->timezone($debugTimezone)
+                                    ->toDateString()
+                                : 'no last_seen';
+                        @endphp
+
+                        <div class="mt-2 border-t border-gray-700 pt-2">
+                            <div>IP: {{ $debugSession['ip'] ?? '—' }}</div>
+                            <div>raw last_seen: {{ $debugSession['last_seen'] ?? '—' }}</div>
+                            <div>last_seen_timestamp: {{ $debugSession['last_seen_timestamp'] ?? '—' }}</div>
+                            <div>local date from timestamp: {{ $debugLocalDateFromTimestamp }}</div>
+                            <div>local date from string: {{ $debugLocalDateFromString }}</div>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
 
                 <div class="divide-y divide-gray-200 dark:divide-gray-800">
                     @php

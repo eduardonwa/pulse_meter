@@ -8,6 +8,11 @@ use Illuminate\Support\Carbon;
 
 class UserDateFormatter
 {
+    public static function timezone(?\App\Models\User $user = null): string
+    {
+        return $user?->timezone ?: 'America/Hermosillo';
+    }
+
     public static function dateTime(string|CarbonInterface|null $value, ?User $user = null): string
     {
         if (blank($value)) {

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages;
 
+use App\Services\UserDateFormatter;
 use Filament\Pages\Page;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -252,7 +253,7 @@ class TrafficAnalytics extends Page
 
     private function getSessionDateKey(array $session): ?string
     {
-        $timezone = Auth::user()?->timezone ?: config('app.timezone');
+        $timezone = UserDateFormatter::timezone(Auth::user());
 
         if (! empty($session['last_seen_timestamp'])) {
             return Carbon::createFromTimestamp((int) $session['last_seen_timestamp'])
