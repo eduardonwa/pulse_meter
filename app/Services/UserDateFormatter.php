@@ -46,7 +46,7 @@ class UserDateFormatter
 
     public static function dateTimeParts(string|int|\Carbon\CarbonInterface|null $value, ?\App\Models\User $user = null): array
     {
-        $timezone = $user?->timezone ?: 'America/Hermosillo';
+        $timezone = self::timezone($user);
 
         if (blank($value)) {
             return [

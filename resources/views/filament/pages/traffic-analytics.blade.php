@@ -170,7 +170,8 @@
                         Aquí ya no estás viendo líneas sueltas del log, sino visitas interpretadas.
                     </p>
                 </div>
-
+                
+                {{-- STICKY BAR --}}
                 <div class="sticky top-16 z-20 border-b border-gray-200 bg-white/95 backdrop-blur dark:border-gray-800 dark:bg-gray-900/95">
                     {{-- DIAS --}}
                     <div class="flex items-center justify-between p-5">
@@ -258,45 +259,6 @@
                         </button>
                     </div>
                 </div>
-
-                <div class="rounded-xl bg-gray-950 p-4 font-mono text-xs text-gray-300">
-                <div>Auth user ID: {{ auth()->id() }}</div>
-                <div>Auth timezone: {{ auth()->user()?->timezone ?? 'null' }}</div>
-                <div>Config timezone: {{ config('app.timezone') }}</div>
-                <div>PHP timezone: {{ date_default_timezone_get() }}</div>
-                <div>Selected date: {{ $this->selectedSessionDate }}</div>
-                <div>Available dates: {{ implode(', ', $this->availableSessionDates) }}</div>
-                <div>Selected date sessions: {{ $this->selectedDateSessionsCount }}</div>
-
-                <div class="mt-3">
-                    Page session dates:
-                    @foreach ($this->paginatedSessions as $debugSession)
-                        @php
-                            $debugTimezone = auth()->user()?->timezone ?: 'America/Hermosillo';
-
-                            $debugLocalDateFromTimestamp = ! empty($debugSession['last_seen_timestamp'])
-                                ? \Illuminate\Support\Carbon::createFromTimestamp((int) $debugSession['last_seen_timestamp'], 'UTC')
-                                    ->timezone($debugTimezone)
-                                    ->toDateString()
-                                : 'no timestamp';
-
-                            $debugLocalDateFromString = ! empty($debugSession['last_seen'])
-                                ? \Illuminate\Support\Carbon::parse($debugSession['last_seen'])
-                                    ->timezone($debugTimezone)
-                                    ->toDateString()
-                                : 'no last_seen';
-                        @endphp
-
-                        <div class="mt-2 border-t border-gray-700 pt-2">
-                            <div>IP: {{ $debugSession['ip'] ?? '—' }}</div>
-                            <div>raw last_seen: {{ $debugSession['last_seen'] ?? '—' }}</div>
-                            <div>last_seen_timestamp: {{ $debugSession['last_seen_timestamp'] ?? '—' }}</div>
-                            <div>local date from timestamp: {{ $debugLocalDateFromTimestamp }}</div>
-                            <div>local date from string: {{ $debugLocalDateFromString }}</div>
-                        </div>
-                    @endforeach
-                </div>
-            </div>
 
                 <div class="divide-y divide-gray-200 dark:divide-gray-800">
                     @php
