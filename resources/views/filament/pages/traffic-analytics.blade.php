@@ -35,6 +35,12 @@
                 'class' => 'border-sky-200 bg-sky-50 text-sky-900 dark:border-sky-800 dark:bg-sky-950 dark:text-sky-100',
             ],
             [
+                'key' => 'admin_activity',
+                'label' => 'Admin',
+                'description' => 'Actividad en Filament o panel interno.',
+                'class' => 'border-violet-200 bg-violet-50 text-violet-900 dark:border-violet-800 dark:bg-violet-950 dark:text-violet-100',
+            ],
+            [
                 'key' => 'unknown',
                 'label' => 'Unknown',
                 'description' => 'No hay suficiente evidencia.',
@@ -47,6 +53,7 @@
             'scanner' => 'bg-red-100 text-red-800 ring-red-600/20 dark:bg-red-500/10 dark:text-red-300',
             'suspicious' => 'bg-amber-100 text-amber-800 ring-amber-600/20 dark:bg-amber-500/10 dark:text-amber-300',
             'internal' => 'bg-sky-100 text-sky-800 ring-sky-600/20 dark:bg-sky-500/10 dark:text-sky-300',
+            'admin_activity' => 'bg-violet-100 text-violet-800 ring-violet-600/20 dark:bg-violet-500/10 dark:text-violet-300',
             'unknown' => 'bg-gray-100 text-gray-800 ring-gray-600/20 dark:bg-gray-500/10 dark:text-gray-300',
         ];
 

@@ -50,6 +50,7 @@ class TrafficAnalytics extends Page
         'scanner' => true,
         'suspicious' => true,
         'internal' => true,
+        'admin_activity' => true,
         'unknown' => true,
     ];
 
@@ -93,6 +94,7 @@ class TrafficAnalytics extends Page
             'scanner' => true,
             'suspicious' => true,
             'internal' => true,
+            'admin_activity' => true,
             'unknown' => true,
         ];
 

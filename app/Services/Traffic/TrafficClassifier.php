@@ -13,6 +13,13 @@ class TrafficClassifier
         $this->internalIps = config('traffic.internal_ips', ['127.0.0.1']);
     }
 
+    private array $adminPathStartsWith = [
+        '/admin',
+        '/js/filament/',
+        '/css/filament/',
+        '/fonts/filament/',
+    ];
+
     private array $sensitivePathStartsWith = [
         '/.env',
         '/.aws',
@@ -92,7 +99,7 @@ class TrafficClassifier
         $hasBlockedStatus = $statuses->contains(444);
 
         $requestsCount = count($requests);
-
+        
         if ($this->isInternalIp($ip)) {
             return [
                 'classification' => 'internal',
@@ -103,6 +110,14 @@ class TrafficClassifier
                 'loaded_assets' => $loadedAssets,
                 'requested_sensitive_paths' => $hasSensitiveRequest,
                 'sensitive_paths' => $sensitivePaths->all(),
+            ];
+        }
+
+        if ($this->requestedAdminArea($requests)) {
+            return [
+                'classification' => 'admin_activity',
+                'risk_level' => 'ignored',
+                'reason' => 'Loaded admin or Filament area.',
             ];
         }
 
@@ -198,6 +213,21 @@ class TrafficClassifier
         foreach ($this->appAssetEndsWith as $extension) {
             if (Str::endsWith($normalizedPath, strtolower($extension))) {
                 return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function requestedAdminArea(array $requests): bool
+    {
+        foreach ($requests as $request) {
+            $path = $request['path'] ?? '';
+
+            foreach ($this->adminPathStartsWith as $adminPath) {
+                if (str_starts_with($path, $adminPath)) {
+                    return true;
+                }
             }
         }
 
