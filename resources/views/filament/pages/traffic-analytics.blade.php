@@ -4,6 +4,11 @@
 
         $summary = $traffic['summary'] ?? [];
 
+        $generatedAtParts = \App\Services\UserDateFormatter::dateTimeParts(
+            $traffic['generated_at'] ?? null,
+            auth()->user()
+        );
+
         $cards = [
             [
                 'key' => 'human_probable',
@@ -81,9 +86,20 @@
                     </div>
 
                     <div class="rounded-xl bg-gray-50 px-4 py-3 text-sm dark:bg-gray-950">
-                        <div class="text-gray-500 dark:text-gray-400">Generado</div>
-                        <div class="font-medium text-gray-950 dark:text-white">
-                            {{ $traffic['generated_at'] ?? '—' }}
+                        <div class="text-gray-500 dark:text-gray-400">Last update</div>
+                        
+                        <div class="flex flex-col gap-0.5">
+                            <div class="font-medium text-gray-950 dark:text-white">
+                                {{ $generatedAtParts['date'] }}
+                            </div>
+
+                            <div class="text-sm text-gray-600 dark:text-gray-400">
+                                {{ $generatedAtParts['time'] }}
+                            </div>
+
+                            <div class="text-xs text-gray-500 dark:text-gray-500">
+                                {{ $generatedAtParts['timezone'] }}
+                            </div>
                         </div>
                     </div>
                 </div>

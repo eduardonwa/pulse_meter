@@ -21,6 +21,8 @@ return new class extends Migration
             $table->timestamps();
 
             $table->boolean('is_admin')->default(false);
+            $table->string('date_format_style')->default('mx');
+            $table->string('timezone')->default('America/Hermosillo');
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {

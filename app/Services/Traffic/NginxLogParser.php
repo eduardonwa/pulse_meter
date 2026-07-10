@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Support\Traffic;
+namespace App\Services\Traffic;
 
 use Kassner\LogParser\LogParser;
 use Kassner\LogParser\FormatException;

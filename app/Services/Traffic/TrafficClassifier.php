@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Support\Traffic;
+namespace App\Services\Traffitrafficclac;
 
 use Illuminate\Support\Str;
 
