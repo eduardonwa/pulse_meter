@@ -3,7 +3,6 @@
         $traffic = $this->traffic ?? [];
 
         $summary = $traffic['summary'] ?? [];
-        $sessions = $traffic['sessions'] ?? [];
 
         $cards = [
             [
@@ -147,6 +146,59 @@
                     <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
                         Aquí ya no estás viendo líneas sueltas del log, sino visitas interpretadas.
                     </p>
+                </div>
+
+                <div class="flex flex-wrap items-center gap-2 border-b border-gray-200 p-5 dark:border-gray-800">
+                    @foreach ($cards as $card)
+                        @php
+                            $key = $card['key'];
+                            $isActive = $this->sessionTypeFilters[$key] ?? false;
+                        @endphp
+
+                        <button
+                            type="button"
+                            wire:click="toggleSessionTypeFilter('{{ $key }}')"
+                            class="rounded-full px-3 py-1.5 text-xs font-medium ring-1 ring-inset transition
+                                {{ $isActive
+                                    ? 'bg-primary-600 text-white ring-primary-600'
+                                    : 'bg-gray-100 text-gray-500 ring-gray-300 dark:bg-gray-800 dark:text-gray-400 dark:ring-gray-700'
+                                }}"
+                        >
+                            {{ $card['label'] }}
+                        </button>
+                    @endforeach
+
+                    <button
+                        type="button"
+                        wire:click="resetSessionTypeFilters"
+                        class="rounded-full bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-600 ring-1 ring-gray-300 dark:bg-gray-800 dark:text-gray-300 dark:ring-gray-700"
+                    >
+                        Reset
+                    </button>
+                </div>
+
+                <div class="flex items-center justify-between border-b border-gray-200 p-5 dark:border-gray-800">
+                    <button
+                        type="button"
+                        wire:click="previousSessionsPage"
+                        @disabled($this->sessionsPage <= 1)
+                        class="rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:text-gray-200"
+                    >
+                        Anterior
+                    </button>
+
+                    <div class="text-sm text-gray-500 dark:text-gray-400">
+                        Página {{ $this->sessionsPage }} de {{ $this->getTotalSessionPages() }}
+                    </div>
+
+                    <button
+                        type="button"
+                        wire:click="nextSessionsPage"
+                        @disabled($this->sessionsPage >= $this->getTotalSessionPages())
+                        class="rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:text-gray-200"
+                    >
+                        Siguiente
+                    </button>
                 </div>
 
                 <div class="divide-y divide-gray-200 dark:divide-gray-800">
