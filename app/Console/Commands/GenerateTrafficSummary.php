@@ -5,7 +5,7 @@ namespace App\Console\Commands;
 use App\Services\Traffic\NginxLogParser;
 use App\Services\Traffic\TrafficClassifier;
 use Illuminate\Console\Command;
-use Illuminate\Services\Facades\Storage;
+use Illuminate\Support\Facades\Storage;
 
 class GenerateTrafficSummary extends Command
 {
