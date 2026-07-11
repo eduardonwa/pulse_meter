@@ -11,7 +11,8 @@ class GenerateTrafficSummary extends Command
 {
     protected $signature = 'traffic:generate-summary
         {--log= : Path to the Nginx access log}
-        {--session-gap=30 : Minutes of inactivity before starting a new session}';
+        {--session-gap=30 : Minutes of inactivity before starting a new session}
+        {--days=7 : Number of recent days to include}';
 
     protected $description = 'Generate traffic summary from Nginx access log';
 
@@ -21,28 +22,62 @@ class GenerateTrafficSummary extends Command
             ?: config('traffic.access_log_path');
 
         $sessionGapMinutes = (int) $this->option('session-gap');
+        
+        $days = max(1, (int) $this->option('days'));
 
-        if (! is_readable($logPath)) {
-            $this->error("Log file is not readable: {$logPath}");
+        $timezone = config(
+            'traffic.history_timezone',
+            'America/Hermosillo'
+        );
+
+        // Incluye hoy y los seis días anteriores en la zona del usuario.
+        $cutoffTimestamp = now($timezone)
+            ->subDays($days - 1)
+            ->startOfDay()
+            ->utc()
+            ->timestamp;
+
+        $logFiles = $this->findLogFiles($logPath);
+
+        if ($logFiles === []) {
+            $this->error("No readable log files found for: {$logPath}");
 
             return self::FAILURE;
         }
 
-        $lines = file($logPath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-
         $requests = [];
         $skipped = 0;
+        $totalLines = 0;
+        $outsideWindow = 0;
 
-        foreach ($lines as $line) {
-            $parsed = $parser->parse($line);
+        foreach ($logFiles as $file) {
+            foreach ($this->readLogLines($file) as $line) {
+                $totalLines++;
 
-            if ($parsed === null) {
-                $skipped++;
+                $parsed = $parser->parse($line);
 
-                continue;
+                if ($parsed === null) {
+                    $skipped++;
+
+                    continue;
+                }
+
+                $timestamp = $parsed['timestamp'] ?? null;
+
+                if (! is_numeric($timestamp)) {
+                    $skipped++;
+
+                    continue;
+                }
+
+                if ((int) $timestamp < $cutoffTimestamp) {
+                    $outsideWindow++;
+
+                    continue;
+                }
+
+                $requests[] = $parsed;
             }
-
-            $requests[] = $parsed;
         }
 
         usort($requests, function ($a, $b) {
@@ -69,10 +104,15 @@ class GenerateTrafficSummary extends Command
         $summary = [
             'generated_at' => now()->toIso8601String(),
             'log_path' => $logPath,
+            'log_files' => $logFiles,
+            'history_days' => $days,
+            'history_timezone' => $timezone,
+            'cutoff_timestamp' => $cutoffTimestamp,
             'session_gap_minutes' => $sessionGapMinutes,
-            'total_lines' => count($lines),
+            'total_lines' => $totalLines,
             'total_requests' => count($requests),
             'skipped_lines' => $skipped,
+            'outside_history_window' => $outsideWindow,
             'total_sessions' => count($sessions),
             'summary' => [
                 'human_like' => $summaryCounts->get('human_like', 0),
@@ -92,6 +132,9 @@ class GenerateTrafficSummary extends Command
         $this->line('Requests: ' . count($requests));
         $this->line('Sessions: ' . count($sessions));
         $this->line('Skipped lines: ' . $skipped);
+        $this->line('Log files read: ' . count($logFiles));
+        $this->line('Requests in last ' . $days . ' days: ' . count($requests));
+        $this->line('Older requests ignored: ' . $outsideWindow);
 
         return self::SUCCESS;
     }
@@ -201,5 +244,67 @@ class GenerateTrafficSummary extends Command
         ], $classification, [
             'requests' => $requests,
         ]);
+    }
+
+    private function findLogFiles(string $logPath): array
+    {
+        $files = glob($logPath . '*') ?: [];
+
+        $pattern = '#^'
+            . preg_quote($logPath, '#')
+            . '(?:\.\d+)?(?:\.gz)?$#';
+
+        return array_values(
+            array_filter(
+                $files,
+                fn (string $file): bool =>
+                    is_file($file)
+                    && is_readable($file)
+                    && preg_match($pattern, $file) === 1
+            )
+        );
+    }
+
+    private function readLogLines(string $path): \Generator
+    {
+        if (str_ends_with($path, '.gz')) {
+            $handle = gzopen($path, 'rb');
+
+            if ($handle === false) {
+                return;
+            }
+
+            try {
+                while (($line = gzgets($handle)) !== false) {
+                    $line = rtrim($line, "\r\n");
+
+                    if ($line !== '') {
+                        yield $line;
+                    }
+                }
+            } finally {
+                gzclose($handle);
+            }
+
+            return;
+        }
+
+        $handle = fopen($path, 'rb');
+
+        if ($handle === false) {
+            return;
+        }
+
+        try {
+            while (($line = fgets($handle)) !== false) {
+                $line = rtrim($line, "\r\n");
+
+                if ($line !== '') {
+                    yield $line;
+                }
+            }
+        } finally {
+            fclose($handle);
+        }
     }
 }

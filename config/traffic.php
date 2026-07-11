@@ -10,4 +10,6 @@ return [
     
     'access_log_path' => env('TRAFFIC_ACCESS_LOG_PATH')
         ?: storage_path('app/testing/dorelog-access-sample.log'),
+
+    'history_timezone' => 'America/Hermosillo',
 ];

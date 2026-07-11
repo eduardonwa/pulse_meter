@@ -94,9 +94,7 @@ trait NavigatesTrafficSessionDays
     {
         $session = $this->getSelectedDateSessionsProperty()[0] ?? null;
 
-        if ($session === null) {
-            return 'No date';
-        }
+        if ($session === null) { return 'No date'; }
 
         return UserDateFormatter::dateTimeParts(
             $session['last_seen']
