@@ -37,7 +37,6 @@ class TrafficClassifier
     ];
 
     private array $sensitivePathContains = [
-        '..%5c',
         '..\\',
         '/../',
         'var/log/',
@@ -56,17 +55,33 @@ class TrafficClassifier
         '/audio/click-profiles/',
     ];
 
-    private array $appAssetEndsWith = [
-        '.css',
-        '.js',
-        '.woff2',
-        '.wav',
-        '.ico',
-        '.svg',
+    private array $knownAppAssets = [
+        '/favicon.ico',
+        '/click.wav',
+        '/accent.wav',
+    ];
+
+    private array $appAssetPatterns = [
+        '/^\/main-[a-z0-9_-]+\.css$/i',
+        '/^\/app-[a-z0-9_-]+\.js$/i',
+        '/^\/inter-variablefont[^\/]*\.woff2$/i',
     ];
 
     public function classify(array $requests): array
     {
+        $userAgents = collect($requests)
+            ->pluck('user_agent')
+            ->filter()
+            ->unique()
+            ->values();
+
+        $hasUrlAsUserAgent = $userAgents->contains(function ($userAgent) {
+            return filter_var(
+                $userAgent,
+                FILTER_VALIDATE_URL
+            ) !== false;
+        });
+
         $paths = collect($requests)
             ->pluck('path')
             ->filter()
@@ -98,38 +113,35 @@ class TrafficClassifier
 
         $hasBlockedStatus = $statuses->contains(444);
 
+        $reasonCodes = [];
+
+        if ($hasSensitiveRequest) {
+            $reasonCodes[] = 'requested_sensitive_path';
+        }
+
+        if ($hasBlockedStatus) {
+            $reasonCodes[] = 'received_444';
+        }
+
+        if ($hasUrlAsUserAgent) {
+            $reasonCodes[] = 'url_used_as_user_agent';
+        }
+
         $requestsCount = count($requests);
         
         if ($this->isInternalIp($ip)) {
             return [
                 'classification' => 'internal',
+                'activity_type' => $this->requestedAdminArea($requests)
+                    ? 'admin'
+                    : 'normal',
                 'risk_level' => 'ignored',
                 'reason' => 'Internal or excluded IP',
+                'reason_codes' => ['internal_ip'],
                 'requests_count' => $requestsCount,
                 'requested_home' => $requestedHome,
                 'loaded_assets' => $loadedAssets,
                 'requested_sensitive_paths' => $hasSensitiveRequest,
-                'sensitive_paths' => $sensitivePaths->all(),
-            ];
-        }
-
-        if ($this->requestedAdminArea($requests)) {
-            return [
-                'classification' => 'admin_activity',
-                'risk_level' => 'ignored',
-                'reason' => 'Loaded admin or Filament area.',
-            ];
-        }
-
-        if ($hasSensitiveRequest && ($requestedHome || $loadedAssets)) {
-            return [
-                'classification' => 'suspicious',
-                'risk_level' => 'suspicious',
-                'reason' => 'Loaded normal app content but also requested sensitive paths',
-                'requests_count' => $requestsCount,
-                'requested_home' => $requestedHome,
-                'loaded_assets' => $loadedAssets,
-                'requested_sensitive_paths' => true,
                 'sensitive_paths' => $sensitivePaths->all(),
             ];
         }
@@ -137,21 +149,36 @@ class TrafficClassifier
         if ($hasSensitiveRequest || $hasBlockedStatus) {
             return [
                 'classification' => 'scanner',
-                'risk_level' => 'blocked',
-                'reason' => 'Requested sensitive paths or received 444',
+                'risk_level' => $hasBlockedStatus
+                    ? 'blocked'
+                    : 'high',
+                'reason' => $this->buildReasonText(
+                    $hasSensitiveRequest,
+                    $hasBlockedStatus,
+                    $hasUrlAsUserAgent
+                ),
+                'reason_codes' => $reasonCodes,
                 'requests_count' => $requestsCount,
                 'requested_home' => $requestedHome,
                 'loaded_assets' => $loadedAssets,
                 'requested_sensitive_paths' => $hasSensitiveRequest,
                 'sensitive_paths' => $sensitivePaths->all(),
+                'behavior' => ($requestedHome || $loadedAssets)
+                    ? 'mixed'
+                    : 'scanner_only',
             ];
         }
 
         if ($requestedHome && $loadedAssets) {
             return [
-                'classification' => 'human_probable',
+                'classification' => 'human_like',
+                'confidence' => 'likely',
                 'risk_level' => 'clean',
                 'reason' => 'Loaded homepage and app assets',
+                'reason_codes' => [
+                    'loaded_homepage',
+                    'loaded_app_assets',
+                ],
                 'requests_count' => $requestsCount,
                 'requested_home' => true,
                 'loaded_assets' => true,
@@ -163,7 +190,10 @@ class TrafficClassifier
         return [
             'classification' => 'unknown',
             'risk_level' => 'neutral',
-            'reason' => 'Not enough evidence',
+            'reason' => $hasUrlAsUserAgent
+                ? 'Unusual User-Agent but not enough evidence'
+                : 'Not enough evidence',
+            'reason_codes' => $reasonCodes,
             'requests_count' => $requestsCount,
             'requested_home' => $requestedHome,
             'loaded_assets' => $loadedAssets,
@@ -171,7 +201,7 @@ class TrafficClassifier
             'sensitive_paths' => $sensitivePaths->all(),
         ];
     }
-
+    
     private function isInternalIp(?string $ip): bool
     {
         if ($ip === null) {
@@ -183,7 +213,7 @@ class TrafficClassifier
 
     private function isSensitivePath(string $path): bool
     {
-        $normalizedPath = strtolower(urldecode($path));
+        $normalizedPath = $this->normalizePath($path);
 
         foreach ($this->sensitivePathStartsWith as $pattern) {
             if (Str::startsWith($normalizedPath, strtolower($pattern))) {
@@ -202,16 +232,22 @@ class TrafficClassifier
 
     private function isAppAsset(string $path): bool
     {
-        $normalizedPath = strtolower($path);
+        $normalizedPath = $this->normalizePath($path);
 
-        foreach ($this->appAssetStartsWith as $pattern) {
-            if (Str::startsWith($normalizedPath, strtolower($pattern))) {
+        foreach ($this->knownAppAssets as $asset) {
+            if ($normalizedPath === strtolower($asset)) {
                 return true;
             }
         }
 
-        foreach ($this->appAssetEndsWith as $extension) {
-            if (Str::endsWith($normalizedPath, strtolower($extension))) {
+        foreach ($this->appAssetStartsWith as $prefix) {
+            if (Str::startsWith($normalizedPath, strtolower($prefix))) {
+                return true;
+            }
+        }
+
+        foreach ($this->appAssetPatterns as $pattern) {
+            if (preg_match($pattern, $normalizedPath) === 1) {
                 return true;
             }
         }
@@ -222,15 +258,49 @@ class TrafficClassifier
     private function requestedAdminArea(array $requests): bool
     {
         foreach ($requests as $request) {
-            $path = $request['path'] ?? '';
+            $path = $this->normalizePath($request['path'] ?? '');
 
             foreach ($this->adminPathStartsWith as $adminPath) {
-                if (str_starts_with($path, $adminPath)) {
+                if (Str::startsWith($path, strtolower($adminPath))) {
                     return true;
                 }
             }
         }
 
         return false;
+    }
+
+    private function buildReasonText(
+        bool $hasSensitiveRequest,
+        bool $hasBlockedStatus,
+        bool $hasUrlAsUserAgent,
+    ): string {
+        $reasons = [];
+
+        if ($hasSensitiveRequest) {
+            $reasons[] = 'requested sensitive paths';
+        }
+
+        if ($hasBlockedStatus) {
+            $reasons[] = 'received 444';
+        }
+
+        if ($hasUrlAsUserAgent) {
+            $reasons[] = 'used a URL as the User-Agent';
+        }
+
+        if ($reasons === []) {
+            return 'Not enough evidence';
+        }
+
+        return ucfirst(implode(', ', $reasons));
+    }
+
+    private function normalizePath(string $path): string
+    {
+        $path = explode('?', $path, 2)[0];
+        $path = explode('#', $path, 2)[0];
+
+        return strtolower(urldecode($path));
     }
 }

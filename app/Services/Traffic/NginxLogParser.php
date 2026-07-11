@@ -37,8 +37,8 @@ class NginxLogParser
             'protocol' => $protocol,
             'status' => (int) ($entry->status ?? 0),
             'bytes' => (int) ($entry->responseBytes ?? 0),
-            'referer' => $entry->HeaderReferer ?? null,
-            'user_agent' => $entry->HeaderUserAgent ?? null,
+            'referer' => $this->normalizeHeader($entry->HeaderReferer ?? null),
+            'user_agent' => $this->normalizeHeader($entry->HeaderUserAgent ?? null),
             'raw' => $line,
         ];
     }
@@ -52,5 +52,16 @@ class NginxLogParser
             $parts[1] ?? null,
             $parts[2] ?? null,
         ];
+    }
+
+    private function normalizeHeader(mixed $value): ?string
+    {
+        if (! is_string($value)) {
+            return null;
+        }
+
+        $value = trim($value);
+
+        return $value === '' || $value === '-' ? null : $value;
     }
 }

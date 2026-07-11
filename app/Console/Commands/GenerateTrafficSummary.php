@@ -59,6 +59,13 @@ class GenerateTrafficSummary extends Command
             ->groupBy('classification')
             ->map(fn ($items) => $items->count());
 
+        $this->line(
+            json_encode(
+                $summaryCounts->all(),
+                JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES
+            )
+        );
+
         $summary = [
             'generated_at' => now()->toIso8601String(),
             'log_path' => $logPath,
@@ -68,9 +75,8 @@ class GenerateTrafficSummary extends Command
             'skipped_lines' => $skipped,
             'total_sessions' => count($sessions),
             'summary' => [
-                'human_probable' => $summaryCounts->get('human_probable', 0),
+                'human_like' => $summaryCounts->get('human_like', 0),
                 'scanner' => $summaryCounts->get('scanner', 0),
-                'suspicious' => $summaryCounts->get('suspicious', 0),
                 'internal' => $summaryCounts->get('internal', 0),
                 'unknown' => $summaryCounts->get('unknown', 0),
             ],

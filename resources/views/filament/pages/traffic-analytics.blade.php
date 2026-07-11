@@ -11,49 +11,35 @@
 
         $cards = [
             [
-                'key' => 'human_probable',
-                'label' => 'Humanos probables',
-                'description' => 'Cargaron home y assets reales.',
+                'key' => 'human_like',
+                'label' => 'Human (likely)',
+                'description' => 'Loaded the homepage and recognized app assets.',
                 'class' => 'border-emerald-200 bg-emerald-50 text-emerald-900 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-100',
             ],
             [
                 'key' => 'scanner',
                 'label' => 'Scanners',
-                'description' => 'Pidieron rutas sensibles o fueron bloqueados.',
+                'description' => 'Requested sensitive paths or were blocked.',
                 'class' => 'border-red-200 bg-red-50 text-red-900 dark:border-red-800 dark:bg-red-950 dark:text-red-100',
-            ],
-            [
-                'key' => 'suspicious',
-                'label' => 'Sospechosos',
-                'description' => 'Cargaron app y también rutas sensibles.',
-                'class' => 'border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-100',
             ],
             [
                 'key' => 'internal',
                 'label' => 'Interno',
-                'description' => 'Tus IPs o pruebas locales.',
+                'description' => 'Internal IPs and local tests.',
                 'class' => 'border-sky-200 bg-sky-50 text-sky-900 dark:border-sky-800 dark:bg-sky-950 dark:text-sky-100',
-            ],
-            [
-                'key' => 'admin_activity',
-                'label' => 'Admin',
-                'description' => 'Actividad en Filament o panel interno.',
-                'class' => 'border-violet-200 bg-violet-50 text-violet-900 dark:border-violet-800 dark:bg-violet-950 dark:text-violet-100',
             ],
             [
                 'key' => 'unknown',
                 'label' => 'Unknown',
-                'description' => 'No hay suficiente evidencia.',
+                'description' => 'Not enough evidence.',
                 'class' => 'border-gray-200 bg-gray-50 text-gray-900 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100',
             ],
         ];
 
         $badgeClasses = [
-            'human_probable' => 'bg-emerald-100 text-emerald-800 ring-emerald-600/20 dark:bg-emerald-500/10 dark:text-emerald-300',
+            'human_like' => 'bg-emerald-100 text-emerald-800 ring-emerald-600/20 dark:bg-emerald-500/10 dark:text-emerald-300',
             'scanner' => 'bg-red-100 text-red-800 ring-red-600/20 dark:bg-red-500/10 dark:text-red-300',
-            'suspicious' => 'bg-amber-100 text-amber-800 ring-amber-600/20 dark:bg-amber-500/10 dark:text-amber-300',
             'internal' => 'bg-sky-100 text-sky-800 ring-sky-600/20 dark:bg-sky-500/10 dark:text-sky-300',
-            'admin_activity' => 'bg-violet-100 text-violet-800 ring-violet-600/20 dark:bg-violet-500/10 dark:text-violet-300',
             'unknown' => 'bg-gray-100 text-gray-800 ring-gray-600/20 dark:bg-gray-500/10 dark:text-gray-300',
         ];
 
