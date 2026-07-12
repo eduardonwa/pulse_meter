@@ -4,6 +4,8 @@ namespace App\Filament\Pages\Concerns;
 
 trait HasTrafficSessionFilters
 {
+    abstract public function traffic(): array;
+    
     public array $sessionTypeFilters = [
         'human_like' => true,
         'scanner' => true,
@@ -41,7 +43,9 @@ trait HasTrafficSessionFilters
 
     protected function getFilteredSessions(): array
     {
-        return collect($this->traffic['sessions'] ?? [])
+        $traffic = $this->traffic();
+
+        return collect($traffic['sessions'] ?? [])
             ->filter(function (array $session): bool {
                 $classification = $this->normalizeClassification(
                     $session['classification'] ?? null

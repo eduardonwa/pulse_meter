@@ -1,6 +1,6 @@
 <x-filament-panels::page>
     @php
-        $traffic = $this->traffic ?? [];
+        $traffic = $this->traffic;
 
         $summary = $traffic['summary'] ?? [];
 

@@ -8,6 +8,7 @@ use App\Filament\Pages\Concerns\PaginatesTrafficSessions;
 use App\Filament\Pages\Concerns\PresentsTrafficSessions;
 use App\Services\Traffic\TrafficSummaryReader;
 use Filament\Pages\Page;
+use Livewire\Attributes\Computed;
 
 class TrafficAnalytics extends Page
 {
@@ -27,13 +28,18 @@ class TrafficAnalytics extends Page
         'Analytics';
 
     protected string $view = 'filament.pages.traffic-analytics';
-
-    public array $traffic = [];
-
-    public function mount(TrafficSummaryReader $reader): void
+    
+    protected ?array $trafficSummaryCache = null;
+    
+    #[Computed]
+    public function traffic(): array
     {
-        $this->traffic = $reader->read();
+        return $this->trafficSummaryCache ??=
+            app(TrafficSummaryReader::class)->read();
+    }
 
+    public function mount(): void
+    {
         $this->restoreSessionTypeFilters();
         $this->syncSelectedSessionDate();
     }
