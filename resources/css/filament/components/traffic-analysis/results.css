@@ -7,6 +7,12 @@
 
     border: 1px solid color-mix(in oklab, var(--color-neutral-700) 80%, transparent);
     border-radius: var(--radius-lg);
+
+    background-color: color-mix(in oklab, var(--color-neutral-700) 25%, transparent);
+
+    &:nth-of-type(even) {
+        background-color: transparent;
+    }
 }
 
 .session-entry__header {
@@ -97,6 +103,28 @@
         letter-spacing: -0.025em;
         font-variant-numeric: tabular-nums slashed-zero;
     }
+
+    @media (min-width: 1280px) {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        position: relative;
+
+        .summary {
+            grid-column: 1;
+            grid-row: 1;
+            align-self: end;
+
+            .overview { margin-left: 0; }
+
+            &::after { height: 0; }
+        }
+
+        .ip {
+            grid-column: 1;
+            grid-row: 2;
+            margin: 0;
+        }
+    }
 }
 
 .session-entry__request-signals {
@@ -107,6 +135,7 @@
             border-block-end: 1px solid var(--color-neutral-700);
             padding-block-end: .4rem;
             color: var(--color-neutral-400);
+            font-weight: 500;
         }
 
         .grid {
@@ -136,6 +165,37 @@
 
                 .signal-value--neutral {
                     color: var(--color-neutral-400);
+                }
+            }
+        }
+    }
+
+    @media (min-width: 1280px) {
+        grid-column: 2;
+        grid-row: 1 / span 2;
+
+        .signals {
+            width: fit-content;
+            margin-inline-start: auto;
+            
+            .session-entry__section-title {
+                border-color: transparent;
+                padding-block: .7rem;
+            }
+
+            .grid {
+                gap: 1rem;
+                grid-template-columns: repeat(3, 90px);
+                justify-content: end;
+
+                .signal {
+                    border-radius: var(--radius-md);
+                    background: var(--color-neutral-950);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    text-align: center;
+                    padding: .5rem;
                 }
             }
         }
@@ -181,6 +241,7 @@
         text-transform: uppercase;
         font-size: 14px;
         color: var(--color-neutral-400);
+        font-weight: 500;
     }
 
     .reason-text {
@@ -194,6 +255,7 @@
         text-transform: uppercase;
         color: var(--color-neutral-400);
         margin-block-end: .3rem;
+        font-weight: 500;
     }
     
     .session-entry__paths-section {
@@ -233,6 +295,58 @@
         font-size: 14px;
         color: var(--color-neutral-200);
     }
+
+    @media (min-width: 1280px) {
+        position: relative;
+        
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 1rem 2rem;
+
+
+        &::after {
+            content: "";
+            position: absolute;
+            right: calc(-.9rem + 1px);
+            left: calc(-.9rem + 1px);
+            bottom: 0;
+            height: 1px;
+            background-color: var(--color-neutral-700);
+        }
+
+        > .section-title {
+            grid-column : 1/ -1;
+            position: relative;
+
+            &::after {
+                content: "";
+                position: absolute;
+                right: calc(-.9rem + 1px);
+                left: calc(-.9rem + 1px);
+                bottom: -10px;
+                height: 1px;
+                background-color: var(--color-neutral-700);
+            }
+        }
+
+        .session-entry__paths-section {
+            border-color: transparent;
+            padding: 0;
+
+            &:first-of-type {
+                position: relative;
+
+                &::after {
+                    content: "";
+                    position: absolute;
+                    inset-inline-end: -1rem;
+                    inset-block: -.8rem -1rem;
+                    width: 1px;
+                    background-color: var(--color-neutral-700);
+                }
+            }
+        }
+    }
 }
 
 .session-entry__client {
@@ -240,10 +354,15 @@
         text-transform: uppercase;
         font-size: 14px;
         color: var(--color-neutral-400);
+        font-weight: 500;
     }
 
     .user-agent {
         font-size: 14px;
         color: var(--color-neutral-200);
+    }
+
+    @media (min-width: 1280px) {
+        margin-block-start: .5rem;
     }
 }
