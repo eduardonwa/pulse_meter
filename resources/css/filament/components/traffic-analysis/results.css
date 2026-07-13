@@ -1,0 +1,8 @@
+.session-entry {
+    margin-block: 2rem 1rem;
+    margin-inline: 1rem;
+    padding: .75rem;
+
+    border: 1px solid color-mix(in oklab, var(--color-neutral-700) 80%, transparent);
+    border-radius: var(--radius-lg);
+}

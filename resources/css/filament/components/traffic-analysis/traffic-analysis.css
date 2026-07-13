@@ -1,0 +1,23 @@
+@import "./snapshot.css";
+@import "./breakdown.css";
+@import "./sessions.css";
+@import "./results.css";
+
+.traffic-analysis {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+        "snapshot"
+        "breakdown"
+        "sessions";
+}
+
+@media (min-width: 1280px) {
+    .traffic-analysis {
+        grid-template-columns: 200px minmax(0, 1fr);
+        grid-template-areas:
+            "snapshot breakdown"
+            "snapshot sessions";
+        gap: 1rem;
+    }
+}

@@ -8,6 +8,7 @@ use App\Filament\Pages\Concerns\PaginatesTrafficSessions;
 use App\Filament\Pages\Concerns\PresentsTrafficSessions;
 use App\Services\Traffic\TrafficSummaryReader;
 use Filament\Pages\Page;
+use Filament\Support\Enums\Width;
 use Livewire\Attributes\Computed;
 
 class TrafficAnalytics extends Page
@@ -27,7 +28,12 @@ class TrafficAnalytics extends Page
     protected static string | \UnitEnum | null $navigationGroup =
         'Analytics';
 
+    protected ?string $subheading =
+        'Sessions grouped by IP, User-Agent and time window.';
+
     protected string $view = 'filament.pages.traffic-analytics';
+
+    protected Width|string|null $maxContentWidth = Width::ScreenTwoExtraLarge;
     
     protected ?array $trafficSummaryCache = null;
     

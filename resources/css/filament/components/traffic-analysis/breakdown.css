@@ -1,0 +1,42 @@
+.traffic-breakdown {
+    margin-block: 1.75rem;
+
+    grid-area: breakdown;
+    padding: 1rem;
+    background: var(--color-neutral-900);
+    border-radius: var(--radius-md);
+
+    .traffic-breakdown__title { font-size: 14px; }
+
+    .traffic-breakdown__shell {
+        padding-block: 0.5rem;
+
+        display: flex;
+        gap: 1rem;
+        max-width: 100%;
+        min-width: 0;
+        overflow-x: auto;
+        padding-block-end: 0.5rem;
+        overscroll-behavior-inline: contain;
+    }
+
+    .traffic-breakdown__stat {
+        flex: 0 0 6.5rem;
+
+        .label {
+            font-size: 14px;
+            color: var(--color-neutral-400);
+        }
+
+        .card-key {
+            font-size: 24px;
+            font-weight: 600;
+        }
+    }
+}
+
+@media (min-width: 1280px) {
+    .traffic-breakdown {
+        margin-block: 0;
+    }
+}
