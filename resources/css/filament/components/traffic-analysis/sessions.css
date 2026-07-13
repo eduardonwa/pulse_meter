@@ -7,7 +7,6 @@
     border-radius: var(--radius-md);
 
     .sessions__header {
-        margin-block-end: 1.75rem;
         padding: 1rem;
 
         border-block-end: 1px solid color-mix(
@@ -23,8 +22,6 @@
     }
 
     .sessions-controls {
-        --controls-inline-padding: 1.5rem;
-
         position: sticky;
         top: 4rem;
         z-index: 20;
@@ -45,10 +42,6 @@
             gap: 2rem;
             width: 100%;
             font-size: 0.875rem;
-        }
-
-        & .sessions-controls__navigator + .sessions-controls__navigator {
-            margin-block-start: 1rem;
         }
 
         & .sessions-controls__button {
@@ -107,7 +100,7 @@
 
     .sessions-controls > * {
         position: relative;
-        padding: 1.5rem var(--controls-inline-padding);
+        padding: 1rem;
     }
 
     .sessions-controls > :not(:last-child)::after {
@@ -127,7 +120,6 @@
     }
 
     .sessions-control__filters {
-        margin-block: 1rem;
         border-block-end: 1px solid color-mix(
             in oklab,
             var(--color-neutral-700) 60%,
