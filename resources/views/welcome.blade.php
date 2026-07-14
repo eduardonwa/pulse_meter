@@ -20,7 +20,13 @@
     <meta name="twitter:title" content="DoreLog - Save your drills. Keep your tempo.">
     <meta name="twitter:description" content="Save your exercises, BPMs, and practice routines so you can pick up exactly where you left off.">
     <meta name="twitter:image" content="https://dorelog.com/og-image.png">
+    
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 
+    <meta
+        name="product-events-endpoint"
+        content="{{ route('analytics.events.store') }}"
+    >
     @vite(['resources/styles/main.scss', 'resources/js/app.js'])
     
     <style> [x-cloak] { display: none !important; } </style>

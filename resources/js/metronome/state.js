@@ -17,7 +17,7 @@ export function defaultSteps() {
             name: 'Sweep Picking',
             bpm: 90,
             mode: 'timer',
-            duration_seconds: null,
+            duration_seconds: 60,
         },
     ]
 }
@@ -30,7 +30,7 @@ export function defaultMetronome() {
     }
 }
 
-export function state(steps) {    
+export function state(steps) {
     const savedDawProfile = localStorage.getItem('pulse_meter_daw_profile')
     const activeDawProfileKey = savedDawProfile ?? 'cubase'
     

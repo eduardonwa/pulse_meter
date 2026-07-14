@@ -99,7 +99,13 @@ export function audioEngine() {
             this.currentBeat = 1
         },
 
-        stop() {
+        stop(reason = 'user') {
+            const wasPlaying = this.isPlaying
+
+            if (wasPlaying) {
+                this.endPlaybackTracking(reason)
+            }
+
             this.stopMetronome()
 
             clearInterval(this.timerId)

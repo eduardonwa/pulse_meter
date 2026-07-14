@@ -9,6 +9,7 @@ import { exercises } from './exercises'
 import { numberPicker } from './number-picker'
 import { clickProfiles } from './click-profiles'
 import { recentSessions } from './recent-sessions'
+import { analytics } from './analytics'
 
 window.routinePlayer = function (steps) {
     return compose(
@@ -20,7 +21,8 @@ window.routinePlayer = function (steps) {
         timerDuration(),
         exercises(),
         clickProfiles(),
-        recentSessions()
+        recentSessions(),
+        analytics()
     )
 }
 
