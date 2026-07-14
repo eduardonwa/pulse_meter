@@ -36,6 +36,7 @@
                     :controls="true"
                     decrease-label="Decrease BPM"
                     increase-label="Increase BPM"
+                    hint="Scroll to change BPM"
                 />
             </label>
     
