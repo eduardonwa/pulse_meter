@@ -139,18 +139,21 @@
                 /* COMPACT */
                 .exercise-layout {
                     display: grid;
-                    grid-template-columns: 89px 1fr;
-                    // border: 1px solid $color-neutral-200;
+                    grid-template-columns: 133px minmax(0, 1fr);
 
                     &.is-active {
                         background: $color-neutral-900;
+
+                        .number-picker__control {
+                            color: $color-neutral-200;
+                        }
                     }
 
                     &__bpm {
                         display: flex;
                         align-items: center;
                         justify-content: center;
-                        font-size: $font-size-500;
+                        font-size: $font-size-400;
 
                         .picker-column {
                             border: 1px solid $color-neutral-400;
@@ -243,7 +246,7 @@
                 .exercises-table__head,
                 .exercise-row {
                     display: grid;
-                    grid-template-columns: 2.5rem 2.5rem minmax(9rem, 1fr) 5.5rem 4rem;
+                    grid-template-columns: 2.5rem 2.5rem minmax(9rem, 1fr) 7.75rem 4rem;
                     align-items: center;
                     gap: $size-2;
                     padding: $size-2 $size-3;
@@ -299,12 +302,14 @@
                     }
 
                     &__bpm {
+                        min-width: 0;
                         font-size: $font-size-400;
-                        border: 1px solid $color-neutral-300;
                         color: $color-neutral-700;
                     
                         .picker-column {
-                            width: 100%;
+                            width: 56px;
+                            min-width: 56px;
+                            max-width: 56px;
                             height: 44px;
                             overflow-y: auto;
                         }

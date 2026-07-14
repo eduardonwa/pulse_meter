@@ -1,9 +1,5 @@
 <template x-for="(step, index) in steps" :key="index">
-    <li
-        class="exercise-row"
-        :class="{ 'is-active': currentIndex === index }"
-        @click="currentIndex = index"
-    >
+    <li class="exercise-row" :class="{ 'is-active': currentIndex === index }" @click="currentIndex = index">
         <button
             type="button"
             class="exercise-row__playback | button"
@@ -54,9 +50,11 @@
         <x-inputs.number-picker
             class="exercise-row__bpm"
             options="bpmOptions"
-            model="step.bpm"
+            model="stepForm.bpm"
             format="(value) => value"
-            after-change="updateExerciseBpm(index, value)"
+            :controls="true"
+            decrease-label="Decrease BPM"
+            increase-label="Increase BPM"
         />
 
         <div class="exercise-row__actions">

@@ -28,9 +28,7 @@
             @change="handleBpmChange()"
         >
 
-        <div class="current-exercise-readout"
-            x-show="activeTab === 'exercises' && activeExerciseIndex !== null"
-        >
+        <div class="current-exercise-readout" x-show="activeTab === 'exercises' && activeExerciseIndex !== null">
             <span x-text="getActiveExerciseName()"></span>
 
             <span

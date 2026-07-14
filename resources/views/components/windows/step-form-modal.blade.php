@@ -33,6 +33,9 @@
                     options="bpmOptions"
                     model="stepForm.bpm"
                     format="(value) => value"
+                    :controls="true"
+                    decrease-label="Decrease BPM"
+                    increase-label="Increase BPM"
                 />
             </label>
     

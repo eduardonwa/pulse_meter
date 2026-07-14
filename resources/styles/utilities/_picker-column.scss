@@ -2,7 +2,11 @@
 
 .picker-column {
     width: 56px;
+    min-width: 56px;
+    max-width: 56px;
     height: 44px;
+    box-sizing: border-box;
+
     overflow-y: auto;
     scroll-snap-type: y mandatory;
     text-align: center;
@@ -11,15 +15,53 @@
     border-radius: $border-radius-1;
     background: $color-neutral-200;
 
-    font-size: $font-size-700;
+    font-size: $font-size-400;
     line-height: 44px;
     scrollbar-width: none;
 
     &::-webkit-scrollbar { display: none; }
 
     .picker-option {
+        width: 100%;
         height: 44px;
+        overflow: hidden;
+
         scroll-snap-align: center;
         cursor: pointer;
+    }
+}
+
+.number-picker {
+    width: max-content;
+    min-width: 0;
+
+    display: grid;
+    grid-template-columns: 28px 56px 28px;
+    align-items: center;
+    justify-content: center;
+    gap: $size-1;
+
+    &__control {
+        width: 28px;
+        min-width: 28px;
+        height: 44px;
+        padding: 0;
+
+        display: grid;
+        place-items: center;
+
+        border: 1px solid transparent;
+        border-radius: $border-radius-1;
+        background: transparent;
+        color: $color-neutral-700;
+
+        font-size: $font-size-600;
+        line-height: 1;
+        cursor: pointer;
+
+        &:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
     }
 }

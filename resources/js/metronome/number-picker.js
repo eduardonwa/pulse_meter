@@ -23,18 +23,67 @@ export function numberPicker({
             })
         },
 
-        syncExternalValue(retries = 10) {
+        getScroller() { return this.$refs.scroller ?? this.$el },
+
+        getCurrentIndex() {
             const value = Number(this.getValue())
 
-            const index = this.options.findIndex(option => {
+            return this.options.findIndex(option => {
                 return Number(option) === value
             })
+        },
+
+        canGoPrevious() {
+            return !this.disabled() && this.getCurrentIndex() > 0
+        },
+
+        canGoNext() {
+            const index = this.getCurrentIndex()
+
+            return (
+                !this.disabled() &&
+                index !== -1 &&
+                index < this.options.length - 1
+            )
+        },
+
+        previous() { this.moveBy(-1) },
+
+        next() { this.moveBy(1) },
+
+        moveBy(direction) {
+            if (this.disabled()) {
+                return
+            }
+
+            const currentIndex = this.getCurrentIndex()
+
+            if (currentIndex === -1) {
+                return
+            }
+
+            const nextIndex = currentIndex + direction
+
+            if (nextIndex < 0 || nextIndex >= this.options.length) {
+                return
+            }
+
+            const value = Number(this.options[nextIndex])
+
+            this.scrollToIndex(nextIndex)
+            this.setValue(value)
+        },
+
+        syncExternalValue(retries = 10) {
+            const index = this.getCurrentIndex()
 
             if (index === -1) {
                 return
             }
 
-            if (this.$el.clientHeight === 0 || this.$el.scrollHeight === 0) {
+            const scroller = this.getScroller()
+
+            if (scroller.clientHeight === 0 || scroller.scrollHeight === 0) {
                 if (retries <= 0) {
                     return
                 }
@@ -54,17 +103,19 @@ export function numberPicker({
         },
 
         scrollToIndex(index) {
-            if (this.$el.clientHeight === 0 || this.$el.scrollHeight === 0) {
+            const scroller = this.getScroller()
+
+            if (scroller.clientHeight === 0 || scroller.scrollHeight === 0) {
                 return
             }
 
             this.isSyncingScroll = true
 
             requestAnimationFrame(() => {
-                const option = this.$el.querySelector('.picker-option')
+                const option = scroller.querySelector('.picker-option')
                 const optionHeight = option?.offsetHeight ?? 44
 
-                this.$el.scrollTop = index * optionHeight
+                scroller.scrollTop = index * optionHeight
 
                 requestAnimationFrame(() => {
                     this.isSyncingScroll = false
@@ -81,14 +132,16 @@ export function numberPicker({
                 return
             }
 
-            if (this.$el.clientHeight === 0 || this.$el.scrollHeight === 0) {
+            const scroller = this.getScroller()
+
+            if (scroller.clientHeight === 0 || scroller.scrollHeight === 0) {
                 return
             }
 
-            const option = this.$el.querySelector('.picker-option')
+            const option = scroller.querySelector('.picker-option')
             const optionHeight = option?.offsetHeight ?? 44
 
-            const index = Math.round(this.$el.scrollTop / optionHeight)
+            const index = Math.round(scroller.scrollTop / optionHeight)
             const value = this.options[index]
 
             if (value === undefined) {
