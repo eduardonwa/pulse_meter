@@ -7,6 +7,7 @@
     'controls' => false,
     'decreaseLabel' => 'Decrease value',
     'increaseLabel' => 'Increase value',
+    'hint' => null,
 ])
 
 @if ($controls)
@@ -41,6 +42,10 @@
             class="picker-column"
             x-ref="scroller"
             @scroll.debounce.150ms="syncFromScroll()"
+            @if ($hint)
+                title="{{ $hint }}"
+                aria-label="{{ $hint }}"
+            @endif
         >
             <template x-for="option in options" :key="option">
                 <div
