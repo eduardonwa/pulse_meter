@@ -76,7 +76,7 @@ class UserDateFormatter
         $seconds = (int) ($seconds ?? 0);
 
         if ($seconds < 60) {
-            return $seconds === 1 ? '1 segundo' : "{$seconds} segundos";
+            return $seconds === 1 ? '1 second' : "{$seconds} seconds";
         }
 
         $minutes = intdiv($seconds, 60);

@@ -227,6 +227,17 @@
         .span {
             color: var(--color-neutral-100);
         }
+
+        @media (min-width: 1280px) {
+            .time,
+            .timezone {
+                display: block;
+            }
+        }
+    }
+
+    @media (min-width: 1280px) {
+        gap: 2rem;
     }
 }
 
@@ -345,6 +356,11 @@
                     background-color: var(--color-neutral-700);
                 }
             }
+        }
+
+        .requested-paths-title,
+        .sensitive-paths-title {
+            font-size: 12px;
         }
     }
 }
