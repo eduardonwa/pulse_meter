@@ -92,15 +92,20 @@ trait NavigatesTrafficSessionDays
 
     public function getSelectedSessionDateLabelProperty(): string
     {
-        $session = $this->getSelectedDateSessionsProperty()[0] ?? null;
+        if ($this->selectedSessionDate === null) { return 'No date'; }
 
-        if ($session === null) { return 'No date'; }
+        $user = Auth::user();
+        $timezone = UserDateFormatter::timezone($user);
+
+        $date = Carbon::createFromFormat(
+            'Y-m-d',
+            $this->selectedSessionDate,
+            $timezone
+        )->startOfDay();
 
         return UserDateFormatter::dateTimeParts(
-            $session['last_seen']
-                ?? $session['last_seen_timestamp']
-                ?? null,
-            Auth::user()
+            $date->toIso8601String(),
+            $user
         )['date'];
     }
 
@@ -111,12 +116,18 @@ trait NavigatesTrafficSessionDays
 
     public function getAvailableSessionDates(): array
     {
-        return collect($this->getFilteredSessions())
+        $dates = collect($this->getFilteredSessions())
             ->map(
                 fn (array $session): ?string =>
                     $this->getSessionDateKey($session)
             )
-            ->filter()
+            ->filter();
+
+        if ($this->selectedSessionDate !== null) {
+            $dates->push($this->selectedSessionDate);
+        }
+
+        return $dates
             ->unique()
             ->sortDesc()
             ->values()
@@ -125,20 +136,12 @@ trait NavigatesTrafficSessionDays
 
     protected function syncSelectedSessionDate(): void
     {
-        $dates = $this->getAvailableSessionDates();
+        if ($this->selectedSessionDate !== null) { return; }
 
-        if ($dates === []) {
-            $this->selectedSessionDate = null;
+        $timezone = UserDateFormatter::timezone(Auth::user());
 
-            return;
-        }
-
-        if (
-            $this->selectedSessionDate === null
-            || ! in_array($this->selectedSessionDate, $dates, true)
-        ) {
-            $this->selectedSessionDate = $dates[0];
-        }
+        $this->selectedSessionDate = Carbon::now($timezone)
+            ->toDateString();
     }
 
     protected function getSessionDateKey(array $session): ?string

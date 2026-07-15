@@ -75,6 +75,31 @@ class TrafficClassifier
             ->unique()
             ->values();
 
+        $rapidDeviceSwitch = $this->detectRapidDeviceSwitch(
+            $requests,
+            windowSeconds: 10
+        );
+
+        $hasRapidDeviceSwitch = $rapidDeviceSwitch !== null;
+
+        $sentProductAnalytics = collect($requests)->contains(function ($request) {
+            return strtoupper($request['method'] ?? '') === 'POST'
+                && ($request['path'] ?? null) === '/analytics/events'
+                && (int) ($request['status'] ?? 0) === 204;
+        });
+
+        if ($userAgents->count() >= 2) {
+            $reasonCodes[] = 'multiple_user_agents';
+        }
+
+        if ($hasRapidDeviceSwitch) {
+            $reasonCodes[] = 'rapid_incompatible_user_agent_switch';
+        }
+
+        if ($sentProductAnalytics) {
+            $reasonCodes[] = 'product_analytics_completed';
+        }
+
         $hasUrlAsUserAgent = $userAgents->contains(function ($userAgent) {
             return filter_var(
                 $userAgent,
@@ -169,10 +194,42 @@ class TrafficClassifier
             ];
         }
 
+        if ($hasRapidDeviceSwitch) {
+            return [
+                'classification' => 'automation_suspected',
+                'activity_type' => 'browser_automation',
+                'confidence' => 'high',
+
+                'risk_level' => 'low',
+
+                'reason' => sprintf(
+                    'Same IP switched from %s/%s to %s/%s within %d seconds',
+                    $rapidDeviceSwitch['from']['platform'],
+                    $rapidDeviceSwitch['from']['browser'],
+                    $rapidDeviceSwitch['to']['platform'],
+                    $rapidDeviceSwitch['to']['browser'],
+                    $rapidDeviceSwitch['seconds']
+                ),
+
+                'reason_codes' => $reasonCodes,
+                
+                'requests_count' => $requestsCount,
+                'requested_home' => $requestedHome,
+                'loaded_assets' => $loadedAssets,
+                'sent_product_analytics' => $sentProductAnalytics,
+
+                'user_agents_count' => $userAgents->count(),
+                'user_agent_switch' => $rapidDeviceSwitch,
+
+                'requested_sensitive_paths' => false,
+                'sensitive_paths' => []
+            ];
+        }
+
         if ($requestedHome && $loadedAssets) {
             return [
-                'classification' => 'human_like',
-                'confidence' => 'likely',
+                'classification' => 'browser_like',
+                'confidence' => 'possible',
                 'risk_level' => 'clean',
                 'reason' => 'Loaded homepage and app assets',
                 'reason_codes' => [
@@ -302,5 +359,135 @@ class TrafficClassifier
         $path = explode('#', $path, 2)[0];
 
         return strtolower(urldecode($path));
+    }
+
+    private function detectRapidDeviceSwitch(
+        array $requests,
+        int $windowSeconds = 10
+    ): ?array {
+        $timeline = collect($requests)
+            ->map(function ($request) {
+                $userAgent = $request['user_agent'] ?? null;
+
+                $timestamp = $request['timestamp']
+                    ?? $request['occurred_at']
+                    ?? $request['requested_at']
+                    ?? null;
+
+                if (!$userAgent || !$timestamp) { return null; }
+
+                try {
+                    $unixTimestamp = \Carbon\CarbonImmutable::parse(
+                        $timestamp
+                    )->getTimestamp();
+                } catch (\Throwable) {
+                    return null;
+                }
+
+                return [
+                    'timestamp' => $unixTimestamp,
+                    'user_agent' => $userAgent,
+                    'profile' => $this->parseUserAgentProfile(
+                        $userAgent
+                    ),
+                ];
+            })
+            ->filter()
+            ->sortBy('timestamp')
+            ->values();
+
+        for ($index = 1; $index < $timeline->count(); $index++) {
+            $previous = $timeline[$index - 1];
+            $current = $timeline[$index];
+
+            if (
+                $previous['user_agent']
+                === $current['user_agent']
+            ) {
+                continue;
+            }
+
+            $seconds = $current['timestamp']
+                - $previous['timestamp'];
+
+            if ($seconds < 0 || $seconds > $windowSeconds) {
+                continue;
+            }
+
+            $from = $previous['profile'];
+            $to = $current['profile'];
+
+            $knownPlatforms = $from['platform'] !== 'unknown'
+                && $to['platform'] !== 'unknown';
+
+            $incompatiblePlatforms = $knownPlatforms
+                && $from['platform'] !== $to['platform'];
+
+            if (!$incompatiblePlatforms) {
+                continue;
+            }
+
+            return [
+                'seconds' => $seconds,
+
+                'from' => [
+                    'platform' => $from['platform'],
+                    'browser' => $from['browser'],
+                    'user_agent' => $previous['user_agent'],
+                ],
+
+                'to' => [
+                    'platform' => $to['platform'],
+                    'browser' => $to['browser'],
+                    'user_agent' => $current['user_agent'],
+                ],
+            ];
+        }
+
+        return null;
+    }
+
+    private function parseUserAgentProfile(
+    string $userAgent
+    ): array {
+        $platform = match (true) {
+            str_contains($userAgent, 'iPhone'),
+            str_contains($userAgent, 'iPad') => 'ios',
+
+            str_contains($userAgent, 'Android') => 'android',
+
+            str_contains($userAgent, 'Windows NT') => 'windows',
+
+            str_contains($userAgent, 'Macintosh') => 'macos',
+
+            str_contains($userAgent, 'Linux') => 'linux',
+
+            default => 'unknown',
+        };
+
+        $browser = match (true) {
+            str_contains($userAgent, 'EdgA/') => 'edge_android',
+
+            str_contains($userAgent, 'EdgiOS/') => 'edge_ios',
+
+            str_contains($userAgent, 'Edg/') => 'edge',
+
+            str_contains($userAgent, 'CriOS/') => 'chrome_ios',
+
+            str_contains($userAgent, 'Chrome/') => 'chrome',
+
+            str_contains($userAgent, 'Firefox/')
+                || str_contains($userAgent, 'FxiOS/') => 'firefox',
+
+            str_contains($userAgent, 'Safari/')
+                && str_contains($userAgent, 'Version/') => 'safari',
+
+            default => 'unknown',
+        };
+
+        return [
+            'platform' => $platform,
+            'browser' => $browser,
+        ];
     }
 }

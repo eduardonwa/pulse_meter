@@ -23,10 +23,8 @@
     
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <meta
-        name="product-events-endpoint"
-        content="{{ route('analytics.events.store') }}"
-    >
+    <meta name="product-events-endpoint" content="{{ route('analytics.events.store') }}">
+    
     @vite(['resources/styles/main.scss', 'resources/js/app.js'])
     
     <style> [x-cloak] { display: none !important; } </style>
