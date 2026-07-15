@@ -46,8 +46,7 @@
                 @foreach ($cards as $card)
                     @php
                         $key = $card['key'];
-                        $isActive =
-                            $this->sessionTypeFilters[$key] ?? false;
+                        $isActive = $this->sessionTypeFilters[$key] ?? false;
                     @endphp
     
                     <button

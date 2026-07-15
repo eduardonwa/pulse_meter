@@ -34,6 +34,11 @@ return new class extends Migration
             $table->index(['event_name', 'occurred_at']);
             $table->index(['visitor_id', 'occurred_at']);
             $table->index(['session_id', 'occurred_at']);
+
+            $table->string('ip_address', 45)->nullable();
+            $table->text('user_agent')->nullable();
+            
+            $table->index(['ip_address', 'occurred_at']);
         });
     }
 

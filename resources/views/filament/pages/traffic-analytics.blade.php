@@ -55,7 +55,7 @@
             <section class="sessions" aria-labelledby="sessions-title">
                 <header class="sessions__header">
                     <h2 class="title" id="title">Sessions</h2>
-                    <p class="description"> These are interpreted visits rather than individual log entries </p>
+                    <p class="description"> Interpreted visits with server requests and product activity. </p>
                 </header>
     
                 @include('filament.pages.traffic-analysis.session.controls')

@@ -1,5 +1,5 @@
 <div class="sessions-results" aria-live="polite">
-    @forelse ($this->paginatedSessions as $session)
+    @forelse ($this->paginatedCorrelatedSessions as $session)
         @php
             $classification = $session['classification'] ?? 'unknown';
             $risk = $session['risk_level'] ?? 'neutral';
@@ -43,7 +43,7 @@
         @endphp
 
         {{-- log info breakdown --}}
-        <article class="session-entry" aria-labelledby="{{ $sessionId }}">
+        <article class="session-entry" aria-labelledby="{{ $sessionId }}" x-data="{ sessionTab: 'requests' }">
             {{-- general info --}}
             <header class="session-entry__header">
                 <div class="summary">
@@ -165,77 +165,113 @@
                     </div>
                 </div>
             </section>
-                
-            {{-- reason --}}
-            <section class="session-entry__reason" aria-labelledby="{{ $sessionId }}-reason">
-                <h2 class="section-title" id="{{ $sessionId }}-reason">
-                    Reason
-                </h2>
 
-                <p class="reason-text">
-                    {{ $session['reason'] ?? '—' }}
-                </p>
-            </section>
+            <div class="session-entry__tabs" role="tablist" aria-label="Session activity">
+                <button class="tab-btn"
+                    type="button"
+                    role="tab"
+                    x-on:click="sessionTab = 'requests'"
+                    x-bind:aria-selected="sessionTab === 'requests'"
+                    x-bind:class="{'is-active': sessionTab === 'requests'}"
+                >
+                    Requests
 
-            {{-- paths --}}
-            <div class="session-entry__paths">
-                <h2 class="section-title" id="{{ $sessionId }}-paths">Paths</h2>
+                    <span>({{ $session['requests_count'] ?? 0 }})</span>
+                </button>
 
-                <section class="session-entry__paths-section" aria-labelledby="{{ $sessionId }}-paths">
-                    <h2 class="requested-paths-title" id="{{ $sessionId }}-paths">
-                        requested
+                <button class="tab-btn"
+                    type="button"
+                    role="tab"
+                    x-on:click="sessionTab = 'events'"
+                    x-bind:aria-selected="sessionTab === 'events'"
+                    x-bind:class="{'is-active': sessionTab === 'events'}"
+                >
+                    Events
+
+                    <span>({{ $session['product_events_count'] ?? 0 }})</span>
+                </button>
+            </div>
+
+            {{-- Contenido de Requests --}}    
+            <div class="session-entry__details" x-show="sessionTab === 'requests'">
+                {{-- reason --}}
+                <section class="session-entry__reason" aria-labelledby="{{ $sessionId }}-reason">
+                    <h2 class="section-title" id="{{ $sessionId }}-reason">
+                        Reason
                     </h2>
-                    
-                    @if (empty($visiblePaths))
-                        <p class="session-entry__empty-message">
-                            No paths recorded.
-                        </p>
-                    @else
-                        <ul class="list">
-                            @foreach ($visiblePaths as $path)
-                                <li class="item">
-                                    <p class="value">{{ $path }}</p>
-                                </li>
-                            @endforeach
-
-                            @if ($hiddenPathsCount > 0)
-                                <li class="session-entry__path-item session-entry__path-item--additional" >
-                                    {{ $hiddenPathsCount }}
-                                    additional paths
-                                </li>
-                            @endif
-                        </ul>
-                    @endif
+    
+                    <p class="reason-text">
+                        {{ $session['reason'] ?? '—' }}
+                    </p>
                 </section>
-
-                <section class="session-entry__paths-section" aria-labelledby="{{ $sessionId }}-sensitive-paths">
-                    <h2 class="sensitive-paths-title" id="{{ $sessionId }}-sensitive-paths">
-                        Sensitive
+    
+                {{-- paths --}}
+                <div class="session-entry__paths">
+                    <h2 class="section-title" id="{{ $sessionId }}-paths">Paths</h2>
+    
+                    <section class="session-entry__paths-section" aria-labelledby="{{ $sessionId }}-paths">
+                        <h2 class="requested-paths-title" id="{{ $sessionId }}-paths">
+                            requested
+                        </h2>
+                        
+                        @if (empty($visiblePaths))
+                            <p class="session-entry__empty-message">
+                                No paths recorded.
+                            </p>
+                        @else
+                            <ul class="list">
+                                @foreach ($visiblePaths as $path)
+                                    <li class="item">
+                                        <p class="value">{{ $path }}</p>
+                                    </li>
+                                @endforeach
+    
+                                @if ($hiddenPathsCount > 0)
+                                    <li class="session-entry__path-item session-entry__path-item--additional" >
+                                        {{ $hiddenPathsCount }}
+                                        additional paths
+                                    </li>
+                                @endif
+                            </ul>
+                        @endif
+                    </section>
+    
+                    <section class="session-entry__paths-section" aria-labelledby="{{ $sessionId }}-sensitive-paths">
+                        <h2 class="sensitive-paths-title" id="{{ $sessionId }}-sensitive-paths">
+                            Sensitive
+                        </h2>
+    
+                        @if (empty($sensitivePaths))
+                            <p class="session-entry__empty-message">
+                                No sensitive paths detected.
+                            </p>
+                        @else
+                            <ul class="list">
+                                @foreach ($sensitivePaths as $path)
+                                    <li class="item">
+                                        <p class="value">{{ $path }}</p>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        @endif
+                    </section>
+                </div>
+    
+                {{-- navegador --}}
+                <section class="session-entry__client" aria-labelledby="{{ $sessionId }}-client">
+                    <span class="section-title">user agent</span>
+                    <h2 class="user-agent" id="{{ $sessionId }}-client">
+                        {{ $session['user_agent'] ?? '—' }}
                     </h2>
-
-                    @if (empty($sensitivePaths))
-                        <p class="session-entry__empty-message">
-                            No sensitive paths detected.
-                        </p>
-                    @else
-                        <ul class="list">
-                            @foreach ($sensitivePaths as $path)
-                                <li class="item">
-                                    <p class="value">{{ $path }}</p>
-                                </li>
-                            @endforeach
-                        </ul>
-                    @endif
                 </section>
             </div>
 
-            {{-- navegador --}}
-            <section class="session-entry__client" aria-labelledby="{{ $sessionId }}-client">
-                <span class="section-title">user agent</span>
-                <h2 class="user-agent" id="{{ $sessionId }}-client">
-                    {{ $session['user_agent'] ?? '—' }}
-                </h2>
-            </section>
+            {{-- Contenido de Events --}}
+            <div class="session-entry__details" x-show="sessionTab === 'events'" x-cloak>
+                @include('filament.pages.traffic-analysis.session.event-results', [
+                    'productSessions' =>  $session['product_sessions'] ?? []
+                ])
+            </div>
         </article>
     @empty
         <p class="sessions-results__empty" role="status">

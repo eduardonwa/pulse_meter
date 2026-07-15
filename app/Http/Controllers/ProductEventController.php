@@ -34,6 +34,10 @@ class ProductEventController extends Controller
             [
                 'visitor_id' => $data['visitor_id'],
                 'session_id' => $data['session_id'],
+
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+
                 'event_name' => $eventName,
                 'stage' => $stage,
                 'properties' => $data['properties'] ?? [],
