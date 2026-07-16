@@ -48,9 +48,9 @@
         </section>
     @else
         <div class="traffic-analysis">
-            @include('filament.pages.traffic-analysis.snapshot')
+            @include('filament.pages.traffic-analytics.snapshot')
             
-            @include('filament.pages.traffic-analysis.breakdown')
+            @include('filament.pages.traffic-analytics.breakdown')
 
             <section class="sessions" aria-labelledby="sessions-title">
                 <header class="sessions__header">
@@ -58,9 +58,9 @@
                     <p class="description"> Interpreted visits with server requests and product activity. </p>
                 </header>
     
-                @include('filament.pages.traffic-analysis.session.controls')
+                @include('filament.pages.traffic-analytics.session.controls')
     
-                @include('filament.pages.traffic-analysis.session.results')
+                @include('filament.pages.traffic-analytics.session.results')
             </section>
         </div>
     @endif

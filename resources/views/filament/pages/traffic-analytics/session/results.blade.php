@@ -273,7 +273,7 @@
 
             {{-- Contenido de Events --}}
             <div class="session-entry__details" x-show="sessionTab === 'events'" x-cloak>
-                @include('filament.pages.traffic-analysis.session.event-results', [
+                @include('filament.pages.traffic-analytics.session.event-results', [
                     'productSessions' =>  $session['product_sessions'] ?? []
                 ])
             </div>

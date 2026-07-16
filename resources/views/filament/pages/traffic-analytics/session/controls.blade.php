@@ -1,5 +1,5 @@
 <div class="sessions-controls">
-    <x-traffic-analysis.navigator
+    <x-traffic-analytics.navigator
         navigation-label="Session date navigation"
         previous-action="previousSessionDay"
         next-action="nextSessionDay"
@@ -16,9 +16,9 @@
         <span class="sessions-controls__summary-secondary">
             {{ $this->selectedDateSessionsCount }} sessions
         </span>
-    </x-traffic-analysis.navigator>
+    </x-traffic-analytics.navigator>
 
-    <x-traffic-analysis.navigator
+    <x-traffic-analytics.navigator
         navigation-label="Sessions pagination"
 
         first-action="firstSessionsPage"
@@ -46,7 +46,7 @@
         <span class="sessions-controls__summary-secondary">
             For this day
         </span>
-    </x-traffic-analysis.navigator>
+    </x-traffic-analytics.navigator>
 
     <form class="sessions-control__filters" aria-label="Session filters">
         <fieldset>
