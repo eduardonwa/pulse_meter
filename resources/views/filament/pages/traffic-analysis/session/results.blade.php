@@ -1,6 +1,7 @@
 <div class="sessions-results" aria-live="polite">
     @forelse ($this->paginatedCorrelatedSessions as $session)
         @php
+            $sessionNumber = (($this->sessionsPage - 1) * $this->sessionsPerPage) + $loop->iteration;
             $classification = $session['classification'] ?? 'unknown';
             $risk = $session['risk_level'] ?? 'neutral';
             $paths = $session['paths'] ?? [];
@@ -40,10 +41,14 @@
                     . ($firstSeenValue ?? '')
                     . ($session['user_agent'] ?? '')
                 );
-        @endphp
 
+        @endphp
+    
         {{-- log info breakdown --}}
         <article class="session-entry" aria-labelledby="{{ $sessionId }}" x-data="{ sessionTab: 'requests' }">
+            <span class="chip-number" aria-label="Session number {{ $sessionNumber }}">
+                #{{ $sessionNumber }}
+            </span>
             {{-- general info --}}
             <header class="session-entry__header">
                 <div class="summary">
