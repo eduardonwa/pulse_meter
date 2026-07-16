@@ -6,7 +6,7 @@ trait PaginatesTrafficSessions
 {
     public int $sessionsPage = 1;
 
-    public int $sessionsPerPage = 5;
+    public int $sessionsPerPage = 10;
 
     public function getTotalSessionPages(): int
     {
@@ -27,26 +27,42 @@ trait PaginatesTrafficSessions
         );
     }
 
-    public function nextSessionsPage(): void
+    public function goToSessionsPage(int $page): void
     {
-        if ($this->sessionsPage >= $this->getTotalSessionPages()) {
-            return;
-        }
+        $this->sessionsPage = max(
+            1,
+            min($page, $this->getTotalSessionPages())
+        );
+    }
 
-        $this->sessionsPage++;
+    public function firstSessionsPage(): void
+    {
+        $this->goToSessionsPage(1);
     }
 
     public function previousSessionsPage(): void
     {
-        if ($this->sessionsPage <= 1) {
-            return;
-        }
+        $this->goToSessionsPage(
+            $this->sessionsPage - 1
+        );
+    }
 
-        $this->sessionsPage--;
+    public function nextSessionsPage(): void
+    {
+        $this->goToSessionsPage(
+            $this->sessionsPage + 1
+        );
+    }
+
+    public function lastSessionsPage(): void
+    {
+        $this->goToSessionsPage(
+            $this->getTotalSessionPages()
+        );
     }
 
     protected function resetSessionsPagination(): void
     {
-        $this->sessionsPage = 1;
+        $this->goToSessionsPage(1);
     }
 }

@@ -20,12 +20,22 @@
 
     <x-traffic-analysis.navigator
         navigation-label="Sessions pagination"
+
+        first-action="firstSessionsPage"
         previous-action="previousSessionsPage"
         next-action="nextSessionsPage"
+        last-action="lastSessionsPage"
+
+        first-label="First"
         previous-label="Previous"
         next-label="Next"
+        last-label="Last"
+
+        :first-disabled="$this->sessionsPage <= 1"
         :previous-disabled="$this->sessionsPage <= 1"
         :next-disabled="$this->sessionsPage >= $this->getTotalSessionPages()"
+        :last-disabled="$this->sessionsPage >= $this->getTotalSessionPages()"
+        
         variant="pagination"
     >
         <strong class="sessions-controls__summary-primary">

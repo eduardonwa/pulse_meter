@@ -62,16 +62,18 @@
             }
         }
 
-        & .sessions-controls__button--previous {
-            justify-self: start;
-            align-items: flex-start;
-            text-align: start;
+        .sessions-controls__button-group {
+            display: flex;
+            align-items: center;
+            gap: 3px;
         }
 
-        & .sessions-controls__button--next {
+        .sessions-controls__button-group--backward {
+            justify-content: flex-start;
+        }
+
+        .sessions-controls__button-group--forward {
             justify-self: end;
-            align-items: flex-end;
-            text-align: end;
         }
 
         & .sessions-controls__button:disabled {
