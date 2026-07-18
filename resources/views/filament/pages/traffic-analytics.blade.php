@@ -2,6 +2,8 @@
     @php
         $traffic = $this->traffic;
         $summary = $traffic['summary'] ?? [];
+        $bounceSummary = $this->bounceSummary;
+        $bounceRate = $bounceSummary['bounce_rate'] ?? null;
 
         $generatedAtParts = \App\Services\UserDateFormatter::dateTimeParts(
             $traffic['generated_at'] ?? null,
@@ -10,9 +12,15 @@
 
         $cards = [
             [
-                'key' => 'human_like',
-                'label' => 'Human (likely)',
-                'description' => 'Loaded the homepage and recognized app assets.',
+                'key' => 'browser_like',
+                'label' => 'Browser-like',
+                'description' => 'Loaded a valid page with browser or product signals.',
+            ],
+            [
+                'key' => 'automation_suspected',
+                'label' => 'Automation suspected',
+                'description' =>
+                    'Browser-like traffic with signs of automation.'
             ],
             [
                 'key' => 'scanner',

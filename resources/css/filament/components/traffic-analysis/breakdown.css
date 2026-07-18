@@ -8,22 +8,24 @@
 
     .traffic-breakdown__title { font-size: 14px; }
 
-    .traffic-breakdown__shell {
+    .classification {
+        min-width: 0;
+        max-width: 100%;
         padding-block: 0.5rem;
 
-        display: flex;
-        gap: 1rem;
-        max-width: 100%;
-        min-width: 0;
+        display: grid;
+        grid-template-columns: repeat(4, max-content);
+        gap: 2rem;
+
         overflow-x: auto;
-        padding-block-end: 0.5rem;
         overscroll-behavior-inline: contain;
     }
 
-    .traffic-breakdown__stat {
-        flex: 0 0 6.5rem;
-
+    .classification__stat {
+        min-width: max-content;
+        
         .label {
+            white-space: nowrap;
             font-size: 14px;
             color: var(--color-neutral-400);
         }

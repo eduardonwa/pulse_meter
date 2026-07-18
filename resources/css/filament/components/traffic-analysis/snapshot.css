@@ -5,26 +5,35 @@
     border-radius: var(--radius-md);
 
     & .traffic-snapshot__generated-at {
-        padding: 1rem;
+        padding: .5rem;
 
         border: 1px solid var(--color-neutral-800);
         border-radius: var(--radius-md);
-        background: var(--color-neutral-950);
 
         .last-updated-title {
+            padding-block-end: .5rem;
             font-size: 14px;
-            color: var(--color-neutral-500);
         }
 
         & .traffic-snapshot__timeframe {
             display: flex;
-            flex-direction: column;
+            align-items: center;
+            flex-wrap: wrap;
+
+            gap: .5rem;
             font-size: 14px;
-            color: var(--color-neutral-300);
+            color: var(--color-neutral-400);
+
+            @media (min-width: 1280px) {
+                gap: 0;
+                flex-wrap: nowrap;
+                align-items: flex-start;
+                flex-direction: column;
+            }
         }
 
         .date {
-            color: var(--color-neutral-100);
+            color: var(--color-neutral-200);
         }
     }
 
@@ -32,24 +41,34 @@
         padding: 1rem 0;
         padding-block-end: 0;
 
-        .traffic-overview-title { font-size: 14px; }
+        .traffic-overview-title {
+            font-size: 14px;
+            padding-block-end: 1rem;
+        }
+
+        .traffic-snapshot__group {
+            margin-block: .8rem;
+        }
 
         & .traffic-snapshot__metrics-shell {
-            padding-inline: 0.2rem;
-
-            display: flex;
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: 1rem;
-            max-width: 100%;
+
+            width: 100%;
             min-width: 0;
-            overflow-x: auto;
-            padding-block-end: 0.5rem;
-            overscroll-behavior-inline: contain;
+            padding: 1rem;
+
+            border: 1px solid var(--color-neutral-800);
+            border-radius: var(--radius-md);
+            background: var(--color-neutral-950);
+
+            @media (min-width: 1280px) {
+                grid-template-columns: 1fr;
+            }
         }
 
         & .traffic-snapshot__metric {
-            flex: 0 0 6.5rem;
-            margin-block: 0.85rem;
-
             .label {
                 font-size: 14px;
                 color: var(--color-neutral-400);
@@ -58,27 +77,6 @@
             .metric {
                 font-size: 24px;
                 font-weight: 600;
-            }
-        }
-    }
-}
-
-@media (min-width: 1280px) {
-    .traffic-snapshot {
-        & .traffic-snapshot__metrics {
-            margin-inline: 1rem;
-
-            & .traffic-snapshot__metrics-shell {
-                flex-direction: column;
-                margin-block-start: 1rem;
-
-                .traffic-snapshot__metric {
-                    margin-block: .2rem;
-                    
-                    flex: 0 0 auto;
-                    width: 100%;
-                    height: auto;
-                }
             }
         }
     }

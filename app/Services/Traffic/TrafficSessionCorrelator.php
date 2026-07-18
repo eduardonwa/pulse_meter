@@ -6,6 +6,11 @@ use Illuminate\Support\Carbon;
 
 class TrafficSessionCorrelator
 {
+    public function __construct(
+        private TrafficSessionAnalytics $sessionAnalytics
+    ) {
+    }
+
     /**
      * Attach matching product sessions to each request session.
      *
@@ -42,8 +47,10 @@ class TrafficSessionCorrelator
                         fn (array $session): int =>
                             (int) ($session['events_count'] ?? 0)
                     );
-
-                return $requestSession;
+                    
+                return $this->sessionAnalytics->analyze(
+                    $requestSession
+                );
             })
             ->all();
     }

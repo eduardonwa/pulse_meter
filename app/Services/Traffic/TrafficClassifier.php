@@ -8,67 +8,23 @@ class TrafficClassifier
 {
     private array $internalIps;
 
-    public function __construct()
-    {
-        $this->internalIps = config('traffic.internal_ips', ['127.0.0.1']);
+    private TrafficRequestInspector $requestInspector;
+
+    public function __construct(
+        TrafficRequestInspector $requestInspector
+    ) {
+        $this->requestInspector = $requestInspector;   
+
+        $this->internalIps = config(
+            'traffic.internal_ips',
+            ['127.0.0.1']
+        );
     }
-
-    private array $adminPathStartsWith = [
-        '/admin',
-        '/js/filament/',
-        '/css/filament/',
-        '/fonts/filament/',
-    ];
-
-    private array $sensitivePathStartsWith = [
-        '/.env',
-        '/.aws',
-        '/.git',
-        '/.stripe',
-        '/.docker',
-        '/.vscode',
-        '/.cache',
-        '/wp-login.php',
-        '/wp-admin',
-        '/xmlrpc.php',
-        '/phpmyadmin',
-        '/pma',
-        '/adminer',
-    ];
-
-    private array $sensitivePathContains = [
-        '..\\',
-        '/../',
-        'var/log/',
-        'access.log',
-        'credentials',
-        'secrets',
-        'config.json',
-        'sftp.json',
-        '.amplifyrc',
-        '.boto',
-        '.dockerignore',
-    ];
-
-    private array $appAssetStartsWith = [
-        '/build/assets/',
-        '/audio/click-profiles/',
-    ];
-
-    private array $knownAppAssets = [
-        '/favicon.ico',
-        '/click.wav',
-        '/accent.wav',
-    ];
-
-    private array $appAssetPatterns = [
-        '/^\/main-[a-z0-9_-]+\.css$/i',
-        '/^\/app-[a-z0-9_-]+\.js$/i',
-        '/^\/inter-variablefont[^\/]*\.woff2$/i',
-    ];
 
     public function classify(array $requests): array
     {
+        $reasonCodes = [];
+
         $userAgents = collect($requests)
             ->pluck('user_agent')
             ->filter()
@@ -125,20 +81,29 @@ class TrafficClassifier
                 && (int) ($request['status'] ?? 0) === 200;
         });
 
-        $loadedAssets = $paths->contains(function ($path) {
-            return $this->isAppAsset($path);
-        });
+        $requestedPage = collect($requests)->contains(
+            fn (array $request): bool =>
+                $this->requestInspector
+                    ->isSuccessfulPageRequest($request)
+        );
+
+        $loadedAssets = $paths->contains(
+            fn (string $path): bool =>
+                $this->requestInspector->isAppAsset($path)
+        );
 
         $sensitivePaths = $paths
-            ->filter(fn ($path) => $this->isSensitivePath($path))
+            ->filter(
+                fn (string $path): bool =>
+                    $this->requestInspector
+                        ->isSensitivePath($path)
+            )
             ->unique()
             ->values();
 
         $hasSensitiveRequest = $sensitivePaths->isNotEmpty();
 
         $hasBlockedStatus = $statuses->contains(444);
-
-        $reasonCodes = [];
 
         if ($hasSensitiveRequest) {
             $reasonCodes[] = 'requested_sensitive_path';
@@ -154,6 +119,7 @@ class TrafficClassifier
 
         $requestsCount = count($requests);
         
+        // INTERAL
         if ($this->isInternalIp($ip)) {
             return [
                 'classification' => 'internal',
@@ -171,6 +137,7 @@ class TrafficClassifier
             ];
         }
         
+        // SCANNER
         if ($hasSensitiveRequest || $hasBlockedStatus) {
             return [
                 'classification' => 'scanner',
@@ -194,6 +161,7 @@ class TrafficClassifier
             ];
         }
 
+        // AUTOMATION
         if ($hasRapidDeviceSwitch) {
             return [
                 'classification' => 'automation_suspected',
@@ -226,24 +194,49 @@ class TrafficClassifier
             ];
         }
 
-        if ($requestedHome && $loadedAssets) {
+        // BROWSER
+        if ($requestedPage && ($loadedAssets || $sentProductAnalytics)) {
+            $browserReasonCodes = $reasonCodes;
+
+            $browserReasonCodes[] = 'requested_application_page';
+
+            if ($loadedAssets) {
+                $browserReasonCodes[] = 'loaded_app_assets';
+            }
+
+            if ($sentProductAnalytics) {
+                $browserReasonCodes[] = 'product_analytics_completed';
+            }
+
             return [
                 'classification' => 'browser_like',
-                'confidence' => 'possible',
+
+                'confidence' => $sentProductAnalytics
+                    ? 'probable'
+                    : 'possible',
+
                 'risk_level' => 'clean',
-                'reason' => 'Loaded homepage and app assets',
-                'reason_codes' => [
-                    'loaded_homepage',
-                    'loaded_app_assets',
-                ],
+
+                'reason' => $sentProductAnalytics
+                    ? 'Requested an application page and sent product analytics'
+                    : 'Requested an application page and loaded app assets',
+
+                'reason_codes' => array_values(array_unique($browserReasonCodes)),
+
                 'requests_count' => $requestsCount,
-                'requested_home' => true,
-                'loaded_assets' => true,
+
+                'requested_home' => $requestedHome,
+                'requested_page' => true,
+                'loaded_assets' => $loadedAssets,
+
+                'sent_product_analytics' => $sentProductAnalytics,
+
                 'requested_sensitive_paths' => false,
                 'sensitive_paths' => [],
             ];
         }
 
+        // UNKNOWN
         return [
             'classification' => 'unknown',
             'risk_level' => 'neutral',
@@ -268,63 +261,14 @@ class TrafficClassifier
         return in_array($ip, $this->internalIps, true);
     }
 
-    private function isSensitivePath(string $path): bool
-    {
-        $normalizedPath = $this->normalizePath($path);
-
-        foreach ($this->sensitivePathStartsWith as $pattern) {
-            if (Str::startsWith($normalizedPath, strtolower($pattern))) {
-                return true;
-            }
-        }
-
-        foreach ($this->sensitivePathContains as $pattern) {
-            if (Str::contains($normalizedPath, strtolower($pattern))) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private function isAppAsset(string $path): bool
-    {
-        $normalizedPath = $this->normalizePath($path);
-
-        foreach ($this->knownAppAssets as $asset) {
-            if ($normalizedPath === strtolower($asset)) {
-                return true;
-            }
-        }
-
-        foreach ($this->appAssetStartsWith as $prefix) {
-            if (Str::startsWith($normalizedPath, strtolower($prefix))) {
-                return true;
-            }
-        }
-
-        foreach ($this->appAssetPatterns as $pattern) {
-            if (preg_match($pattern, $normalizedPath) === 1) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
     private function requestedAdminArea(array $requests): bool
     {
-        foreach ($requests as $request) {
-            $path = $this->normalizePath($request['path'] ?? '');
-
-            foreach ($this->adminPathStartsWith as $adminPath) {
-                if (Str::startsWith($path, strtolower($adminPath))) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
+        return collect($requests)->contains(
+            fn (array $request): bool =>
+                $this->requestInspector->isAdminPath(
+                    (string) ($request['path'] ?? '')
+                )
+        );
     }
 
     private function buildReasonText(
@@ -351,14 +295,6 @@ class TrafficClassifier
         }
 
         return ucfirst(implode(', ', $reasons));
-    }
-
-    private function normalizePath(string $path): string
-    {
-        $path = explode('?', $path, 2)[0];
-        $path = explode('#', $path, 2)[0];
-
-        return strtolower(urldecode($path));
     }
 
     private function detectRapidDeviceSwitch(

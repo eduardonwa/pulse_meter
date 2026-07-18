@@ -45,7 +45,7 @@ class NginxLogParser
 
     protected function parseRequest(string $request): array
     {
-        $parts = explode(' ', $request);
+        $parts = preg_split('/\s+/', trim($request), 3);
 
         return [
             $parts[0] ?? null,

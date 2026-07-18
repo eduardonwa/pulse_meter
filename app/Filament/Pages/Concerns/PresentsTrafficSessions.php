@@ -11,7 +11,8 @@ trait PresentsTrafficSessions
         );
 
         return match ($classification) {
-            'human_like' => 'Human (likely)',
+            'browser_like' => 'Browser-like',
+            'automation_suspected' => 'Automation suspected',
             'scanner' => 'Scanner',
             'internal' => 'Internal',
             default => 'Unknown',

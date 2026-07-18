@@ -115,8 +115,9 @@ class GenerateTrafficSummary extends Command
             'outside_history_window' => $outsideWindow,
             'total_sessions' => count($sessions),
             'summary' => [
-                'human_like' => $summaryCounts->get('human_like', 0),
+                'browser_like' => $summaryCounts->get('browser_like', 0),
                 'scanner' => $summaryCounts->get('scanner', 0),
+                'automation_suspected' => $summaryCounts->get('automation_suspected', 0),
                 'internal' => $summaryCounts->get('internal', 0),
                 'unknown' => $summaryCounts->get('unknown', 0),
             ],

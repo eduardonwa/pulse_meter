@@ -383,10 +383,12 @@
     .event-entry__time { color: var(--color-neutral-400); }
 
     .event-entry__toggle {
-        width: 100%;
+        width: fit-content;
+        margin-left: auto;
+
         display: flex;
         align-items: center;
-        justify-content: flex-end;
+
         font-size: 12px;
         color: var(--color-neutral-500);
         transition: color 150ms ease-in-out;

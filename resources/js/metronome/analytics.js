@@ -59,9 +59,7 @@ export function analytics() {
         },
 
         endPlaybackTracking(stopReason = 'user') {
-            if (!this.playbackAnalyticsStartedAt) {
-                return
-            }
+            if (!this.playbackAnalyticsStartedAt) { return }
 
             clearTimeout(this.practiceEngagementTimer)
 

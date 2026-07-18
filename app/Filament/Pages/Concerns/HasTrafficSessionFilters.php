@@ -7,8 +7,9 @@ trait HasTrafficSessionFilters
     abstract public function traffic(): array;
     
     public array $sessionTypeFilters = [
-        'human_like' => true,
+        'browser_like' => true,
         'scanner' => true,
+        'automation_suspected' => true,
         'internal' => true,
         'unknown' => true,
     ];
@@ -16,8 +17,9 @@ trait HasTrafficSessionFilters
     protected function defaultSessionTypeFilters(): array
     {
         return [
-            'human_like' => true,
+            'browser_like' => true,
             'scanner' => true,
+            'automation_suspected' => true,
             'internal' => true,
             'unknown' => true,
         ];
@@ -32,7 +34,8 @@ trait HasTrafficSessionFilters
             $saved = [];
         }
 
-        // Evita recuperar filtros antiguos como human_probable.
+        // Descarta filtros guardados que ya no existen,
+        // como human_like o human_probable 
         $saved = array_intersect_key($saved, $defaults);
 
         $this->sessionTypeFilters = array_replace(
@@ -47,8 +50,9 @@ trait HasTrafficSessionFilters
 
         return collect($traffic['sessions'] ?? [])
             ->filter(function (array $session): bool {
-                $classification = $this->normalizeClassification(
-                    $session['classification'] ?? null
+                $classification =
+                    $this->normalizeClassification(
+                        $session['classification'] ?? null
                 );
 
                 return $this->sessionTypeFilters[$classification] ?? false;
@@ -90,7 +94,8 @@ trait HasTrafficSessionFilters
     protected function normalizeClassification(?string $classification): string
     {
         return match ($classification) {
-            'human_probable' => 'human_like',
+            'human_probable',
+            'human_like' => 'browser_like',
             'suspicious' => 'scanner',
             null => 'unknown',
             default => $classification,

@@ -1,5 +1,11 @@
 const debounceTimers = new Map();
 
+let engagementTimer = null;
+let engagementEventSent = false;
+
+let visibleStartedAt = null;
+let accumulatedVisibleMilliseconds = 0;
+
 function createUuid() {
     if (
         typeof globalThis.crypto?.randomUUID === 'function'
@@ -90,10 +96,7 @@ export function trackProductEvent(
     eventName,
     properties = {}
 ) {
-    const endpoint = getMetaContent(
-        'product-events-endpoint'
-    );
-
+    const endpoint = getMetaContent('product-events-endpoint');
     const csrfToken = getMetaContent('csrf-token');
 
     if (!endpoint || !csrfToken) {
@@ -151,7 +154,86 @@ export function trackProductEventDebounced(
     debounceTimers.set(debounceKey, timer);
 }
 
+function accumulateVisibleTime() {
+    if (visibleStartedAt === null) { return; }
+
+    accumulatedVisibleMilliseconds +=
+        performance.now() - visibleStartedAt;
+
+    visibleStartedAt = null;
+}
+
+function getVisibleTimeMilliseconds() {
+    const currentVisibleTime =
+        visibleStartedAt !== null
+            ? performance.now() - visibleStartedAt
+            : 0;
+
+    return accumulatedVisibleMilliseconds
+        + currentVisibleTime;
+}
+
+function handleVisibilityChange() {
+    if (document.visibilityState === 'visible') {
+        if (visibleStartedAt === null) {
+            visibleStartedAt = performance.now();
+        }
+
+        return;
+    }
+
+    accumulateVisibleTime();
+}
+
+function stopEngagementTimer() {
+    if (engagementTimer !== null) {
+        clearInterval(engagementTimer);
+        engagementTimer = null;
+    }
+
+    document.removeEventListener(
+        'visibilitychange',
+        handleVisibilityChange
+    );
+}
+
+function initializeEngagementTracking() {
+    if (engagementTimer !== null || engagementEventSent) {
+        return;
+    }
+
+    if (document.visibilityState === 'visible') {
+        visibleStartedAt = performance.now();
+    }
+
+    document.addEventListener(
+        'visibilitychange',
+        handleVisibilityChange
+    );
+
+    engagementTimer = setInterval(() => {
+        const activeMilliseconds =
+            getVisibleTimeMilliseconds();
+
+        if (activeMilliseconds < 10_000) {
+            return;
+        }
+
+        engagementEventSent = true;
+
+        stopEngagementTimer();
+
+        trackProductEvent('engaged_10s', {
+            active_seconds: Math.floor(
+                activeMilliseconds / 1000
+            ),
+        });
+    }, 500);
+}
+
 export function initializeProductAnalytics() {
+    initializeEngagementTracking();
+    
     const flag = 'dorelog:app-opened';
 
     try {

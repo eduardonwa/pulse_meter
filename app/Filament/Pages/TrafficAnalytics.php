@@ -7,6 +7,7 @@ use App\Filament\Pages\Concerns\NavigatesTrafficSessionDays;
 use App\Filament\Pages\Concerns\PaginatesTrafficSessions;
 use App\Filament\Pages\Concerns\PresentsTrafficSessions;
 use App\Services\Traffic\TrafficSummaryReader;
+use App\Services\Traffic\TrafficSessionAnalytics;
 use App\Services\Traffic\TrafficSessionCorrelator;
 use App\Services\Traffic\ProductEventSessionReader;
 use Filament\Pages\Page;
@@ -21,19 +22,11 @@ class TrafficAnalytics extends Page
     use PaginatesTrafficSessions;
     use PresentsTrafficSessions;
 
-    protected static string | \BackedEnum | null $navigationIcon =
-        'heroicon-o-chart-bar';
-
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-chart-bar';
     protected static ?string $navigationLabel = 'Traffic';
-
     protected static ?string $title = 'Traffic Analytics';
-
-    protected static string | \UnitEnum | null $navigationGroup =
-        'Analytics';
-
-    protected ?string $subheading =
-        'Sessions grouped by IP, User-Agent and time window.';
-     
+    protected static string | \UnitEnum | null $navigationGroup = 'Analytics';
+    protected ?string $subheading = 'Sessions grouped by IP, User-Agent and time window.';
     protected string $view = 'filament.pages.traffic-analytics';
 
     protected Width|string|null $maxContentWidth = Width::ScreenTwoExtraLarge;
@@ -53,6 +46,52 @@ class TrafficAnalytics extends Page
         return app(ProductEventSessionReader::class)->read(
             $this->selectedSessionDate,
             Auth::user()
+        );
+    }
+
+    #[Computed]
+    public function selectedDateAnalyzedSessions(): array
+    {
+        if ($this->selectedSessionDate === null) { return []; }
+
+        $requestSessions = collect($this->traffic()['sessions'] ?? [])
+            ->map(function (array $session): array {
+                $session['classification'] =
+                    $this->normalizeClassification(
+                        $session['classification'] ?? null
+                    );
+
+                return $session;
+            })
+            ->filter(
+                fn (array $session): bool =>
+                    $this->getSessionDateKey($session)
+                    === $this->selectedSessionDate
+            )
+            ->values()
+            ->all();
+
+        $productSessions = app(
+            ProductEventSessionReader::class
+        )->read(
+            $this->selectedSessionDate,
+            Auth::user()
+        );
+
+        return app(TrafficSessionCorrelator::class)
+            ->correlate(
+                $requestSessions,
+                $productSessions
+        );
+    }
+
+    #[Computed]
+    public function bounceSummary(): array
+    {
+        return app(
+            TrafficSessionAnalytics::class
+        )->summarize(
+            $this->selectedDateAnalyzedSessions()
         );
     }
 

@@ -4,6 +4,7 @@ return [
     'events' => [
         // Visita
         'app_opened' => 'visit',
+        'engaged_10s' => 'visit',
 
         // Exploración
         'tab_viewed' => 'exploration',
