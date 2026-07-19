@@ -46,11 +46,13 @@
     
         {{-- log info breakdown --}}
         <article class="session-entry" aria-labelledby="{{ $sessionId }}" x-data="{ sessionTab: 'requests' }">
+            
+            {{-- HEADER --}}
             <span class="chip-number" aria-label="Session number {{ $sessionNumber }}">
                 #{{ $sessionNumber }}
             </span>
             {{-- general info --}}
-            <header class="session-entry__header">
+            <section class="session-entry__header">
                 <div class="summary">
                     {{-- tags, visit overview --}}
                     <div class="badges">
@@ -120,7 +122,7 @@
                         </div>
                     </div>
                 </section>
-            </header>
+            </section>
             
             {{-- activity, timezone --}}
             <section class="session-entry__activity">
@@ -170,7 +172,10 @@
                     </div>
                 </div>
             </section>
+            {{-- HEADER END --}}
 
+            {{-- BODY --}}
+            {{-- Tabs --}}
             <div class="session-entry__tabs" role="tablist" aria-label="Session activity">
                 <button class="tab-btn"
                     type="button"
@@ -202,7 +207,7 @@
                 {{-- reason --}}
                 <section class="session-entry__reason" aria-labelledby="{{ $sessionId }}-reason">
                     <h2 class="section-title" id="{{ $sessionId }}-reason">
-                        Reason
+                        Summary
                     </h2>
     
                     <p class="reason-text">
@@ -274,9 +279,12 @@
             {{-- Contenido de Events --}}
             <div class="session-entry__details" x-show="sessionTab === 'events'" x-cloak>
                 @include('filament.pages.traffic-analytics.session.event-results', [
-                    'productSessions' =>  $session['product_sessions'] ?? []
+                    'session' => $session,
+                    'sessionId' => $sessionId,
+                    'productSessions' =>  $session['product_sessions'] ?? [],
                 ])
             </div>
+            {{-- BODY END --}}
         </article>
     @empty
         <p class="sessions-results__empty" role="status">

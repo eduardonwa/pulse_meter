@@ -91,7 +91,6 @@ class ProductEventSessionReader
                 return [
                     'session_id' => $sessionId,
                     'visitor_id' => $firstEvent?->visitor_id,
-
                     'ip_address' => $sessionEvents
                         ->pluck('ip_address')
                         ->filter()
@@ -104,13 +103,8 @@ class ProductEventSessionReader
 
                     'first_event_at' => $firstOccurredAt,
                     'last_event_at' => $lastOccurredAt,
-
-                    'first_event_timestamp' =>
-                        $firstOccurredAt?->timestamp,
-
-                    'last_event_timestamp' =>
-                        $lastOccurredAt?->timestamp,
-
+                    'first_event_timestamp' => $firstOccurredAt?->timestamp,
+                    'last_event_timestamp' => $lastOccurredAt?->timestamp,
                     'duration_seconds' =>
                         $firstOccurredAt && $lastOccurredAt
                             ? $firstOccurredAt->diffInSeconds(
@@ -119,14 +113,12 @@ class ProductEventSessionReader
                             : 0,
 
                     'events_count' => $sessionEvents->count(),
-
                     'highest_stage' => $this->highestStage(
                         $sessionEvents
                             ->pluck('stage')
                             ->filter()
                             ->all()
                     ),
-
                     'events' => $sessionEvents
                         ->map(
                             fn (ProductEvent $event): array => [
@@ -145,7 +137,7 @@ class ProductEventSessionReader
                         ->all(),
                 ];
             })
-            ->sortByDesc('last_event_timestamp')
+            ->sortByDesc('first_event_timestamp')
             ->values()
             ->all();
     }
