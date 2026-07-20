@@ -116,7 +116,9 @@ trait NavigatesTrafficSessionDays
 
     public function getAvailableSessionDates(): array
     {
-        $dates = collect($this->getFilteredSessions())
+        $traffic = $this->traffic();
+
+        $dates = collect($traffic['sessions'] ?? [])
             ->map(
                 fn (array $session): ?string =>
                     $this->getSessionDateKey($session)
