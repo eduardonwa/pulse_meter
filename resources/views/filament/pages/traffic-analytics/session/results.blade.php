@@ -66,7 +66,8 @@
                     </div>
 
                     <div class="overview">
-                        <span>{{ $session['requests_count'] ?? 0 }} requests</span>    
+                        <span>{{ $session['requests_count'] ?? 0 }} requests</span>
+                        —
                         <span>{{ $durationLabel }}</span>
                     </div>
                 </div>

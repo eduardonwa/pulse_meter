@@ -17,8 +17,6 @@
     $exitPath = $session['exit_path'] ?? null;
 
     $userJourneyContentId = $sessionId . '-user-journey-content';
-
-    $requestsCount = collect($session['requests'] ?? [])->count();
 @endphp
 
 <section class="user-journey">
@@ -42,6 +40,7 @@
                 @foreach ($pageJourney as $page)                        
                     @php
                         $path = $page['path'] ?? '—';
+                        
                         $pageTimestamp = $page['timestamp'] ?? null;
 
                         $pageTime =
@@ -104,21 +103,5 @@
                 @endforeach
             </ol>
         @endif
-
-        <div class="user-journey__summary">
-            <p>Session span:</p>
-            <span class="duration">
-                {{ \App\Services\UserDateFormatter::duration(
-                    $session['duration_seconds'] ?? 0
-                ) }}
-            </span>
-
-            —
-
-            <span class="requests">
-                {{ $requestsCount }}
-                {{ \Illuminate\Support\Str::plural('request', $requestsCount) }}
-            </span>
-        </div>
     </div>
 </section>

@@ -1,6 +1,12 @@
 @php
-    $sessionDetailsContentId =
-        $sessionId . '-session-details-content';
+    $sessionSpan = (int) ($session['duration_seconds'] ?? 0);
+
+    $requestsCount = (int) (
+        $session['requests_count']
+        ?? count($session['requests'] ?? [])
+    );
+
+    $sessionDetailsContentId = $sessionId . '-session-details-content';
 @endphp
 
 <x-collapse-toggle
@@ -15,6 +21,18 @@
         x-show="open"
         x-cloak
     >
+        <header class="product-session__details-header">
+            <span>
+                Session span:
+                {{ \App\Services\UserDateFormatter::duration($sessionSpan) }}
+            </span>
+            —
+            <span>
+                {{ $requestsCount }}
+                {{ \Illuminate\Support\Str::plural('request', $requestsCount) }}
+            </span>
+        </header>
+
         <div class="field">
             <span class="label"> Highest stage </span>
             <p class="value">
