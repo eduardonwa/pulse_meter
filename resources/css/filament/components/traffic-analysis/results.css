@@ -525,20 +525,23 @@
     /* MUMEROS */
     .user-journey__step--entrance .user-journey__marker {
         color: var(--color-success-100);
-        background-color: var(--color-success-600);
+        border: 1px solid var(--color-success-500);
+        background-color: #155630;
     }
 
     .user-journey__step--previous .user-journey__marker {
         color: var(--color-neutral-100);
-        background-color: var(--color-neutral-500);
+        border: 1px solid var(--color-neutral-500);
+        background-color: #353535;
     }
 
     .user-journey__step--exit .user-journey__marker {
         color: var(--color-danger-100);
-        background-color: var(--color-danger-600);
+        border: 1px solid var(--color-danger-500);
+        background-color: #761519;
     }
 
-    /* LE QUITA SOBRANTE AL ULTIMO */
+    /* LE QUITA SOBRANTE DE LA LINEA AL ULTIMO MARKER */
     .user-journey__step:not(:last-child)::after {
         content: "";
 
@@ -590,6 +593,268 @@
             color: var(--color-danger-200);
             border: 1px solid var(--color-danger-400);
             background-color: color-mix(in oklab, var(--color-danger-700) 50%, transparent);
+        }
+    }
+
+    /* EXPLORATION */
+    .product-session__exploration-content {
+        padding-inline: 1.8rem;
+    }
+    
+    .product-session__exploration-summary {
+        margin-block: 1rem;
+
+        @media (min-width: 1280px) {
+            display: flex;
+            align-items: stretch;
+            justify-content: center;
+            gap: 2rem;
+        }
+    }
+
+    .product-session__exploration-stage,
+    .product-session__exploration-engagement {
+        padding: 1rem;
+        border-radius: var(--radius-md);
+        font-size: 14px;
+
+        @media (min-width: 1280px) {
+            flex: 1;
+            width: auto;
+        }
+    }
+
+    .product-session__exploration-stage-content,
+    .product-session__exploration-engagement-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.25rem;
+        min-width: 0;
+
+        @media (min-width: 1280px) {
+            display: grid;
+            grid-template-columns: 40px minmax(0, 1fr);
+            grid-template-rows: auto auto;
+            align-items: center;
+            column-gap: 0.75rem;
+            row-gap: 0.25rem;
+        }
+    }
+
+    .product-session__exploration-label {
+        @media (min-width: 1280px) {
+            grid-column: 2;
+            grid-row: 1;
+        }
+    }
+    
+    /* STAGE PROPS */
+    .product-session__exploration-stage {
+        --stage-color: var(--color-neutral-300);
+        --stage-border: var(--color-neutral-600);
+        --stage-background: transparent;
+
+        border: 1px solid var(--stage-border);
+        background-color: var(--stage-background);
+    }
+
+    .product-session__exploration-stage-icon {
+        width: 28px;
+        height: 28px;
+
+        color: var(--stage-color);
+
+        @media (min-width: 1280px) {
+            grid-column: 1;
+            grid-row: 1 / 3;
+
+            align-self: center;
+            justify-self: center;
+
+            width: 34px;
+            height: 34px;
+        }
+    }
+
+    .product-session__exploration-stage-value {
+        color: var(--stage-color);
+
+        @media (min-width: 1280px) {
+            grid-column: 2;
+            grid-row: 2;
+        }
+    }
+
+    /* VARIANTES DE STAGE */
+    .product-session__exploration-stage--none {
+        --stage-color: var(--color-neutral-300);
+        --stage-border: var(--color-neutral-600);
+        --stage-background:
+            color-mix(
+                in oklab,
+                var(--color-neutral-500) 12%,
+                transparent
+            );
+    }
+
+    .product-session__exploration-stage--visit {
+        --stage-color: var(--color-primary-300);
+        --stage-border: var(--color-primary-600);
+        --stage-background:
+            color-mix(
+                in oklab,
+                var(--color-primary-500) 12%,
+                transparent
+            );
+    }
+
+    .product-session__exploration-stage--exploration {
+        --stage-color: var(--color-success-300);
+        --stage-border: var(--color-success-600);
+        --stage-background:
+            color-mix(
+                in oklab,
+                var(--color-success-500) 12%,
+                transparent
+            );
+    }
+
+    .product-session__exploration-stage--trial {
+        --stage-color: var(--color-warning-300);
+        --stage-border: var(--color-warning-600);
+        --stage-background:
+            color-mix(
+                in oklab,
+                var(--color-warning-500) 12%,
+                transparent
+            );
+    }
+
+    .product-session__exploration-stage--activation {
+        --stage-color: var(--color-danger-300);
+        --stage-border: var(--color-danger-600);
+        --stage-background:
+            color-mix(
+                in oklab,
+                var(--color-danger-500) 12%,
+                transparent
+            );
+    }
+
+    /* ENGAGEMENT PROPS */
+    .product-session__exploration-engagement {
+        --engagement-color: var(--color-neutral-300);
+        --engagement-border: var(--color-neutral-600);
+        --engagement-background: transparent;
+
+        border: 1px solid var(--engagement-border);
+        background-color: var(--engagement-background);
+    }
+
+    .product-session__exploration-engagement-icon {
+        width: 28px;
+        height: 28px;
+
+        color: var(--engagement-color);
+
+        @media (min-width: 1280px) {
+            grid-column: 1;
+            grid-row: 1 / 3;
+
+            align-self: center;
+            justify-self: center;
+
+            width: 34px;
+            height: 34px;
+        }
+    }
+
+    .product-session__exploration-engagement-value {
+        color: var(--engagement-color);
+
+        @media (min-width: 1280px) {
+            grid-column: 2;
+            grid-row: 2;
+        }
+    }
+
+    /* VARIATES DE ENGAGEMENT */
+    .product-session__exploration-engagement--neutral {
+        --engagement-color: var(--color-neutral-300);
+        --engagement-border: var(--color-neutral-600);
+        --engagement-background:
+            color-mix(
+                in oklab,
+                var(--color-neutral-500) 12%,
+                transparent
+            );
+    }
+
+    .product-session__exploration-engagement--success {
+        --engagement-color: var(--color-success-300);
+        --engagement-border: var(--color-success-600);
+        --engagement-background:
+            color-mix(
+                in oklab,
+                var(--color-success-500) 12%,
+                transparent
+            );
+    }
+
+    /* METRIC PROPS */
+    .product-session__exploration-metrics {
+        @apply space-y-4;
+
+        margin-block: 1rem;
+
+        @media (min-width: 1280px) {
+            @apply space-y-0;
+
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+    }
+
+    .product-session__exploration-metric {
+        background-color: var(--color-neutral-950);
+        border-radius: var(--radius-md);
+        padding: 1rem;
+
+        .label {
+            font-size: 14px;
+            color: var(--color-neutral-400);
+        }
+
+        .value {
+            font-size: 24px;
+            font-weight: 600;
+        }
+    }
+
+    /* REASON PROPS */
+    .product-session__exploration-reasons {
+        margin-block: 1rem;
+        padding: .8rem;
+        border: 1px solid var(--color-neutral-600);
+        border-radius: var(--radius-md);
+        background-color: color-mix(in oklab, var(--color-neutral-950) 40%, transparent);
+
+        @media (min-width: 1280px) {
+            border-color: transparent;
+        }
+
+        .product-session__exploration-reasons-title {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .product-session__exploration-reason {
+            padding-block-start: .8rem;
+            font-size: 14px;
+            color: var(--color-neutral-400);
         }
     }
 }
@@ -747,4 +1012,7 @@
     font-size: 15px;
 }
 
-.session-entry__empty-message { font-size: 15px; }
+.session-entry__empty-message {
+    font-size: 15px;
+    padding-inline: 1.8rem;
+}
