@@ -1,7 +1,8 @@
 .traffic-breakdown {
-    margin-block: 1.75rem;
-
     grid-area: breakdown;
+    align-self: start;
+
+    margin-block: 1.75rem;
     padding: 1rem;
     background: var(--color-neutral-900);
     border-radius: var(--radius-md);

@@ -15,9 +15,11 @@
 @media (min-width: 1280px) {
     .traffic-analysis {
         grid-template-columns: 200px minmax(0, 1fr);
+        grid-template-rows: 120px auto;
         grid-template-areas:
             "snapshot breakdown"
             "snapshot sessions";
+        align-items: start;
         gap: 1rem;
     }
 }

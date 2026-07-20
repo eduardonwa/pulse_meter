@@ -131,8 +131,13 @@ class TrafficAnalytics extends Page
         $productEventDates = app(ProductEventSessionReader::class)
             ->availableDates(Auth::user());
 
-        return $requestDates
-            ->merge($productEventDates)
+        $dates = $requestDates->merge($productEventDates);
+
+        if ($this->selectedSessionDate !== null) {
+            $dates->push($this->selectedSessionDate);
+        }
+
+        return $dates
             ->unique()
             ->sortDesc()
             ->values()
