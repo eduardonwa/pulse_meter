@@ -16,8 +16,9 @@
     $previousPath = $session['previous_path'] ?? null;
     $exitPath = $session['exit_path'] ?? null;
 
-    $userJourneyContentId =
-        $sessionId . '-user-journey-content';
+    $userJourneyContentId = $sessionId . '-user-journey-content';
+
+    $requestsCount = collect($session['requests'] ?? [])->count();
 @endphp
 
 <section class="user-journey">
@@ -26,19 +27,6 @@
         label="User Journey"
         :controls="$userJourneyContentId"
     />
-
-    <div class="user-journey__summary">
-        <span class="page-views">
-            {{ $pageviewsCount }}
-            {{ \Illuminate\Support\Str::plural('pageview', $pageviewsCount) }}
-        </span>
-
-        <span class="duration">
-            {{ \App\Services\UserDateFormatter::duration(
-                $session['duration_seconds'] ?? 0
-            ) }}
-        </span>
-    </div>
 
     <div class="user-journey__content"
         id="{{ $userJourneyContentId }}"
@@ -116,5 +104,21 @@
                 @endforeach
             </ol>
         @endif
+
+        <div class="user-journey__summary">
+            <p>Session span:</p>
+            <span class="duration">
+                {{ \App\Services\UserDateFormatter::duration(
+                    $session['duration_seconds'] ?? 0
+                ) }}
+            </span>
+
+            —
+
+            <span class="requests">
+                {{ $requestsCount }}
+                {{ \Illuminate\Support\Str::plural('request', $requestsCount) }}
+            </span>
+        </div>
     </div>
 </section>
