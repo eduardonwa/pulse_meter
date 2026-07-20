@@ -41,7 +41,36 @@ class TrafficSessionAnalytics
             ->values()
             ->all();
 
-        $pageviewsCount = count($pagePaths);
+        $pageJourney = collect($requests)
+            ->filter(
+                fn (mixed $request): bool =>
+                    is_array($request)
+                    && $this->requestInspector
+                        ->isSuccessfulPageRequest($request)
+            )
+            ->map(function (array $request): array {
+                return [
+                    'path' => $this->requestInspector->normalizePath(
+                        (string) ($request['path'] ?? '')
+                    ),
+                    'timestamp' => isset($request['timestamp'])
+                        && is_numeric($request['timestamp'])
+                            ? (int) $request['timestamp']
+                            : null
+                ];
+            })
+            ->filter(
+                fn (array $page): bool =>
+                    $page['path'] !== ''
+            )
+            ->values()
+            ->all();
+
+        $pagePaths = collect($pageJourney)
+            ->pluck('path')
+            ->all();
+
+        $pageviewsCount = count($pageJourney);
 
         $productSessions = $session['product_sessions'] ?? [];
 
@@ -120,6 +149,7 @@ class TrafficSessionAnalytics
         };
 
         return array_merge($session, [
+            'page_journey' => $pageJourney,
             'page_paths' => $pagePaths,
             'pageviews_count' => $pageviewsCount,
             'entrance_path' => $pagePaths[0] ?? null,
@@ -132,7 +162,6 @@ class TrafficSessionAnalytics
                 $pageviewsCount >= 1
                     ? $pagePaths[$pageviewsCount - 1]
                     : null,
-
             'product_events_count' => $productEventsCount,
             'product_duration_seconds' => $productDurationSeconds,
             'highest_product_stage' => $highestProductStage,

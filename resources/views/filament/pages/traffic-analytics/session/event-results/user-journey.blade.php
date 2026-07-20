@@ -1,20 +1,23 @@
 @php
-    $pagePaths = collect($session['page_paths'] ?? [])
+    $pageJourney = collect($session['page_journey'] ?? [])
         ->filter(
-            fn (mixed $path): bool =>
-                is_string($path) && $path !== ''
+            fn (mixed $page): bool =>
+                is_array($page)
+                && is_string($page['path'] ?? null)
+                && ($page['path'] ?? '') !== ''
         )
         ->values();
 
     $pageviewsCount = (int) (
-        $session['pageviews_count'] ?? $pagePaths->count()
+        $session['pageviews_count'] ?? $pageJourney->count()
     );
 
     $entrancePath = $session['entrance_path'] ?? null;
     $previousPath = $session['previous_path'] ?? null;
     $exitPath = $session['exit_path'] ?? null;
 
-    $userJourneyContentId = $sessionId . '-user-journey-content';
+    $userJourneyContentId =
+        $sessionId . '-user-journey-content';
 @endphp
 
 <section class="user-journey">
@@ -42,21 +45,30 @@
         x-show="open"
         x-cloak
     >
-        @if ($pagePaths->isEmpty())
+        @if ($pageJourney->isEmpty())
             <p class="session-entry__empty-message">
                 No page journey was recorded for this visit.
             </p>
         @else
             <ol class="user-journey__steps">
-                @foreach ($pagePaths as $path)
+                @foreach ($pageJourney as $page)                        
                     @php
+                        $path = $page['path'] ?? '—';
+                        $pageTimestamp = $page['timestamp'] ?? null;
+
+                        $pageTime =
+                            \App\Services\UserDateFormatter::dateTimeParts(
+                                $pageTimestamp,
+                                auth()->user()
+                            );
+                            
                         $isEntrance = $loop->first;
                         $isExit = $loop->last;
 
                         $isPrevious =
                             ! $isEntrance
                             && ! $isExit
-                            && $loop->index === $pagePaths->count() - 2;
+                            && $loop->index === $pageJourney->count() - 2;
                     @endphp
 
                     <li
@@ -70,7 +82,15 @@
                         <div class="user-journey__marker"> <span>{{ $loop->iteration }}</span> </div>
 
                         <div class="user-journey__page">
-                            <p class="user-journey__path"> {{ $path }} </p>
+                            <div class="user-journey__page-main">
+                                <p class="user-journey__path">
+                                    {{ $path }}
+                                </p>
+
+                                <time class="user-journey__time" datetime="{{ $page['timestamp'] ?? '' }}">
+                                    {{ $pageTime['time'] ?? '—' }}
+                                </time>
+                            </div>
 
                             <div class="user-journey__badges">
                                 @if ($isEntrance)

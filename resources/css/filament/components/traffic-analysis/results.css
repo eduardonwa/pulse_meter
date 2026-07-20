@@ -413,6 +413,10 @@
     .event-entry__properties {
         background-color: var(--color-neutral-950);
         padding: .5rem;
+
+        @media (min-width: 1280px) {
+            margin-inline-start: 1.8rem;
+        }
     }
 
     .event-entry__property {
@@ -513,7 +517,17 @@
         }
     }
 
+    .user-journey__page-main {
+        display: flex;
+        gap: 1rem;
+    }
+
     .user-journey__path { font-size: 14px; }
+
+    .user-journey__time {
+        font-size: 14px;
+        color: var(--color-neutral-500);
+    }
 
     .user-journey__badge {
         font-size: 12px;
