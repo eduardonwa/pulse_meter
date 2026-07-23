@@ -5,6 +5,8 @@
         <label for="mode">
             <select class="mode-selector" x-model="metronome.mode"
                 @change="
+                    trackSessionTypeSelected($event.target.value);
+
                     if ($event.target.value === 'timer') {
                         $nextTick(() => {
                             requestAnimationFrame(() => {

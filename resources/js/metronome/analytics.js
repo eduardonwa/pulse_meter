@@ -85,5 +85,11 @@ export function analytics() {
             this.practiceEngagementTimer = null
             this.practiceEngagementRecorded = false
         },
+
+        trackSessionTypeSelected(mode) {
+            this.track('session_type_selected', {
+                session_type: mode,
+            })
+        },
     }
 }
