@@ -278,7 +278,7 @@ export function exercises() {
             }
             
             // false evita que guardar sea registrado
-            // // también como una cancelación.
+            // también como una cancelación.
             this.closeStepFormModal(false)
 
             this.$nextTick(() => {
@@ -318,11 +318,16 @@ export function exercises() {
             
             this.beginPlaybackTracking({
                 source: 'exercise',
-                exercise_index: index,
-                exercise_origin: this.getExerciseOrigin(step),
-                exercise_mode: step.mode,
+                
+                metronome_mode: step.mode,
                 bpm: Number(step.bpm),
                 configured_duration_seconds: configuredDuration,
+
+                exercise_index: index,
+                exercise_origin: this.getExerciseOrigin(step),
+                
+                // Compatibilidad temporal
+                exercise_mode: step.mode,
             })
             
             if (
@@ -381,8 +386,8 @@ export function exercises() {
                 return ''
             }
 
-            if (step.mode === 'manual') {
-                return 'Manual'
+            if (step.mode === 'classic') {
+                return 'Classic'
             }
 
             if (this.activeExerciseIndex === index && this.isPlaying) {

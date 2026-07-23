@@ -1,5 +1,11 @@
 import { defaultSteps, defaultMetronome } from './state'
 
+function normalizeMode(mode) {
+    return mode === 'manual'
+        ? 'classic'
+        : mode
+}
+
 export function storage() {
     return {
         saveToLocalStorage() {
@@ -17,9 +23,23 @@ export function storage() {
             try {
                 const parsedSteps = JSON.parse(saved)
 
-                this.steps = Array.isArray(parsedSteps) && parsedSteps.length
-                    ? parsedSteps
+                const normalizedSteps = Array.isArray(parsedSteps)
+                    ? parsedSteps.map(step => ({
+                        ...step,
+                        mode: normalizeMode(step.mode),
+                    })) : []
+
+                this.steps = normalizedSteps.length
+                    ? normalizedSteps
                     : defaultSteps()
+
+                // Guarda nuevamente los datos ya migrados.
+                if (
+                    Array.isArray(parsedSteps)
+                    && parsedSteps.some(step => step.mode === 'manual')
+                ) {
+                    this.saveToLocalStorage()
+                }
             } catch (error) {
                 this.steps = defaultSteps()
             }
@@ -40,7 +60,7 @@ export function storage() {
             this.metronome = defaultMetronome()
 
             this.recentSessions = {
-                manual: [],
+                classic: [],
                 timer: [],
             }
 

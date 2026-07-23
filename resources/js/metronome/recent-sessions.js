@@ -1,20 +1,38 @@
 export function recentSessions() {
     return {
         loadRecentSessions() {
-            const saved = localStorage.getItem(this.recentSessionsStorageKey)
+            const saved = localStorage.getItem(
+                this.recentSessionsStorageKey
+            )
 
             if (!saved) {
                 return
             }
 
             try {
-                this.recentSessions = JSON.parse(saved) ?? {
-                    manual: [],
-                    timer: [],
+                const parsed = JSON.parse(saved)
+                const hadManual = Array.isArray(parsed.manual)
+
+                if (hadManual) {
+                    parsed.classic = parsed.manual.map(session => ({
+                        ...session,
+                        type: 'classic',
+                    }))
+
+                    delete parsed.manual
+                }
+
+                this.recentSessions = {
+                    classic: parsed.classic ?? [],
+                    timer: parsed.timer ?? [],
+                }
+
+                if (hadManual) {
+                    this.saveRecentSessions()
                 }
             } catch {
                 this.recentSessions = {
-                    manual: [],
+                    classic: [],
                     timer: [],
                 }
             }
@@ -83,7 +101,7 @@ export function recentSessions() {
                 confirmLabel: 'Clear all',
                 action: () => {
                     this.recentSessions = {
-                        manual: [],
+                        classic: [],
                         timer: [],
                     }
 

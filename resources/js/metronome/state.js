@@ -25,7 +25,7 @@ export function defaultSteps() {
 export function defaultMetronome() {
     return {
         bpm: 100,
-        mode: 'manual',
+        mode: 'classic',
         duration_seconds: 60,
     }
 }
@@ -44,7 +44,7 @@ export function state(steps) {
         defaultSteps,
 
         recentSessions: {
-            manual: [],
+            classic: [],
             timer: [],
         },
 

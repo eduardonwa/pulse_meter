@@ -73,5 +73,26 @@ export function lifecycle() {
                 action()
             }
         },
+
+        selectTab(tab) {
+            const previousTab = this.activeTab
+
+            this.activeTab = tab
+
+            if (previousTab !== tab) {
+                this.track('tab_opened', {
+                    tab,
+                    previous_tab: previousTab,
+                })
+            }
+
+            if (tab === 'exercises') {
+                this.$nextTick(() => {
+                    window.dispatchEvent(
+                        new Event('picker:sync')
+                    )
+                })
+            }
+        },
     }
 }

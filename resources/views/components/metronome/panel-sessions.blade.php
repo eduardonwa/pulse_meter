@@ -5,7 +5,7 @@
         <label for="mode">
             <select class="mode-selector" x-model="metronome.mode">
                 <option value="timer">Timer</option>
-                <option value="manual">Classic</option>
+                <option value="classic">Classic</option>
             </select>
         </label>
     </div>

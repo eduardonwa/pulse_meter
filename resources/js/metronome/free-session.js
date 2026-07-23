@@ -5,6 +5,11 @@ export function freeSession() {
         },
 
         startMetronomeSession() {
+            const configuredDuration =
+                this.metronome.mode === 'timer'
+                    ? Number(this.metronome.duration_seconds)
+                    : null
+
             this.ensureAudioContext()
             
             this.activeSessionType = 'free'
@@ -13,11 +18,18 @@ export function freeSession() {
 
             this.activeExerciseIndex = null
             this.isPlaying = true
-
             this.startMetronome(this.metronome.bpm)
 
+            this.beginPlaybackTracking({
+                source: 'free_session',
+                metronome_mode: this.metronome.mode,
+                bpm: Number(this.metronome.bpm),
+                configured_duration_seconds:
+                    configuredDuration,
+            })
+
             if (this.metronome.mode === 'timer') {
-                this.startTimer(this.metronome.duration_seconds)
+                this.startTimer(configuredDuration)
             }
         },
 
