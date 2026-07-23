@@ -3,7 +3,19 @@
         <h2>type</h2>
         
         <label for="mode">
-            <select class="mode-selector" x-model="metronome.mode">
+            <select class="mode-selector" x-model="metronome.mode"
+                @change="
+                    if ($event.target.value === 'timer') {
+                        $nextTick(() => {
+                            requestAnimationFrame(() => {
+                                window.dispatchEvent(
+                                    new Event('picker:sync')
+                                )
+                            })
+                        })
+                    }
+                "
+            >
                 <option value="timer">Timer</option>
                 <option value="classic">Classic</option>
             </select>

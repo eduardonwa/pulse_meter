@@ -9,7 +9,7 @@ return [
         // Exploración
         'tab_viewed' => 'exploration',
         'session_type_selected' => 'exploration',
-        'setting_changed' => 'exploration',
+        'setting_changed' => 'exploratio1n',
         'exercise_form_opened' => 'exploration',
         'exercise_form_cancelled' => 'exploration',
         'bpm_changed' => 'exploration',

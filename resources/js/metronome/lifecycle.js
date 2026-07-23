@@ -80,17 +80,22 @@ export function lifecycle() {
             this.activeTab = tab
 
             if (previousTab !== tab) {
-                this.track('tab_opened', {
+                this.track('tab_viewed', {
                     tab,
                     previous_tab: previousTab,
                 })
             }
 
-            if (tab === 'exercises') {
+            if (
+                tab === 'sessions'
+                || tab === 'exercises'
+            ) {
                 this.$nextTick(() => {
-                    window.dispatchEvent(
-                        new Event('picker:sync')
-                    )
+                    requestAnimationFrame(() => {
+                        window.dispatchEvent(
+                            new Event('picker:sync')
+                        )
+                    })
                 })
             }
         },
