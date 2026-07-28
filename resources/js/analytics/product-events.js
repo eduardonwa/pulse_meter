@@ -86,6 +86,11 @@ function getSessionId() {
     );
 }
 
+globalThis.dorelogClientIds = {
+    getVisitorId,
+    getSessionId,
+};
+
 function getMetaContent(name) {
     return document
         .querySelector(`meta[name="${name}"]`)

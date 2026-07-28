@@ -29,3 +29,7 @@ Route::post('/trial/heartbeat', [TrialController::class, 'heartbeat'])
 Route::post('/trial/resume', [TrialController::class, 'resume'])
     ->middleware(['auth', 'verified'])
     ->name('trial.resume');
+
+Route::post('/trial/pause', [TrialController::class, 'pause'])
+    ->middleware(['auth', 'verified'])
+    ->name('trial.pause');
