@@ -62,7 +62,60 @@ export function state(steps) {
         activeExerciseIndex: null,
         maxSteps: 10,
 
-        beatsPerMeasure: 4,
+        timeSignature: {
+            numerator: 4,
+            denominator: 4,
+        },
+
+        timeSignatures: [
+            {
+                numerator: 4,
+                denominator: 4,
+                grouping: [4],
+            },
+            {
+                numerator: 3,
+                denominator: 4,
+                grouping: [3],
+            },
+            {
+                numerator: 5,
+                denominator: 4,
+                grouping: [5],
+            },
+            {
+                numerator: 5,
+                denominator: 8,
+                grouping: [2, 3],
+            },
+            {
+                numerator: 7,
+                denominator: 8,
+                grouping: [2, 3, 2],
+            },
+            {
+                numerator: 9,
+                denominator: 8,
+                grouping: [3, 3, 3],
+            },
+            {
+                numerator: 11,
+                denominator: 8,
+                grouping: [3, 3, 3, 2],
+            },
+        ],
+
+        grouping: [4],
+
+        pattern: [
+            { sound: 'accent', groupStart: true },
+            { sound: 'click',  groupStart: false },
+            { sound: 'click',  groupStart: false },
+            { sound: 'click',  groupStart: false },
+        ],
+
+        editorTool: null,
+
         currentBeat: 1,
 
         minutesOptions: [0, 1, 2, 3, 4, 5],
@@ -89,7 +142,6 @@ export function state(steps) {
                 click: '/audio/click-profiles/ableton/click.wav',
                 accent: '/audio/click-profiles/ableton/accent.wav',
                 finish: '/audio/click-profiles/ableton/accent.wav',
-                beatsPerMeasure: 4,
             },
 
             cubase: {
@@ -97,7 +149,6 @@ export function state(steps) {
                 click: '/audio/click-profiles/cubase/click.wav',
                 accent: '/audio/click-profiles/cubase/accent.wav',
                 finish: '/audio/click-profiles/cubase/accent.wav',
-                beatsPerMeasure: 4,
             },
         },
 

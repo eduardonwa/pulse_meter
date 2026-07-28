@@ -7,10 +7,6 @@ export function clickProfiles() {
 
             this.activeDawProfileKey = key
 
-            const profile = this.dawProfiles[key]
-
-            this.beatsPerMeasure = profile.beatsPerMeasure ?? this.beatsPerMeasure
-
             this.clickBuffer = null
             this.accentBuffer = null
             this.finishBuffer = null
