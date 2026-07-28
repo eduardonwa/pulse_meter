@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use Database\Seeders\AdminUserFixtureSeeder;
+use Database\Seeders\HomeUserSeeder;
 use Database\Seeders\TrafficLogFixtureSeeder;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -19,7 +20,8 @@ class DatabaseSeeder extends Seeder
         $this->call([
             AdminUserFixtureSeeder::class,
             TrafficLogFixtureSeeder::class,
-            ProductEventFixtureSeeder::class
+            ProductEventFixtureSeeder::class,
+            HomeUserSeeder::class,
         ]);
     }
 }
