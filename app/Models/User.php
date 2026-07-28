@@ -51,12 +51,6 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
     // METHODS **
     
     // ACCESS
-    public function hasProAccess(): bool
-    {
-        return $this->plan === 'pro'
-            || $this->hasActiveTrial();
-    }
-
     public function hasActiveTrial(): bool
     {
         $trial = $this->trialEntitlement;
@@ -68,5 +62,15 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
         return $trial->status === 'active'
             && $trial->expires_at->isFuture()
             && $trial->used_seconds < $trial->granted_seconds;
+    }
+
+    public function isPro(): bool
+    {
+        return $this->plan === 'pro';
+    }
+
+    public function hasProAccess(): bool
+    {
+        return $this->isPro() || $this->hasActiveTrial();
     }
 }
