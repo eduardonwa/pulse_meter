@@ -14,8 +14,10 @@ $color-text-interactive-hover: $color-secondary-500;
 // set to 0 to disable
 $letter-spacing-loose: 0;
 
-$border-radius-1: $size-2;
-$border-radius-2: $size-4;
+$border-radius-1: $size-1;
+$border-radius-2: $size-2;
+$border-radius-3: $size-3;
+$border-radius-4: $size-4;
 
 $box-shadow-1: 0px 6px 5px rgb(0, 0, 0, 0.012),
   0px 22px 18px rgb(0, 0, 0, 0.018), 0px 100px 80px rgb(0, 0, 0, 0.03);
@@ -45,10 +47,10 @@ $link-color-hover: $color-text-interactive-hover;
 
 $heading-font-family: $font-family-accent;
 $heading-color-default: $color-neutral-900;
-$heading-font-weight: $font-weight-bold;
+$heading-font-weight: $font-weight-semi-bold;
 $heading-letter-spacing: $letter-spacing-loose;
 $heading-line-height: 1.1;
-$heading-text-transform: uppercase;
+$heading-text-transform: none;
 
 $heading-1-font-size: $font-size-900;
 $heading-1-color: $heading-color-default;
@@ -72,15 +74,15 @@ $container-max-width-wide: 75rem;
 // site header
 $site-header-background-color: $color-primary-300;
 $site-header-color: $color-neutral-900;
-$site-header-padding: $size-8 0;
+$site-header-padding: $size-6 $size-3;
 $site-header-margin: 0;
-$site-header-jusitifcation-small-screens: center;
+$site-header-jusitifcation-small-screens: space-between;
 $site-header-jusitifcation-large-screens: space-between;
 $site-header-alignment: center;
 
 //navigation
 $navigation-color: $site-header-color;
-$navigation-color-hover: $color-primary-300;
+$navigation-color-hover: $color-primary-900;
 $navigation-font-size: $font-size-400;
 $navigation-gap: $size-9;
 $navigation-link-text-decoration: none;
@@ -132,10 +134,10 @@ $card-heading-color-default: $card-color-default;
 $card-heading-font-size: $font-size-600;
 
 // forms
-$form-label-color: $body-text-color;
+$form-label-color: hsl(var(--neutral-900) / .6);
 $form-label-font-family: $body-font-family;
-$form-label-font-weight: $font-weight-bold;
-$form-label-font-size: $body-font-size;
+$form-label-font-weight: $font-weight-semi-bold;
+$form-label-font-size: 14px;
 
 $form-input-color: $body-text-color;
 $form-input-font-family: $body-font-family;

@@ -1,9 +1,20 @@
 @use "../abstracts" as *;
 
-.contact-form {
+.form {
   .form-group {
     display: grid;
+
+    label {
+      font-size: $form-label-font-size;
+      color: $form-label-color;
+    }
   }
+}
+
+.form-panel {
+  display: grid;
+  gap: $size-6;
+  padding: $size-6;
 }
 
 label {
@@ -67,7 +78,7 @@ select {
 
   .exercise-form-label {
     font-weight: 400;
-    font-size: $font-size-300;
+    font-size: 14px;
   }
 
   .exercise-name-wrapper {
@@ -79,7 +90,7 @@ select {
     .name {
       padding: $size-2;
       width: 100%;
-      font-size: $font-size-300;
+      font-size: $font-size-300;      
       font-weight: normal;
       border: 1px solid $color-neutral-300;
     }
@@ -134,4 +145,22 @@ select {
     padding-block-start: $size-4;
     width: 100%;
   }
+}
+
+/* AUTH */
+.auth-form {
+  width: min(100%, 30rem);
+    
+  .heading-3 {
+    text-align: center;
+  }
+}
+
+/* PROFILE */
+.form-panel.profile-form {
+  padding: 0;
+}
+
+.profile-form {
+    width: min(100%, 45rem);
 }

@@ -1,3 +1,4 @@
+@php($user = auth()->user())
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -29,26 +30,70 @@
     
     <style> [x-cloak] { display: none !important; } </style>
 </head>
+
 <body>
-    <header class="main-heading">
-        <nav>
-            @guest
-                <a href="{{ route('login') }}">Log in</a>
-                <a href="{{ route('register') }}">Register</a>
-            @endguest
+    <header class="site-header">
+        <div class="site-header__inner">
+            <a href="/" class="wordmark" wire:navigate>dorelog</a>
 
-            @auth
-                <a href="{{ route('profile.edit') }}">{{ auth()->user()->name }}</a>
+            <nav class="nav">
+                @guest
+                    <a href="{{ route('login') }}" wire:navigate>Log in</a>
+                    <a href="{{ route('register') }}" wire:navigate>Register</a>
+                @endguest
+    
+                @auth
+                    <div class="actions">
+                        <a class="user-name" href="{{ route('profile.edit') }}" wire:navigate>
+                            @if ($user->plan === 'pro')
+                                <x-heroicon-s-star class="profile-link__pro-icon"
+                                    aria-hidden="true"
+                                    width="16"
+                                    height="16"
+                                />
+                            @endif
+    
+                            {{ $user->name }}
+                        </a>
 
-                <form method="POST" action="{{ route('logout') }}">
-                    @csrf
-                    <button type="submit">Log out</button>
-                </form>
-            @endauth
-        </nav>
+                        <div x-data="{ sidebar: false }">
+                            <button class="button"
+                                type="button"
+                                data-type="icon"
+                                :aria-expanded="sidebar"
+                                aria-controls="sidebar"
+                                @click="sidebar = !sidebar"
+                            >
+                                <x-heroicon-o-bars-3 />
+                            </button>
 
-        <h2 class="heading-2" style="text-transform: lowercase; font-weight: normal;">dorelog</h2>
-        <p>Save your drills. Keep your tempo.</p>
+                            <aside class="sidebar-menu"
+                                id="sidebar"
+                                x-show="sidebar"
+                                x-cloak
+                                @keydown.escape.window="sidebar = false"
+                            >
+                                <button class="button"
+                                    type="button"
+                                    aria-label="Close menu"
+                                    data-type="icon"
+                                    @click="sidebar = false"
+                                >
+                                    <x-heroicon-o-x-mark />
+                                </button>
+
+                                <nav>
+                                    <form method="POST" action="{{ route('logout') }}">
+                                        @csrf
+                                        <button class="button" data-type="icon" type="submit">Log out</button>
+                                    </form>
+                                </nav>
+                            </aside>
+                        </div>
+                    </div>
+                @endauth
+            </nav>
+        </div>
     </header>
 
     {{ $slot }}

@@ -2,15 +2,6 @@
 @use 'met-main';
 @use 'met-panel';
 
-.main-heading {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: $size-4;
-    margin-block: $size-6;
-}
-
 .metronome {
     @include met-main.styles;
     

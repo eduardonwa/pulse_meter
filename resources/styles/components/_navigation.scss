@@ -6,12 +6,25 @@
   font-family: $navigation-font-family;
   font-weight: $navigation-font-weight;
 
+  .actions {
+    display: flex;
+    gap: $size-4;
+  }
+
   a {
     color: $navigation-color;
+    font-size: 14px;
     text-decoration: $navigation-link-text-decoration;
 
     &:is(:hover, :focus) {
       color: $navigation-color-hover;
+      text-decoration: underline;
     }
+  }
+
+  .user-name {
+    display: flex;
+    align-items: center;
+    gap: $size-1;
   }
 }

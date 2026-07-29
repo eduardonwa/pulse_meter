@@ -1,7 +1,5 @@
 <x-layouts.dorelog>
-    <main class="auth-page">
-        <h1>Create your DoreLog account</h1>
-
+    <main class="auth-page auth-page--centered">
         @if ($errors->any())
             <div class="form-errors">
                 <ul>
@@ -12,55 +10,65 @@
             </div>
         @endif
 
-        <form method="POST" action="{{ route('register') }}">
+        <form class="auth-form | form-panel form" method="POST" action="{{ route('register') }}">
             @csrf
 
-            <label for="name">Name</label>
+            <h1 class="heading-3">Create your DoreLog account</h1>
 
-            <input
-                id="name"
-                type="text"
-                name="name"
-                value="{{ old('name') }}"
-                autocomplete="name"
-                required
-                autofocus
-            >
+            <div class="form-group">
+                <label for="name">Name</label>
+    
+                <input
+                    id="name"
+                    type="text"
+                    name="name"
+                    value="{{ old('name') }}"
+                    autocomplete="name"
+                    required
+                    autofocus
+                >
+            </div>
 
-            <label for="email">Email</label>
+            <div class="form-group">
+                <label for="email">Email</label>
 
-            <input
-                id="email"
-                type="email"
-                name="email"
-                value="{{ old('email') }}"
-                autocomplete="email"
-                required
-            >
+                <input
+                    id="email"
+                    type="email"
+                    name="email"
+                    value="{{ old('email') }}"
+                    autocomplete="email"
+                    required
+                >
+            </div>
+    
+            <div class="form-group">
+                <label for="password">Password</label>
+    
+                <input
+                    id="password"
+                    type="password"
+                    name="password"
+                    autocomplete="new-password"
+                    required
+                >
+            </div>
 
-            <label for="password">Password</label>
+            <div class="form-group">
+                <label for="password_confirmation">
+                    Confirm password
+                </label>
+    
+                <input
+                    id="password_confirmation"
+                    type="password"
+                    name="password_confirmation"
+                    autocomplete="new-password"
+                    required
+                >
+            </div>
 
-            <input
-                id="password"
-                type="password"
-                name="password"
-                autocomplete="new-password"
-                required
-            >
-
-            <label for="password_confirmation">
-                Confirm password
-            </label>
-
-            <input
-                id="password_confirmation"
-                type="password"
-                name="password_confirmation"
-                autocomplete="new-password"
-                required
-            >
-
-            <button type="submit">
+            <button class="button" type="submit">
                 Create account
             </button>
         </form>

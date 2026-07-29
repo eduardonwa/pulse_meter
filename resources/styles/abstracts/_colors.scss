@@ -2,17 +2,17 @@
 $-clr-white: hsl(0 0% 100%);
 $-clr-black: hsl(0 0% 0%);
 
-$-clr-neutral-50: hsl(0 0% 98%);
-$-clr-neutral-100: hsl(0 0% 96%);
-$-clr-neutral-200: hsl(0 0% 90%);
-$-clr-neutral-300: hsl(0 0% 83%);
-$-clr-neutral-400: hsl(0 0% 64%);
-$-clr-neutral-500: hsl(0 0% 50%);
-$-clr-neutral-600: hsl(0 0% 33%);
-$-clr-neutral-700: hsl(0 0% 25%);
-$-clr-neutral-800: hsl(0 0% 15%);
-$-clr-neutral-900: hsl(0 0% 10%);
-$-clr-neutral-950: hsl(0 0% 4%);
+$-clr-neutral-50: 0 0% 98%;
+$-clr-neutral-100: 0 0% 96%;
+$-clr-neutral-200: 0 0% 90%;
+$-clr-neutral-300: 0 0% 83%;
+$-clr-neutral-400: 0 0% 64%;
+$-clr-neutral-500: 0 0% 45%;
+$-clr-neutral-600: 0 0% 32%;
+$-clr-neutral-700: 0 0% 25%;
+$-clr-neutral-800: 0 0% 15%;
+$-clr-neutral-900: 0 0% 9%;
+$-clr-neutral-950: 0 0% 4%;
 
 // Crusta
 $-clr-crusta-50: hsl(27 100% 96%);
@@ -270,17 +270,17 @@ $dark: (
 
 // Neutral
 $color-neutral-000: var(--neutral-000);
-$color-neutral-50: var(--neutral-50);
-$color-neutral-100: var(--neutral-100);
-$color-neutral-200: var(--neutral-200);
-$color-neutral-300: var(--neutral-300);
-$color-neutral-400: var(--neutral-400);
-$color-neutral-500: var(--neutral-500);
-$color-neutral-600: var(--neutral-600);
-$color-neutral-700: var(--neutral-700);
-$color-neutral-800: var(--neutral-800);
-$color-neutral-900: var(--neutral-900);
-$color-neutral-950: var(--neutral-950);
+$color-neutral-50: hsl(var(--neutral-50));
+$color-neutral-100: hsl(var(--neutral-100));
+$color-neutral-200: hsl(var(--neutral-200));
+$color-neutral-300: hsl(var(--neutral-300));
+$color-neutral-400: hsl(var(--neutral-400));
+$color-neutral-500: hsl(var(--neutral-500));
+$color-neutral-600: hsl(var(--neutral-600));
+$color-neutral-700: hsl(var(--neutral-700));
+$color-neutral-800: hsl(var(--neutral-800));
+$color-neutral-900: hsl(var(--neutral-900));
+$color-neutral-950: hsl(var(--neutral-950));
 $color-neutral-1000: var(--neutral-1000);
 
 // Radiance

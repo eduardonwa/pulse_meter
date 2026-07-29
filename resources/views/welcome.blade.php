@@ -1,8 +1,12 @@
-<x-layouts.dorelog>
+@php
+    $user = auth()->user();
+@endphp
+
+<x-layouts.dorelog :user="$user">
     <div class="account-bar">
         @guest
-            <section>
-                <p>Create an account to access Trial Mode.</p>
+            <section class="trial-mode-banenr">
+                <p>Create an account to access Trial Mode</p>
 
                 <a href="{{ route('register') }}">
                     Register
@@ -12,14 +16,12 @@
 
         @auth
             @php
-                $user = auth()->user();
                 $trial = $user->trialEntitlement;
             @endphp
 
             {{-- Usuario con plan Pro pagado --}}
             @if ($user->plan === 'pro')
                 <span>Pro access enabled.</span>
-
             {{-- Usuario usando su trial --}}
             @elseif ($trial?->status === 'active' && $user->can('use-pro'))
                 <div
