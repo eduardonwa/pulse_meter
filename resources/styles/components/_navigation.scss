@@ -6,10 +6,11 @@
   font-family: $navigation-font-family;
   font-weight: $navigation-font-weight;
 
-  .actions {
-    display: flex;
-    gap: $size-4;
-  }
+  display: flex;
+  align-items: center;
+  gap: $size-2;
+
+  position: relative;
 
   a {
     color: $navigation-color;
@@ -20,11 +21,5 @@
       color: $navigation-color-hover;
       text-decoration: underline;
     }
-  }
-
-  .user-name {
-    display: flex;
-    align-items: center;
-    gap: $size-1;
   }
 }

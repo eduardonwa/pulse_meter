@@ -42,6 +42,18 @@ select {
   border-radius: $form-input-border-radius;
 }
 
+input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+}
+
+.checkbox {
+  display: flex;
+  align-items: center;
+  gap: $size-2;
+  cursor: pointer;
+}
+
 ::placeholder {
   color: $form-placeholder-color;
   font-weight: $form-placeholder-font-weight;

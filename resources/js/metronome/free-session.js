@@ -5,30 +5,34 @@ export function freeSession() {
         },
 
         startMetronomeSession() {
+            const mode = this.metronome.mode
+
             const configuredDuration =
-                this.metronome.mode === 'timer'
+                mode === 'timer'
                     ? Number(this.metronome.duration_seconds)
                     : null
 
             this.ensureAudioContext()
-            
+
             this.activeSessionType = 'free'
-
-            this.saveCurrentSession()
-
             this.activeExerciseIndex = null
             this.isPlaying = true
+
+            if (mode !== 'creative') {
+                this.saveCurrentSession(mode)
+            }
+
             this.startMetronome(this.metronome.bpm)
 
             this.beginPlaybackTracking({
                 source: 'free_session',
-                metronome_mode: this.metronome.mode,
+                metronome_mode: mode,
                 bpm: Number(this.metronome.bpm),
                 configured_duration_seconds:
                     configuredDuration,
             })
 
-            if (this.metronome.mode === 'timer') {
+            if (mode === 'timer') {
                 this.startTimer(configuredDuration)
             }
         },

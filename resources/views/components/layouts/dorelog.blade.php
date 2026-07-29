@@ -32,68 +32,93 @@
 </head>
 
 <body>
-    <header class="site-header">
+    <header class="site-header" x-data="{ sidebar: false }">
         <div class="site-header__inner">
             <a href="/" class="wordmark" wire:navigate>dorelog</a>
 
             <nav class="nav">
-                @guest
-                    <a href="{{ route('login') }}" wire:navigate>Log in</a>
-                    <a href="{{ route('register') }}" wire:navigate>Register</a>
-                @endguest
-    
                 @auth
-                    <div class="actions">
-                        <a class="user-name" href="{{ route('profile.edit') }}" wire:navigate>
-                            @if ($user->plan === 'pro')
-                                <x-heroicon-s-star class="profile-link__pro-icon"
-                                    aria-hidden="true"
-                                    width="16"
-                                    height="16"
-                                />
-                            @endif
-    
-                            {{ $user->name }}
-                        </a>
+                    <button class="button"
+                        data-type="icon-text"
+                        wire:navigate
+                        :aria-expanded="sidebar"
+                        aria-controls="sidebar"
+                        @click="sidebar = !sidebar"
+                    >
+                        @if ($user->plan === 'pro')
+                            <x-heroicon-s-star class="profile-link__pro-icon"
+                                aria-hidden="true"
+                                width="16"
+                                height="16"
+                            />
+                        @endif
 
-                        <div x-data="{ sidebar: false }">
-                            <button class="button"
-                                type="button"
-                                data-type="icon"
-                                :aria-expanded="sidebar"
-                                aria-controls="sidebar"
-                                @click="sidebar = !sidebar"
-                            >
-                                <x-heroicon-o-bars-3 />
-                            </button>
-
-                            <aside class="sidebar-menu"
-                                id="sidebar"
-                                x-show="sidebar"
-                                x-cloak
-                                @keydown.escape.window="sidebar = false"
-                            >
-                                <button class="button"
-                                    type="button"
-                                    aria-label="Close menu"
-                                    data-type="icon"
-                                    @click="sidebar = false"
-                                >
-                                    <x-heroicon-o-x-mark />
-                                </button>
-
-                                <nav>
-                                    <form method="POST" action="{{ route('logout') }}">
-                                        @csrf
-                                        <button class="button" data-type="icon" type="submit">Log out</button>
-                                    </form>
-                                </nav>
-                            </aside>
-                        </div>
-                    </div>
+                        {{ $user->name }}
+                        <x-heroicon-m-chevron-down />
+                    </button>
                 @endauth
+
+                @guest
+                    <button class="button"
+                        type="button"
+                        data-type="icon"
+                        :aria-expanded="sidebar"
+                        aria-controls="sidebar"
+                        @click="sidebar = !sidebar"
+                    >
+                        <x-heroicon-o-bars-3-center-left />
+                    </button>
+                @endguest
             </nav>
         </div>
+
+        <aside class="sidebar"
+            id="sidebar"
+            x-show="sidebar"
+            x-cloak
+            x-trap.noscroll="sidebar"
+            @keydown.escape.window="sidebar = false"
+            @click.outside="sidebar = false"
+        >
+            <nav class="sidebar__menu">
+                @guest
+                    <a class="button" data-type="icon"
+                        href="{{ route('login') }}"
+                        wire:navigate
+                    >
+                        <x-heroicon-o-user />
+
+                        <span>Log in</span>
+                    </a>
+
+                    <a class="button" data-type="icon"
+                        href="{{ route('register') }}"
+                        wire:navigate
+                    >
+                        <x-heroicon-o-cursor-arrow-rays />
+
+                        <span>Register</span>
+                    </a>
+                @endguest
+
+                @auth
+                    <a class="button" data-type="icon" href="{{ route('profile.edit') }}">
+                        <x-heroicon-o-user />
+                        
+                        <span>My profile</span>
+                    </a>
+
+                    <form class="logout" method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button class="button" data-type="icon" type="submit">
+                            <x-heroicon-o-arrow-right-start-on-rectangle />
+                            
+                            Log out
+                        </button>
+                    </form> 
+                @endauth
+            </nav>
+        </aside>
     </header>
 
     {{ $slot }}

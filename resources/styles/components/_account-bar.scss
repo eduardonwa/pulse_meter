@@ -1,0 +1,24 @@
+@use '../abstracts' as *;
+
+.account-bar {
+    .trial-mode-banner {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: $size-2;
+        gap: $size-2;
+        font-size: 14px;
+        
+        margin-block: $size-2;
+
+        margin-inline: auto;
+        width: calc(100% - 2rem);
+
+        border-radius: $border-radius-1;
+        border: 1px solid hsl(var(--neutral-950) / 0.4);
+
+        @include mq(large) {
+            max-width: fit-content;
+        }
+    }
+}

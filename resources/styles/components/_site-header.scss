@@ -4,11 +4,17 @@
   color: $site-header-color;
   background-color: $site-header-background-color;
   padding: $site-header-padding;
+  position: relative;
+
+  @include mq(extraLarge) {
+    padding-inline: $size-15;
+  }
 
   &__inner {
     display: flex;
     align-items: $site-header-alignment;
     justify-content: $site-header-jusitifcation-small-screens;
+
 
     .wordmark {
       text-transform: lowercase;
@@ -19,6 +25,61 @@
 
       &:hover {
         color: $color-neutral-950;
+      }
+    }
+  }
+  
+  .sidebar {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+  
+    min-height: calc(100dvh - 64px);
+  
+    z-index: 100;
+    background: white;
+
+    @include mq(large) {
+      top: 64px;
+      left: auto;
+      right: 144px;
+
+      width: max-content;
+      min-width: 180px;
+      max-width: 240px;
+
+      height: auto;
+      min-height: 0;
+
+      padding: $size-2;
+      border-radius: $border-radius-2;
+    }
+
+    &__menu {
+      margin-block-start: $size-4;
+
+      display: flex;
+      flex-direction: column;
+
+      @include mq(large) {
+        margin-block-start: 0;
+      }
+
+      .button {
+        width: 100%;
+
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        gap: $size-3;
+        border-radius: $border-radius-1;
+        padding: 1.2rem;
+        color: $color-neutral-900;
+
+        &:hover {
+           background-color: $color-neutral-200;
+        }
       }
     }
   }

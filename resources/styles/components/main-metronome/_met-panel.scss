@@ -134,6 +134,11 @@
                     justify-content: flex-end;
                     margin: $size-3;
                     padding: $size-3;
+
+                    @include mq(large) {
+                        margin-inline-end: 0;
+                        padding-inline-end: 0;
+                    }
                 }
 
                 /* COMPACT */

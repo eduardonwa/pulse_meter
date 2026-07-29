@@ -41,13 +41,12 @@
                 >
             </div>
 
-            <label>
+            <label class="checkbox">
                 <input
                     type="checkbox"
                     name="remember"
                     value="1"
                 >
-
                 Remember me
             </label>
 

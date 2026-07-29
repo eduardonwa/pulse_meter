@@ -53,29 +53,38 @@ export function recentSessions() {
             return `${Date.now()}-${Math.random().toString(36).slice(2)}`
         },
 
-        saveCurrentSession() {
+        saveCurrentSession(type = this.metronome.mode) {
             if (this.activeSessionType !== 'free') {
                 return
             }
 
+            // Creative todavía no usa Recent Sessions.
+            if (type === 'creative') {
+                return
+            }
+
+            this.recentSessions[type] ??= []
+
             const session = {
                 id: this.createSessionId(),
-                type: this.metronome.mode,
+                type,
                 bpm: this.metronome.bpm,
-                duration_seconds: this.metronome.mode === 'timer'
-                    ? this.metronome.duration_seconds
-                    : null,
+                duration_seconds:
+                    type === 'timer'
+                        ? this.metronome.duration_seconds
+                        : null,
                 created_at: Date.now(),
             }
 
-            const type = session.type
-
-            this.recentSessions[type] = this.recentSessions[type].filter((item) => {
-                return !this.isSameSession(item, session)
-            })
+            this.recentSessions[type] =
+                this.recentSessions[type].filter((item) => {
+                    return !this.isSameSession(item, session)
+                })
 
             this.recentSessions[type].unshift(session)
-            this.recentSessions[type] = this.recentSessions[type].slice(0, 5)
+
+            this.recentSessions[type] =
+                this.recentSessions[type].slice(0, 5)
 
             this.saveRecentSessions()
         },
