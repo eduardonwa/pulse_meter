@@ -17,4 +17,36 @@
     text-transform: uppercase;
 
     svg, img { width: 1em; height: 1em; }
+
+    &--group-beat-a {
+        --group-border-color: #{$color-primary-400};
+
+        background: hsl(var(--primary-400) / .1);
+        border: 1px solid var(--group-border-color);
+        color: $color-primary-900;
+    }
+
+    &--group-beat-b {
+        --group-border-color: #{$color-secondary-400};
+
+        background: hsl(var(--secondary-400) / .1);
+        border: 1px solid var(--group-border-color);
+        color: $color-secondary-900;
+    }
+
+    &--group-beat-c {
+        --group-border-color: #{$color-accent-400};
+
+        background: hsl(var(--accent-400) / .1);
+        border: 1px solid var(--group-border-color);
+        color: $color-accent-900;
+    }
+
+    &--group-beat-d {
+        --group-border-color: #{$color-extra-400};
+
+        background: hsl(var(--extra-400) / .1);
+        border: 1px solid var(--group-border-color);
+        color: $color-extra-900;
+    }
 }

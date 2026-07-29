@@ -25,7 +25,7 @@ export function defaultSteps() {
 export function defaultMetronome() {
     return {
         bpm: 100,
-        mode: 'classic',
+        mode: 'creative',
         duration_seconds: 60,
     }
 }
@@ -49,7 +49,7 @@ export function state(steps) {
         },
 
         currentIndex: 0,
-        activeTab: 'exercises',
+        activeTab: 'sessions',
 
         isPlaying: false,
         audioContext: null,
@@ -117,6 +117,14 @@ export function state(steps) {
         editorTool: null,
 
         currentBeat: 1,
+
+        toolTether: {
+            active: false,
+            startX: 0,
+            startY: 0,
+            endX: 0,
+            endY: 0,
+        },
 
         minutesOptions: [0, 1, 2, 3, 4, 5],
         secondsOptions: Array.from({ length: 60 }, (_, i) => i),

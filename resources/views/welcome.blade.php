@@ -108,8 +108,13 @@
         data-type="wide"
         data-spacing="none"
         x-data="routinePlayer()"
+        
         @keydown.window="handleKeydown($event)"
+        @click.window="handleToolTetherClick($event)"
+        @pointermove.window="handleToolTetherPointerMove($event)"
     >
+        <x-tether />
+        
         <x-metronome.main-metro />
 
         <x-metronome.panel />

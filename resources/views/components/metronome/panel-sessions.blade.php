@@ -94,94 +94,132 @@
     <!-- CREATIVE -->
     @can('use-pro')
         <section class="mode-creative" x-show="metronome.mode === 'creative'" x-cloak>
-            <div class="time-signature-control">
-                <label for="time-signature">
-                    Time Signature
-                </label>
-
-                <select id="time-signature"
-                    @change="
-                        const signature = timeSignatures[$event.target.selectedIndex];
-                        setTimeSignature(signature);
-                    "
-                >
-                    <template
-                        x-for="signature in timeSignatures"
-                        :key="`${signature.numerator}/${signature.denominator}`"
-                    >
-                        <option :value="`${signature.numerator}/${signature.denominator}`"
-                            x-text="`${signature.numerator}/${signature.denominator}`"
-                            :selected="
-                                timeSignature.numerator === signature.numerator &&
-                                timeSignature.denominator === signature.denominator
-                            "
-                        ></option>
-                    </template>
-                </select>
-            </div>
-
             <!-- RHYTHM EDITOR -->
-            <article class="time-signature">
-                <div class="time-signature__beats">
-                    <template x-for="beat in timeSignature.numerator" :key="beat">
-                        <button class="beat-mark" type="button"
-                            @click="applyEditorTool(beat)"
-                            :class="{
-                                'group-a': getGroupIndexForBeat(beat) % 2 === 0,
-                                'group-b': getGroupIndexForBeat(beat) % 2 !== 0,
-
-                                'is-group-start': pattern[beat - 1]?.groupStart,
-                                'is-active': currentBeat === beat,
-                                'is-accent': pattern[beat - 1]?.sound === 'accent',
-                                'is-click': pattern[beat - 1]?.sound === 'click',
-                                'is-rest': pattern[beat - 1]?.sound === 'rest'
-                            }"
+            <div class="pulse-editor">
+                <div class="time-signature">
+                    <div class="time-signature__meter">
+                        <h2 class="heading">
+                            Meter
+                        </h2>
+        
+                        <select class="selector"
+                            id="time-signature"
+                            :value="`${timeSignature.numerator}/${timeSignature.denominator}`"
+                            @change="
+                                const signature = timeSignatures[$event.target.selectedIndex];
+                                setTimeSignature(signature);
+                            "
                         >
-                            <span
-                                x-text="
-                                    pattern[beat - 1]?.sound === 'accent'
-                                        ? 'A'
-                                        : pattern[beat - 1]?.sound === 'click'
-                                            ? 'C'
-                                            : pattern[beat - 1]?.sound === 'rest'
-                                                ? 'R'
-                                                : '-'
+                            <template
+                                x-for="signature in timeSignatures"
+                                :key="`${signature.numerator}/${signature.denominator}`"
+                            >
+                                <option class="selected-meter"
+                                    :value="`${signature.numerator}/${signature.denominator}`"
+                                    x-text="`${signature.numerator}/${signature.denominator}`"
+                                ></option>
+                            </template>
+                        </select>
+                    </div>
+        
+                    <div class="time-signature__grouping">
+                        <h2 class="heading">Grouping</h2>
+                        <div class="current" x-text="getGroupingFromPattern().join(' + ')"></div>
+                    </div>
+                    
+                    <div class="time-signature__beats">
+                        <h2 class="heading">Pattern</h2>
+
+                        <div class="beat-groups">
+                            <template x-for="(group, groupIndex) in getPatternGroups()" :key="groupIndex">
+                                <div class="beat-group badge"
+                                    :class="[
+                                        'badge--group-beat-a',
+                                        'badge--group-beat-b',
+                                        'badge--group-beat-c',
+                                        'badge--group-beat-d'
+                                    ][groupIndex % 4]"
+                                >
+                                    <template x-for="item in group" :key="item.beat">
+                                        <button class="beat-mark" type="button" @click="applyEditorTool(item.beat)"
+                                            :class="{
+                                                'is-group-start': item.groupStart,
+                                                'is-active': currentBeat === item.beat,
+                                                'is-accent': item.sound === 'accent',
+                                                'is-click': item.sound === 'click',
+                                                'is-rest': item.sound === 'rest'
+                                            }"
+                                        >
+                                            <span x-text="
+                                                item.sound === 'accent'
+                                                    ? 'A'
+                                                    : item.sound === 'click'
+                                                        ? 'C'
+                                                        : item.sound === 'rest'
+                                                            ? 'R'
+                                                            : '-'
+                                                "
+                                            ></span>
+
+                                            <small x-text="item.beat"></small>
+                                        </button>
+                                    </template>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                    
+                    <div class="time-signature__rhythm-tools">
+                        <h2 class="heading">Cue</h2>
+        
+                        <div class="tool-group">
+                            <button class="button" type="button" data-tether-trigger
+                                @click="
+                                    editorTool = 'accent';
+                                    startToolTether($event);
                                 "
-                            ></span>
+                                :class="{ 'is-selected': editorTool === 'accent' }"
+                            >
+                                Accent
+                            </button>
 
-                            <small x-text="beat"></small>
+                            <button class="button" type="button" data-tether-trigger
+                                @click="
+                                    editorTool = 'click';
+                                    startToolTether($event);
+                                "
+                                :class="{ 'is-selected': editorTool === 'click' }"
+                            >
+                                Click
+                            </button>
+
+                            <button class="button" type="button" data-tether-trigger
+                                @click="
+                                    editorTool = 'rest';
+                                    startToolTether($event);
+                                "
+                                :class="{ 'is-selected': editorTool === 'rest' }"
+                            >
+                                Rest
+                            </button>
+                        </div>
+                    </div>
+        
+                    <div class="time-signature__rhythm-structure">
+                        <h2 class="heading">Structure</h2>
+
+                        <button class="button" type="button" data-tether-trigger
+                            @click="
+                                editorTool = 'groupStart';
+                                startToolTether($event);
+                            "
+                            :class="{ 'is-selected': editorTool === 'groupStart' }"
+                        >
+                            Group Start
                         </button>
-                    </template>
+                    </div>
                 </div>
-
-                <div class="time-signature__grouping" x-text="getGroupingFromPattern().join(' + ')"></div>
-
-                <div class="rhythm-tools">
-                    <button type="button" @click="editorTool = 'accent'"
-                        :class="{ 'is-selected': editorTool === 'accent' }"
-                    >
-                        Accent
-                    </button>
-
-                    <button type="button" @click="editorTool = 'click'"
-                        :class="{ 'is-selected': editorTool === 'click' }"
-                    >
-                        Click
-                    </button>
-
-                    <button type="button" @click="editorTool = 'rest'"
-                        :class="{ 'is-selected': editorTool === 'rest' }"
-                    >
-                        Rest
-                    </button>
-
-                    <button type="button" @click="editorTool = 'groupStart'"
-                        :class="{ 'is-selected': editorTool === 'groupStart' }"
-                    >
-                        Group Start
-                    </button>
-                </div>
-            </article>
+            </div>
         </section>
     @endcan
 </div>

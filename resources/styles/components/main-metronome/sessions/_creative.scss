@@ -1,0 +1,156 @@
+@use "../../../abstracts" as *;
+
+@mixin styles {
+    .mode-creative {
+        width: 100%;
+    }
+
+    .time-signature {
+        --border: 1px solid hsl(var(--neutral-950) / .2);
+        
+        border: var(--border);
+        border-radius: $border-radius-2;
+
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        grid-template-areas: 
+            "meter   grouping"
+            "pattern pattern"
+            "cue     structure";
+
+        > div {
+            padding: $size-4;
+
+            .heading {
+                padding-block-end: $size-3;
+                font-size: 14px;
+                color: hsl(var(--neutral-950) / .6);
+            }
+        }
+        
+        &__meter {
+            grid-area: meter;
+            border-block-end: var(--border);
+            border-inline-end: var(--border);
+            
+            display: flex;
+            flex-direction: column;
+
+            .selector {
+                font-size: $font-size-600;
+                width: fit-content;
+            }
+
+            .selected-meter {
+                outline: 1px solid;
+                font-size: $font-size-300;
+            }
+        }
+    
+        &__grouping {
+            grid-area: grouping;
+            border-block-end: var(--border);
+            
+            display: flex;
+            flex-direction: column;
+
+            .current {
+                font-size: $font-size-600;
+
+                display: flex;
+                flex-wrap: wrap;
+            }
+        }
+    
+        &__beats {
+            grid-area: pattern;
+            border-block-end: var(--border);
+
+            display: flex;
+            flex-direction: column;
+            gap: .5rem;
+
+            .beat-groups {
+                display: flex;
+                flex-wrap: wrap;
+                gap: $size-4;
+            }
+
+            .beat-group {
+                display: flex;
+                gap: $size-2;
+
+                padding: $size-2;
+            }
+
+            .beat-mark {
+                padding: $size-2;
+                background-color: transparent;
+                border: 1px solid var(--group-border-color);
+                border-radius: $border-radius-1;
+
+                transition:
+                    transform 100ms ease,
+                    background-color 100ms ease,
+                    border-color 100ms ease;
+
+                &.is-active {
+                    transform: scale(1.08);
+                }
+
+                &.is-active.is-accent {
+                    background: hsl(var(--secondary-500));
+                    color: $color-neutral-50;
+                }
+
+                &.is-active.is-click {
+                    background: hsl(var(--neutral-900) / .1);
+                    color: $color-neutral-900;
+                }
+
+                &.is-active.is-rest {
+                    opacity: .5;
+                    transform: scale(.95);
+                }
+            }
+        }
+    
+        &__rhythm-tools {
+            grid-area: cue;
+            border-inline-end: var(--border);
+
+            display: flex;
+            flex-direction: column;
+            
+            flex-wrap: wrap;
+
+            .tool-group {
+                display: flex;
+                gap: $size-3;
+                flex-direction: column;
+
+                .button {
+                    &.is-selected {
+                        outline: 2px solid currentColor;
+                        outline-offset: 4px;
+                    }
+                }
+
+                @include mq(large) {
+                    flex-direction: row;
+                }
+            }
+        }
+    
+        &__rhythm-structure {
+            grid-area: structure;
+
+            .button {
+                &.is-selected {
+                    outline: 2px solid currentColor;
+                    outline-offset: 4px;
+                }
+            }
+        }
+    }
+}

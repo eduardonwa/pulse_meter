@@ -99,7 +99,7 @@ $footer-link-text-decoration: none;
 
 // buttons
 $button-font-family: $body-font-family;
-$button-font-size: $font-size-300;
+$button-font-size: 14px;
 $button-font-weight: normal;
 $button-text-transform: none;
 $button-padding: 0.75em 2em;
@@ -110,6 +110,7 @@ $button-accent-color: $color-neutral-100;
 $button-accent-background: $color-secondary-400;
 $button-accent-color-hover: $color-neutral-100;
 $button-accent-background-hover: $color-secondary-500;
+
 $button-primary-color: $color-neutral-100;
 $button-primary-background: $color-primary-700;
 $button-primary-color-hover: $color-neutral-100;

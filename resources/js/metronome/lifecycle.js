@@ -19,6 +19,11 @@ export function lifecycle() {
         },
 
         handleKeydown(event) {
+            if (event.key === 'Escape' && this.toolTether.active) {
+                this.cancelToolTether()
+                return
+            }
+
             if (isTypingInField(event)) {
                 return
             }

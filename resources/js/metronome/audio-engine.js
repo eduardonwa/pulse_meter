@@ -320,6 +320,92 @@ export function audioEngine() {
             )
 
             this.editorTool = null
+            
+            this.cancelToolTether()
+        },
+
+        getPatternGroups() {
+            const groups = [];
+            let currentGroup = [];
+
+            this.pattern.forEach((item, index) => {
+                if (item.groupStart && currentGroup.length) {
+                    groups.push(currentGroup);
+                    currentGroup = [];
+                }
+
+                currentGroup.push({
+                    ...item,
+                    beat: index + 1,
+                });
+            });
+
+            if (currentGroup.length) {
+                groups.push(currentGroup);
+            }
+
+            return groups;
+        },
+
+        startToolTether(event) {
+            if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+                return;
+            }
+
+            const rect = event.currentTarget.getBoundingClientRect();
+
+            this.toolTether.startX = rect.left + rect.width / 2;
+            this.toolTether.startY = rect.top + rect.height / 2;
+
+            this.toolTether.endX = this.toolTether.startX;
+            this.toolTether.endY = this.toolTether.startY;
+
+            this.toolTether.active = true;
+        },
+
+        getToolTetherPath() {
+            const {
+                startX,
+                startY,
+                endX,
+                endY
+            } = this.toolTether;
+
+            const distance = Math.abs(endX - startX);
+            const curve = Math.max(60, distance * 0.35);
+
+            return `
+                M ${startX} ${startY}
+                C ${startX + curve} ${startY},
+                  ${endX - curve} ${endY},
+                  ${endX} ${endY}
+            `;
+        },
+
+        handleToolTetherPointerMove(event) {
+            if (!this.toolTether.active) {
+                return
+            }
+
+            this.toolTether.endX = event.clientX
+            this.toolTether.endY = event.clientY
+        },
+
+        handleToolTetherClick(event) {
+            if (!this.editorTool) {
+                return
+            }
+
+            if (event.target.closest('[data-tether-trigger]')) {
+                return
+            }
+
+            this.cancelToolTether()
+        },
+
+        cancelToolTether() {
+            this.toolTether.active = false
+            this.editorTool = null
         },
 
         // END ACTIVITIES

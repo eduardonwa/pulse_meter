@@ -15,30 +15,56 @@ $-clr-neutral-900: 0 0% 9%;
 $-clr-neutral-950: 0 0% 4%;
 
 // Crusta
-$-clr-crusta-50: hsl(27 100% 96%);
-$-clr-crusta-100: hsl(28 100% 92%);
-$-clr-crusta-200: hsl(26 100% 83%);
-$-clr-crusta-300: hsl(24 100% 72%);
-$-clr-crusta-400: hsl(20 100% 63%);
-$-clr-crusta-500: hsl(18 99% 53%);
-$-clr-crusta-600: hsl(14 94% 48%);
-$-clr-crusta-700: hsl(10 92% 40%);
-$-clr-crusta-800: hsl(8 83% 34%);
-$-clr-crusta-900: hsl(8 77% 28%);
-$-clr-crusta-950: hsl(6 84% 15%);
+$-clr-crusta-50: 27 100% 96%;
+$-clr-crusta-100: 28 100% 92%;
+$-clr-crusta-200: 26 100% 83%;
+$-clr-crusta-300: 24 100% 72%;
+$-clr-crusta-400: 20 100% 63%;
+$-clr-crusta-500: 18 99% 53%;
+$-clr-crusta-600: 14 94% 48%;
+$-clr-crusta-700: 10 92% 40%;
+$-clr-crusta-800: 8 83% 34%;
+$-clr-crusta-900: 8 77% 28%;
+$-clr-crusta-950: 6 84% 15%;
 
 // Radiance
-$-clr-radiance-50: hsl(200 100% 96%);
-$-clr-radiance-100: hsl(200 100% 92%);
-$-clr-radiance-200: hsl(199 100% 85%);
-$-clr-radiance-300: hsl(197 100% 76%);
-$-clr-radiance-400: hsl(199 100% 64%);
-$-clr-radiance-500: hsl(203 100% 56%);
-$-clr-radiance-600: hsl(207 100% 51%);
-$-clr-radiance-700: hsl(210 100% 50%);
-$-clr-radiance-800: hsl(211 92% 40%);
-$-clr-radiance-900: hsl(210 85% 33%);
-$-clr-radiance-950: hsl(212 74% 21%);
+$-clr-radiance-50: 200 100% 96%;
+$-clr-radiance-100: 200 100% 92%;
+$-clr-radiance-200: 199 100% 85%;
+$-clr-radiance-300: 197 100% 76%;
+$-clr-radiance-400: 199 100% 64%;
+$-clr-radiance-500: 203 100% 56%;
+$-clr-radiance-600: 207 100% 51%;
+$-clr-radiance-700: 210 100% 50%;
+$-clr-radiance-800: 211 92% 40%;
+$-clr-radiance-900: 210 85% 33%;
+$-clr-radiance-950: 212 74% 21%;
+
+// Yellow Green
+$-clr-yellowgreen-50: 72 75% 97.5%;
+$-clr-yellowgreen-100: 72 75% 95%;
+$-clr-yellowgreen-200: 72 75% 82.5%;
+$-clr-yellowgreen-300: 72 75% 70%;
+$-clr-yellowgreen-400: 72 75% 60%;
+$-clr-yellowgreen-500: 72 75% 50%;
+$-clr-yellowgreen-600: 72 75% 40%;
+$-clr-yellowgreen-700: 72 75% 30%;
+$-clr-yellowgreen-800: 72 75% 17.5%;
+$-clr-yellowgreen-900: 72 75% 7.5%;
+$-clr-yellowgreen-950: 72 75% 4%;
+
+// Purple
+$-clr-purple-50: 264 75% 97.5%;
+$-clr-purple-100: 264 75% 95%;
+$-clr-purple-200: 264 75% 82.5%;
+$-clr-purple-300: 264 75% 70%;
+$-clr-purple-400: 264 75% 60%;
+$-clr-purple-500: 264 75% 50%;
+$-clr-purple-600: 264 75% 40%;
+$-clr-purple-700: 264 75% 30%;
+$-clr-purple-800: 264 75% 17.5%;
+$-clr-purple-900: 264 75% 7.5%;
+$-clr-purple-950: 264 75% 3.75%;
 
 $-clr-orange-100: hsl(24 75% 95%);
 $-clr-orange-200: hsl(24 75% 82.5%);
@@ -58,17 +84,6 @@ $-clr-yellow-600: hsl(48 75% 40%);
 $-clr-yellow-700: hsl(48 75% 30%);
 $-clr-yellow-800: hsl(48 75% 17.5%);
 $-clr-yellow-900: hsl(48 75% 7.5%);
-$-clr-yellowgreen-50: hsl(72 75% 97.5%);
-$-clr-yellowgreen-100: hsl(72 75% 95%);
-$-clr-yellowgreen-200: hsl(72 75% 82.5%);
-$-clr-yellowgreen-300: hsl(72 75% 70%);
-$-clr-yellowgreen-400: hsl(72 75% 60%);
-$-clr-yellowgreen-500: hsl(72 75% 50%);
-$-clr-yellowgreen-600: hsl(72 75% 40%);
-$-clr-yellowgreen-700: hsl(72 75% 30%);
-$-clr-yellowgreen-800: hsl(72 75% 17.5%);
-$-clr-yellowgreen-900: hsl(72 75% 7.5%);
-$-clr-yellowgreen-950: hsl(72 75% 4%);
 $-clr-green-100: hsl(96 75% 95%);
 $-clr-green-200: hsl(96 75% 82.5%);
 $-clr-green-300: hsl(96 75% 70%);
@@ -114,24 +129,6 @@ $-clr-skyblue-600: hsl(216 75% 40%);
 $-clr-skyblue-700: hsl(216 75% 30%);
 $-clr-skyblue-800: hsl(216 75% 17.5%);
 $-clr-skyblue-900: hsl(216 75% 7.5%);
-$-clr-blue-100: hsl(240 75% 95%);
-$-clr-blue-200: hsl(240 75% 82.5%);
-$-clr-blue-300: hsl(240 75% 70%);
-$-clr-blue-400: hsl(240 75% 60%);
-$-clr-blue-500: hsl(240 75% 50%);
-$-clr-blue-600: hsl(240 75% 40%);
-$-clr-blue-700: hsl(240 75% 30%);
-$-clr-blue-800: hsl(240 75% 17.5%);
-$-clr-blue-900: hsl(240 75% 7.5%);
-$-clr-purple-100: hsl(264 75% 95%);
-$-clr-purple-200: hsl(264 75% 82.5%);
-$-clr-purple-300: hsl(264 75% 70%);
-$-clr-purple-400: hsl(264 75% 60%);
-$-clr-purple-500: hsl(264 75% 50%);
-$-clr-purple-600: hsl(264 75% 40%);
-$-clr-purple-700: hsl(264 75% 30%);
-$-clr-purple-800: hsl(264 75% 17.5%);
-$-clr-purple-900: hsl(264 75% 7.5%);
 $-clr-magenta-100: hsl(288 75% 95%);
 $-clr-magenta-200: hsl(288 75% 82.5%);
 $-clr-magenta-300: hsl(288 75% 70%);
@@ -224,6 +221,19 @@ $light: (
     "900": $-clr-yellowgreen-900,
     "950": $-clr-yellowgreen-950,
   ),
+  "extra": (
+    "50": $-clr-purple-50,
+    "100": $-clr-purple-100,
+    "200": $-clr-purple-200,
+    "300": $-clr-purple-300,
+    "400": $-clr-purple-400,
+    "500": $-clr-purple-500,
+    "600": $-clr-purple-600,
+    "700": $-clr-purple-700,
+    "800": $-clr-purple-800,
+    "900": $-clr-purple-900,
+    "950": $-clr-purple-950,
+  ),
 );
 
 $dark: (
@@ -284,40 +294,53 @@ $color-neutral-950: hsl(var(--neutral-950));
 $color-neutral-1000: var(--neutral-1000);
 
 // Radiance
-$color-primary-50: var(--primary-50);
-$color-primary-100: var(--primary-100);
-$color-primary-200: var(--primary-200);
-$color-primary-300: var(--primary-300);
-$color-primary-400: var(--primary-400);
-$color-primary-500: var(--primary-500);
-$color-primary-600: var(--primary-600);
-$color-primary-700: var(--primary-700);
-$color-primary-800: var(--primary-800);
-$color-primary-900: var(--primary-900);
-$color-primary-950: var(--primary-950);
+$color-primary-50: hsl(var(--primary-50));
+$color-primary-100: hsl(var(--primary-100));
+$color-primary-200: hsl(var(--primary-200));
+$color-primary-300: hsl(var(--primary-300));
+$color-primary-400: hsl(var(--primary-400));
+$color-primary-500: hsl(var(--primary-500));
+$color-primary-600: hsl(var(--primary-600));
+$color-primary-700: hsl(var(--primary-700));
+$color-primary-800: hsl(var(--primary-800));
+$color-primary-900: hsl(var(--primary-900));
+$color-primary-950: hsl(var(--primary-950));
 
 // Crusta
-$color-secondary-50: var(--secondary-50);
-$color-secondary-100: var(--secondary-100);
-$color-secondary-200: var(--secondary-200);
-$color-secondary-300: var(--secondary-300);
-$color-secondary-400: var(--secondary-400);
-$color-secondary-500: var(--secondary-500);
-$color-secondary-600: var(--secondary-600);
-$color-secondary-700: var(--secondary-700);
-$color-secondary-800: var(--secondary-800);
-$color-secondary-900: var(--secondary-900);
-$color-secondary-950: var(--secondary-950);
+$color-secondary-50: hsl(var(--secondary-50));
+$color-secondary-100: hsl(var(--secondary-100));
+$color-secondary-200: hsl(var(--secondary-200));
+$color-secondary-300: hsl(var(--secondary-300));
+$color-secondary-400: hsl(var(--secondary-400));
+$color-secondary-500: hsl(var(--secondary-500));
+$color-secondary-600: hsl(var(--secondary-600));
+$color-secondary-700: hsl(var(--secondary-700));
+$color-secondary-800: hsl(var(--secondary-800));
+$color-secondary-900: hsl(var(--secondary-900));
+$color-secondary-950: hsl(var(--secondary-950));
 
 // Las Palmas
-$color-accent-50: var(--accent-50);
-$color-accent-100: var(--accent-100);
-$color-accent-200: var(--accent-200);
-$color-accent-300: var(--accent-300);
-$color-accent-400: var(--accent-400);
-$color-accent-500: var(--accent-500);
-$color-accent-600: var(--accent-600);
-$color-accent-700: var(--accent-700);
-$color-accent-800: var(--accent-800);
-$color-accent-900: var(--accent-900);
-$color-accent-950: var(--accent-950);
+$color-accent-50: hsl(var(--accent-50));
+$color-accent-100: hsl(var(--accent-100));
+$color-accent-200: hsl(var(--accent-200));
+$color-accent-300: hsl(var(--accent-300));
+$color-accent-400: hsl(var(--accent-400));
+$color-accent-500: hsl(var(--accent-500));
+$color-accent-600: hsl(var(--accent-600));
+$color-accent-700: hsl(var(--accent-700));
+$color-accent-800: hsl(var(--accent-800));
+$color-accent-900: hsl(var(--accent-900));
+$color-accent-950: hsl(var(--accent-950));
+
+// Purple
+$color-extra-50: hsl(var(--extra-50));
+$color-extra-100: hsl(var(--extra-100));
+$color-extra-200: hsl(var(--extra-200));
+$color-extra-300: hsl(var(--extra-300));
+$color-extra-400: hsl(var(--extra-400));
+$color-extra-500: hsl(var(--extra-500));
+$color-extra-600: hsl(var(--extra-600));
+$color-extra-700: hsl(var(--extra-700));
+$color-extra-800: hsl(var(--extra-800));
+$color-extra-900: hsl(var(--extra-900));
+$color-extra-950: hsl(var(--extra-950));

@@ -1,8 +1,11 @@
 @use "../../abstracts" as *;
+@use "sessions/timer";
+@use "sessions/creative";
 
 @mixin styles {
     &__panel {
         margin-block-start: $size-8;
+        overflow-anchor: none;
 
         .tabs {
             padding: $size-4;
@@ -42,44 +45,6 @@
                 .mode-selector {
                     cursor: pointer;
                     border: 1px solid $color-neutral-500;
-                }
-            }
-    
-            .mode-timer { width: 100%; }
-    
-            .current-exercise {
-                display: flex;
-                flex-direction: column;
-                text-transform: uppercase;
-                font-size: 14px;
-                font-weight: 600;
-    
-                input {
-                    padding: $size-2;
-                    border: 1px solid $color-neutral-300;
-                }
-            }
-    
-            .time-display {
-                margin-block: $size-5;
-
-                .time-picker,
-                .timer-readout {
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    gap: $size-2;
-                }
-
-                .timer-readout {
-                    height: 44px;
-                    font-size: $font-size-700;
-                    font-variant-numeric: tabular-nums;
-                }
-    
-                .colon {
-                    font-size: $font-size-600;
-                    font-weight: bold;
                 }
             }
 
@@ -122,6 +87,9 @@
                     }
                 }
             }
+
+            @include timer.styles;
+            @include creative.styles;
         }
 
         .exercises {

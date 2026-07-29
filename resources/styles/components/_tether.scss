@@ -1,0 +1,19 @@
+@use '../abstracts/' as *;
+
+.tool-tether {
+    position: fixed;
+    inset: 0;
+
+    width: 100vw;
+    height: 100vh;
+
+    pointer-events: none;
+    z-index: 9999;
+}
+
+.tool-tether path {
+    fill: none;
+    stroke: red;
+    stroke-width: 3px;
+    stroke-dasharray: 4 4;
+}

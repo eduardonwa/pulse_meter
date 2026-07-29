@@ -25,7 +25,10 @@
         
         .beats {
             display: flex;
-            gap: $size-12;
+            flex-wrap: wrap;
+            align-content: flex-start;
+
+            gap: $size-10;
             padding: $size-2;
         }
     
@@ -155,8 +158,6 @@
             &__time { font-weight: 600; }
         }
 
-        .play {
-            width: 100%;
-        }
+        .play { width: 100%; }
     }
 }
