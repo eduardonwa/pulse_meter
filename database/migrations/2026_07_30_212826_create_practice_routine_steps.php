@@ -21,7 +21,7 @@ return new class extends Migration
             $table->integer('duration_seconds')->nullable();
             $table->integer('order')->default(0);
             $table->enum('mode', ['time', 'manual'])->default('manual');
-            
+
             $table->timestamps();
         });
     }

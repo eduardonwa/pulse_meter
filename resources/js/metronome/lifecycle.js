@@ -11,6 +11,7 @@ export function lifecycle() {
 
             this.loadRecentSessions()
             this.loadClickSounds?.()
+            this.loadPulsePatterns?.()
             
             this.setPulseBaseline?.()
 

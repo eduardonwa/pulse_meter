@@ -1,0 +1,111 @@
+@use '../abstracts/' as *;
+
+#toaster {
+    position: fixed;
+    inset-inline: 0;
+    box-sizing: border-box;
+    padding: $size-4;
+    z-index: 50;
+    display: flex;
+    flex-direction: column;
+    pointer-events: none;
+    overflow-x: clip;
+    width: auto;
+    max-inline-size: 100%;
+
+    > * { pointer-events: auto; }
+
+    &[data-align="top"] {
+        top: 0;
+    }
+    &[data-align="middle"] {
+        top: 50%;
+        translate: 0 -50%;
+    }
+    &[data-align="bottom"] {
+        bottom: 0;
+    }
+
+    &[data-pos="left"] {
+        align-items: flex-start;
+    }
+    &[data-pos="center"] {
+        align-items: center;
+    }
+    &[data-pos="right"] {
+        align-items: flex-end;
+    }
+}
+
+.toast {
+    width: auto;
+    max-inline-size: 20rem;
+    position: relative;
+    pointer-events: auto;
+    will-change: transform, opacity;
+
+    &__body {
+        width: auto;
+        max-inline-size:100%;
+        
+        display: flex;
+        align-items: center;
+        gap: $size-3;
+        
+        user-select: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.25rem;
+        box-shadow: 0 10px 15px -3px rgba(0,0,0,.1),
+                    0 4px 6px -4px rgba(0,0,0,.1);
+        font-size: 0.875rem;
+
+        &--mt { margin-top: 0.75rem; }
+        &--mb { margin-bottom: 0.75rem; }
+
+        &--error   { background-color: #ef4444; color: #fff; }
+        &--info    { background-color: #e5e7eb; color: #000; }
+        &--success { background-color: #16a34a; color: #fff; }
+        &--warning { background-color: #f97316; color: #fff; }
+    }
+
+    &--center {
+        text-align: center;
+    }
+
+    &--error { color: #fff; }
+    &--info { color: #000; }
+    &--success { color: #fff; }
+    &--warning { color: #fff; }
+}
+
+.t-enter {
+    transition: transform 300ms ease-in-out, opacity 300ms ease-in-out;
+}
+.t-leave {
+    transition: transform 300ms ease-in-out, opacity 300ms ease-in-out;
+}
+
+.t-enter-start--bottom {
+    transform: translateY(3rem);
+    opacity: 0;
+}
+.t-enter-end {
+    transform: none;
+    opacity: 1;
+}
+
+.t-enter-start--top {
+    transform: translateY(-3rem);
+    opacity: 0;
+}
+
+.t-enter-start--center {
+    transform: scale(0.9);
+    opacity: 0;
+}
+
+/* Salida */
+.t-leave-end {
+    transform: scale(0.9);
+    opacity: 0;
+}

@@ -246,9 +246,9 @@
                         </button>
         
                         <button class="button" data-type="secondary" type="button" @click="savePulsePatternAs()" x-show="pulseDraft.origin === 'preset' || pulseDraft.origin === 'user'">
-                            Save As
+                            Save as copy
                         </button>
-                    </divv>
+                    </div>
                 </div>
             </div>
         </section>

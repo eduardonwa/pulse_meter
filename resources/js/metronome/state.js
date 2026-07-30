@@ -214,5 +214,15 @@ export function state(steps) {
         },
 
         isPatternDialogOpen: false,
+
+        toast: {
+            visible: false,
+            message: '',
+            type: 'info',
+            timer: null,
+        },
+
+        showDeletePatternDialog: false,
+        patternPendingDeleteId: null,
     }
 }

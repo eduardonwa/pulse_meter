@@ -60,30 +60,42 @@
                 <h4>My Patterns</h4>
 
                 <template x-for="savedPattern in userPatterns" :key="savedPattern.id">
-                    <button
-                        type="button"
-                        class="pattern-dialog__item"
-                        @click="
-                            selectPulseSourceFromDialog(
-                                `user:${savedPattern.id}`
-                            )
-                        "
-                        :class="{
-                            'is-selected':
-                                pulseDraft.origin === 'user'
-                                && pulseDraft.sourceId === savedPattern.id
-                        }"
-                    >
-                        <strong
-                            x-text="
-                                `${savedPattern.timeSignature.numerator}/${savedPattern.timeSignature.denominator}`
+                    <div class="pattern-dialog__row">
+                        <button
+                            type="button"
+                            class="pattern-dialog__item"
+                            @click="
+                                selectPulseSourceFromDialog(
+                                    `user:${savedPattern.id}`
+                                )
                             "
-                        ></strong>
+                            :class="{
+                                'is-selected':
+                                    pulseDraft.origin === 'user'
+                                    && pulseDraft.sourceId === savedPattern.id
+                            }"
+                        >
+                            <strong
+                                x-text="
+                                    `${savedPattern.timeSignature.numerator}/${savedPattern.timeSignature.denominator}`
+                                "
+                            ></strong>
 
-                        <small
-                            x-text="savedPattern.grouping.join(' + ')"
-                        ></small>
-                    </button>
+                            <small
+                                x-text="savedPattern.grouping.join(' + ')"
+                            ></small>
+                        </button>
+
+                        <button
+                            type="button"
+                            class="button"
+                            data-type="icon"
+                            @click.stop="openDeletePatternDialog(savedPattern.id)"
+                            aria-label="Delete pattern"
+                        >
+                            <x-heroicon-o-trash />
+                        </button>
+                    </div>
                 </template>
             </div>
         </div>
