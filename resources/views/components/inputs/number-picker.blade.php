@@ -82,9 +82,12 @@
             disabled: () => {{ $disabled }},
             format: {{ $format }},
         })"
+        x-effect="
+            {{ $model }};
+             $nextTick(() => syncExternalValue())
+        "
         x-ref="scroller"
         x-init="init()"
-        x-effect="$nextTick(() => syncExternalValue())"
         @picker:sync.window="$nextTick(() => syncExternalValue())"
         @scroll.debounce.150ms="syncFromScroll()"
     >

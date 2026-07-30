@@ -3,6 +3,7 @@ import { state } from './state'
 import { lifecycle } from './lifecycle'
 import { storage } from './storage'
 import { audioEngine } from './audio-engine'
+import { pulseEditor } from './pulse-editor'
 import { freeSession } from './free-session'
 import { timerDuration } from './timer-duration'
 import { exercises } from './exercises'
@@ -17,6 +18,7 @@ window.routinePlayer = function (steps) {
         lifecycle(),
         storage(),
         audioEngine(),
+        pulseEditor(),
         freeSession(),
         timerDuration(),
         exercises(),

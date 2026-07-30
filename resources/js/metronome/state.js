@@ -69,36 +69,43 @@ export function state(steps) {
 
         timeSignatures: [
             {
+                id: '4-4-4',
                 numerator: 4,
                 denominator: 4,
                 grouping: [4],
             },
             {
+                id: '3-4-3',
                 numerator: 3,
                 denominator: 4,
                 grouping: [3],
             },
             {
+                id: '5-4-5',
                 numerator: 5,
                 denominator: 4,
                 grouping: [5],
             },
             {
+                id: '5-8-2-3',
                 numerator: 5,
                 denominator: 8,
                 grouping: [2, 3],
             },
             {
+                id: '7-8-2-3-2',
                 numerator: 7,
                 denominator: 8,
                 grouping: [2, 3, 2],
             },
             {
+                id: '9-8-3-3-3',
                 numerator: 9,
                 denominator: 8,
                 grouping: [3, 3, 3],
             },
             {
+                id: '11-8-3-3-3-2',
                 numerator: 11,
                 denominator: 8,
                 grouping: [3, 3, 3, 2],
@@ -112,6 +119,28 @@ export function state(steps) {
             { sound: 'click',  groupStart: false },
             { sound: 'click',  groupStart: false },
             { sound: 'click',  groupStart: false },
+        ],
+
+        pulseDraft: {
+            origin: 'preset',
+            sourceId: '4-4-4',
+            isDirty: false,
+        },
+
+        pulseBaseline: null,
+
+        userPatterns: [],
+
+        meterNumeratorOptions: Array.from(
+            { length: 16 },
+            (_, i) => i + 1
+        ),
+
+        meterDenominatorOptions: [
+            2,
+            4,
+            8,
+            16,
         ],
 
         editorTool: null,
@@ -183,5 +212,7 @@ export function state(steps) {
             confirmLabel: 'Confirm',
             action: null,
         },
+
+        isPatternDialogOpen: false,
     }
 }

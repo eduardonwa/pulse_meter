@@ -14,9 +14,10 @@
         display: grid;
         grid-template-columns: 1fr 1fr;
         grid-template-areas: 
-            "meter   grouping"
-            "pattern pattern"
-            "cue     structure";
+            "meter   current-meter grouping"
+            "pattern pattern       pattern"
+            "cue     structure     structure"
+            "actions actions       actions";
 
         > div {
             padding: $size-4;
@@ -32,18 +33,28 @@
             grid-area: meter;
             border-block-end: var(--border);
             border-inline-end: var(--border);
-            
+
+            .selector {
+                width: fit-content;
+            }
+        }
+
+        &__current-meter {
+            grid-area: current-meter;
+            border-block-end: var(--border);
+            border-inline-end: var(--border);
+                            
             display: flex;
             flex-direction: column;
 
-            .selector {
-                font-size: $font-size-600;
-                width: fit-content;
-            }
+            .meter-control {
+                display: flex;
+                align-items: center;
+                gap: $size-1;
 
-            .selected-meter {
-                outline: 1px solid;
-                font-size: $font-size-300;
+                @include mq(medium) {
+                    align-items: center;
+                }
             }
         }
     
@@ -77,10 +88,11 @@
             }
 
             .beat-group {
+                padding: $size-2;
+                
                 display: flex;
                 gap: $size-2;
-
-                padding: $size-2;
+                flex-wrap: wrap;
             }
 
             .beat-mark {
@@ -118,6 +130,7 @@
         &__rhythm-tools {
             grid-area: cue;
             border-inline-end: var(--border);
+            border-block-end: var(--border);
 
             display: flex;
             flex-direction: column;
@@ -126,8 +139,9 @@
 
             .tool-group {
                 display: flex;
-                gap: $size-3;
                 flex-direction: column;
+                flex-wrap: wrap;
+                gap: $size-3;
 
                 .button {
                     &.is-selected {
@@ -136,7 +150,7 @@
                     }
                 }
 
-                @include mq(large) {
+                @include mq(medium) {
                     flex-direction: row;
                 }
             }
@@ -144,12 +158,25 @@
     
         &__rhythm-structure {
             grid-area: structure;
+            border-block-end: var(--border);
 
             .button {
                 &.is-selected {
                     outline: 2px solid currentColor;
                     outline-offset: 4px;
                 }
+            }
+        }
+
+        &__actions {
+            grid-area: actions;
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: $size-4;
+
+            @include mq(medium) {
+                margin-inline: auto;
             }
         }
     }

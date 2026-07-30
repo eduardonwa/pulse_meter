@@ -10,8 +10,9 @@ export function lifecycle() {
             })
 
             this.loadRecentSessions()
-
             this.loadClickSounds?.()
+            
+            this.setPulseBaseline?.()
 
             this.$nextTick(() => {
                 // Cada numberPicker puede centrarse solo.

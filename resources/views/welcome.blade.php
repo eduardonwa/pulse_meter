@@ -120,6 +120,8 @@
         <x-metronome.panel />
 
         <x-windows.confirm-modal />
+
+        <x-windows.pattern-modal />
     </main>
 
     <script>

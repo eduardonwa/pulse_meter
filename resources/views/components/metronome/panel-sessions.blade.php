@@ -99,27 +99,43 @@
                 <div class="time-signature">
                     <div class="time-signature__meter">
                         <h2 class="heading">
+                            Pattern
+                        </h2>
+
+                        <button
+                            type="button"
+                            class="button pattern-selector-trigger"
+                            data-type="outline"
+                            @click="openPatternDialog()"
+                        >
+                            <span x-text="getCurrentPulseSourceLabel()"></span>
+                        </button>
+
+                        {{-- esta en welcome --}}
+                    </div>
+
+                    <div class="time-signature__current-meter">
+                        <h2 class="heading">
                             Meter
                         </h2>
-        
-                        <select class="selector"
-                            id="time-signature"
-                            :value="`${timeSignature.numerator}/${timeSignature.denominator}`"
-                            @change="
-                                const signature = timeSignatures[$event.target.selectedIndex];
-                                setTimeSignature(signature);
-                            "
-                        >
-                            <template
-                                x-for="signature in timeSignatures"
-                                :key="`${signature.numerator}/${signature.denominator}`"
-                            >
-                                <option class="selected-meter"
-                                    :value="`${signature.numerator}/${signature.denominator}`"
-                                    x-text="`${signature.numerator}/${signature.denominator}`"
-                                ></option>
-                            </template>
-                        </select>
+
+                        <div class="meter-control">
+                            <x-inputs.number-picker
+                                class="meter-numerator"
+                                options="meterNumeratorOptions"
+                                model="timeSignature.numerator"
+                                afterChange="setDraftNumerator(value)"
+                            />
+
+                            <span class="meter-control__separator">/</span>
+
+                            <x-inputs.number-picker
+                                class="meter-denominator"
+                                options="meterDenominatorOptions"
+                                model="timeSignature.denominator"
+                                afterChange="setDraftDenominator(value)"
+                            />
+                        </div>
                     </div>
         
                     <div class="time-signature__grouping">
@@ -218,6 +234,16 @@
                             Group Start
                         </button>
                     </div>
+
+                    <div class="time-signature__actions">
+                        <button class="button" data-type="secondary" type="button" @click="savePulsePattern()" x-show="pulseDraft.origin === 'new' || pulseDraft.origin === 'user'">
+                            Save
+                        </button>
+        
+                        <button class="button" data-type="secondary" type="button" @click="savePulsePatternAs()" x-show="pulseDraft.origin === 'preset' || pulseDraft.origin === 'user'">
+                            Save As
+                        </button>
+                    </divv>
                 </div>
             </div>
         </section>

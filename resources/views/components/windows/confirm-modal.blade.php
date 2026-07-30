@@ -7,11 +7,7 @@
     @keydown.escape.window="closeConfirmModal()"
     x-cloak
 >
-    <div
-        class="modal-panel"
-        data-type="danger"
-        @click.stop
-    >
+    <div class="modal-panel" data-type="danger" @click.stop>
         <div class="heading">
             <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -28,30 +24,17 @@
             </svg>
 
             <div class="group">
-                <h2
-                    class="group__header"
-                    x-text="confirmModal.title"
-                ></h2>
-
-                <p
-                    class="group__hint"
-                    x-text="confirmModal.message"
-                ></p>
+                <h2 class="group__header" x-text="confirmModal.title"></h2>
+                <p class="group__hint" x-text="confirmModal.message"></p>
             </div>
         </div>
 
         <div class="modal-panel__actions">
-            <button
-                class="button"
-                type="button"
-                data-type="outline"
-                @click="closeConfirmModal()"
-            >
+            <button class="button" type="button" data-type="outline" @click="closeConfirmModal()">
                 Cancel
             </button>
 
-            <button
-                class="button"
+            <button class="button"
                 type="button"
                 data-type="outline"
                 data-variant="danger"
