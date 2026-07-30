@@ -5,6 +5,7 @@
     'disabled' => 'false',
     'afterChange' => null,
     'controls' => false,
+    'controlsOnMobile' => true,
     'decreaseLabel' => 'Decrease value',
     'increaseLabel' => 'Increase value',
     'hint' => null,
@@ -12,7 +13,10 @@
 
 @if ($controls)
     <div
-        {{ $attributes->class(['number-picker']) }}
+        {{ $attributes->class([
+            'number-picker',
+            'number-picker--controls-desktop-only' => !$controlsOnMobile,
+        ]) }}
         x-data="numberPicker({
             options: {{ $options }},
             getValue: () => {{ $model }},
@@ -29,11 +33,14 @@
     >
         <button
             type="button"
-            class="number-picker__control"
             aria-label="{{ $decreaseLabel }}"
             title="{{ $decreaseLabel }}"
             :disabled="!canGoPrevious()"
             @click.stop="previous()"
+            @class([
+                'number-picker__control',
+                'number-picker__control--desktop-only' => !$controlsOnMobile,
+            ])
         >
             &minus;
         </button>
@@ -60,11 +67,14 @@
 
         <button
             type="button"
-            class="number-picker__control"
             aria-label="{{ $increaseLabel }}"
             title="{{ $increaseLabel }}"
             :disabled="!canGoNext()"
             @click.stop="next()"
+            @class([
+                'number-picker__control',
+                'number-picker__control--desktop-only' => !$controlsOnMobile,
+            ])
         >
             &plus;
         </button>

@@ -41,6 +41,14 @@
     justify-content: center;
     gap: $size-1;
 
+    &--controls-desktop-only {
+        grid-template-columns: 56px;
+
+        @include mq(medium) {
+            grid-template-columns: 28px 56px 28px;
+        }
+    }
+
     &__control {
         width: 28px;
         min-width: 28px;
@@ -62,6 +70,14 @@
         &:disabled {
             opacity: 0.4;
             cursor: not-allowed;
+        }
+
+        &--desktop-only {
+            display: none;
+
+            @include mq(medium) {
+                display: grid;
+            }
         }
     }
 }

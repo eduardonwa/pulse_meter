@@ -29,17 +29,18 @@
             }
         }
         
-        &__meter {
+        &__pattern {
             grid-area: meter;
             border-block-end: var(--border);
             border-inline-end: var(--border);
 
-            .selector {
-                width: fit-content;
+            .button[data-type="outline"] {
+                padding: $size-2;
+                font-size: $font-size-500;
             }
         }
 
-        &__current-meter {
+        &__meter {
             grid-area: current-meter;
             border-block-end: var(--border);
             border-inline-end: var(--border);
@@ -53,7 +54,12 @@
                 gap: $size-1;
 
                 @include mq(medium) {
+                    gap: $size-4;
                     align-items: center;
+
+                    .number-picker__control {
+                        color: hsl(var(--neutral-900) / .3);
+                    }
                 }
             }
         }
@@ -66,7 +72,7 @@
             flex-direction: column;
 
             .current {
-                font-size: $font-size-600;
+                font-size: $font-size-500;
 
                 display: flex;
                 flex-wrap: wrap;
@@ -176,7 +182,8 @@
             gap: $size-4;
 
             @include mq(medium) {
-                margin-inline: auto;
+                margin-left: 0;
+                margin-right: auto;
             }
         }
     }

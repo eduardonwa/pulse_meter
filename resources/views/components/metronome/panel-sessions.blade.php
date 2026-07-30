@@ -97,24 +97,19 @@
             <!-- RHYTHM EDITOR -->
             <div class="pulse-editor">
                 <div class="time-signature">
-                    <div class="time-signature__meter">
+                    <div class="time-signature__pattern">
                         <h2 class="heading">
-                            Pattern
+                            Patterns
                         </h2>
 
-                        <button
-                            type="button"
-                            class="button pattern-selector-trigger"
-                            data-type="outline"
-                            @click="openPatternDialog()"
-                        >
+                        <button class="button" data-type="outline" type="button" @click="openPatternDialog()">
                             <span x-text="getCurrentPulseSourceLabel()"></span>
                         </button>
 
                         {{-- esta en welcome --}}
                     </div>
 
-                    <div class="time-signature__current-meter">
+                    <div class="time-signature__meter">
                         <h2 class="heading">
                             Meter
                         </h2>
@@ -125,6 +120,11 @@
                                 options="meterNumeratorOptions"
                                 model="timeSignature.numerator"
                                 afterChange="setDraftNumerator(value)"
+                                :controls="true"
+                                decrease-label="Decrease numerator"
+                                increase-label="Increase numerator"
+                                hint="Scroll to change numerator"
+                                :controls-on-mobile="false"
                             />
 
                             <span class="meter-control__separator">/</span>
@@ -134,6 +134,11 @@
                                 options="meterDenominatorOptions"
                                 model="timeSignature.denominator"
                                 afterChange="setDraftDenominator(value)"
+                                :controls="true"
+                                decrease-label="Decrease beat unit"
+                                increase-label="Increase beat unit"
+                                hint="Scroll to change beat unit"
+                                :controls-on-mobile="false"
                             />
                         </div>
                     </div>
@@ -144,7 +149,7 @@
                     </div>
                     
                     <div class="time-signature__beats">
-                        <h2 class="heading">Pattern</h2>
+                        <h2 class="heading">Beats</h2>
 
                         <div class="beat-groups">
                             <template x-for="(group, groupIndex) in getPatternGroups()" :key="groupIndex">
