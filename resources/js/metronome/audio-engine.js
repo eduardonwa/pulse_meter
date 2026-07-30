@@ -301,16 +301,14 @@ export function audioEngine() {
             if (this.editorTool === 'groupStart') {
                 const patternBeat = this.pattern[beat - 1]
 
-                if (!patternBeat) {
-                    return
-                }
+                if (!patternBeat) { return }
 
                 this.setGroupStart(
                     beat,
                     !patternBeat.groupStart
                 )
 
-                this.editorTool = null
+                this.cancelToolTether()
                 return
             }
 
