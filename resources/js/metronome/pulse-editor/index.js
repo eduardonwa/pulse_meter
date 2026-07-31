@@ -5,6 +5,7 @@ import { draft } from './draft'
 import { persistence } from './persistence'
 import { interaction } from './interaction'
 import { pulseState } from './state'
+import { collections } from './collections'
 
 export function pulseEditor(pulsePresets = []) {
     return {
@@ -12,6 +13,7 @@ export function pulseEditor(pulsePresets = []) {
         ...grouping(),
         ...pattern(),
         ...sources(),
+        ...collections(),
         ...draft(),
         ...persistence(),
         ...interaction(),

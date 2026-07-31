@@ -113,6 +113,14 @@ export function interaction() {
 
         // PATTERN DIALOG
         openPatternDialog() {
+            if (!this.activePatternTab) {
+                const collections = this.getPulsePresetCollections()
+
+                this.activePatternTab =
+                    collections[0]
+                    ?? (this.userPatterns.length ? 'user' : null)
+            }
+            
             this.isPatternDialogOpen = true
 
             this.$nextTick(() => {

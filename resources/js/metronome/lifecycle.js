@@ -2,9 +2,8 @@ import { isTypingInField } from '../helpers'
 
 export function lifecycle() {
     return {
-
         // INITIALIZATION
-        init() {
+        async init() {
             this.loadFromLocalStorage()
 
             this.$watch('steps', () => {
@@ -13,7 +12,9 @@ export function lifecycle() {
 
             this.loadRecentSessions()
             this.loadClickSounds?.()
-            this.loadPulsePatterns?.()
+
+            await this.loadPulsePatterns?.()
+            await this.restorePulseSource()
             
             this.setPulseBaseline?.()
 
@@ -119,6 +120,47 @@ export function lifecycle() {
                     })
                 })
             }
+        },
+
+        // PULSE
+        async restorePulseSource() {
+            const savedSource = this.getRememberedPulseSource()
+
+            if (!savedSource) {
+                return
+            }
+
+            const [origin, rawId] = savedSource.split(':')
+
+            if (origin === 'preset') {
+                const exists = this.pulsePresets.some(
+                    preset => preset.id === Number(rawId)
+                )
+
+                if (!exists) {
+                    localStorage.removeItem(
+                        'pulse:selected-source'
+                    )
+
+                    return
+                }
+            }
+
+            if (origin === 'user') {
+                const exists = this.userPatterns.some(
+                    pattern => pattern.id === Number(rawId)
+                )
+
+                if (!exists) {
+                    localStorage.removeItem(
+                        'pulse:selected-source'
+                    )
+
+                    return
+                }
+            }
+
+            await this.selectPulseSource(savedSource)
         },
     }
 }

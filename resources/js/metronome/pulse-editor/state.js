@@ -62,5 +62,8 @@ export function pulseState(pulsePresets = []) {
         
         patternPendingRenameId: null,
         patternRenameName: '',
+
+        // TABS
+        activePatternTab: null,
     }
 }

@@ -103,33 +103,63 @@ export function sources() {
         },
 
         // SOURCE SELECTION
-        selectPulseSource(value) {
+        async selectPulseSource(value) {
             if (value === 'new') {
                 this.startNewPattern()
+                this.rememberPulseSource('new')
+
                 return
             }
 
-            const [origin, id] = value.split(':')
+            const [origin, rawId] = value.split(':')
+            const id = Number(rawId)
 
             if (origin === 'preset') {
-                const presetId = Number(id)
-
                 const preset = this.pulsePresets.find(
-                    preset => preset.id === presetId
+                    preset => preset.id === id
                 )
 
                 if (!preset) {
                     return
                 }
 
-                this.loadPreset(preset)
+                await this.loadPreset(preset)
+
+                this.rememberPulseSource(
+                    `preset:${id}`
+                )
 
                 return
             }
 
             if (origin === 'user') {
-                this.loadUserPattern(Number(id))
+                const pattern = this.userPatterns.find(
+                    pattern => pattern.id === id
+                )
+
+                if (!pattern) {
+                    return
+                }
+
+                await this.loadUserPattern(id)
+
+                this.rememberPulseSource(
+                    `user:${id}`
+                )
             }
+        },
+
+        rememberPulseSource(value) {
+            localStorage.setItem(
+                'pulse:selected-source',
+                value
+            )
+        },
+
+        getRememberedPulseSource() {
+            return localStorage.getItem(
+                'pulse:selected-source'
+            )
         },
 
         // SOURCE LABEL
