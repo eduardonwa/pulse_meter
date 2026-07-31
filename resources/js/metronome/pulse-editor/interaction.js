@@ -172,5 +172,37 @@ export function interaction() {
 
             return true
         },
+
+        // RENAME DIALOG
+        openRenamePatternDialog(pattern) {
+            this.patternPendingRenameId = pattern.id
+            this.patternRenameName = pattern.name
+
+            this.$refs.renamePatternDialog.showModal()
+        },
+
+        closeRenamePatternDialog() {
+            this.$refs.renamePatternDialog.close()
+
+            this.patternPendingRenameId = null
+            this.patternRenameName = ''
+        },
+
+        async confirmRenamePattern() {
+            if (!this.patternPendingRenameId) {
+                return
+            }
+
+            const renamed = await this.renamePulsePattern(
+                this.patternPendingRenameId,
+                this.patternRenameName
+            )
+
+            if (!renamed) {
+                return
+            }
+
+            this.closeRenamePatternDialog()
+        },
     }
 }

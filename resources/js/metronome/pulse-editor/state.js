@@ -37,8 +37,8 @@ export function pulseState(pulsePresets = []) {
 
         // DRAFT
         pulseDraft: {
-            origin: 'preset',
-            sourceId: '4-4-4',
+            origin: 'new',
+            sourceId: null,
             isDirty: false,
         },
 
@@ -59,5 +59,8 @@ export function pulseState(pulsePresets = []) {
         isPatternDialogOpen: false,
         showDeletePatternDialog: false,
         patternPendingDeleteId: null,
+        
+        patternPendingRenameId: null,
+        patternRenameName: '',
     }
 }

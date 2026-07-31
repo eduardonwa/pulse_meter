@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use Database\Seeders\AdminUserFixtureSeeder;
 use Database\Seeders\HomeUserSeeder;
+use Database\Seeders\PulsePresetSeeder;
 use Database\Seeders\TrafficLogFixtureSeeder;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -18,10 +19,11 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call([
-            AdminUserFixtureSeeder::class,
-            TrafficLogFixtureSeeder::class,
-            ProductEventFixtureSeeder::class,
+            PulsePresetSeeder::class,
             HomeUserSeeder::class,
+            AdminUserFixtureSeeder::class,
+            ProductEventFixtureSeeder::class,
+            TrafficLogFixtureSeeder::class,
         ]);
     }
 }

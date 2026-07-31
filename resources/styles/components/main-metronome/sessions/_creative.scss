@@ -31,12 +31,16 @@
         
         &__pattern {
             grid-area: meter;
+            min-width: 0;
+
             border-block-end: var(--border);
             border-inline-end: var(--border);
 
             .button[data-type="outline"] {
+                width: 100%;
+                min-width: 0;
                 padding: $size-2;
-                font-size: $font-size-500;
+                font-size: $font-size-400;
             }
         }
 
@@ -69,7 +73,7 @@
             flex-direction: column;
 
             .current {
-                font-size: $font-size-500;
+                font-size: $font-size-400;
 
                 display: flex;
                 flex-wrap: wrap;

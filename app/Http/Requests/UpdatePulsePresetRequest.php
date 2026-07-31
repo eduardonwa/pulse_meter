@@ -6,45 +6,45 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
 
-class StorePulsePatternRequest extends FormRequest
+class UpdatePulsePresetRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
     public function authorize(): bool
     {
         return true;
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, ValidationRule|array<mixed>|string>
-     */
     public function rules(): array
     {
         return [
             'name' => [
+                'sometimes',
                 'required',
                 'string',
                 'max:255',
             ],
 
             'numerator' => [
+                'sometimes',
                 'required',
                 'integer',
                 'min:1',
-                'max:255',
+                'max:16',
             ],
 
             'denominator' => [
+                'sometimes',
                 'required',
                 'integer',
-                'min:1',
-                'max:255',
+                Rule::in([
+                    2,
+                    4,
+                    8,
+                    16,
+                ]),
             ],
 
             'grouping' => [
+                'sometimes',
                 'required',
                 'array',
                 'min:1',
@@ -57,6 +57,7 @@ class StorePulsePatternRequest extends FormRequest
             ],
 
             'pattern' => [
+                'sometimes',
                 'required',
                 'array',
                 'min:1',
@@ -82,40 +83,37 @@ class StorePulsePatternRequest extends FormRequest
     {
         return [
             function (Validator $validator) {
+                // A rename-only request has no musical data to validate.
+                if (
+                    !$this->has('numerator')
+                    && !$this->has('grouping')
+                    && !$this->has('pattern')
+                ) {
+                    return;
+                }
+
                 $numerator = $this->integer('numerator');
-
-                $grouping = $this->input(
-                    'grouping',
-                    []
-                );
-
-                $pattern = $this->input(
-                    'pattern',
-                    []
-                );
+                $grouping = $this->input('grouping', []);
+                $pattern = $this->input('pattern', []);
 
                 if (
-                    array_sum($grouping)
-                    !== $numerator
+                    is_array($grouping)
+                    && array_sum($grouping) !== $numerator
                 ) {
-                    $validator
-                        ->errors()
-                        ->add(
-                            'grouping',
-                            'Grouping must match numerator.'
-                        );
+                    $validator->errors()->add(
+                        'grouping',
+                        'The grouping total must match the numerator.'
+                    );
                 }
 
                 if (
-                    count($pattern)
-                    !== $numerator
+                    is_array($pattern)
+                    && count($pattern) !== $numerator
                 ) {
-                    $validator
-                        ->errors()
-                        ->add(
-                            'pattern',
-                            'Pattern must match numerator.'
-                        );
+                    $validator->errors()->add(
+                        'pattern',
+                        'The pattern length must match the numerator.'
+                    );
                 }
             },
         ];

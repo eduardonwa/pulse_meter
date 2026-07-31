@@ -16,13 +16,30 @@
     max-width: 400px;
     padding: $size-6;
     border-radius: $border-radius-1;
-    background: $color-neutral-100;
+
+    .field {
+        margin-block: $size-6;
+
+        input {
+            width: 100%;
+        }
+    }
 
     &__actions {
         display: flex;
         align-items: center;
         justify-content: center;
         gap: $size-4;
+
+        .button[type="submit"] {
+            background-color: #208df0;
+            color: #eff9ff;
+            border: 1px solid transparent;
+
+            &:hover {
+                background-color: #5cc7fe;
+            }
+        }
     }
 
     &[data-type="advance"] {
@@ -95,7 +112,6 @@
     }
 
     &[data-type="danger"] {
-
         .heading {
             color: $color-neutral-100;
             padding-block: $size-3;
@@ -115,5 +131,9 @@
                 color: $color-neutral-900;
             }
         }
+    }
+
+    &[date-type="update"] {
+        
     }
 }

@@ -6,13 +6,21 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
 
-class UpdatePulsePatternRequest extends FormRequest
+class StorePulsePresetRequest extends FormRequest
 {
+    /**
+     * Determine if the user is authorized to make this request.
+     */
     public function authorize(): bool
     {
         return true;
     }
 
+    /**
+     * Get the validation rules that apply to the request.
+     *
+     * @return array<string, ValidationRule|array<mixed>|string>
+     */
     public function rules(): array
     {
         return [
@@ -26,14 +34,18 @@ class UpdatePulsePatternRequest extends FormRequest
                 'required',
                 'integer',
                 'min:1',
-                'max:255',
+                'max:16',
             ],
 
             'denominator' => [
                 'required',
                 'integer',
-                'min:1',
-                'max:255',
+                Rule::in([
+                    2,
+                    4,
+                    8,
+                    16
+                ])
             ],
 
             'grouping' => [
@@ -74,22 +86,30 @@ class UpdatePulsePatternRequest extends FormRequest
     {
         return [
             function (Validator $validator) {
-                $grouping = $this->input('grouping', []);
                 $numerator = $this->integer('numerator');
+                $grouping = $this->input('grouping', []);
                 $pattern = $this->input('pattern', []);
 
-                if (array_sum($grouping) !== $numerator) {
-                    $validator->errors()->add(
-                        'grouping',
-                        'The grouping total must match the numerator.'
-                    );
+                if (is_array($grouping)
+                    && array_sum($grouping) !== $numerator
+                ) {
+                    $validator
+                        ->errors()
+                        ->add(
+                            'grouping',
+                            'Grouping must match numerator.'
+                        );
                 }
 
-                if (count($pattern) !== $numerator) {
-                    $validator->errors()->add(
-                        'pattern',
-                        'The pattern length must match the numerator.'
-                    );
+                if (is_array($pattern)
+                    && count($pattern) !== $numerator
+                ) {
+                    $validator
+                        ->errors()
+                        ->add(
+                            'pattern',
+                            'Pattern must match numerator.'
+                        );
                 }
             },
         ];

@@ -45,10 +45,7 @@
           gap: $size-1;
           width: 100%;
 
-          small {
-            color: $color-neutral-700;
-            font-size: 14px;
-          }
+          small { color: $color-neutral-700; }
         }
       }
 
@@ -75,8 +72,54 @@
         flex-direction: column;
         width: 100%;
         border: 1px solid hsl(var(--neutral-950) / .3);
-        font-size: 16px;
         gap: $size-1;
+      }
+
+      &__user-presets {
+        grid-column: 1 / -1;
+        
+        display: flex;
+        align-items: center;
+        gap: $size-4;
+
+        // NAME + METER
+        .button {
+          flex: 2;
+          width: 80%;
+          
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: $size-3;
+
+          text-align: start;
+        }
+
+        .actions {
+          flex: 1;
+          width: 100%;
+
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: $size-2;
+          
+          .button[data-type="icon"] {
+            outline: 1px solid;
+            
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+
+          .edit {
+            color: blue;
+          }
+
+          .delete {
+            color: red;
+          }
+        }
       }
     }
   }

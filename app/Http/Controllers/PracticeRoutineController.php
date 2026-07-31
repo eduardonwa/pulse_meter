@@ -12,7 +12,8 @@ class PracticeRoutineController extends Controller
         $routine->load('steps');
 
         $pulsePresets = PulsePreset::query()
-            ->orderBy('id', 'desc')
+            ->where('user_id', '=', null)
+            ->orderBy('id', 'asc')
             ->get();
 
         return view('welcome', [

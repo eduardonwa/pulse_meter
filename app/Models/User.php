@@ -3,7 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
-use App\Models\PulsePattern;
+use App\Models\PulsePreset;
 use App\Models\TrialEntitlement;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
@@ -43,9 +43,9 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
         return $this->hasOne(TrialEntitlement::class);
     }
 
-    public function pulsePatterns(): HasMany
+    public function pulsePresets(): HasMany
     {
-        return $this->hasMany(PulsePattern::class);
+        return $this->hasMany(PulsePreset::class);
     }
 
     // ADMIN

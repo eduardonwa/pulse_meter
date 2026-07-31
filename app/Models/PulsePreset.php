@@ -11,6 +11,7 @@ class PulsePreset extends Model
         return [
             'numerator' => 'integer',
             'denominator' => 'integer',
+            'position' => 'integer',
             'grouping' => 'array',
             'pattern' => 'array'
         ];

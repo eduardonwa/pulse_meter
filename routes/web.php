@@ -2,7 +2,7 @@
 
 use App\Http\Controllers\PracticeRoutineController;
 use App\Http\Controllers\ProductEventController;
-use App\Http\Controllers\PulsePatternController;
+use App\Http\Controllers\PulsePresetController;
 use App\Http\Controllers\TrialController;
 use Illuminate\Support\Facades\Route;
 
@@ -18,21 +18,21 @@ Route::view('/profile', 'profile.edit')
 
 
 // PULSE PATTERNS
-Route::post('/pulse-patterns', [PulsePatternController::class, 'store'])
+Route::post('/pulse-presets', [PulsePresetController::class, 'store'])
     ->middleware('auth')
-    ->name('pulse-patterns.store');
+    ->name('pulse-presets.store');
 
-Route::get('/pulse-patterns', [PulsePatternController::class, 'index'])
+Route::get('/pulse-presets', [PulsePresetController::class, 'index'])
     ->middleware('auth')
-    ->name('pulse-patterns.index');
+    ->name('pulse-presets.index');
 
-Route::patch('/pulse-patterns/{pulsePattern}', [PulsePatternController::class, 'update'])
+Route::patch('/pulse-presets/{pulsePreset}', [PulsePresetController::class, 'update'])
     ->middleware('auth')
-    ->name('pulse-patterns.update');
+    ->name('pulse-presets.update');
 
-Route::delete('/pulse-patterns/{pulsePattern}', [PulsePatternController::class, 'destroy'])
+Route::delete('/pulse-presets/{pulsePreset}', [PulsePresetController::class, 'destroy'])
     ->middleware('auth')
-    ->name('pulse-patterns.destroy');
+    ->name('pulse-presets.destroy');
 
 
 // TRIAL MODE

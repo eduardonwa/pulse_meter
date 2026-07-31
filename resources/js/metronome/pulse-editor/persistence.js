@@ -6,8 +6,9 @@ export function persistence() {
             const snapshot = this.getPulseSnapshot()
 
             return {
-                name: `${snapshot.timeSignature.numerator}/${snapshot.timeSignature.denominator} — ${snapshot.grouping.join(' + ')}`,
-                
+                name: this.patternName
+                    || `${snapshot.timeSignature.numerator}/${snapshot.timeSignature.denominator} — ${snapshot.grouping.join(' + ')}`,
+
                 numerator: snapshot.timeSignature.numerator,
                 denominator: snapshot.timeSignature.denominator,
                 grouping: snapshot.grouping,
@@ -20,7 +21,7 @@ export function persistence() {
             const payload = this.getPulsePatternPayload()
 
             const response = await fetch(
-                this.$root.dataset.pulsePatternsStoreUrl,
+                this.$root.dataset.pulsePresetsStoreUrl,
                 {
                     method: 'POST',
 
@@ -148,7 +149,7 @@ export function persistence() {
         // PATTERN LOADING
         async loadPulsePatterns() {
             const response = await fetch(
-                this.$root.dataset.pulsePatternsIndexUrl,
+                this.$root.dataset.pulsePresetsIndexUrl,
                 {
                     headers: {
                         'Accept': 'application/json',
@@ -174,7 +175,7 @@ export function persistence() {
             const payload = this.getPulsePatternPayload()
 
             const url = this.$root.dataset
-                .pulsePatternsUpdateUrl
+                .pulsePresetsUpdateUrl
                 .replace('__ID__', id)
 
             const response = await fetch(
@@ -207,10 +208,73 @@ export function persistence() {
             return await response.json()
         },
 
+        async renamePulsePattern(id, name) {
+            const url = this.$root.dataset
+                .pulsePresetsUpdateUrl
+                .replace('__ID__', id)
+
+            const response = await fetch(url, {
+                method: 'PATCH',
+
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+
+                    'X-CSRF-TOKEN': document
+                        .querySelector('meta[name="csrf-token"]')
+                        .content,
+                },
+
+                body: JSON.stringify({
+                    name: name.trim(),
+                }),
+            })
+
+            if (!response.ok) {
+                console.error(
+                    'Could not rename pulse pattern.',
+                    await response.json()
+                )
+
+                this.showToast(
+                    'Could not rename pattern',
+                    'error'
+                )
+
+                return null
+            }
+
+            const updatedPattern = await response.json()
+
+            const index = this.userPatterns.findIndex(
+                pattern => pattern.id === updatedPattern.id
+            )
+
+            if (index !== -1) {
+                this.userPatterns.splice(
+                    index,
+                    1,
+                    updatedPattern
+                )
+            }
+
+            // Important if the renamed pattern is currently open.
+            if (
+                this.pulseDraft.origin === 'user'
+                && this.pulseDraft.sourceId === updatedPattern.id
+            ) {
+                this.patternName = updatedPattern.name
+            }
+
+            this.showToast('Pattern renamed', 'success')
+
+            return updatedPattern
+        },
+
         // PATTERN DELETION
         async destroyPulsePattern(id) {
             const url = this.$root.dataset
-                .pulsePatternsDestroyUrl
+                .pulsePresetsDestroyUrl
                 .replace('__ID__', id)
 
             const response = await fetch(

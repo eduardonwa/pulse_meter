@@ -1,21 +1,25 @@
 export function sources() {
     return {
         // PRESET LOADING
-        async setTimeSignature(signature) {
+        async loadPreset(preset) {
             this.timeSignature = {
-                numerator: signature.numerator,
-                denominator: signature.denominator,
+                numerator: preset.numerator,
+                denominator: preset.denominator,
             }
 
-            this.grouping = [...signature.grouping]
+            this.grouping = [
+                ...preset.grouping
+            ]
 
             this.pattern = preset.pattern.map(beat => ({
                 ...beat,
             }))
 
+            this.patternName = preset.name
+
             this.pulseDraft = {
                 origin: 'preset',
-                sourceId: signature.id,
+                sourceId: preset.id,
                 isDirty: false,
             }
 
@@ -46,6 +50,8 @@ export function sources() {
             this.pattern = this.buildPatternFromGrouping(
                 this.grouping
             )
+
+            this.patternName = ''
 
             this.pulseDraft = {
                 origin: 'new',
@@ -80,6 +86,8 @@ export function sources() {
                 ...beat,
             }))
 
+            this.patternName = userPattern.name
+
             this.pulseDraft = {
                 origin: 'user',
                 sourceId: userPattern.id,
@@ -104,15 +112,17 @@ export function sources() {
             const [origin, id] = value.split(':')
 
             if (origin === 'preset') {
-                const presetID = Number(id)
+                const presetId = Number(id)
 
                 const preset = this.pulsePresets.find(
                     preset => preset.id === presetId
                 )
 
-                if (!preset) { return }
+                if (!preset) {
+                    return
+                }
 
-                this.setTimeSignature(preset)
+                this.loadPreset(preset)
 
                 return
             }
@@ -135,7 +145,7 @@ export function sources() {
 
                 if (!preset) { return 'Pattern' }
 
-                return `${preset.numerator}/${preset.denominator} — ${preset.grouping.join(' + ')}`
+                return `${preset.name} (${preset.numerator}/${preset.denominator})`
             }
 
             if (this.pulseDraft.origin === 'user') {

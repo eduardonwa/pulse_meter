@@ -115,10 +115,10 @@
         @click.window="handleToolTetherClick($event)"
         @pointermove.window="handleToolTetherPointerMove($event)"
 
-        data-pulse-patterns-store-url="{{ route('pulse-patterns.store') }}"
-        data-pulse-patterns-index-url="{{ route('pulse-patterns.index') }}"
-        data-pulse-patterns-update-url="{{ route('pulse-patterns.update', ['pulsePattern' => '__ID__']) }}"
-        data-pulse-patterns-destroy-url="{{ route('pulse-patterns.destroy', ['pulsePattern' => '__ID__']) }}"
+        data-pulse-presets-store-url="{{ route('pulse-presets.store') }}"
+        data-pulse-presets-index-url="{{ route('pulse-presets.index') }}"
+        data-pulse-presets-update-url="{{ route('pulse-presets.update', ['pulsePreset' => '__ID__']) }}"
+        data-pulse-presets-destroy-url="{{ route('pulse-presets.destroy', ['pulsePreset' => '__ID__']) }}"
     >
         <x-tether />
         
@@ -130,7 +130,9 @@
 
         <x-windows.pattern-modal />
 
-        <x-windows.delete-pattern />
+        <x-windows.pattern-delete />
+        
+        <x-windows.pattern-rename />
 
         <x-toaster />
     </main>

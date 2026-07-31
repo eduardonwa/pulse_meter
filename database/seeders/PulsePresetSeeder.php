@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\PulsePreset;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class PulsePresetSeeder extends Seeder
@@ -19,6 +18,10 @@ class PulsePresetSeeder extends Seeder
                     'key' => $preset['key']
                 ],
                 [
+                    'user_id' => null,
+                    'collection' => $preset['collection'],
+                    'name' => $preset['name'],
+                    'position' => null,
                     'numerator' => $preset['numerator'],
                     'denominator' => $preset['denominator'],
                     'grouping' => $preset['grouping'],

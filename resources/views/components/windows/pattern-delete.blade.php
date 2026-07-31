@@ -3,11 +3,7 @@
     data-variant="danger-dialog"
     x-ref="deletePatternDialog"
 >
-    <div
-        class="modal-panel"
-        data-type="danger"
-        @click.stop
-    >
+    <div class="modal-panel" data-type="danger" @click.stop>
         <div class="heading">
             <svg
                 xmlns="http://www.w3.org/2000/svg"
