@@ -1,5 +1,7 @@
 export function draft() {
     return {
+
+        // DRAFT SNAPSHOTS
         getPulseSnapshot() {
             return {
                 timeSignature: {
@@ -16,6 +18,7 @@ export function draft() {
             }
         },
 
+        // DIRTY STATE
         syncPulseDirty() {
             if (!this.pulseBaseline) {
                 this.pulseDraft.isDirty = false
@@ -37,6 +40,7 @@ export function draft() {
             this.pulseDraft.isDirty = false
         },
 
+        // METER UPDATES
         async setDraftMeter(numerator, denominator) {
             const parsedNumerator = Number(numerator)
             const parsedDenominator = Number(denominator)

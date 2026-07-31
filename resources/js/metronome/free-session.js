@@ -1,5 +1,11 @@
 export function freeSession() {
     return {
+        bpmChangeTimeoutId: null,
+        timerId: null,
+        remaining: null,
+        activeSessionType: null,
+        
+        // SESSION CONTROLS
         toggle() {
             this.isPlaying ? this.stop() : this.startMetronomeSession()
         },
@@ -44,6 +50,7 @@ export function freeSession() {
             }
         },
         
+        // BPM UPDATES
         handleBpmChange() {
             clearTimeout(this.bpmChangeTimeoutId)
         
@@ -65,6 +72,7 @@ export function freeSession() {
             this.startMetronome(this.metronome.bpm)
         },
         
+        // TIMER FLOW
         startTimer(duration) {
             clearInterval(this.timerId)
             
@@ -87,6 +95,7 @@ export function freeSession() {
             this.finishMetronomeSession()
         },
             
+        // SESSION COMPLETION
         finishMetronomeSession() {
             this.stop()
             this.playFinishSound()

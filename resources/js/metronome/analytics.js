@@ -5,11 +5,14 @@ import {
 
 export function analytics() {
     return {
+
+        // ANALYTICS STATE
         playbackAnalyticsStartedAt: null,
         playbackAnalyticsContext: null,
         practiceEngagementTimer: null,
         practiceEngagementRecorded: false,
 
+        // CORE TRACKING
         track(eventName, properties = {}) {
             return trackProductEvent(
                 eventName,
@@ -31,6 +34,7 @@ export function analytics() {
             )
         },
 
+        // PLAYBACK TRACKING
         beginPlaybackTracking(properties = {}) {
             clearTimeout(this.practiceEngagementTimer)
 
@@ -86,6 +90,7 @@ export function analytics() {
             this.practiceEngagementRecorded = false
         },
 
+        // SESSION TRACKING
         trackSessionTypeSelected(mode) {
             this.track('session_type_selected', {
                 session_type: mode,

@@ -1,5 +1,16 @@
 export function audioEngine() {
     return {
+        audioContext: null,
+        intervalId: null,
+
+        activeMetronomeBpm: null,
+        currentBeat: 1,
+
+        clickBuffer: null,
+        accentBuffer: null,
+        finishBuffer: null,
+
+        // AUDIO CONTEXT
         ensureAudioContext() {
             this.audioContext ??= new AudioContext()
         },
@@ -18,6 +29,7 @@ export function audioEngine() {
             return await this.audioContext.decodeAudioData(arrayBuffer)
         },
 
+        // SOUND LOADING
         async loadClickSounds() {
             if (this.clickBuffer && this.accentBuffer && this.finishBuffer) {
                 return
@@ -35,6 +47,7 @@ export function audioEngine() {
             this.finishBuffer = await this.loadAudioBuffer(profile.finish)
         },
 
+        // BUFFER PLAYBACK
         playBuffer(buffer, volume = 1) {
             this.ensureAudioContext()
 
@@ -57,6 +70,17 @@ export function audioEngine() {
             }
         },
 
+        tick(isAccent = false) {
+            const buffer = isAccent ? this.accentBuffer : this.clickBuffer
+
+            if (!buffer) {
+                return
+            }
+
+            this.playBuffer(buffer, isAccent ? 1 : 0.9)
+        },
+
+        // START METRONOME
         async startMetronome(bpm) {
             clearInterval(this.intervalId)
 
@@ -85,16 +109,57 @@ export function audioEngine() {
             return (60000 / bpm) * (4 / denominator)
         },
 
-        tick(isAccent = false) {
-            const buffer = isAccent ? this.accentBuffer : this.clickBuffer
+        playPatternBeat(beat = this.currentBeat) {
+            const patternBeat =
+                this.pattern[beat - 1]
 
-            if (!buffer) {
+            if (!patternBeat) {
                 return
             }
 
-            this.playBuffer(buffer, isAccent ? 1 : 0.9)
+            /*
+            * PULSE MODE
+            *
+            * Solo suena el inicio de cada grupo.
+            */
+            if (
+                this.metronome.mode === 'creative'
+                && this.creativePlaybackMode === 'pulse'
+            ) {
+                if (!patternBeat.groupStart) {
+                    return
+                }
+
+                if (patternBeat.sound === 'rest') {
+                    return
+                }
+
+                this.playPulseTone({
+                    groupSize: this.getGroupSizeForBeat(beat),
+
+                    isDownbeat:
+                        this.pulseDownbeatEnabled
+                        && beat === 1,
+                })
+
+                return
+            }
+
+            /*
+            * CLICK MODE
+            *
+            * Comportamiento original.
+            */
+            if (patternBeat.sound === 'rest') {
+                return
+            }
+
+            this.tick(
+                patternBeat.sound === 'accent'
+            )
         },
 
+        // PULSE PLAYBACK
         playPulseTone({
             groupSize,
             isDownbeat = false,
@@ -194,63 +259,7 @@ export function audioEngine() {
             }
         },
 
-        playPatternBeat(beat = this.currentBeat) {
-            const patternBeat =
-                this.pattern[beat - 1]
-
-            if (!patternBeat) {
-                return
-            }
-
-            /*
-            * PULSE MODE
-            *
-            * Solo suena el inicio de cada grupo.
-            */
-            if (
-                this.metronome.mode === 'creative'
-                && this.creativePlaybackMode === 'pulse'
-            ) {
-                if (!patternBeat.groupStart) {
-                    return
-                }
-
-                if (patternBeat.sound === 'rest') {
-                    return
-                }
-
-                this.playPulseTone({
-                    groupSize: this.getGroupSizeForBeat(beat),
-
-                    isDownbeat:
-                        this.pulseDownbeatEnabled
-                        && beat === 1,
-                })
-
-                return
-            }
-
-            /*
-            * CLICK MODE
-            *
-            * Comportamiento original.
-            */
-            if (patternBeat.sound === 'rest') {
-                return
-            }
-
-            this.tick(
-                patternBeat.sound === 'accent'
-            )
-        },
-
-        // END ACTIVITIES
-        async playFinishSound() {
-            await this.loadClickSounds()
-
-            this.playBuffer(this.finishBuffer, 1)
-        },
-
+        // PLAYBACK CONTROLS
         stopMetronome() {
             clearInterval(this.intervalId)
 
@@ -273,6 +282,13 @@ export function audioEngine() {
             this.isPlaying = false
             this.remaining = null
             this.activeExerciseIndex = null
+        },
+
+        // FINISH SOUND
+        async playFinishSound() {
+            await this.loadClickSounds()
+
+            this.playBuffer(this.finishBuffer, 1)
         },
     }
 }

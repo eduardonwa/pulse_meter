@@ -1,6 +1,7 @@
-// ¿Cómo se construyen y manipulan los beats?
 export function pattern() {
     return {
+
+        // PATTERN CREATION
         buildPatternFromGrouping(grouping = this.grouping) {
             const pattern = []
 
@@ -19,6 +20,7 @@ export function pattern() {
             return pattern
         },
 
+        // BEAT EDITING
         setPatternBeat(beat, type) {
             const allowedTypes = [
                 'accent',
@@ -65,6 +67,7 @@ export function pattern() {
             )
         },
 
+        // PATTERN GROUPING
         getPatternGroups() {
             const groups = []
             let currentGroup = []

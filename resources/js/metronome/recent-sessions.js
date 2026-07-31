@@ -1,5 +1,14 @@
 export function recentSessions() {
     return {
+        recentSessionsStorageKey:
+            'pulse_meter_recent_sessions',
+
+        recentSessions: {
+            classic: [],
+            timer: [],
+        },
+        
+        // PERSISTENCE
         loadRecentSessions() {
             const saved = localStorage.getItem(
                 this.recentSessionsStorageKey
@@ -45,6 +54,7 @@ export function recentSessions() {
             )
         },
 
+        // SESSION HISTORY
         createSessionId() {
             if (window.crypto?.randomUUID) {
                 return window.crypto.randomUUID()
@@ -89,6 +99,7 @@ export function recentSessions() {
             this.saveRecentSessions()
         },
 
+        // CLEAR ACTIONS
         clearRecentSessionsForCurrentMode() {
             const mode = this.metronome.mode
 
@@ -119,6 +130,7 @@ export function recentSessions() {
             })
         },
 
+        // SESSION HELPERS
         isSameSession(a, b) {
             return (
                 a.type === b.type &&
@@ -127,6 +139,7 @@ export function recentSessions() {
             )
         },
 
+        // SESSION LOADING
         loadSession(session) {
             this.stop()
 

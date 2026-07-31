@@ -1,5 +1,7 @@
 export function timerDuration() {
     return {
+
+        // DURATION STATE
         get activeDuration() {
             if (this.isPlaying && this.remaining !== null) {
                 return this.remaining
@@ -8,20 +10,22 @@ export function timerDuration() {
             return this.metronome.duration_seconds
         },
 
+        // DURATION GETTERS
         get metronomeMinutes() {
             return Math.floor(this.activeDuration / 60)
         },
+        
+        get metronomeSeconds() {
+            return this.activeDuration % 60
+        },
 
+        // DURATION SETTERS
         set metronomeMinutes(value) {
             const seconds = this.metronome.duration_seconds % 60
 
             this.metronome.duration_seconds = (Number(value) * 60) + seconds
             this.clampMetronomeDuration()
             this.remaining = null
-        },
-
-        get metronomeSeconds() {
-            return this.activeDuration % 60
         },
 
         set metronomeSeconds(value) {
@@ -32,6 +36,7 @@ export function timerDuration() {
             this.remaining = null
         },
 
+        // DURATION LIMITS
         clampMetronomeDuration() {
             if (this.metronome.duration_seconds > 300) {
                 this.metronome.duration_seconds = 300

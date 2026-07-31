@@ -1,5 +1,6 @@
 import { defaultSteps, defaultMetronome } from './state'
 
+// DATA MIGRATION
 function normalizeMode(mode) {
     return mode === 'manual'
         ? 'classic'
@@ -8,6 +9,10 @@ function normalizeMode(mode) {
 
 export function storage() {
     return {
+        storageKey: 'pulse_meter_routine',
+        showResetAppModal: false,
+        
+        // ROUTINE PERSISTENCE
         saveToLocalStorage() {
             localStorage.setItem(this.storageKey, JSON.stringify(this.steps))
         },
@@ -45,6 +50,7 @@ export function storage() {
             }
         },
 
+        // APP RESET
         requestClearAllAppStorage() {
             this.showResetAppModal = true
         },

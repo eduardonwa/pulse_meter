@@ -1,5 +1,15 @@
 export function notifications() {
     return {
+
+        // TOAST
+        toast: {
+            visible: false,
+            message: '',
+            type: 'info',
+            timer: null,
+        },
+
+        // TOAST ACTIONS
         showToast(
             message,
             type = 'info',

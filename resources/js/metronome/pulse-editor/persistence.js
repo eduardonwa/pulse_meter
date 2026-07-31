@@ -1,5 +1,7 @@
 export function persistence() {
     return {
+
+        // PATTERN PAYLOAD
         getPulsePatternPayload() {
             const snapshot = this.getPulseSnapshot()
 
@@ -13,6 +15,7 @@ export function persistence() {
             }
         },
 
+        // PATTERN CREATION
         async storePulsePattern() {
             const payload = this.getPulsePatternPayload()
 
@@ -48,6 +51,7 @@ export function persistence() {
             return await response.json()
         },
 
+        // SAVE ACTIONS
         async savePulsePattern() {
             if (this.pulseDraft.origin === 'preset') {
                 return false
@@ -141,6 +145,7 @@ export function persistence() {
             return true
         },
 
+        // PATTERN LOADING
         async loadPulsePatterns() {
             const response = await fetch(
                 this.$root.dataset.pulsePatternsIndexUrl,
@@ -164,6 +169,7 @@ export function persistence() {
             return true
         },
 
+        // PATTERN UPDATES
         async updatePulsePattern(id) {
             const payload = this.getPulsePatternPayload()
 
@@ -201,6 +207,7 @@ export function persistence() {
             return await response.json()
         },
 
+        // PATTERN DELETION
         async destroyPulsePattern(id) {
             const url = this.$root.dataset
                 .pulsePatternsDestroyUrl
@@ -222,20 +229,12 @@ export function persistence() {
             )
 
             if (!response.ok) {
-                console.error('Could not delete pulse pattern.',
+                console.error(
+                    'Could not delete pulse pattern.',
                     await response.json()
                 )
 
-                if (!response.ok) {
-                    console.error(
-                        'Could not delete pulse pattern.',
-                        await response.json()
-                    )
-
-                    this.showToast('Could not delete pattern', 'error')
-
-                    return false
-                }
+                this.showToast('Could not delete pattern', 'error')
 
                 return false
             }

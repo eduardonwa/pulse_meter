@@ -111,7 +111,7 @@ export function interaction() {
             this.editorTool = null
         },
 
-        // MODAL
+        // PATTERN DIALOG
         openPatternDialog() {
             this.isPatternDialogOpen = true
 
@@ -130,15 +130,7 @@ export function interaction() {
             this.closePatternDialog()
         },
 
-        openDeletePatternDialog(id) {
-            this.patternPendingDeleteId = id
-            this.showDeletePatternDialog = true
-
-            this.$nextTick(() => {
-                this.$refs.deletePatternDialog?.showModal()
-            })
-        },
-
+        // DELETE DIALOG
         openDeletePatternDialog(id) {
             this.patternPendingDeleteId = id
             this.showDeletePatternDialog = true

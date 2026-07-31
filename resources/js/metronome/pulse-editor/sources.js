@@ -1,6 +1,7 @@
-// ¿De dónde salió el pattern que estoy editando?
 export function sources() {
     return {
+
+        // PRESET LOADING
         async setTimeSignature(signature) {
             this.timeSignature = {
                 numerator: signature.numerator,
@@ -29,6 +30,7 @@ export function sources() {
             }
         },
 
+        // NEW PATTERN
         startNewPattern() {
             this.cancelToolTether()
 
@@ -55,6 +57,7 @@ export function sources() {
             this.setPulseBaseline()
         },
 
+        // USER PATTERN LOADING
         loadUserPattern(id) {
             const userPattern = this.userPatterns.find(
                 pattern => pattern.id === id
@@ -90,6 +93,7 @@ export function sources() {
             return true
         },
 
+        // SOURCE SELECTION
         selectPulseSource(value) {
             if (value === 'new') {
                 this.startNewPattern()
@@ -115,6 +119,7 @@ export function sources() {
             }
         },
 
+        // SOURCE LABEL
         getCurrentPulseSourceLabel() {
             if (this.pulseDraft.origin === 'new') {
                 return 'New Pattern'

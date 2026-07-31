@@ -1,5 +1,37 @@
 export function exercises() {
     return {
+        // EXERCISE STATE
+        activeExerciseIndex: null,
+        maxSteps: 10,
+
+        // EXERCISE FORM
+        stepFormMode: 'create',
+        stepFormIndex: null,
+        isStepFormOpen: false,
+
+        stepForm: {
+            name: '',
+            bpm: 100,
+            mode: 'timer',
+            duration_seconds: 60,
+        },
+
+        stepFormMinutes: 1,
+        stepFormSeconds: 0,
+
+        stepFormInitial: null,
+        stepFormOpenedAt: null,
+
+        // PLAYBACK FLOW
+        autoAdvance: true,
+        isWaitingForNextExercise: false,
+        nextExerciseIndex: null,
+
+        // PRACTICE REVIEW
+        isPracticeReviewOpen: false,
+        practiceFeeling: null,
+        practiceFeelingConfirmation: '',
+        
         getExerciseOrigin(step) {
             return step?.origin === 'custom'
                 ? 'custom'

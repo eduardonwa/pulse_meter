@@ -1,5 +1,7 @@
 export function grouping() {
     return {
+
+        // GROUPING CALCULATIONS
         isGroupingAccent(beat) {
             let groupStart = 1
 
@@ -53,6 +55,7 @@ export function grouping() {
             return grouping
         },
 
+        // GROUPING UPDATES
         setGrouping(grouping) {
             const remaining = this.getGroupingRemaining(grouping)
 
@@ -108,6 +111,7 @@ export function grouping() {
             return true
         },
 
+        // BEAT HELPERS
         getGroupIndexForBeat(beat) {
             let groupIndex = -1
 
@@ -122,18 +126,6 @@ export function grouping() {
 
         isBeatFilled(beat) {
             return beat <= this.getGroupingTotal()
-        },
-
-        getGroupIndexForBeat(beat) {
-            let groupIndex = -1
-
-            for (let i = 0; i < beat; i++) {
-                if (this.pattern[i]?.groupStart) {
-                    groupIndex++
-                }
-            }
-
-            return groupIndex
         },
 
         getGroupSizeForBeat(beat) {

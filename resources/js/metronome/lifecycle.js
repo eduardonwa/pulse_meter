@@ -2,6 +2,8 @@ import { isTypingInField } from '../helpers'
 
 export function lifecycle() {
     return {
+
+        // INITIALIZATION
         init() {
             this.loadFromLocalStorage()
 
@@ -20,6 +22,7 @@ export function lifecycle() {
             })
         },
 
+        // GLOBAL SHORCUTS
         handleKeydown(event) {
             if (
                 event.key === 'Escape'
@@ -51,6 +54,7 @@ export function lifecycle() {
             this.toggle()
         },
 
+        // COMPUTED STATE
         get currentStep() {
             return this.steps[this.currentIndex]
         },
@@ -59,6 +63,7 @@ export function lifecycle() {
             return this.dawProfiles[this.activeDawProfileKey]
         },
 
+        // CONFIRMATION MODAL
         openConfirmModal({
             title,
             message,
@@ -89,6 +94,7 @@ export function lifecycle() {
             }
         },
 
+        // NAVIGATION
         selectTab(tab) {
             const previousTab = this.activeTab
 

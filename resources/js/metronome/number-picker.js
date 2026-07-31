@@ -6,15 +6,18 @@ export function numberPicker({
     format = value => value,
 }) {
     return {
+        // PICKER CONFIGURATION
         options,
         getValue,
         setValue,
         disabled,
         format,
 
+        // PICKER STATE
         isSyncingScroll: false,
         hasSyncedInitialValue: false,
 
+        // INITIALIZATION
         init() {
             this.$nextTick(() => {
                 requestAnimationFrame(() => {
@@ -23,8 +26,7 @@ export function numberPicker({
             })
         },
 
-        getScroller() { return this.$refs.scroller ?? this.$el },
-
+        // PICKER NAVIGATION
         getCurrentIndex() {
             const value = Number(this.getValue())
 
@@ -73,6 +75,9 @@ export function numberPicker({
             this.scrollToIndex(nextIndex)
             this.setValue(value)
         },
+
+        // SCROLL SYNCHRONIZATION
+        getScroller() { return this.$refs.scroller ?? this.$el },
 
         syncExternalValue(retries = 10) {
             const index = this.getCurrentIndex()
@@ -155,6 +160,7 @@ export function numberPicker({
             this.setValue(Number(value))
         },
 
+        // SELECTION
         select(option) {
             if (this.disabled()) {
                 return
