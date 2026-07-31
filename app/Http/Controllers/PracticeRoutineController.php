@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\PracticeRoutine;
-use Illuminate\Http\Request;
+use App\Models\PulsePreset;
 
 class PracticeRoutineController extends Controller
 {
@@ -11,8 +11,13 @@ class PracticeRoutineController extends Controller
     {
         $routine->load('steps');
 
+        $pulsePresets = PulsePreset::query()
+            ->orderBy('id', 'desc')
+            ->get();
+
         return view('welcome', [
-            'routine' => $routine
+            'routine' => $routine,
+            'pulsePresets' => $pulsePresets
         ]);
     }
 }

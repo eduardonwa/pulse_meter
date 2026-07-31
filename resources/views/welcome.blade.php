@@ -107,7 +107,10 @@
         class="metronome | container"
         data-type="wide"
         data-spacing="none"
-        x-data="routinePlayer()"
+        x-data="routinePlayer(
+            @js($routine->steps),
+            @js($pulsePresets)
+        )"
         @keydown.window="handleKeydown($event)"
         @click.window="handleToolTetherClick($event)"
         @pointermove.window="handleToolTetherPointerMove($event)"

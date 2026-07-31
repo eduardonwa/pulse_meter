@@ -6,9 +6,9 @@ import { persistence } from './persistence'
 import { interaction } from './interaction'
 import { pulseState } from './state'
 
-export function pulseEditor() {
+export function pulseEditor(pulsePresets = []) {
     return {
-        ...pulseState(),
+        ...pulseState(pulsePresets),
         ...grouping(),
         ...pattern(),
         ...sources(),

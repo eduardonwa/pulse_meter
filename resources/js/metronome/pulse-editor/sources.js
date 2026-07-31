@@ -1,6 +1,5 @@
 export function sources() {
     return {
-
         // PRESET LOADING
         async setTimeSignature(signature) {
             this.timeSignature = {
@@ -10,9 +9,9 @@ export function sources() {
 
             this.grouping = [...signature.grouping]
 
-            this.pattern = this.buildPatternFromGrouping(
-                this.grouping
-            )
+            this.pattern = preset.pattern.map(beat => ({
+                ...beat,
+            }))
 
             this.pulseDraft = {
                 origin: 'preset',
@@ -26,7 +25,9 @@ export function sources() {
             this.setPulseBaseline()
 
             if (this.intervalId) {
-                await this.startMetronome(this.metronome.bpm)
+                await this.startMetronome(
+                    this.metronome.bpm
+                )
             }
         },
 
@@ -103,8 +104,10 @@ export function sources() {
             const [origin, id] = value.split(':')
 
             if (origin === 'preset') {
-                const preset = this.timeSignatures.find(
-                    signature => signature.id === id
+                const presetID = Number(id)
+
+                const preset = this.pulsePresets.find(
+                    preset => preset.id === presetId
                 )
 
                 if (!preset) { return }
@@ -126,13 +129,11 @@ export function sources() {
             }
 
             if (this.pulseDraft.origin === 'preset') {
-                const preset = this.timeSignatures.find(
+                const preset = this.pulsePresets.find(
                     item => item.id === this.pulseDraft.sourceId
                 )
 
-                if (!preset) {
-                    return 'Pattern'
-                }
+                if (!preset) { return 'Pattern' }
 
                 return `${preset.numerator}/${preset.denominator} — ${preset.grouping.join(' + ')}`
             }

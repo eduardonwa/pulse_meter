@@ -13,13 +13,16 @@ import { recentSessions } from './recent-sessions'
 import { analytics } from './analytics'
 import { notifications } from './notifications.js'
 
-window.routinePlayer = function (steps) {
+window.routinePlayer = function (
+    steps,
+    pulsePresets = []
+) {
     return compose(
         state(steps),
         lifecycle(),
         storage(),
         audioEngine(),
-        pulseEditor(),
+        pulseEditor(pulsePresets),
         freeSession(),
         timerDuration(),
         exercises(),

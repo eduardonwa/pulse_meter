@@ -30,27 +30,23 @@
             <div class="pattern-dialog__group">
                 <h4>Presets</h4>
 
-                <template x-for="signature in timeSignatures" :key="signature.id">
+                <template x-for="preset in pulsePresets" :key="preset.id">
                     <button type="button" class="button | pattern-dialog__item"
-                        @click="
-                            selectPulseSourceFromDialog(
-                                `preset:${signature.id}`
-                            )
-                        "
+                        @click="selectPulseSourceFromDialog(`preset:${preset.id}`)"
                         :class="{
                             'is-selected':
                                 pulseDraft.origin === 'preset'
-                                && pulseDraft.sourceId === signature.id
+                                && pulseDraft.sourceId === preset.id
                         }"
                     >
                         <strong
                             x-text="
-                                `${signature.numerator}/${signature.denominator}`
+                                `${preset.numerator}/${preset.denominator}`
                             "
                         ></strong>
 
                         <small
-                            x-text="signature.grouping.join(' + ')"
+                            x-text="preset.grouping.join(' + ')"
                         ></small>
                     </button>
                 </template>
