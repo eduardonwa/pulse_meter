@@ -111,7 +111,7 @@
         @keydown.window="handleKeydown($event)"
         @click.window="handleToolTetherClick($event)"
         @pointermove.window="handleToolTetherPointerMove($event)"
-        
+
         data-pulse-patterns-store-url="{{ route('pulse-patterns.store') }}"
         data-pulse-patterns-index-url="{{ route('pulse-patterns.index') }}"
         data-pulse-patterns-update-url="{{ route('pulse-patterns.update', ['pulsePattern' => '__ID__']) }}"

@@ -66,6 +66,13 @@
         &--info    { background-color: #e5e7eb; color: #000; }
         &--success { background-color: #16a34a; color: #fff; }
         &--warning { background-color: #f97316; color: #fff; }
+        &--dark { background-color: #161616; color: #fff; }
+
+        .button {
+            color: #fff;
+            width: 18px;
+            height: 18px;
+        }
     }
 
     &--center {

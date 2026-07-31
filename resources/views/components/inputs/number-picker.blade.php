@@ -28,7 +28,10 @@
             format: {{ $format }},
         })"
         x-init="init()"
-        x-effect="$nextTick(() => syncExternalValue())"
+        x-effect="
+            {{ $model }};
+            $nextTick(() => syncExternalValue())
+        "
         @picker:sync.window="$nextTick(() => syncExternalValue())"
     >
         <button

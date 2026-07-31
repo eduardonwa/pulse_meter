@@ -114,6 +114,13 @@ export function state(steps) {
 
         grouping: [4],
 
+        creativePlaybackMode: 'click',
+        
+        pulseDownbeatEnabled: true,
+        activeMetronomeBpm: null,
+
+        currentBeat: 1,
+
         pattern: [
             { sound: 'accent', groupStart: true },
             { sound: 'click',  groupStart: false },
@@ -144,8 +151,6 @@ export function state(steps) {
         ],
 
         editorTool: null,
-
-        currentBeat: 1,
 
         toolTether: {
             active: false,

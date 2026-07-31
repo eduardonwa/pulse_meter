@@ -21,7 +21,10 @@ export function lifecycle() {
         },
 
         handleKeydown(event) {
-            if (event.key === 'Escape' && this.toolTether.active) {
+            if (
+                event.key === 'Escape'
+                && this.toolTether.active
+            ) {
                 this.cancelToolTether()
                 return
             }
@@ -34,13 +37,18 @@ export function lifecycle() {
                 return
             }
 
-            if (!this.isWaitingForNextExercise) {
+            event.preventDefault()
+
+            if (event.repeat) {
                 return
             }
 
-            event.preventDefault()
+            if (this.isWaitingForNextExercise) {
+                this.continueToNextExercise()
+                return
+            }
 
-            this.continueToNextExercise()
+            this.toggle()
         },
 
         get currentStep() {

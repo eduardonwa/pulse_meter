@@ -62,6 +62,8 @@ export function audioEngine() {
 
             await this.loadClickSounds()
 
+            this.activeMetronomeBpm = bpm
+
             this.currentBeat = 1
             this.playPatternBeat()
 
@@ -73,6 +75,7 @@ export function audioEngine() {
                 }
 
                 this.playPatternBeat()
+
             }, this.getBeatIntervalMs(bpm))
         },
 
@@ -92,14 +95,153 @@ export function audioEngine() {
             this.playBuffer(buffer, isAccent ? 1 : 0.9)
         },
 
-        playPatternBeat(beat = this.currentBeat) {
-            const patternBeat = this.pattern[beat - 1]
-
-            if (!patternBeat || patternBeat.sound === 'rest') {
+        playPulseTone({
+            groupSize,
+            isDownbeat = false,
+        }) {
+            if (!groupSize) {
                 return
             }
 
-            this.tick(patternBeat.sound === 'accent')
+            this.ensureAudioContext()
+
+            const ctx = this.audioContext
+            const now = ctx.currentTime
+
+            const bpm =
+                this.activeMetronomeBpm
+                ?? this.metronome.bpm
+
+            const subdivisionSeconds =
+                this.getBeatIntervalMs(bpm) / 1000
+
+            const groupDuration =
+                groupSize * subdivisionSeconds
+
+            const decayDuration =
+                Math.max(
+                    0.08,
+                    groupDuration * 0.88
+                )
+
+            const oscillator =
+                ctx.createOscillator()
+
+            const gain =
+                ctx.createGain()
+
+            /*
+            * DOWNBEAT:
+            *
+            * true  = BUM
+            * false = TUM
+            */
+            oscillator.type =
+                isDownbeat
+                    ? 'sine'
+                    : 'triangle'
+
+            const startFrequency =
+                isDownbeat
+                    ? 135
+                    : 190
+
+            const endFrequency =
+                isDownbeat
+                    ? 75
+                    : 105
+
+            const volume =
+                isDownbeat
+                    ? 0.65
+                    : 0.45
+
+            oscillator.frequency.setValueAtTime(
+                startFrequency,
+                now
+            )
+
+            oscillator.frequency.exponentialRampToValueAtTime(
+                endFrequency,
+                now + Math.min(
+                    0.14,
+                    decayDuration * 0.35
+                )
+            )
+
+            gain.gain.setValueAtTime(
+                volume,
+                now
+            )
+
+            gain.gain.exponentialRampToValueAtTime(
+                0.001,
+                now + decayDuration
+            )
+
+            oscillator.connect(gain)
+            gain.connect(ctx.destination)
+
+            oscillator.start(now)
+
+            oscillator.stop(
+                now + decayDuration + 0.02
+            )
+
+            oscillator.onended = () => {
+                oscillator.disconnect()
+                gain.disconnect()
+            }
+        },
+
+        playPatternBeat(beat = this.currentBeat) {
+            const patternBeat =
+                this.pattern[beat - 1]
+
+            if (!patternBeat) {
+                return
+            }
+
+            /*
+            * PULSE MODE
+            *
+            * Solo suena el inicio de cada grupo.
+            */
+            if (
+                this.metronome.mode === 'creative'
+                && this.creativePlaybackMode === 'pulse'
+            ) {
+                if (!patternBeat.groupStart) {
+                    return
+                }
+
+                if (patternBeat.sound === 'rest') {
+                    return
+                }
+
+                this.playPulseTone({
+                    groupSize: this.getGroupSizeForBeat(beat),
+
+                    isDownbeat:
+                        this.pulseDownbeatEnabled
+                        && beat === 1,
+                })
+
+                return
+            }
+
+            /*
+            * CLICK MODE
+            *
+            * Comportamiento original.
+            */
+            if (patternBeat.sound === 'rest') {
+                return
+            }
+
+            this.tick(
+                patternBeat.sound === 'accent'
+            )
         },
 
         // END ACTIVITIES

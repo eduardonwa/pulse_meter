@@ -22,11 +22,13 @@
             <span x-text="toast.message"></span>
 
             <button
+                class="button"
+                data-type="icon"
                 type="button"
                 @click="hideToast()"
                 aria-label="Close notification"
             >
-                X
+                <x-heroicon-o-x-mark />
             </button>
         </div>
     </div>

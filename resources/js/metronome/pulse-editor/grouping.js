@@ -123,5 +123,28 @@ export function grouping() {
         isBeatFilled(beat) {
             return beat <= this.getGroupingTotal()
         },
+
+        getGroupIndexForBeat(beat) {
+            let groupIndex = -1
+
+            for (let i = 0; i < beat; i++) {
+                if (this.pattern[i]?.groupStart) {
+                    groupIndex++
+                }
+            }
+
+            return groupIndex
+        },
+
+        getGroupSizeForBeat(beat) {
+            const groupIndex =
+                this.getGroupIndexForBeat(beat)
+
+            if (groupIndex < 0) {
+                return 0
+            }
+
+            return this.grouping[groupIndex] ?? 0
+        },
     }
 }
