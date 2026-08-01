@@ -157,9 +157,9 @@
         
         <x-windows.pattern-rename />
 
-        <x-windows.routines-dialog
+        <livewire:routines-dialog
             :routine="$routine"
-            :routines="$routines"
+            :routines="$routines->all()"
             :uses-server-persistence="$usesServerPersistence"
         />
 

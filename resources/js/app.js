@@ -1,5 +1,7 @@
-import Alpine from 'alpinejs'
-import focus from '@alpinejs/focus'
+import {
+    Livewire,
+    Alpine,
+} from '../../vendor/livewire/livewire/dist/livewire.esm'
 
 import {
     initializeProductAnalytics,
@@ -7,10 +9,8 @@ import {
 
 import './metronome'
 
-Alpine.plugin(focus)
-
 window.Alpine = Alpine
 
 void initializeProductAnalytics()
 
-Alpine.start()
+Livewire.start()

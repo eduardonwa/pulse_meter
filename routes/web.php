@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\PracticeRoutineController;
 use App\Http\Controllers\PracticeRoutineStepController;
 use App\Http\Controllers\ProductEventController;
 use App\Http\Controllers\PulsePresetController;
@@ -23,6 +24,29 @@ Route::view('/profile', 'profile.edit')
 
 // ROUTINES
 Route::middleware(['auth', 'can:use-pro'])->group(function () {
+    // ROUTINES
+    Route::post(
+        '/practice-routines',
+        [PracticeRoutineController::class, 'store']
+    )->name('practice-routines.store');
+
+    Route::patch(
+        '/practice-routines/{practiceRoutine}',
+        [PracticeRoutineController::class, 'update']
+    )->name('practice-routines.update');
+    
+    Route::delete(
+        '/practice-routines/{practiceRoutine}',
+        [PracticeRoutineController::class, 'destroy']
+    )->name('practice-routines.destroy');
+
+    Route::patch(
+        '/practice-routines/{practiceRoutine}/move',
+        [PracticeRoutineController::class, 'move']
+    )->name('practice-routines.move');
+
+
+    // EXERCISES
     Route::post('/practice-routines/{practiceRoutine}/steps',
         [PracticeRoutineStepController::class, 'store'])
     ->name('practice-routine-steps.store');

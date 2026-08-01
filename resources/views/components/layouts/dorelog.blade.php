@@ -26,9 +26,11 @@
 
     <meta name="product-events-endpoint" content="{{ route('analytics.events.store') }}">
     
-    @vite(['resources/styles/main.scss', 'resources/js/app.js'])
-    
     <style> [x-cloak] { display: none !important; } </style>
+    
+    @vite(['resources/styles/main.scss', 'resources/js/app.js'])
+
+    @livewireStyles
 </head>
 
 <body>
@@ -122,5 +124,7 @@
     </header>
 
     {{ $slot }}
+    
+    @livewireScriptConfig
 </body>
 </html>

@@ -12,9 +12,17 @@
                 && $routine
                 && $routines->isNotEmpty()
             )
-                <button class="button" data-type="icon-text" type="button" @click="openRoutineDialog()">
-                    <x-heroicon-o-arrow-top-right-on-square />
-                    <span> {{ $routine['name'] }} </span>
+                <button
+                    type="button"
+                    class="button"
+                    data-type="icon-text"
+                    @click="$dispatch('open-routines-dialog')"
+                >
+                    <span>
+                        {{ $routine['name'] }}
+                    </span>
+
+                    <x-heroicon-o-chevron-down />
                 </button>
             @endif
 
