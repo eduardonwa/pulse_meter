@@ -19,6 +19,6 @@
             'is-selected': activePatternTab === 'user'
         }"
     >
-        My Patterns
+        Custom
     </button>
 </div>

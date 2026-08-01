@@ -12,27 +12,14 @@
                 && $routine
                 && $routines->isNotEmpty()
             )
-                <button
-                    type="button"
-                    class="button"
-                    data-type="icon-text"
-                    @click="$dispatch('open-routines-dialog')"
-                >
-                    <span>
-                        {{ $routine['name'] }}
-                    </span>
+                <button type="button" class="button" data-type="icon-text" @click="$dispatch('open-routines-dialog')">
+                    <span x-text="activeRoutine?.name ?? ''"></span>
 
                     <x-heroicon-o-chevron-down />
                 </button>
             @endif
 
-            <button
-                type="button"
-                class="add-exercise | button"
-                data-type="icon-text"
-                :disabled="steps.length >= maxSteps"
-                @click="openAddStepModal()"
-            >
+            <button type="button" class="add-exercise | button" data-type="icon-text" :disabled="steps.length >= maxSteps" @click="openAddStepModal()">
                 <x-heroicon-o-plus-circle />
                 Add
             </button>

@@ -138,6 +138,15 @@
             data-pulse-presets-update-url="{{ route('pulse-presets.update', ['pulsePreset' => '__ID__']) }}"
             data-pulse-presets-destroy-url="{{ route('pulse-presets.destroy', ['pulsePreset' => '__ID__']) }}"
         @endif
+
+        @routine-renamed.window="
+            if (
+                Number(activeRoutine?.id)
+                === Number($event.detail.id)
+            ) {
+                activeRoutine.name = $event.detail.name
+            }
+        "
     >
         <x-tether />
         
