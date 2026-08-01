@@ -351,11 +351,18 @@ export function exercises() {
                     return
                 }
 
-                const createdStep =
-                    await this.storeRoutineStep(payload)
+                let createdStep
 
-                if (!createdStep) {
-                    return
+                if (this.usesServerPersistence) {
+                    createdStep = await this.storeRoutineStep(payload)
+                    
+                    if (!createdStep) { return }
+                } else {
+                    createdStep = {
+                        ...payload,
+                        position: this.steps.length,
+                        origin: 'custom'
+                    }
                 }
 
                 this.steps.push(createdStep)

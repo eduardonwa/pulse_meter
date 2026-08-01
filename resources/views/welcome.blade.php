@@ -115,31 +115,39 @@
         @click.window="handleToolTetherClick($event)"
         @pointermove.window="handleToolTetherPointerMove($event)"
 
-        data-routine-steps-store-url="{{ route(
-            'practice-routine-steps.store',
-            ['practiceRoutine' => $routine['id']]
-        ) }}"
-        
-        data-routine-step-update-url="{{ route(
-            'practice-routine-steps.update',
-            ['practiceRoutineStep' => '__ID__']
-        ) }}"
+        @if ($usesServerPersistence && $routine)
+            {{-- ROUTINE STEPS --}}
+            data-routine-steps-store-url="{{ route(
+                'practice-routine-steps.store',
+                ['practiceRoutine' => $routine['id']]
+            ) }}"
 
-        data-routine-step-destroy-url="{{ route(
-            'practice-routine-steps.destroy',
-            ['practiceRoutineStep' => '__ID__']
-        ) }}"
+            data-routine-step-update-url="{{ route(
+                'practice-routine-steps.update',
+                ['practiceRoutineStep' => '__ID__']
+            ) }}"
 
-        data-pulse-presets-store-url="{{ route('pulse-presets.store') }}"
-        data-pulse-presets-index-url="{{ route('pulse-presets.index') }}"
-        data-pulse-presets-update-url="{{ route('pulse-presets.update', ['pulsePreset' => '__ID__']) }}"
-        data-pulse-presets-destroy-url="{{ route('pulse-presets.destroy', ['pulsePreset' => '__ID__']) }}"
+            data-routine-step-destroy-url="{{ route(
+                'practice-routine-steps.destroy',
+                ['practiceRoutineStep' => '__ID__']
+            ) }}"
+
+            {{-- PULSE PRESETS --}}
+            data-pulse-presets-store-url="{{ route('pulse-presets.store') }}"
+            data-pulse-presets-index-url="{{ route('pulse-presets.index') }}"
+            data-pulse-presets-update-url="{{ route('pulse-presets.update', ['pulsePreset' => '__ID__']) }}"
+            data-pulse-presets-destroy-url="{{ route('pulse-presets.destroy', ['pulsePreset' => '__ID__']) }}"
+        @endif
     >
         <x-tether />
         
         <x-metronome.main-metro />
 
-        <x-metronome.panel />
+        <x-metronome.panel
+            :routine="$routine"
+            :routines="$routines"
+            :uses-server-persistence="$usesServerPersistence"
+        />
 
         <x-windows.confirm-modal />
 
@@ -148,6 +156,12 @@
         <x-windows.pattern-delete />
         
         <x-windows.pattern-rename />
+
+        <x-windows.routines-dialog
+            :routine="$routine"
+            :routines="$routines"
+            :uses-server-persistence="$usesServerPersistence"
+        />
 
         <x-toaster />
     </main>

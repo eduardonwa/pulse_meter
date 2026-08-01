@@ -12,16 +12,13 @@ export function lifecycle() {
                 })
             }
 
-            this.loadRecentSessions
-
-            this.$watch('steps', () => {
-                this.saveToLocalStorage()
-            })
-
             this.loadRecentSessions()
             this.loadClickSounds?.()
 
-            await this.loadPulsePatterns?.()
+            if (this.usesServerPersistence) {
+                await this.loadPulsePatterns?.()
+            }
+
             await this.restorePulseSource()
             
             this.setPulseBaseline?.()

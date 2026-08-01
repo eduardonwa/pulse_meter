@@ -100,8 +100,15 @@
                     display: flex;
                     align-items: center;
                     justify-content: flex-end;
+                    gap: $size-4;
+                    
                     margin: $size-3;
-                    padding: $size-3;
+                    margin-block: $size-8;
+                    
+                    .button[data-type="icon-text"] {
+                        padding: $size-3;
+                        border: 1px solid $color-neutral-900;
+                    }
 
                     @include mq(large) {
                         margin-inline-end: 0;
@@ -196,109 +203,6 @@
                                     background: $color-primary-400;
                                 }
                             }
-                        }
-                    }
-                }
-
-                /* TABLE */
-                .exercises-table-wrapper {
-                    overflow-x: auto;
-                    width: 100%;
-
-                    @include mq(large) {
-                        overflow-x: visible;
-                        overflow-y: visible;
-                    }
-                }
-
-                .exercises-table {
-                    width: 100%;
-                    min-width: 32rem;
-                }
-
-                .exercises-table__head,
-                .exercise-row {
-                    display: grid;
-                    grid-template-columns: 2.5rem 2.5rem minmax(9rem, 1fr) 7.75rem 4rem;
-                    align-items: center;
-                    gap: $size-2;
-                    padding: $size-2 $size-3;
-                }
-
-                .exercises-table__head {
-                    font-size: $font-size-300;
-                    font-weight: 500;
-                    border-block-end: 1px solid $color-neutral-300;
-
-                    .bpm-field {
-                        display: flex;
-                        align-items: center;
-                        justify-content: flex-start;
-                        gap: $size-1;
-                    }
-                }
-
-                .exercises-table__body {
-                    list-style: none;
-                    padding: 0;
-                    margin: 0;
-                }
-
-                .exercise-row {
-                    cursor: pointer;
-
-                    &.is-active {
-                        background: $color-neutral-200;
-                        border-block: 2px solid $color-primary-400;
-                    }
-
-                    input,
-                    select { min-width: 0; }
-
-                    &__playback {
-                        &:focus { border: 1px solid; }
-                    }
-
-                    &__number {
-                        inline-size: 2rem;
-                        display: grid;
-                        place-items: center;
-                    }
-
-                    &__name {
-                        width: 100%;
-                        padding: $size-1 $size-2;
-                        border: 1px solid $color-neutral-400;
-                        color: $color-neutral-900;
-                        font-size: $font-size-300;
-                        font-weight: normal;
-                    }
-
-                    &__bpm {
-                        min-width: 0;
-                        font-size: $font-size-400;
-                        color: $color-neutral-700;
-                    
-                        .picker-column {
-                            width: 56px;
-                            min-width: 56px;
-                            max-width: 56px;
-                            height: 44px;
-                            overflow-y: auto;
-                        }
-                    }
-
-                    &__actions {
-                        display: flex;
-                        justify-content: flex-end;
-                        gap: $size-3;
-                        white-space: nowrap;
-
-                        .button {
-                            padding: 0;
-                            font-size: $font-size-300;
-
-                            &:hover { border: 1px solid transparent; }
                         }
                     }
                 }

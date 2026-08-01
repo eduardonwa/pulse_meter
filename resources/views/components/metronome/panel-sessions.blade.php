@@ -265,11 +265,11 @@
                     </div>
 
                     <div class="time-signature__actions">
-                        <button class="button" data-type="secondary" type="button" @click="savePulsePattern()" x-show="pulseDraft.origin === 'new' || pulseDraft.origin === 'user'">
+                        <button class="button" data-type="primary" type="button" @click="savePulsePattern()" x-show="pulseDraft.origin === 'new' || pulseDraft.origin === 'user'">
                             Save
                         </button>
         
-                        <button class="button" data-type="secondary" type="button" @click="savePulsePatternAs()" x-show="pulseDraft.origin === 'preset' || pulseDraft.origin === 'user'">
+                        <button class="button" data-type="primary" data-variant="outline" type="button" @click="savePulsePatternAs()" x-show="pulseDraft.origin === 'preset' || pulseDraft.origin === 'user'">
                             Save as copy
                         </button>
                     </div>

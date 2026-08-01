@@ -35,6 +35,18 @@
     }
   }
 
+  &[data-type="primary"][data-variant="outline"] {
+    background: transparent;
+    border: 1px solid $button-primary-background;
+    color: $button-primary-background;
+
+    &:is(:hover, :focus) {
+      background-color: $button-primary-background-hover;
+      border-color: $button-primary-background-hover;
+      color: $button-primary-color-hover;
+    }
+  }
+
   &[data-type="secondary"] {
     text-transform: none;
     font-weight: normal;
@@ -132,6 +144,10 @@
 
     display: flex;
     align-items: center;
+
+    &:hover {
+      background: hsl(var(--neutral-950) / .1);
+    }
 
     svg {
       width: 16px;

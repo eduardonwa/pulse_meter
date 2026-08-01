@@ -211,7 +211,7 @@
 
             @include mq(medium) {
                 margin-left: 0;
-                margin-right: auto;
+                margin-inline: auto;
             }
         }
     }

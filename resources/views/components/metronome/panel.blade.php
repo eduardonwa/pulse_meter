@@ -1,3 +1,9 @@
+@props([
+    'routine' => null,
+    'routines' => null,
+    'usesServerPersistence' => false,
+])
+
 <section class="metronome__panel">
     <x-metronome.panel-tabs />
 

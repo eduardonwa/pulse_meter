@@ -13,6 +13,7 @@ import { recentSessions } from './recent-sessions'
 import { analytics } from './analytics'
 import { notifications } from './notifications.js'
 import { routinePersistence } from './routine-persistence.js'
+import { routineDialog } from './routine-dialog.js'
 
 window.routinePlayer = function (
     routine = null,
@@ -23,6 +24,7 @@ window.routinePlayer = function (
         lifecycle(),
         storage(),
         routinePersistence(),
+        routineDialog(),
         audioEngine(),
         pulseEditor(pulsePresets),
         freeSession(),

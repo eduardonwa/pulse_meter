@@ -7,22 +7,22 @@ use App\Http\Controllers\TrialController;
 use App\Http\Controllers\WelcomeController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', [WelcomeController::class, 'index']);
+Route::get('/', [WelcomeController::class, 'index'])
+    ->name('welcome');
 
 Route::post('/analytics/events', ProductEventController::class)
     ->middleware('throttle:product-analytics')
     ->name('analytics.events.store');
 
+
+// TODOS LOS USUARIOS AUTENTICADOS 
 Route::view('/profile', 'profile.edit')
     ->middleware(['auth'])
     ->name('profile.edit');
 
 
 // ROUTINES
-Route::middleware('auth')->group(function () {
-    Route::get('/', [WelcomeController::class, 'index'])
-        ->name('welcome');
-    
+Route::middleware(['auth', 'can:use-pro'])->group(function () {
     Route::post('/practice-routines/{practiceRoutine}/steps',
         [PracticeRoutineStepController::class, 'store'])
     ->name('practice-routine-steps.store');
@@ -31,12 +31,13 @@ Route::middleware('auth')->group(function () {
         '/practice-routine-steps/{practiceRoutineStep}',
         [PracticeRoutineStepController::class, 'update']
     )->name('practice-routine-steps.update');
+    
+    Route::delete(
+        '/practice-routine-steps/{practiceRoutineStep}',
+        [PracticeRoutineStepController::class, 'destroy']
+    )->name('practice-routine-steps.destroy');
 });
 
-Route::delete(
-    '/practice-routine-steps/{practiceRoutineStep}',
-    [PracticeRoutineStepController::class, 'destroy']
-)->name('practice-routine-steps.destroy');
 
 
 // PULSE PATTERNS
