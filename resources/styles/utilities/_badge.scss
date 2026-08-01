@@ -10,9 +10,9 @@
     font-weight: 500;
     white-space: nowrap;
     width: fit-content;
-    background: $color-secondary-50;
-    border: 1px solid $color-secondary-200;
-    color: $color-secondary-900;
+    background: hsl(var(--extra-500) / .1);
+    border: 1px solid $color-extra-500;
+    color: $color-extra-900;
     font-size: 14px !important;
     text-transform: uppercase;
 

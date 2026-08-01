@@ -12,15 +12,17 @@ import { clickProfiles } from './click-profiles'
 import { recentSessions } from './recent-sessions'
 import { analytics } from './analytics'
 import { notifications } from './notifications.js'
+import { routinePersistence } from './routine-persistence.js'
 
 window.routinePlayer = function (
-    steps,
+    routine = null,
     pulsePresets = []
 ) {
     return compose(
-        state(steps),
+        state(routine),
         lifecycle(),
         storage(),
+        routinePersistence(),
         audioEngine(),
         pulseEditor(pulsePresets),
         freeSession(),

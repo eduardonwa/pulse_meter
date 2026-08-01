@@ -14,10 +14,16 @@ return new class extends Migration
         Schema::create('practice_routines', function (Blueprint $table) {
             $table->id();
 
-            $table->foreignId('user_id')->nullable()->constrained()->cascadeOnDelete();
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+
             $table->string('name');
-            
+
+            $table->unsignedInteger('position')->default(0);
+            $table->boolean('is_default')->default(false);
+
             $table->timestamps();
+
+            $table->index(['user_id', 'position']);
         });
     }
 

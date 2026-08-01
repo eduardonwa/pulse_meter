@@ -3,6 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Models\PracticeRoutine;
 use App\Models\PulsePreset;
 use App\Models\TrialEntitlement;
 use Filament\Models\Contracts\FilamentUser;
@@ -46,6 +47,11 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
     public function pulsePresets(): HasMany
     {
         return $this->hasMany(PulsePreset::class);
+    }
+
+    public function practiceRoutines()
+    {
+        return $this->hasMany(PracticeRoutine::class);
     }
 
     // ADMIN

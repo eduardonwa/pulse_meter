@@ -4,7 +4,6 @@
     x-trap.noscroll="confirmModal.isOpen"
     x-transition
     @click.self="closeConfirmModal()"
-    @keydown.escape.window="closeConfirmModal()"
     x-cloak
 >
     <div class="modal-panel" data-type="danger" @click.stop>

@@ -27,35 +27,53 @@ export function defaultSteps() {
 export function defaultMetronome() {
     return {
         bpm: 100,
-        mode: 'creative',
+        mode: 'timer',
         duration_seconds: 60,
     }
 }
 
-export function state(steps) {
+export function state(routine = null) {
+    const usesServerPersistence = Boolean(routine?.id)
+
     return {
         // ROUTINE
-        steps: steps?.length
-            ? steps
-            : defaultSteps(),
-        
+        activeRoutine:
+            usesServerPersistence
+                ? routine
+                : null,
+
+        usesServerPersistence,
+
+        steps:
+            usesServerPersistence
+                ? Array.isArray(routine.steps)
+                    ? routine.steps
+                    : []
+                : defaultSteps(),
+
         currentIndex: 0,
-        
+
         // METRONOME
         metronome: defaultMetronome(),
         isPlaying: false,
 
         // NAVIGATION
-        activeTab: 'sessions',
+        activeTab: 'exercises',
 
         // PICKING OPTIONS
         minutesOptions: [0, 1, 2, 3, 4, 5],
 
         secondsOptions:
-            Array.from({ length: 60 }, (_, i) => i),
+            Array.from(
+                { length: 60 },
+                (_, i) => i
+            ),
 
         bpmOptions:
-            Array.from({ length: 271 }, (_, i) => i + 30),
+            Array.from(
+                { length: 271 },
+                (_, i) => i + 30
+            ),
 
         // CONFIRMATION
         confirmModal: {
@@ -63,7 +81,7 @@ export function state(steps) {
             title: '',
             message: '',
             confirmLabel: 'Confirm',
-            action: null,
+            action: null
         },
     }
 }

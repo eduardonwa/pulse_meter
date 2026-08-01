@@ -13,16 +13,25 @@ return new class extends Migration
     {
         Schema::create('practice_routine_steps', function (Blueprint $table) {
             $table->id();
+
             $table->foreignId('practice_routine_id')->constrained()->cascadeOnDelete();
 
             $table->string('name');
-            $table->integer('bpm');
-            $table->integer('beats_per_bar')->default(4);
-            $table->integer('duration_seconds')->nullable();
-            $table->integer('order')->default(0);
-            $table->enum('mode', ['time', 'manual'])->default('manual');
+            $table->unsignedSmallInteger('bpm');
+
+            $table->enum('mode', [
+                'timer',
+                'classic',
+            ])->default('timer');
+
+            $table->unsignedInteger('duration_seconds')->nullable();
+            $table->unsignedInteger('position')->default(0);
+
+            $table->string('origin')->default('custom');
 
             $table->timestamps();
+
+            $table->index(['practice_routine_id', 'position',]);
         });
     }
 

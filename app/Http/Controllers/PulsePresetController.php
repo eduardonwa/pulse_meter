@@ -10,7 +10,9 @@ use Illuminate\Http\Request;
 
 class PulsePresetController extends Controller
 {
-    public function store(StorePulsePresetRequest $request): JsonResponse {
+    public function store(
+        StorePulsePresetRequest $request
+    ): JsonResponse {
         $position = $request
             ->user()
             ->pulsePresets()
@@ -39,7 +41,9 @@ class PulsePresetController extends Controller
         ], 201);
     }
 
-    public function index(Request $request): JsonResponse
+    public function index(
+        Request $request
+    ): JsonResponse
     {
         $pulsePresets = $request
             ->user()
@@ -63,7 +67,10 @@ class PulsePresetController extends Controller
         return response()->json($pulsePresets);
     }
 
-    public function update(UpdatePulsePresetRequest $request, PulsePreset $pulsePreset): JsonResponse {
+    public function update(
+        UpdatePulsePresetRequest $request,
+        PulsePreset $pulsePreset
+    ): JsonResponse {
         abort_unless(
             $pulsePreset->user_id === $request->user()->id,
             403
@@ -87,7 +94,10 @@ class PulsePresetController extends Controller
         ]);
     }
 
-    public function destroy(Request $request, PulsePreset $pulsePreset): JsonResponse {
+    public function destroy(
+        Request $request,
+        PulsePreset $pulsePreset
+    ): JsonResponse {
         abort_unless(
             $pulsePreset->user_id === $request->user()->id,
             403

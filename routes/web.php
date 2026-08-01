@@ -1,12 +1,13 @@
 <?php
 
-use App\Http\Controllers\PracticeRoutineController;
+use App\Http\Controllers\PracticeRoutineStepController;
 use App\Http\Controllers\ProductEventController;
 use App\Http\Controllers\PulsePresetController;
 use App\Http\Controllers\TrialController;
+use App\Http\Controllers\WelcomeController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', [PracticeRoutineController::class, 'show']);
+Route::get('/', [WelcomeController::class, 'index']);
 
 Route::post('/analytics/events', ProductEventController::class)
     ->middleware('throttle:product-analytics')
@@ -15,6 +16,27 @@ Route::post('/analytics/events', ProductEventController::class)
 Route::view('/profile', 'profile.edit')
     ->middleware(['auth'])
     ->name('profile.edit');
+
+
+// ROUTINES
+Route::middleware('auth')->group(function () {
+    Route::get('/', [WelcomeController::class, 'index'])
+        ->name('welcome');
+    
+    Route::post('/practice-routines/{practiceRoutine}/steps',
+        [PracticeRoutineStepController::class, 'store'])
+    ->name('practice-routine-steps.store');
+    
+    Route::patch(
+        '/practice-routine-steps/{practiceRoutineStep}',
+        [PracticeRoutineStepController::class, 'update']
+    )->name('practice-routine-steps.update');
+});
+
+Route::delete(
+    '/practice-routine-steps/{practiceRoutineStep}',
+    [PracticeRoutineStepController::class, 'destroy']
+)->name('practice-routine-steps.destroy');
 
 
 // PULSE PATTERNS

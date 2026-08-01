@@ -108,12 +108,27 @@
         data-type="wide"
         data-spacing="none"
         x-data="routinePlayer(
-            @js($routine->steps),
+            @js($routine),
             @js($pulsePresets)
         )"
         @keydown.window="handleKeydown($event)"
         @click.window="handleToolTetherClick($event)"
         @pointermove.window="handleToolTetherPointerMove($event)"
+
+        data-routine-steps-store-url="{{ route(
+            'practice-routine-steps.store',
+            ['practiceRoutine' => $routine['id']]
+        ) }}"
+        
+        data-routine-step-update-url="{{ route(
+            'practice-routine-steps.update',
+            ['practiceRoutineStep' => '__ID__']
+        ) }}"
+
+        data-routine-step-destroy-url="{{ route(
+            'practice-routine-steps.destroy',
+            ['practiceRoutineStep' => '__ID__']
+        ) }}"
 
         data-pulse-presets-store-url="{{ route('pulse-presets.store') }}"
         data-pulse-presets-index-url="{{ route('pulse-presets.index') }}"

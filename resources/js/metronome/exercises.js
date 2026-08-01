@@ -69,22 +69,51 @@ export function exercises() {
             })
         },
 
-        removeStep(index) {
+        async removeStep(index) {
             if (this.steps.length <= 1) {
-                return
+                return false
+            }
+
+            const step = this.steps[index]
+
+            if (!step) {
+                return false
+            }
+
+            if (this.usesServerPersistence) {
+                if (!step.id) {
+                    return false
+                }
+
+                const wasDeleted =
+                    await this.destroyRoutineStep(step.id)
+
+                if (!wasDeleted) {
+                    return false
+                }
             }
 
             this.steps.splice(index, 1)
+
+            if (index < this.currentIndex) {
+                this.currentIndex -= 1
+            }
 
             if (this.currentIndex > this.steps.length - 1) {
                 this.currentIndex = this.steps.length - 1
             }
 
-            this.saveToLocalStorage()
+            if (!this.usesServerPersistence) {
+                this.saveToLocalStorage()
+            }
 
             this.$nextTick(() => {
-                window.dispatchEvent(new Event('picker:sync'))
+                window.dispatchEvent(
+                    new Event('picker:sync')
+                )
             })
+
+            return true
         },
 
         resetStepForm() {
@@ -104,6 +133,7 @@ export function exercises() {
             this.stepFormInitial = this.getStepFormPayload()
         },
 
+        // MODALS
         openAddStepModal() {
             if (this.steps.length >= this.maxSteps) {
                 return
@@ -214,8 +244,31 @@ export function exercises() {
 
             this.stepFormOpenedAt = null
         },
+
+        openDeleteStepModal(index) {
+            if (this.steps.length <= 1) {
+                return
+            }
+
+            const step = this.steps[index]
+
+            if (!step) {
+                return
+            }
+
+            this.openConfirmModal({
+                title: 'Delete exercise?',
+                message:
+                    `"${step.name}" will be permanently removed from this routine.`,
+                confirmLabel: 'Delete',
+
+                action: () => {
+                    return this.removeStep(index)
+                },
+            })
+        },
         
-        saveStepForm() {
+        async saveStepForm() {
             const payload = this.getStepFormPayload()
 
             let analyticsEvent = null
@@ -242,18 +295,34 @@ export function exercises() {
                         payload
                     )
 
-                this.steps[this.stepFormIndex] = {
-                    ...existingStep,
-                    ...payload,
+                let updatedStep
 
-                    // Después de guardar un preset editado,
-                    // ya cuenta como ejercicio personalizado.
-                    origin: 'custom',
+                if (this.usesServerPersistence) {
+                    updatedStep =
+                        await this.updateRoutineStep(
+                            existingStep.id,
+                            payload
+                        )
+
+                    if (!updatedStep) {
+                        return
+                    }
+                } else {
+                    updatedStep = {
+                        ...existingStep,
+                        ...payload,
+                        origin: 'custom',
+                    }
                 }
 
+                this.steps.splice(
+                    this.stepFormIndex,
+                    1,
+                    updatedStep
+                )
+
                 if (
-                    this.activeExerciseIndex
-                        === this.stepFormIndex
+                    this.activeExerciseIndex === this.stepFormIndex
                     && this.isPlaying
                 ) {
                     this.metronome.bpm = payload.bpm
@@ -282,25 +351,31 @@ export function exercises() {
                     return
                 }
 
-                this.steps.push({
-                    ...payload,
-                    origin: 'custom',
-                })
+                const createdStep =
+                    await this.storeRoutineStep(payload)
+
+                if (!createdStep) {
+                    return
+                }
+
+                this.steps.push(createdStep)
 
                 analyticsEvent = 'exercise_created'
 
                 analyticsProperties = {
                     exercise_index: this.steps.length - 1,
-                    exercise_origin: 'custom',
-                    bpm: payload.bpm,
-                    exercise_mode: payload.mode,
+                    exercise_origin: createdStep.origin,
+                    bpm: createdStep.bpm,
+                    exercise_mode: createdStep.mode,
                     duration_seconds:
-                        payload.duration_seconds,
+                        createdStep.duration_seconds,
                     exercise_count: this.steps.length,
                 }
             }
 
-            this.saveToLocalStorage()
+            if (!this.usesServerPersistence) {
+                this.saveToLocalStorage()
+            }
 
             if (analyticsEvent) {
                 this.track(
@@ -308,7 +383,7 @@ export function exercises() {
                     analyticsProperties
                 )
             }
-            
+
             // false evita que guardar sea registrado
             // también como una cancelación.
             this.closeStepFormModal(false)
@@ -321,7 +396,8 @@ export function exercises() {
 
             this.resetStepForm()
         },
-
+        
+        // EXERCISES
         startExercise(index) {
             const step = this.steps[index]
             
@@ -370,24 +446,35 @@ export function exercises() {
 
         updateExerciseBpm(index, bpm) {
             const step = this.steps[index]
-            
-            if (!step) { return }
+
+            if (!step) {
+                return
+            }
 
             const nextBpm = Number(bpm)
 
             this.currentIndex = index
-            this.steps[index].bpm = nextBpm
 
-            this.saveToLocalStorage()
+            // Actualiza inmediatamente la interfaz.
+            this.steps[index].bpm = nextBpm
+            this.steps[index].origin = 'custom'
+
+            // Guarda el cambio.
+            if (this.usesServerPersistence) {
+                this.queueRoutineStepUpdate(
+                    this.steps[index]
+                )
+            } else {
+                this.saveToLocalStorage()
+            }
 
             this.trackDebounced(
-                `exercise-bpm-${index}`,
+                `exercise-bpm-${step.id ?? index}`,
                 'bpm_changed',
                 {
                     source: 'exercise',
                     exercise_index: index,
-                    exercise_origin:
-                        this.getExerciseOrigin(step),
+                    exercise_origin: 'custom',
                     bpm: nextBpm,
                 },
                 700
@@ -398,9 +485,29 @@ export function exercises() {
                 && this.isPlaying
             ) {
                 this.metronome.bpm = nextBpm
+
                 this.startMetronome(
                     this.metronome.bpm
                 )
+            }
+        },
+
+        updateExerciseName(index, name) {
+            const step = this.steps[index]
+
+            if (!step) {
+                return
+            }
+
+            this.steps[index].name = String(name)
+            this.steps[index].origin = 'custom'
+
+            if (this.usesServerPersistence) {
+                this.queueRoutineStepUpdate(
+                    this.steps[index]
+                )
+            } else {
+                this.saveToLocalStorage()
             }
         },
 

@@ -55,6 +55,10 @@ export function storage() {
             this.showResetAppModal = true
         },
 
+        closeResetAppModal() {
+            this.showResetAppModal = false
+        },
+
         clearAllAppStorage() {
             this.stop?.()
             this.resetAudio?.()

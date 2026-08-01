@@ -45,7 +45,7 @@
                 <p class="exercise-form-label">Type</p>
                 <select x-model="stepForm.mode">
                     <option value="timer">Timer</option>
-                    <option value="manual">Manual</option>
+                    <option value="classic">Classic</option>
                 </select>
             </label>
         </div>

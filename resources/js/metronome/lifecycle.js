@@ -4,7 +4,15 @@ export function lifecycle() {
     return {
         // INITIALIZATION
         async init() {
-            this.loadFromLocalStorage()
+            if (!this.usesServerPersistence) {
+                this.loadFromLocalStorage()
+
+                this.$watch('steps', () => {
+                    this.saveToLocalStorage()
+                })
+            }
+
+            this.loadRecentSessions
 
             this.$watch('steps', () => {
                 this.saveToLocalStorage()
@@ -25,11 +33,21 @@ export function lifecycle() {
 
         // GLOBAL SHORCUTS
         handleKeydown(event) {
-            if (
-                event.key === 'Escape'
-                && this.toolTether.active
-            ) {
-                this.cancelToolTether()
+            if (event.key === 'Escape') {
+                if (event.repeat) {
+                    return
+                }
+
+                if (this.closeActiveModal()) {
+                    event.preventDefault()
+                    return
+                }
+
+                if (this.toolTether?.active) {
+                    this.cancelToolTether()
+                    return
+                }
+
                 return
             }
 
@@ -93,6 +111,31 @@ export function lifecycle() {
             if (typeof action === 'function') {
                 action()
             }
+        },
+
+        closeActiveModal() {
+            // El modal de confirmación tiene prioridad.
+            if (this.confirmModal?.isOpen) {
+                if (!this.confirmModal.isProcessing) {
+                    this.closeConfirmModal()
+                }
+
+                return true
+            }
+
+            // Modal de reset.
+            if (this.showResetAppModal) {
+                this.closeResetAppModal()
+                return true
+            }
+
+            // Modal para crear o editar ejercicios.
+            if (this.isStepFormOpen) {
+                this.closeStepFormModal()
+                return true
+            }
+
+            return false
         },
 
         // NAVIGATION

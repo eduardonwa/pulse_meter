@@ -20,6 +20,12 @@
                     class="name"
                     type="text"
                     x-model="step.name"
+                    @input="
+                        updateExerciseName(
+                            index,
+                            $event.target.value
+                        )
+                    "
                     @click.stop
                 >
                 
@@ -39,7 +45,7 @@
                         type="button"
                         class="button"
                         data-type="action-exercise"
-                        @click.stop="removeStep(index)"
+                        @click.stop="openDeleteStepModal(index)"
                         :disabled="steps.length <= 1"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="error">
@@ -50,7 +56,7 @@
                     <span class="timer"
                         :class="{ 
                             'is-counting': isPlaying && activeSessionType === 'exercise' && currentIndex === index && step.mode === 'timer',
-                            'badge': step.mode === 'manual'
+                            'badge': step.mode === 'classic'
                         }"
                         x-text="getStepTimeLabel(step, index)"
                     ></span>

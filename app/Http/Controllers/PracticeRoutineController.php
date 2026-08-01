@@ -3,22 +3,34 @@
 namespace App\Http\Controllers;
 
 use App\Models\PracticeRoutine;
-use App\Models\PulsePreset;
+use Illuminate\Http\Request;
 
 class PracticeRoutineController extends Controller
 {
-    public function show(PracticeRoutine $routine)
+    public function index(Request $request)
     {
-        $routine->load('steps');
-
-        $pulsePresets = PulsePreset::query()
-            ->where('user_id', '=', null)
-            ->orderBy('id', 'asc')
+        return $request->user()
+            ->practiceRoutines()
+            ->with('steps')
             ->get();
+    }
 
-        return view('welcome', [
-            'routine' => $routine,
-            'pulsePresets' => $pulsePresets
-        ]);
+    public function store(Request $request)
+    {
+        // Lo implementaremos cuando habilitemos
+        // múltiples rutinas para Pro.
+    }
+
+    public function update(
+        Request $request,
+        PracticeRoutine $practiceRoutine
+    ) {
+        // Rename, position, etc.
+    }
+
+    public function destroy(
+        PracticeRoutine $practiceRoutine
+    ) {
+        // Eliminar rutina Pro.
     }
 }
