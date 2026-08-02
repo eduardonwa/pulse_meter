@@ -65,6 +65,7 @@ input[type="checkbox"] {
   display: flex;
   flex-direction: column;
   gap: $size-2;
+  padding: $size-4;
 
   .heading {
     .button {

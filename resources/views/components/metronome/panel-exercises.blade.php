@@ -15,7 +15,7 @@
                 <button type="button" class="button" data-type="icon-text" @click="$dispatch('open-routines-dialog')">
                     <span x-text="activeRoutine?.name ?? ''"></span>
 
-                    <x-heroicon-o-chevron-down />
+                    <x-heroicon-o-arrow-top-right-on-square />
                 </button>
             @endif
 

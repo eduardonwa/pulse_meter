@@ -21,6 +21,9 @@ use Illuminate\Notifications\Notifiable;
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable implements FilamentUser, MustVerifyEmail
 {
+    public const TRIAL_EXERCISE_LIMIT = 10;
+    public const PRO_EXERCISE_LIMIT = 20;
+
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
@@ -85,5 +88,12 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
     public function hasProAccess(): bool
     {
         return $this->isPro() || $this->hasActiveTrial();
+    }
+
+    public function exerciseLimit(): int
+    {
+        return $this->hasProAccess()
+            ? self::PRO_EXERCISE_LIMIT
+            : self::TRIAL_EXERCISE_LIMIT;
     }
 }

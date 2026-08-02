@@ -19,6 +19,7 @@ class RoutinesDialog extends Component
     public bool $usesServerPersistence = false;
     public ?int $renamingRoutineId = null;
     public string $renameName = '';
+    public ?int $managingExercisesRoutineId = null;
 
     public function mount(
         ?array $routine = null,
@@ -217,6 +218,7 @@ class RoutinesDialog extends Component
             $routines = $user->practiceRoutines()
                 ->orderBy('position')
                 ->orderBy('id')
+                ->lockForUpdate()
                 ->get();
 
             $currentIndex = $routines->search(
@@ -346,6 +348,25 @@ class RoutinesDialog extends Component
         * la lista del modal.
         */
         $this->refreshRoutines();
+    }
+
+    public function manageExercises(int $routineId): void
+    {
+        Gate::authorize('use-pro');
+
+        $routine = Auth::user()
+            ->practiceRoutines()
+            ->whereKey($routineId)
+            ->firstOrFail();
+
+        $this->managingExercisesRoutineId = $routine->id;
+
+        $this->cancelRenaming();
+    }
+
+    public function stopManagingExercises(): void
+    {
+        $this->managingExercisesRoutineId = null;
     }
 
     public function render(): View

@@ -140,12 +140,8 @@
         @endif
 
         @routine-renamed.window="
-            if (
-                Number(activeRoutine?.id)
-                === Number($event.detail.id)
-            ) {
-                activeRoutine.name = $event.detail.name
-            }
+            Number(activeRoutine?.id) === Number($event.detail.id)
+                && (activeRoutine.name = $event.detail.name)
         "
     >
         <x-tether />

@@ -13,10 +13,17 @@
     background: hsl(var(--extra-500) / .1);
     border: 1px solid $color-extra-500;
     color: $color-extra-900;
-    font-size: 14px !important;
+    font-size: 13px !important;
     text-transform: uppercase;
 
     svg, img { width: 1em; height: 1em; }
+
+    &--manage {
+        background: hsl(var(--primary-200) / .4);
+        border-color: $color-primary-200;
+        color: $color-primary-900;
+        cursor: pointer;
+    }
 
     &--group-beat-a {
         --group-border-color: #{$color-primary-400};

@@ -7,15 +7,14 @@
                 @change="
                     trackSessionTypeSelected($event.target.value);
 
-                    if ($event.target.value === 'timer') {
-                        $nextTick(() => {
+                    $event.target.value === 'timer'
+                        && $nextTick(() => {
                             requestAnimationFrame(() => {
                                 window.dispatchEvent(
                                     new Event('picker:sync')
                                 )
                             })
                         })
-                    }
                 "
             >
                 <option value="classic">Classic</option>

@@ -24,6 +24,8 @@ class PracticeRoutine extends Model
 
     public function steps(): HasMany
     {
-        return $this->hasMany(PracticeRoutineStep::class)->orderBy('position');
+        return $this->hasMany(PracticeRoutineStep::class)
+            ->orderBy('position')
+            ->orderBy('id');
     }
 }

@@ -4,7 +4,6 @@
   border: 0;
   width: 100%;
   max-width: 400px;
-  padding: 1.5rem;
   border-radius: 0.5rem;
   margin: 0 auto;
   top: 50%;
@@ -18,10 +17,12 @@
     display: flex;
     flex-direction: column;
     height: min(80vh, 42rem);
+    padding: 1.5rem;
   }
 
   &__heading {
-    margin-block-end: $size-6;
+    padding: 1.5rem;
+    border-block-end: 1px solid hsl(var(--neutral-950) / 0.3);
     
     // CLOSE
     .button[data-type="icon"] {
@@ -174,13 +175,8 @@
         justify-content: center;
       }
 
-      .edit {
-        color: hsl(221 83% 53%);
-      }
-
-      .delete {
-        color: hsl(4 75% 55%);
-      }
+      .edit { color: hsl(221 83% 53%); }
+      .delete { color: hsl(4 75% 55%); }
     }
   }
 }
@@ -265,6 +261,7 @@
 
     margin-block-end: $size-6;
     padding: 0.7rem;
+    padding-inline-start: 1.6rem;
 
     border: 1px solid hsl(var(--neutral-950) / 0.2);
 
@@ -277,19 +274,22 @@
       color: hsl(var(--neutral-950) / 0.8);
       border: 1px solid transparent;
 
-      &.edit {
-        color: hsl(221 83% 53%);
-      }
-
-      &.delete {
-        color: hsl(4 75% 55%);
-      }
+      &.edit { color: hsl(221 83% 53%); }
+      &.delete { color: hsl(4 75% 55%); }
 
       @include mq(large) {
         &:hover {
           border: 1px solid;
         }
       }
+    }
+
+    .badge--manage {
+      display: inline-flex;
+
+      width: fit-content;
+      flex: none;
+      margin-inline-end: auto;
     }
 
     @include mq(large) {
@@ -310,6 +310,77 @@
     .actions {
       display: flex;
       gap: $size-2;
+    }
+  }
+
+  // MANAGE EXERCISES
+  .manage-exercises-dialog {
+    .heading {
+      padding: 1.5rem;
+      border-block-end: 1px solid hsl(var(--neutral-950) / 0.3);
+      
+      .button[data-type="icon"] {
+        margin-inline-end: auto;
+        margin-block-end: $size-6;
+        color: $color-neutral-600;
+      }
+
+      small {
+        color: hsl(var(--neutral-950) / 0.5);
+      }
+
+      .exercise-count {
+        display: block;
+        margin-block-start: $size-4;
+      }
+    }
+
+    .content { padding: 1.5rem; }
+
+    .item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-block-end: $size-4;
+
+      .move-btns {
+        .button {
+          width: 20px;
+          border: 1px solid hsl(var(--neutral-950) / 0.5);
+
+          &:disabled {
+            border: 1px solid $color-neutral-400;
+            background: transparent;
+            cursor: not-allowed;
+            opacity: 0.6;
+          }
+        }
+      }
+
+      .summary {
+        margin-right: auto;
+        padding-inline-start: $size-4;
+        
+        display: flex;
+        flex-direction: column;
+
+        font-size: 14px;
+
+        small {
+          color: hsl(var(--neutral-950) / 0.6);
+        }
+      }
+
+      .actions {
+        align-self: flex-end;
+        
+        display: flex;
+        gap: $size-3;
+        margin-block: auto;
+
+        .delete { color: hsl(4 75% 55%); }
+        .copy { color: hsl(var(--neutral-950) / 0.7);}
+      }
     }
   }
 }
