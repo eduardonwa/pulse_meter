@@ -92,7 +92,7 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
 
     public function exerciseLimit(): int
     {
-        return $this->hasProAccess()
+        return $this->isPro()
             ? self::PRO_EXERCISE_LIMIT
             : self::TRIAL_EXERCISE_LIMIT;
     }

@@ -67,13 +67,31 @@
                             wire:loading.attr="disabled"
                             wire:target="duplicateExercise"
                             @disabled(count($exercises) >= $exerciseLimit)
+                            @class(['is-disabled' => count($exercises) >= $exerciseLimit])
                         >
                             <x-heroicon-o-document-duplicate />
                         </button>
 
-                        <button class="button delete" type="button" data-type="icon" aria-label="Delete {{ $exercise['name'] }}"
-                            wire:click="deleteExercise({{ $exercise['id'] }})"
-                            wire:confirm="Delete this exercise?"
+                        <button
+                            class="button delete"
+                            type="button"
+                            data-type="icon"
+                            aria-label="Delete {{ $exercise['name'] }}"
+                            title="Delete exercise"
+                            @click="
+                                $dispatch('open-confirm-modal', {
+                                    title: 'Delete exercise?',
+                                    message: @js(
+                                        'Delete “'
+                                        . $exercise['name']
+                                        . '”? This action cannot be undone.'
+                                    ),
+                                    confirmLabel: 'Delete',
+                                    componentId: $wire.$id,
+                                    method: 'deleteExercise',
+                                    arguments: [{{ $exercise['id'] }}]
+                                })
+                            "
                             wire:loading.attr="disabled"
                             wire:target="deleteExercise"
                             @disabled(count($exercises) <= 1)

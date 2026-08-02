@@ -315,6 +315,7 @@
 
   // MANAGE EXERCISES
   .manage-exercises-dialog {
+
     .heading {
       padding: 1.5rem;
       border-block-end: 1px solid hsl(var(--neutral-950) / 0.3);
@@ -335,7 +336,15 @@
       }
     }
 
-    .content { padding: 1.5rem; }
+    .content {
+      padding: 1.5rem;
+      height: min(80vh, 42rem);
+    }
+
+    .list {
+      min-height: 0;
+      overflow-y: auto;
+    }
 
     .item {
       display: flex;
@@ -379,7 +388,14 @@
         margin-block: auto;
 
         .delete { color: hsl(4 75% 55%); }
-        .copy { color: hsl(var(--neutral-950) / 0.7);}
+        .copy {
+          color: hsl(var(--neutral-950) / 0.7);
+
+          &:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+          }
+        }
       }
     }
   }

@@ -143,6 +143,26 @@
             Number(activeRoutine?.id) === Number($event.detail.id)
                 && (activeRoutine.name = $event.detail.name)
         "
+        @routine-exercises-updated.window="
+            Number(activeRoutine?.id) === Number($event.detail.routineId)
+                && (steps = $event.detail.exercises)
+        "
+
+        @open-confirm-modal.window="
+            confirmModal.title = $event.detail.title
+            confirmModal.message = $event.detail.message
+            confirmModal.confirmLabel = $event.detail.confirmLabel
+            confirmModal.isOpen = true
+
+            confirmModal.action = async () => {
+                await Livewire
+                    .find($event.detail.componentId)
+                    .call(
+                        $event.detail.method,
+                        ...$event.detail.arguments
+                    )
+            }
+        "
     >
         <x-tether />
         

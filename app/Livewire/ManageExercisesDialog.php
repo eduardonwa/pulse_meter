@@ -128,6 +128,12 @@ class ManageExercisesDialog extends Component
         });
 
         $this->refreshExercises();
+
+        $this->dispatch(
+            'routine-exercises-updated',
+            routineId: $this->routineId,
+            exercises: $this->exercises,
+        );
     }
 
     public function duplicateExercise(int $exerciseId): void
@@ -201,6 +207,12 @@ class ManageExercisesDialog extends Component
         });
 
         $this->refreshExercises();
+
+        $this->dispatch(
+            'routine-exercises-updated',
+            routineId: $this->routineId,
+            exercises: $this->exercises,
+        );
     }
 
     public function deleteExercise(int $exerciseId): void
@@ -245,6 +257,12 @@ class ManageExercisesDialog extends Component
         });
 
         $this->refreshExercises();
+
+        $this->dispatch(
+            'routine-exercises-updated',
+            routineId: $this->routineId,
+            exercises: $this->exercises,
+        );
     }
 
     public function render(): View

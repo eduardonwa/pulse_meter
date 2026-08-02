@@ -60,6 +60,8 @@
                     :key="'manage-exercises-' . $managingExercisesRoutineId"
                 />
             @endif
+
+            <x-windows.confirm-modal />
         </dialog>
     @endif
 </div>
