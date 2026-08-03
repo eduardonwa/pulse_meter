@@ -8,19 +8,33 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
+use Livewire\Attributes\Url;
 
-class RoutinesDialog extends Component
+class PracticeDialog extends Component
 {
     #[Locked]
     public ?array $routine = null;
-    public array $routines = [];
 
+    public array $routines = [];
+    public array $playlists = [];
+   
     #[Locked]
     public bool $usesServerPersistence = false;
+    
+    public string $section = 'routines';
+
     public ?int $renamingRoutineId = null;
     public string $renameName = '';
-    public ?int $managingExercisesRoutineId = null;
 
+    public ?int $renamingPlaylistId = null;
+    public string $playlistRenameName = '';
+    
+    public ?int $managingExercisesRoutineId = null;
+    public ?int $managingPlaylistId = null;
+
+    #[Url(as: 'playlist')]
+    public ?int $activePlaylistId = null;
+    
     public function mount(
         ?array $routine = null,
         array $routines = [],
@@ -369,8 +383,286 @@ class RoutinesDialog extends Component
         $this->managingExercisesRoutineId = null;
     }
 
+    public function showRoutines(): void
+    {
+        $this->section = 'routines';
+
+        $this->managingExercisesRoutineId = null;
+        $this->managingPlaylistId = null;
+
+        $this->cancelRenamingPlaylist();
+    }
+
+    public function showPlaylists(): void
+    {
+        Gate::authorize('use-pro');
+
+        $this->section = 'playlists';
+
+        $this->managingExercisesRoutineId = null;
+        $this->managingPlaylistId = null;
+
+        $this->cancelRenaming();
+        $this->refreshPlaylists();
+    }
+
+    private function refreshPlaylists(): void
+    {
+        $this->playlists = Auth::user()
+            ->practicePlaylists()
+            ->select([
+                'id',
+                'name',
+                'position',
+                'starter_routine_id',
+            ])
+            ->with([
+                'starterRoutine:id,name',
+            ])
+            ->withCount('items')
+            ->orderBy('position')
+            ->orderBy('id')
+            ->get()
+            ->map(fn ($playlist) => [
+                'id' => $playlist->id,
+                'name' => $playlist->name,
+                'position' => $playlist->position,
+                'items_count' => $playlist->items_count,
+                'starter_routine' =>
+                    $playlist->starterRoutine
+                        ? [
+                            'id' => $playlist->starterRoutine->id,
+                            'name' => $playlist->starterRoutine->name,
+                        ]
+                        : null,
+            ])
+            ->values()
+            ->all();
+    }
+
+    public function createPlaylist(): void
+    {
+        Gate::authorize('use-pro');
+
+        $user = Auth::user();
+
+        $playlist = DB::transaction(
+            function () use ($user) {
+                $lastPosition = $user
+                    ->practicePlaylists()
+                    ->max('position');
+
+                $nextPosition = $lastPosition === null
+                    ? 0
+                    : $lastPosition + 1;
+
+                $playlist = $user
+                    ->practicePlaylists()
+                    ->create([
+                        'name' => 'New Playlist',
+                        'starter_routine_id' => null,
+                        'position' => $nextPosition,
+                    ]);
+
+                $playlist->name =
+                    'Playlist ' . ($nextPosition + 1);
+
+                $playlist->save();
+
+                return $playlist;
+            }
+        );
+
+        $this->refreshPlaylists();
+    }
+
+    public function startRenamingPlaylist(int $playlistId): void {
+        Gate::authorize('use-pro');
+
+        $playlist = Auth::user()
+            ->practicePlaylists()
+            ->whereKey($playlistId)
+            ->firstOrFail();
+
+        $this->renamingPlaylistId = $playlist->id;
+        $this->playlistRenameName = $playlist->name;
+
+        $this->cancelRenaming();
+        $this->resetValidation();
+    }
+
+    public function cancelRenamingPlaylist(): void
+    {
+        $this->reset([
+            'renamingPlaylistId',
+            'playlistRenameName',
+        ]);
+
+        $this->resetValidation();
+    }
+
+    public function renamePlaylist(): void
+    {
+        Gate::authorize('use-pro');
+
+        abort_if(
+            $this->renamingPlaylistId === null,
+            422
+        );
+
+        $this->playlistRenameName = trim(
+            $this->playlistRenameName
+        );
+
+        $validated = $this->validate([
+            'playlistRenameName' => [
+                'required',
+                'string',
+                'max:80',
+            ],
+        ]);
+
+        /*
+        * La consulta comienza desde el usuario para impedir
+        * modificar playlists ajenas.
+        */
+        $playlist = Auth::user()
+            ->practicePlaylists()
+            ->whereKey($this->renamingPlaylistId)
+            ->firstOrFail();
+
+        $playlist->name =
+            $validated['playlistRenameName'];
+
+        $playlist->save();
+
+        $this->refreshPlaylists();
+        $this->cancelRenamingPlaylist();
+    }
+
+    public function deletePlaylist(
+        int $playlistId,
+    ): void {
+        Gate::authorize('use-pro');
+
+        /*
+        * La consulta parte del usuario para impedir
+        * eliminar playlists ajenas.
+        */
+        $playlist = Auth::user()
+            ->practicePlaylists()
+            ->whereKey($playlistId)
+            ->firstOrFail();
+
+        $playlist->delete();
+
+        if (
+            $this->renamingPlaylistId
+            === $playlistId
+        ) {
+            $this->cancelRenamingPlaylist();
+        }
+
+        $this->refreshPlaylists();
+    }
+
+    public function managePlaylist(int $playlistId): void
+    {
+        Gate::authorize('use-pro');
+
+        /*
+        * La consulta comienza desde el usuario para impedir
+        * abrir playlists pertenecientes a otra cuenta.
+        */
+        $playlist = Auth::user()
+            ->practicePlaylists()
+            ->whereKey($playlistId)
+            ->firstOrFail();
+
+        $this->managingPlaylistId = $playlist->id;
+
+        $this->cancelRenamingPlaylist();
+    }
+
+    public function stopManagingPlaylist(): void
+    {
+        $this->managingPlaylistId = null;
+
+        $this->refreshPlaylists();
+    }
+
+    public function movePlaylist(
+        int $playlistId,
+        string $direction,
+    ): void {
+        Gate::authorize('use-pro');
+
+        abort_unless(
+            in_array($direction, ['up', 'down'], true),
+            422
+        );
+
+        $user = Auth::user();
+
+        $wasMoved = DB::transaction(
+            function () use (
+                $user,
+                $playlistId,
+                $direction,
+            ): bool {
+                $playlists = $user
+                    ->practicePlaylists()
+                    ->orderBy('position')
+                    ->orderBy('id')
+                    ->lockForUpdate()
+                    ->get();
+
+                $currentIndex = $playlists->search(
+                    fn ($playlist) =>
+                        (int) $playlist->id === $playlistId
+                );
+
+                abort_if($currentIndex === false, 404);
+
+                $targetIndex = $direction === 'up'
+                    ? $currentIndex - 1
+                    : $currentIndex + 1;
+
+                if (! $playlists->has($targetIndex)) {
+                    return false;
+                }
+
+                $currentPlaylist =
+                    $playlists[$currentIndex];
+
+                $targetPlaylist =
+                    $playlists[$targetIndex];
+
+                $currentPosition =
+                    $currentPlaylist->position;
+
+                $currentPlaylist->position =
+                    $targetPlaylist->position;
+
+                $targetPlaylist->position =
+                    $currentPosition;
+
+                $currentPlaylist->save();
+                $targetPlaylist->save();
+
+                return true;
+            }
+        );
+
+        if (! $wasMoved) {
+            return;
+        }
+
+        $this->refreshPlaylists();
+    }
+
     public function render(): View
     {
-        return view('livewire.routines-dialog');
+        return view('livewire.practice-dialog');
     }
 }

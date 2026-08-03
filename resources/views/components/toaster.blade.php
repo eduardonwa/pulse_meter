@@ -1,5 +1,6 @@
 <div
     id="toaster"
+    class="toaster"
     data-align="top"
     data-pos="right"
     aria-live="polite"
@@ -25,8 +26,8 @@
                 class="button"
                 data-type="icon"
                 type="button"
-                @click="hideToast()"
                 aria-label="Close notification"
+                @click="hideToast()"
             >
                 <x-heroicon-o-x-mark />
             </button>

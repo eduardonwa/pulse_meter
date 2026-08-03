@@ -1,5 +1,5 @@
 <div class="manage-exercises-dialog">
-    <header class="heading">
+    <header class="dialog-shell__heading manage-exercises-dialog__heading">
         <button class="button" data-type="icon" type="button"
             wire:click="$parent.stopManagingExercises()"
             aria-label="Back to routines"
@@ -12,10 +12,10 @@
         <small> {{ count($exercises) }} / {{ $exerciseLimit }} exercises </small>
     </header>
 
-    <div class="content">
-        <div class="list">
+    <div class="dialog-shell__content manage-exercises-dialog__content">
+        <div class="dialog-shell__list manage-exercises-dialog__list">
             @forelse ($exercises as $exercise)
-                <div class="item" wire:key="exercise-{{ $exercise['id'] }}">
+                <div class="manage-exercises-dialog__item" wire:key="exercise-{{ $exercise['id'] }}">
                     <div class="move-btns">
                         <button class="button" type="button" data-type="icon" aria-label="Move {{ $exercise['name'] }} up"
                             wire:click="moveExercise(
@@ -41,7 +41,7 @@
                             <x-heroicon-o-chevron-down />
                         </button>
                     </div>
-
+                    
                     <div class="summary">
                         <strong> {{ $exercise['name'] }} </strong>
 

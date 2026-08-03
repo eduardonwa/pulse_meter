@@ -23,7 +23,7 @@
                     @click.stop="openRenamePatternDialog(savedPattern)"
                     aria-label="Rename pattern"
                 >
-                    <x-heroicon-o-pencil />
+                    <x-heroicon-o-pencil-square />
                 </button>
 
                 <button class="button delete" type="button" data-type="icon"

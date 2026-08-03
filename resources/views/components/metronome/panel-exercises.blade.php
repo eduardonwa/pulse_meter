@@ -12,7 +12,7 @@
                 && $routine
                 && $routines->isNotEmpty()
             )
-                <button type="button" class="button" data-type="icon-text" @click="$dispatch('open-routines-dialog')">
+                <button type="button" class="button" data-type="icon-text" @click="$dispatch('open-practice-dialog')">
                     <span x-text="activeRoutine?.name ?? ''"></span>
 
                     <x-heroicon-o-arrow-top-right-on-square />

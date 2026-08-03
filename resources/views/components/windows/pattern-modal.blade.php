@@ -18,7 +18,7 @@
                 <x-heroicon-o-x-circle />
             </button>
 
-            <h2 class="pattern-heading">Choose pattern</h2>
+            <h2 class="heading">Choose pattern</h2>
         </header>
 
         <div class="pattern-dialog__list">

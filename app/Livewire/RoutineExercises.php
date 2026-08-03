@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
 
-class ManageExercisesDialog extends Component
+class RoutineExercises extends Component
 {
     #[Locked]
     public int $routineId;
@@ -267,6 +267,6 @@ class ManageExercisesDialog extends Component
 
     public function render(): View
     {
-        return view('livewire.manage-exercises-dialog');
+        return view('livewire.routine-exercises');
     }
 }

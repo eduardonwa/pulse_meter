@@ -138,7 +138,12 @@
             data-pulse-presets-update-url="{{ route('pulse-presets.update', ['pulsePreset' => '__ID__']) }}"
             data-pulse-presets-destroy-url="{{ route('pulse-presets.destroy', ['pulsePreset' => '__ID__']) }}"
         @endif
-
+        x-on:show-toast.window="
+            showToast(
+                $event.detail.message,
+                $event.detail.type
+            )
+        "
         @routine-renamed.window="
             Number(activeRoutine?.id) === Number($event.detail.id)
                 && (activeRoutine.name = $event.detail.name)
@@ -147,7 +152,6 @@
             Number(activeRoutine?.id) === Number($event.detail.routineId)
                 && (steps = $event.detail.exercises)
         "
-
         @open-confirm-modal.window="
             confirmModal.title = $event.detail.title
             confirmModal.message = $event.detail.message
@@ -182,7 +186,7 @@
         
         <x-windows.pattern-rename />
 
-        <livewire:routines-dialog
+        <livewire:practice-dialog
             :routine="$routine"
             :routines="$routines->all()"
             :uses-server-persistence="$usesServerPersistence"

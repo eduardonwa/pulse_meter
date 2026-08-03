@@ -1,6 +1,5 @@
 export function notifications() {
     return {
-
         // TOAST
         toast: {
             visible: false,

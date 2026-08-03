@@ -1,14 +1,4 @@
-<header class="dialog-shell__heading">
-    <button
-        type="button"
-        class="button"
-        data-type="icon"
-        aria-label="Close routines"
-        @click="closeRoutineDialog()"
-    >
-        <x-heroicon-o-x-circle />
-    </button>
-
+<header class="dialog-shell__heading routine-dialog__heading">
     <h2 class="routine-heading">
         Choose routine
     </h2>

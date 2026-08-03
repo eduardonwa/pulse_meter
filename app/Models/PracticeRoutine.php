@@ -2,9 +2,12 @@
 
 namespace App\Models;
 
+use App\Models\PracticePlaylist;
+use App\Models\PracticePlaylistItem;
 use App\Models\PracticeRoutineStep;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class PracticeRoutine extends Model
@@ -17,7 +20,7 @@ class PracticeRoutine extends Model
         ];
     }
 
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
@@ -27,5 +30,15 @@ class PracticeRoutine extends Model
         return $this->hasMany(PracticeRoutineStep::class)
             ->orderBy('position')
             ->orderBy('id');
+    }
+
+    public function playlistItems(): HasMany
+    {
+        return $this->hasMany(PracticePlaylistItem::class);
+    }
+
+    public function starterForPlaylists(): HasMany
+    {
+        return $this->hasMany(PracticePlaylist::class, 'starter_routine_id');
     }
 }

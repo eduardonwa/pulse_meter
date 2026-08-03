@@ -10,19 +10,14 @@
 <div {{ $attributes->class('routine-dialog__item') }}>
     @if (! $isRenaming)
         <div class="routine-dialog__summary">
-            <div class="routine-row">
+            <div class="routine-dialog__row">
                 <div class="move-btns">
                     <button
                         type="button"
                         class="button"
                         data-type="icon"
-                        aria-label="
-                            Move {{ $routineOption['name'] }} up
-                        "
-                        wire:click="moveRoutine(
-                            {{ $routineOption['id'] }},
-                            'up'
-                        )"
+                        aria-label="Move {{ $routineOption['name'] }} up"
+                        wire:click="moveRoutine({{ $routineOption['id'] }}, 'up')"
                         wire:loading.attr="disabled"
                         wire:target="moveRoutine"
                         @disabled($isFirst)
@@ -34,13 +29,8 @@
                         type="button"
                         class="button"
                         data-type="icon"
-                        aria-label="
-                            Move {{ $routineOption['name'] }} down
-                        "
-                        wire:click="moveRoutine(
-                            {{ $routineOption['id'] }},
-                            'down'
-                        )"
+                        aria-label="Move {{ $routineOption['name'] }} down"
+                        wire:click="moveRoutine({{ $routineOption['id'] }}, 'down')"
                         wire:loading.attr="disabled"
                         wire:target="moveRoutine"
                         @disabled($isLast)
@@ -49,20 +39,14 @@
                     </button>
                 </div>
 
-                <a wire:navigate data-type="outline"
-                    href="{{ route('welcome', [
-                        'routine' => $routineOption['id'],
-                    ]) }}"
+                <a wire:navigate data-type="outline" href="{{ route('welcome', [ 'routine' => $routineOption['id'] ]) }}"
                     @class([
-                        'button routine-name',
+                        'button row-name',
                         'is-selected' =>
                             (int) $routineOption['id']
                             === (int) $activeRoutineId,
                     ])
-                    @if (
-                        (int) $routineOption['id']
-                        === (int) $activeRoutineId
-                    )
+                    @if ((int) $routineOption['id'] === (int) $activeRoutineId)
                         aria-current="page"
                     @endif
                 >
@@ -70,13 +54,7 @@
 
                     <small>
                         {{ $routineOption['steps_count'] }}
-
-                        {{
-                            $routineOption['steps_count'] === 1
-                                ? 'exercise'
-                                : 'exercises'
-                        }}
-
+                        {{ $routineOption['steps_count'] === 1 ? 'exercise' : 'exercises' }}
                         @if ($routineOption['is_default'])
                             · Default
                         @endif
@@ -114,7 +92,7 @@
             </div>
         </div>
     @else
-        <x-routines-dialog.rename-form
+        <x-practice-dialog.routines.rename-form
             :routine-id="$routineOption['id']"
         />
     @endif
