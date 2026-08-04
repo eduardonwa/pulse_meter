@@ -110,4 +110,83 @@ class ProAccessTest extends TestCase
 
         return $trial;
     }
+
+    public function test_pro_user_is_authorized_without_a_trial(): void
+    {
+        $user = User::factory()->create([
+            'plan' => 'pro',
+        ]);
+
+        $this->assertTrue(
+            Gate::forUser($user)->allows('use-pro')
+        );
+    }
+
+    public function test_expired_trial_is_denied_and_normalized(): void
+    {
+        $now = CarbonImmutable::parse('2026-08-04 13:00:00');
+
+        $this->travelTo($now);
+
+        $user = User::factory()->create();
+
+        $trial = $this->createTrial($user, [
+            'expires_at' => $now->subSecond(),
+            'active_session_id' => (string) Str::uuid(),
+            'last_heartbeat_at' => $now->subSeconds(5),
+        ]);
+
+        $this->assertFalse(
+            Gate::forUser($user)->allows('use-pro')
+        );
+
+        $trial->refresh();
+
+        $this->assertSame('expired', $trial->status);
+        $this->assertNull($trial->active_session_id);
+    }
+
+    public function test_fully_consumed_trial_is_denied_and_normalized(): void
+    {
+        $user = User::factory()->create();
+
+        $trial = $this->createTrial($user, [
+            'used_seconds' => 3600,
+            'active_session_id' => (string) Str::uuid(),
+            'last_heartbeat_at' => now()->subSeconds(5),
+        ]);
+
+        $this->assertFalse(
+            Gate::forUser($user)->allows('use-pro')
+        );
+
+        $trial->refresh();
+
+        $this->assertSame('completed', $trial->status);
+        $this->assertSame(3600, $trial->used_seconds);
+        $this->assertNotNull($trial->completed_at);
+        $this->assertNull($trial->active_session_id);
+    }
+
+    public function test_paused_trial_is_denied_without_changing_its_state(): void
+    {
+        $user = User::factory()->create();
+
+        $trial = $this->createTrial($user, [
+            'status' => 'paused',
+            'paused_at' => now()->subMinute(),
+            'pause_reason' => 'manual',
+            'active_session_id' => null,
+            'last_heartbeat_at' => now()->subMinute(),
+        ]);
+
+        $this->assertFalse(
+            Gate::forUser($user)->allows('use-pro')
+        );
+
+        $trial->refresh();
+
+        $this->assertSame('paused', $trial->status);
+        $this->assertSame('manual', $trial->pause_reason);
+    }
 }
