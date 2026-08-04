@@ -211,8 +211,13 @@
         <x-toaster />
     </main>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
+    <script data-navigate-once>
+        let destroyTrialMode = null;
+
+        function initializeTrialMode() {
+            destroyTrialMode?.();
+            destroyTrialMode = null;
+
             /*
             * Reutilizamos tu session_id existente.
             */
@@ -295,6 +300,7 @@
             let requestInProgress = false;
             let waitingForVisibilitySync = false;
             let blockedByOtherSession = false;
+            let isDestroyed = false;
 
             function formatTime(totalSeconds) {
                 const safeSeconds = Math.max(
@@ -328,6 +334,7 @@
                     event === 'hidden';
 
                 if (
+                    isDestroyed ||
                     (!isHiddenSignal && document.hidden) ||
                     (!isHiddenSignal && requestInProgress) ||
                     !csrfToken
@@ -355,7 +362,7 @@
                             },
 
                             body: JSON.stringify({
-                                event: event,
+                                event,
                                 session_id:
                                     trialSessionId,
                             }),
@@ -367,6 +374,14 @@
 
                     const data =
                         await response.json();
+
+                    /*
+                    * La navegación pudo destruir esta instancia
+                    * mientras esperábamos la respuesta.
+                    */
+                    if (isDestroyed) {
+                        return;
+                    }
 
                     /*
                     * Otra pestaña posee actualmente
@@ -413,8 +428,8 @@
                         waitingForVisibilitySync = false;
 
                         /*
-                        * Si la otra pestaña quedó pausada,
-                        * completó el trial, etc.,
+                        * Si la sesión quedó pausada,
+                        * completó el Trial, expiró, etc.,
                         * recargamos para mostrar el estado real.
                         */
                         if (data.status !== 'active') {
@@ -451,6 +466,7 @@
             visualIntervalId =
                 window.setInterval(() => {
                     if (
+                        isDestroyed ||
                         document.hidden ||
                         waitingForVisibilitySync ||
                         blockedByOtherSession ||
@@ -487,30 +503,93 @@
                     10_000
                 );
 
-            document.addEventListener(
-                'visibilitychange',
-                () => {
-                    if (document.hidden) {
-                        waitingForVisibilitySync = true;
+            /*
+            * Este listener ya existía.
+            *
+            * Ahora tiene nombre para poder eliminarlo
+            * durante una navegación de Livewire.
+            */
+            function handleVisibilityChange() {
+                if (isDestroyed) {
+                    return;
+                }
 
-                        /*
-                        * Una pestaña bloqueada no es dueña
-                        * del trial, así que no registra salida.
-                        */
-                        if (!blockedByOtherSession) {
-                            sendTrialHeartbeat('hidden');
-                        }
-
-                        return;
-                    }
+                if (document.hidden) {
+                    waitingForVisibilitySync = true;
 
                     /*
-                    * Al regresar comprobamos inmediatamente
-                    * quién posee el trial.
+                    * Una pestaña bloqueada no es dueña
+                    * del Trial, así que no registra salida.
                     */
-                    sendTrialHeartbeat();
+                    if (!blockedByOtherSession) {
+                        sendTrialHeartbeat('hidden');
+                    }
+
+                    return;
                 }
+
+                /*
+                * Al regresar comprobamos inmediatamente
+                * quién posee el Trial.
+                */
+                sendTrialHeartbeat();
+            }
+
+            document.addEventListener(
+                'visibilitychange',
+                handleVisibilityChange
             );
-        });
+
+            /*
+            * Cleanup de esta instancia.
+            *
+            * Detiene los intervalos y elimina el listener
+            * antes de que Livewire reemplace la página.
+            */
+            return () => {
+                if (isDestroyed) {
+                    return;
+                }
+
+                isDestroyed = true;
+
+                window.clearInterval(
+                    heartbeatIntervalId
+                );
+
+                window.clearInterval(
+                    visualIntervalId
+                );
+
+                document.removeEventListener(
+                    'visibilitychange',
+                    handleVisibilityChange
+                );
+            };
+        }
+
+        /*
+        * Antes de cambiar de rutina o playlist,
+        * destruimos la instancia de la pantalla anterior.
+        */
+        document.addEventListener(
+            'livewire:navigating',
+            () => {
+                destroyTrialMode?.();
+                destroyTrialMode = null;
+            }
+        );
+
+        /*
+        * Después de la carga inicial y de cada navegación,
+        * inicializamos el Trial usando el DOM actual.
+        */
+        document.addEventListener(
+            'livewire:navigated',
+            () => {
+                destroyTrialMode =
+                    initializeTrialMode() ?? null;
+            }
+        );
     </script>
 </x-layouts.dorelog>
