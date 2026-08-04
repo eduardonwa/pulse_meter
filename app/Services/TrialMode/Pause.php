@@ -10,7 +10,13 @@ class Pause
 {
     public function pause(Request $request): RedirectResponse
     {
-        return DB::transaction(function () use ($request) {
+        $data = $request->validate([
+            'session_id' => ['required', 'uuid'],
+        ]);
+
+        $sessionId = $data['session_id'];
+
+        return DB::transaction(function () use ($request, $sessionId) {
             $trial = $request->user()
                 ->trialEntitlement()
                 ->lockForUpdate()
@@ -18,6 +24,13 @@ class Pause
 
             if (! $trial || $trial->status !== 'active') {
                 return back();
+            }
+
+            if (! $trial->active_session_id || $trial->active_session_id !== $sessionId) {
+                return back()->with(
+                    'trial_error',
+                    'Trial Mode is active in another tab.',
+                );
             }
 
             $now = now();
