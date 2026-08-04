@@ -92,8 +92,7 @@ class Heartbeat
                     );
 
                     if ($hiddenSeconds >= 20) {
-                        $billableHidden = min(
-                            20,
+                        $billableHidden = min(20,
                             $trial->remainingSeconds()
                         );
 
@@ -344,6 +343,57 @@ class Heartbeat
             */
             if (! $trial->last_heartbeat_at) {
                 $trial->last_heartbeat_at = $now;
+                $trial->save();
+
+                return response()->json([
+                    'status' => $trial->status,
+                    'remaining_seconds' =>
+                        $trial->remainingSeconds(),
+                    'remaining_label' =>
+                        $trial->remainingTimeLabel(),
+                ]);
+            }
+
+            /*
+            * La misma pestaña propietaria regresó demasiado tarde.
+            *
+            * Si transcurrió toda la ventana de inactividad, liquidamos
+            * un máximo de 20 segundos y pausamos el Trial.
+            */
+            $secondsSinceHeartbeat = (int) floor(
+                $trial->last_heartbeat_at
+                    ->diffInSeconds($now)
+            );
+
+            if ($secondsSinceHeartbeat >= 20) {
+                $billableSeconds = min(
+                    $secondsSinceHeartbeat,
+                    20,
+                    $trial->remainingSeconds(),
+                );
+
+                $trial->used_seconds += $billableSeconds;
+                $trial->last_heartbeat_at = $now;
+
+                if (
+                    $trial->used_seconds >=
+                    $trial->granted_seconds
+                ) {
+                    $trial->used_seconds =
+                        $trial->granted_seconds;
+
+                    $trial->status = 'completed';
+                    $trial->completed_at = $now;
+                    $trial->paused_at = null;
+                    $trial->pause_reason = null;
+                } else {
+                    $trial->status = 'paused';
+                    $trial->paused_at = $now;
+                    $trial->pause_reason = 'inactivity';
+                }
+
+                $trial->active_session_id = null;
+
                 $trial->save();
 
                 return response()->json([
