@@ -3,13 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Models\PulsePreset;
+use App\Services\PlaylistPlaybackBuilder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class WelcomeController extends Controller
 {
-    public function index(Request $request)
-    {
+    public function index(
+        Request $request,
+        PlaylistPlaybackBuilder $playlistPlaybackBuilder,
+    ) {
         $user = $request->user();
 
         /*
@@ -29,6 +32,11 @@ class WelcomeController extends Controller
          */
         $routinePayload = null;
         $routinesPayload = collect();
+
+        $practiceMode = 'routine';
+        $activePlaylistPayload = null;
+        $practiceGroups = [];
+        $practiceQueue = [];
 
         if ($usesServerPersistence) {
             /*
@@ -80,6 +88,113 @@ class WelcomeController extends Controller
                     return $routine;
                 }
             );
+
+            /*
+            * Una URL no puede solicitar una rutina
+            * y una playlist simultáneamente.
+            */
+            $requestedRoutineId = $request->query('routine');
+            $requestedPlaylistId = $request->query('playlist');
+
+            abort_if(
+                $requestedRoutineId !== null
+                && $requestedPlaylistId !== null,
+                404
+            );
+
+            if ($requestedPlaylistId !== null) {
+                /*
+                * PLAYLIST MODE
+                */
+                $validatedPlaylistId = filter_var(
+                    $requestedPlaylistId,
+                    FILTER_VALIDATE_INT,
+                    [
+                        'options' => [
+                            'min_range' => 1,
+                        ],
+                    ]
+                );
+
+                abort_if(
+                    $validatedPlaylistId === false,
+                    404
+                );
+
+                $playback = $playlistPlaybackBuilder->build(
+                    user: $user,
+                    playlistId: $validatedPlaylistId,
+                );
+
+                $practiceMode = 'playlist';
+
+                $activePlaylistPayload =
+                    $playback['active_playlist'];
+
+                $practiceGroups =
+                    $playback['groups'];
+
+                $practiceQueue =
+                    $playback['queue'];
+            } else {
+                /*
+                * ROUTINE MODE
+                */
+                if ($requestedRoutineId === null) {
+                    $routine = $defaultRoutine;
+                } else {
+                    $validatedRoutineId = filter_var(
+                        $requestedRoutineId,
+                        FILTER_VALIDATE_INT,
+                        [
+                            'options' => [
+                                'min_range' => 1,
+                            ],
+                        ]
+                    );
+
+                    abort_if(
+                        $validatedRoutineId === false,
+                        404
+                    );
+
+                    $routine = $user->practiceRoutines()
+                        ->whereKey($validatedRoutineId)
+                        ->firstOrFail();
+                }
+
+                $routine->load([
+                    'steps' => fn ($query) => $query
+                        ->orderBy('position')
+                        ->orderBy('id'),
+                ]);
+
+                $routinePayload = [
+                    'id' => $routine->id,
+                    'name' => $routine->name,
+                    'position' => $routine->position,
+                    'is_default' => (bool) $routine->is_default,
+
+                    'steps' => $routine->steps
+                        ->map(fn ($step) => [
+                            'id' => $step->id,
+
+                            'practice_routine_id' =>
+                                $step->practice_routine_id,
+
+                            'name' => $step->name,
+                            'bpm' => $step->bpm,
+                            'mode' => $step->mode,
+
+                            'duration_seconds' =>
+                                $step->duration_seconds,
+
+                            'position' => $step->position,
+                            'origin' => $step->origin,
+                        ])
+                        ->values(),
+                ];
+            }
 
             /*
              * Resolver la rutina activa.
@@ -189,9 +304,33 @@ class WelcomeController extends Controller
             ->orderBy('id', 'asc')
             ->get();
 
-        return view('welcome', [
+        $practiceContext = [
+            'mode' => $practiceMode,
+
+            'active_routine' => $routinePayload,
+            'active_playlist' => $activePlaylistPayload,
+
+            'groups' => $practiceGroups,
+
+            /*
+            * Tanto Routine Mode como Playlist Mode entregan
+            * una lista plana al reproductor.
+            */
+            'queue' => $practiceMode === 'playlist'
+                ? $practiceQueue
+                : ($routinePayload['steps'] ?? []),
+        ];
+
+            return view('welcome', [
+            'practiceContext' => $practiceContext,
+
             'routine' => $routinePayload,
             'routines' => $routinesPayload,
+            
+            'activePlaylist' => $activePlaylistPayload,
+            'practiceGroups' => $practiceGroups,
+            'practiceQueue' => $practiceQueue,
+
             'usesServerPersistence' => $usesServerPersistence,
             'pulsePresets' => $pulsePresets,
         ]);

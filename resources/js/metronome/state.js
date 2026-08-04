@@ -32,23 +32,64 @@ export function defaultMetronome() {
     }
 }
 
-export function state(routine = null) {
-    const usesServerPersistence = Boolean(routine?.id)
+export function state(practiceContext = null) {
+    const practiceMode = practiceContext?.mode === 'playlist'
+            ? 'playlist'
+            : 'routine'
+
+    const activeRoutine = practiceContext?.active_routine ?? null
+    const activePlaylist = practiceContext?.active_playlist ?? null
+
+     /*
+     * Una rutina activa o una playlist activa significan
+     * que los datos vienen del servidor.
+     */
+    const usesServerPersistence = Boolean(
+        activeRoutine?.id
+        || activePlaylist?.id
+    )
+
+    /*
+     * En Routine Mode contiene los ejercicios de la rutina.
+     * En Playlist Mode contiene la cola plana completa.
+     */
+    const serverQueue = Array.isArray(practiceContext?.queue)
+            ? practiceContext.queue
+            : []
+
+    const practiceGroups = Array.isArray(practiceContext?.groups)
+            ? practiceContext.groups
+            : []
 
     return {
-        // ROUTINE
-        activeRoutine:
-            usesServerPersistence
-                ? routine
-                : null,
+        // PRACTICE MODE
+        practiceMode,
+
+        activeRoutine,
+        activePlaylist,
+
+        practiceGroups,
+
+        practiceQueue: practiceMode === 'playlist'
+                ? serverQueue
+                : [],
+
+        /*
+         * Solamente Routine Mode puede modificar ejercicios
+         * desde el panel principal.
+         *
+         * Free/localStorage también sigue siendo Routine Mode.
+         */
+        canManageExercises: practiceMode === 'routine',
 
         usesServerPersistence,
 
-        steps:
-            usesServerPersistence
-                ? Array.isArray(routine.steps)
-                    ? routine.steps
-                    : []
+        /*
+         * El reproductor existente puede seguir trabajando
+         * con steps sin conocer todavía Playlist Mode.
+         */
+        steps: usesServerPersistence
+                ? serverQueue
                 : defaultSteps(),
 
         currentIndex: 0,

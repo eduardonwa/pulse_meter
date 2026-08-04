@@ -7,25 +7,38 @@
 <div class="exercises" x-show="activeTab === 'exercises'" x-cloak>
     <article class="exercises__list">
         <header class="heading-bar">
-            @if (
-                $usesServerPersistence
-                && $routine
-                && $routines->isNotEmpty()
-            )
-                <button type="button" class="button" data-type="icon-text" @click="$dispatch('open-practice-dialog')">
-                    <span x-text="activeRoutine?.name ?? ''"></span>
+            @if ($usesServerPersistence && $routines->isNotEmpty())
+                <button class="button" data-type="icon-text" type="button" @click="$dispatch('open-practice-dialog')">
+                    <span x-text="practiceMode === 'playlist'
+                        ? activePlaylist?.name ?? ''
+                        : activeRoutine?.name ?? ''
+                    "></span>
 
                     <x-heroicon-o-arrow-top-right-on-square />
                 </button>
             @endif
 
-            <button type="button" class="add-exercise | button" data-type="icon-text" :disabled="steps.length >= maxSteps" @click="openAddStepModal()">
+            <button class="add-exercise | button" data-type="icon-text" type="button"
+                x-show="canManageExercises"
+                :disabled="steps.length >= maxSteps"
+                @click="openAddStepModal()"
+            >
                 <x-heroicon-o-plus-circle />
                 Add
             </button>
         </header>
 
-        <ul> <x-metronome.panel-exercises-compact /> </ul>
+        <template x-if="practiceMode === 'routine'">
+            <ul>
+                <x-metronome.panel-exercises-compact />
+            </ul>
+        </template>
+
+        <template x-if="practiceMode === 'playlist'">
+            <div>
+                <x-metronome.panel-playlist-groups />
+            </div>
+        </template>
 
         <x-windows.step-form-modal />
 
@@ -33,8 +46,11 @@
 
         <x-windows.practice-review-modal />
 
-        <p class="total-exercises">
-            <span x-text="steps.length"></span> <span>/</span> <span x-text="maxSteps"></span> exercises
+        <p class="total-exercises" x-show="canManageExercises">
+            <span x-text="steps.length"></span>
+            <span>/</span>
+            <span x-text="maxSteps"></span>
+            exercises
         </p>
     </article>
 </div>

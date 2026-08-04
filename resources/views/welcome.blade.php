@@ -108,7 +108,7 @@
         data-type="wide"
         data-spacing="none"
         x-data="routinePlayer(
-            @js($routine),
+            @js($practiceContext),
             @js($pulsePresets)
         )"
         @keydown.window="handleKeydown($event)"
@@ -131,13 +131,29 @@
                 'practice-routine-steps.destroy',
                 ['practiceRoutineStep' => '__ID__']
             ) }}"
-
-            {{-- PULSE PRESETS --}}
-            data-pulse-presets-store-url="{{ route('pulse-presets.store') }}"
-            data-pulse-presets-index-url="{{ route('pulse-presets.index') }}"
-            data-pulse-presets-update-url="{{ route('pulse-presets.update', ['pulsePreset' => '__ID__']) }}"
-            data-pulse-presets-destroy-url="{{ route('pulse-presets.destroy', ['pulsePreset' => '__ID__']) }}"
         @endif
+
+        @if ($usesServerPersistence)
+            {{-- PULSE PRESETS --}}
+            data-pulse-presets-store-url="{{ route(
+                'pulse-presets.store'
+            ) }}"
+
+            data-pulse-presets-index-url="{{ route(
+                'pulse-presets.index'
+            ) }}"
+
+            data-pulse-presets-update-url="{{ route(
+                'pulse-presets.update',
+                ['pulsePreset' => '__ID__']
+            ) }}"
+
+            data-pulse-presets-destroy-url="{{ route(
+                'pulse-presets.destroy',
+                ['pulsePreset' => '__ID__']
+            ) }}"
+        @endif
+
         x-on:show-toast.window="
             showToast(
                 $event.detail.message,

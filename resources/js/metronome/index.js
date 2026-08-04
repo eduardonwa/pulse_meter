@@ -15,11 +15,11 @@ import { notifications } from './notifications.js'
 import { routinePersistence } from './routine-persistence.js'
 
 window.routinePlayer = function (
-    routine = null,
+    practiceContext = null,
     pulsePresets = []
 ) {
     return compose(
-        state(routine),
+        state(practiceContext),
         lifecycle(),
         storage(),
         routinePersistence(),
