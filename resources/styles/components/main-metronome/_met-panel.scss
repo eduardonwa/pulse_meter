@@ -217,6 +217,8 @@
             }
 
             .playlist-practice {
+                margin-block-end: $size-10;
+
                 &__empty {
                     margin: 1rem auto;
                     text-align: center;
