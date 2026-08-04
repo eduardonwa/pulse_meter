@@ -294,23 +294,6 @@ export function audioEngine() {
             this.currentBeat = 1
         },
 
-        stop(reason = 'user') {
-            const wasPlaying = this.isPlaying
-
-            if (wasPlaying) {
-                this.endPlaybackTracking(reason)
-            }
-
-            this.stopMetronome()
-
-            clearInterval(this.timerId)
-
-            this.timerId = null
-            this.isPlaying = false
-            this.remaining = null
-            this.activeExerciseIndex = null
-        },
-
         getPlaybackBeatCount() {
             return this
                 .getPlaybackPulse()

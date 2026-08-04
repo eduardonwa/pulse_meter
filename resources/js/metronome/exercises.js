@@ -407,48 +407,46 @@ export function exercises() {
         // EXERCISES
         startExercise(index) {
             const step = this.steps[index]
-            
+
             if (!step) { return }
 
-            const configuredDuration = step.mode === 'timer'
-                ? Number(step.duration_seconds ?? 60)
-                : null
+            const configuredDuration = step.mode === 'timer' ? Number(step.duration_seconds ?? 60) : null
 
-            this.stop('replaced')
-
-            this.activeSessionType = 'exercise'
-
+            /*
+            * Esto pertenece al contexto del ejercicio,
+            * no al motor general.
+            */
             this.currentIndex = index
-            this.activeExerciseIndex = index
             this.activeTab = 'exercises'
 
-            this.metronome.bpm = step.bpm
-            this.metronome.mode = step.mode
-            this.metronome.duration_seconds = configuredDuration
+            /*
+            * Inicio compartido de cualquier reproducción.
+            */
+            this.startPlaybackSession({
+                source: 'exercise',
+                mode: step.mode,
+                bpm: step.bpm,
+                duration: configuredDuration,
+                exerciseIndex: index,
+            })
 
-            this.ensureAudioContext()
-            this.isPlaying = true
-
-            this.startMetronome(this.metronome.bpm)
-            
+            /*
+            * Tracking específico del ejercicio.
+            */
             this.beginPlaybackTracking({
                 source: 'exercise',
-                
+
                 metronome_mode: step.mode,
                 bpm: Number(step.bpm),
+
                 configured_duration_seconds: configuredDuration,
 
                 exercise_index: index,
                 exercise_origin: this.getExerciseOrigin(step),
-                
+
                 // Compatibilidad temporal
                 exercise_mode: step.mode,
             })
-            
-            if (
-                this.metronome.mode === 'timer'
-                && configuredDuration
-            ) { this.startTimer(configuredDuration) }
         },
 
         updateExerciseBpm(index, bpm) {

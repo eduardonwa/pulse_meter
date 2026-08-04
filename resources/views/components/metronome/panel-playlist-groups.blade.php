@@ -21,7 +21,7 @@
                         :class="{
                             'is-active':
                                 isPlaying
-                                    && activeSessionType === 'exercise'
+                                    && playbackSource === 'exercise'
                                     && currentIndex === step.queue_position
                         }"
                     >
@@ -37,7 +37,7 @@
                                     :class="{
                                         'is-counting':
                                             isPlaying
-                                                && activeSessionType === 'exercise'
+                                                && playbackSource === 'exercise'
                                                 && currentIndex === step.queue_position
                                                 && step.mode === 'timer',
 
@@ -51,7 +51,7 @@
                                 <button class="exercise-row__playback | button" type="button" data-type="action-exercise"
                                     :class="{
                                         'is-active': isPlaying
-                                            && activeSessionType === 'exercise'
+                                            && playbackSource === 'exercise'
                                             && currentIndex === step.queue_position
                                     }"
                                     @click.stop="

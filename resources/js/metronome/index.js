@@ -4,7 +4,6 @@ import { lifecycle } from './lifecycle'
 import { storage } from './storage'
 import { audioEngine } from './audio-engine'
 import { pulseEditor } from './pulse-editor/index.js'
-import { freeSession } from './free-session'
 import { timerDuration } from './timer-duration'
 import { exercises } from './exercises'
 import { numberPicker } from './number-picker'
@@ -13,6 +12,7 @@ import { recentSessions } from './recent-sessions'
 import { analytics } from './analytics'
 import { notifications } from './notifications.js'
 import { routinePersistence } from './routine-persistence.js'
+import { playbackSession } from './playback-session.js'
 
 window.routinePlayer = function (
     practiceContext = null,
@@ -25,7 +25,7 @@ window.routinePlayer = function (
         routinePersistence(),
         audioEngine(),
         pulseEditor(pulsePresets),
-        freeSession(),
+        playbackSession(),
         timerDuration(),
         exercises(),
         clickProfiles(),

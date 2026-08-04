@@ -1,5 +1,5 @@
 <template x-for="(step, index) in steps" :key="index">
-    <li class="exercise-layout" :class="{ 'is-active': isPlaying && activeSessionType === 'exercise' && currentIndex === index }">
+    <li class="exercise-layout" :class="{ 'is-active': isPlaying && playbackSource === 'exercise' && currentIndex === index }">
         <div class="exercise-layout__bpm">
             <x-inputs.number-picker
                 class="exercise-row__bpm"
@@ -55,7 +55,7 @@
                     
                     <span class="timer"
                         :class="{ 
-                            'is-counting': isPlaying && activeSessionType === 'exercise' && currentIndex === index && step.mode === 'timer',
+                            'is-counting': isPlaying && playbackSource === 'exercise' && currentIndex === index && step.mode === 'timer',
                             'badge': step.mode === 'classic'
                         }"
                         x-text="getStepTimeLabel(step, index)"
@@ -68,7 +68,7 @@
                     type="button"
                     class="exercise-row__playback | button"
                     data-type="action-exercise"
-                    :class="{ 'is-active': isPlaying && activeSessionType === 'exercise' && currentIndex === index }"
+                    :class="{ 'is-active': isPlaying && playbackSource === 'exercise' && currentIndex === index }"
                     @click.stop="activeExerciseIndex === index && isPlaying ? stop() : startExercise(index)"
                 >
                     <x-heroicon-o-pause-circle  class="pause-icon" x-show="activeExerciseIndex === index && isPlaying" />

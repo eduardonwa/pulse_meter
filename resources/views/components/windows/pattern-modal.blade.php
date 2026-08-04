@@ -7,7 +7,7 @@
     @click.self="closePatternDialog()"
 >
     <div class="dialog-shell__content">
-        <header class="dialog-shell__heading">
+        <header class="dialog-shell__heading pattern-dialog__heading">
             <button
                 type="button"
                 class="button"

@@ -106,6 +106,10 @@
 }
 
 .pattern-dialog {
+  &__heading {
+    border-block-end: 1px solid transparent;
+  }
+
   &__list {
     // Botón New Pattern
     > .button[data-type="outline"] {

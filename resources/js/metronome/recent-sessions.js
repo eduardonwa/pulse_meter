@@ -64,7 +64,7 @@ export function recentSessions() {
         },
 
         saveCurrentSession(type = this.metronome.mode) {
-            if (this.activeSessionType !== 'free') {
+            if (this.playbackSource !== 'free') {
                 return
             }
 
