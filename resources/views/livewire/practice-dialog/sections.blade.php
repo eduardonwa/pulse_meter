@@ -8,6 +8,7 @@
         @class(['button', 'is-active' => $section === 'routines'])
         aria-pressed="{{ $section === 'routines' ? 'true' : 'false' }}"
     >
+        <x-heroicon-o-queue-list />
         Routines
     </button>
 
@@ -20,6 +21,7 @@
         @class(['button', 'is-active' => $section === 'playlists'])
         aria-pressed="{{ $section === 'playlists' ? 'true' : 'false' }}"
     >
+        <x-heroicon-o-numbered-list />
         Playlists
     </button>
 </nav>

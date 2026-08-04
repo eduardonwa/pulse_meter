@@ -1,8 +1,7 @@
 <header class="dialog-shell__heading routine-dialog__heading">
-    <h2 class="routine-heading">
-        Choose routine
-    </h2>
-
+    <p class="copy">
+        Build an exercise routine to sharpen your skills.
+    </p>
     <button
         type="button"
         class="button"

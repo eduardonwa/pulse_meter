@@ -1,7 +1,7 @@
 <header class="dialog-shell__heading playlist-dialog__heading">
-    <h2 class="playlist-heading">
-        Choose playlist
-    </h2>
+    <p class="copy">
+        Manage your routines or start practicing right away.
+    </p>
 
     <button
         type="button"

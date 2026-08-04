@@ -16,8 +16,8 @@ class PlaylistEditor extends Component
     public int $playlistId;
 
     public array $playlist = [];
-
     public array $routines = [];
+    public string $starterRoutineId = '';
 
     /*
      * Este componente completo pertenece a Playlist Mode,
@@ -53,22 +53,22 @@ class PlaylistEditor extends Component
             'items.routine:id,name',
         ]);
 
+        $this->starterRoutineId =
+            $playlist->starter_routine_id !== null
+                ? (string) $playlist->starter_routine_id
+                : '';
+
         $this->playlist = [
             'id' => $playlist->id,
             'name' => $playlist->name,
-
             'starter_routine' =>
                 $playlist->starterRoutine
                     ? [
-                        'id' =>
-                            $playlist->starterRoutine->id,
-                        'name' =>
-                            $playlist->starterRoutine->name,
+                        'id' => $playlist->starterRoutine->id,
+                        'name' => $playlist->starterRoutine->name,
                     ]
                     : null,
-
             'items_count' => $playlist->items->count(),
-
             'items' => $playlist->items
                 ->map(fn ($item) => [
                     /*
@@ -119,14 +119,18 @@ class PlaylistEditor extends Component
             ->whereKey($routineId)
             ->firstOrFail();
 
-        if (
-            $playlist->items()
-                ->where(
-                    'practice_routine_id',
-                    $routine->id,
-                )
+        if ($playlist->items()
+                ->where('practice_routine_id',$routine->id)
                 ->exists()
         ) {
+            /*
+            * Regresar el select al Starter Routine
+            * que realmente está guardado.
+            */
+            $this->starterRoutineId =
+                $playlist->starter_routine_id !== null
+                    ? (string) $playlist->starter_routine_id
+                    : '';
             $this->dispatch(
                 'show-toast',
                 type: 'error',
@@ -371,6 +375,18 @@ class PlaylistEditor extends Component
         }
 
         $this->refreshPlaylist();
+    }
+
+    public function updatedStarterRoutineId(
+        string $routineId,
+    ): void {
+        if ($routineId === '') {
+            $this->removeStarterRoutine();
+
+            return;
+        }
+
+        $this->setStarterRoutine((int) $routineId);
     }
 
     public function render(): View

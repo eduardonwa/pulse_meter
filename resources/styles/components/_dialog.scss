@@ -1,19 +1,27 @@
 @use '../abstracts/' as *;
 
 @mixin dialog-inner-screen {
+  overflow: hidden;
+
   flex: 1 1 auto;
   min-height: 0;
 
   display: flex;
   flex-direction: column;
 
-  overflow: hidden;
-
-
   &__heading {
     padding: 1.5rem;
+    padding-block: 0 $size-4;
 
     flex: 0 0 auto;
+
+    .button[data-type="icon"] {
+      align-self: flex-start;
+      width: 20px;
+      height: 20px;
+    }
+
+    .heading-info { margin-inline: auto; }
   }
 
   &__content {
@@ -67,6 +75,7 @@
     .button[data-type="icon"] {
       align-self: flex-end;
 
+      color: $color-neutral-600;
       display: flex;
       justify-content: flex-end;
     }
@@ -209,6 +218,7 @@
     margin-block-start: $size-3;
     margin-inline-end: $size-3;
     margin-left: auto;
+    color: $color-neutral-600;
   }
 
   &__sections {
@@ -220,12 +230,24 @@
     gap: $size-2;
 
     padding: 1.5rem;
-    border-block-end: 1px solid hsl(var(--neutral-950) / 0.3);
+    
+    .button[data-type="outline"] {
+      display: flex;
+      align-items: center;
+      gap: $size-4;
 
-    .button[data-type="outline"].is-active {
-      background: $color-neutral-900;
-      color: $color-neutral-50;
-      border: 1px solid transparent;
+      padding: 3px;
+
+      svg {
+        width: 24px;
+        height: 24px;
+      }
+
+      &.is-active {
+        background: $color-neutral-900;
+        color: $color-neutral-50;
+        border: 1px solid transparent;
+      }
     }
   }
 
@@ -243,6 +265,11 @@
   @include dialog-inner-screen;
 
   &__heading {
+    .copy {
+      font-size: 14px;
+      color: hsl(var(--neutral-950) / 0.8);
+    }
+
     small { color: hsl(var(--neutral-950) / 0.5); }
 
     .exercise-count {
@@ -327,12 +354,87 @@
   }
 }
 
-/* FALTA ACCION MANAGE ROUTINE */
+/* ACCION MANAGE */
+.manage-exercises-dialog {
+  @include dialog-inner-screen;
+  &__content {
+    padding: 0;
+  }
+
+  &__list {
+    margin-block-start: $size-4;
+
+    .exercise-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-block-end: 1px solid hsl(var(--neutral-950) / 0.2);
+      
+      margin-block-end: $size-4;
+      padding: $size-3;
+
+      &:last-child {
+        margin-block-end: 0;
+      }
+
+      .move-btns {
+        margin-inline-end: $size-1;
+
+        display: flex;
+        flex-direction: column;
+        gap: $size-2;
+
+        .button[data-type="icon"] {
+          border: 1px solid hsl(var(--neutral-950) / 0.2);
+
+          &:disabled {
+            background-color: $color-neutral-200;
+            opacity: 0.35;
+            cursor: not-allowed;
+          }
+        }
+      }
+
+      .item-summary {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        font-size: 15px;
+        margin-inline-start: $size-2;
+
+        &__info {
+          color: $color-neutral-500;
+        }
+      }
+
+      .actions {
+        display: flex;
+        align-items: center;
+        gap: $size-3;
+        
+        .button[data-type="icon"] {
+          width: 22px;
+          height: 22px;
+        }
+
+        .copy { color: $color-neutral-600; }
+        .delete { color: hsl(4 75% 55%); }
+      }
+    }
+  }
+}
 
 /* INDEX */
 .playlist-dialog {
   /* ITEM */
   @include dialog-inner-screen;
+
+  &__heading {
+    .copy {
+      font-size: 14px;
+      color: hsl(var(--neutral-950) / 0.8);
+    }
+  }
 
   &__summary { margin-block-end: $size-4; }
 
@@ -406,18 +508,149 @@
       gap: $size-2;
     }
   }
+
+  &__empty {
+    margin: 1rem auto;
+    text-align: center;
+    color: hsl(var(--neutral-950) / 0.8);
+    font-size: 14px;
+  }
 }
 
 /* ACCION MANAGE */
 .manage-playlist-dialog {
   @include dialog-inner-screen;
 
-  &__heading {
-    padding: 1.5rem;
-
-    // CLOSE
-    .button[data-type="icon"] {
-      align-self: flex-start;
+  &__content {
+    section {
+      border: 1px solid hsl(var(--neutral-950) / 0.1);
+      border-radius: $border-radius-1;
     }
+
+    > section + section {
+      margin-block-start: $size-4;
+    }
+  }
+
+  &__section-heading {
+    font-size: 14px;
+    padding: $size-3;
+
+    border-block-end: 1px solid hsl(var(--neutral-950) / 0.2);
+    color: $color-neutral-900;
+
+    h3 { font-weight: 500; }
+    p { color: $color-neutral-500; }
+  }
+  
+  /* STARTER ROUTINE */
+  &__field {
+    padding: $size-3;
+
+    .select {
+      margin-block: $size-2;
+
+      width: 100%;
+      font-size: 14px;
+    }
+  }
+
+  /* PLAYLIST ROUTINES */
+  &__item-list {
+    .routine-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-block-end: $size-4;
+      padding: $size-3;
+      border-block-end: 1px solid hsl(var(--neutral-950) / 0.2);
+
+      &:last-child {
+        margin-block-end: 0;
+        border-block-end: 1px solid transparent;
+      }
+
+      .move-btns {
+        margin-inline-end: $size-1;
+
+        display: flex;
+        flex-direction: column;
+        gap: $size-2;
+
+        .button[data-type="icon"] {
+          border: 1px solid hsl(var(--neutral-950) / 0.2);
+
+          &:disabled {
+            background-color: $color-neutral-200;
+            opacity: 0.35;
+            cursor: not-allowed;
+          }
+        }
+      }
+
+      .item-summary {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: $size-4;
+        font-weight: 500;
+        font-size: 15px;
+
+        &__position {
+          font-weight: 400;
+          color: hsl(var(--neutral-900) / 0.6);
+        }
+      }
+
+      .actions {
+        .button[data-type="icon"] {
+          width: 22px;
+          height: 22px;
+        }
+
+        .delete { color: hsl(4 75% 55%); }
+      }
+    }
+  }
+
+  /* AVAILABLE */
+  &__available-list {
+    display: flex;
+    flex-direction: column;
+    gap: $size-2;
+
+    border-radius: $border-radius-1;
+    border: 1px solid hsl(var(--neutral-950) / 0.05);
+  }
+
+  &__available-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: $size-2 $size-3;
+
+    &:nth-child(odd) {
+      background: hsl(var(--neutral-950) / 0.05);
+    }
+
+    .routine-info {
+      display: flex;
+      flex-direction: column;
+        
+      .routine-name { font-size: 14px; }
+    }
+
+    .button[data-type="secondary"] {
+      font-size: 13px;
+      padding-block: $size-2;
+    }
+  }
+
+  &__empty {
+    margin: 1rem auto;
+    text-align: center;
+    color: hsl(var(--neutral-950) / 0.8);
+    font-size: 14px;
   }
 }

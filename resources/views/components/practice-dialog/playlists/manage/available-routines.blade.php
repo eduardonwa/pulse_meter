@@ -4,6 +4,7 @@
 ])
 
 <section class="manage-playlist-dialog__available">
+    {{-- available routines --}}
     <header class="manage-playlist-dialog__section-heading">
         <div>
             <h3>
@@ -16,7 +17,7 @@
         </div>
     </header>
 
-    <div class=" dialog-shell__list manage-playlist-dialog__available-list">
+    <div class="dialog-shell__list manage-playlist-dialog__available-list">
         @foreach ($routines as $routineOption)
             @php
                 $routineId = (int) $routineOption['id'];
@@ -35,23 +36,12 @@
                     );
             @endphp
 
-            <article
-                class="manage-playlist-dialog__available-item"
-                wire:key="available-routine-{{ $routineOption['id'] }}"
-            >
-                <div>
-                    <strong>
-                        {{ $routineOption['name'] }}
-                    </strong>
-
-                    <small>
+            <article class="manage-playlist-dialog__available-item" wire:key="available-routine-{{ $routineOption['id'] }}">
+                <div class="routine-info">
+                    <strong class="routine-name"> {{ $routineOption['name'] }} </strong>
+                    <small class="exercise-count">
                         {{ $routineOption['steps_count'] }}
-
-                        {{
-                            $routineOption['steps_count'] === 1
-                                ? 'exercise'
-                                : 'exercises'
-                        }}
+                        {{ $routineOption['steps_count'] === 1 ? 'exercise' : 'exercises' }}
                     </small>
                 </div>
 
@@ -59,17 +49,9 @@
                     type="button"
                     class="button"
                     data-type="secondary"
-                    wire:click="
-                        addRoutineToPlaylist(
-                            {{ $routineOption['id'] }}
-                        )
-                    "
+                    wire:click="addRoutineToPlaylist({{ $routineOption['id'] }})"
                     wire:loading.attr="disabled"
-                    wire:target="
-                        addRoutineToPlaylist(
-                            {{ $routineOption['id'] }}
-                        )
-                    "
+                    wire:target="addRoutineToPlaylist({{ $routineOption['id'] }})"
                     @disabled($isStarter || $isAdded)
                 >
                     @if ($isStarter)

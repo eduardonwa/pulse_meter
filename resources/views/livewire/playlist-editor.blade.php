@@ -7,12 +7,13 @@
             aria-label="Back to playlists"
             wire:click="$parent.stopManagingPlaylist()"
         >
-            <x-heroicon-o-arrow-left-circle />
+            <x-heroicon-o-arrow-left />
         </button>
 
-        <h2> {{ $playlist['name'] }} </h2>
-
-        <span aria-hidden="true"></span>
+        <div class="heading-info">
+            <h2> {{ $playlist['name'] }} </h2>
+            <span aria-hidden="true"></span>
+        </div>
     </header>
 
     <div class="dialog-shell__content manage-playlist-dialog__content">

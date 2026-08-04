@@ -8,14 +8,17 @@
         </button>
 
         <small>Manage exercises</small>
-        <h2>{{ $routineName }}</h2>
-        <small> {{ count($exercises) }} / {{ $exerciseLimit }} exercises </small>
+        
+        <div class="heading-info">
+            <h2>{{ $routineName }}</h2>
+            <small> {{ count($exercises) }} / {{ $exerciseLimit }} exercises </small>
+        </div>
     </header>
 
     <div class="dialog-shell__content manage-exercises-dialog__content">
         <div class="dialog-shell__list manage-exercises-dialog__list">
             @forelse ($exercises as $exercise)
-                <div class="manage-exercises-dialog__item" wire:key="exercise-{{ $exercise['id'] }}">
+                <div class="exercise-item" wire:key="exercise-{{ $exercise['id'] }}">
                     <div class="move-btns">
                         <button class="button" type="button" data-type="icon" aria-label="Move {{ $exercise['name'] }} up"
                             wire:click="moveExercise(
@@ -42,10 +45,10 @@
                         </button>
                     </div>
                     
-                    <div class="summary">
-                        <strong> {{ $exercise['name'] }} </strong>
+                    <div class="item-summary">
+                        <strong class="item-summary__name"> {{ $exercise['name'] }} </strong>
 
-                        <small>
+                        <small class="item-summary__info">
                             {{ $exercise['bpm'] }} BPM
                             · {{ ucfirst($exercise['mode']) }}
 
