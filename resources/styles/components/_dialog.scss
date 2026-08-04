@@ -2,7 +2,6 @@
 
 @mixin dialog-inner-screen {
   overflow: hidden;
-
   flex: 1 1 auto;
   min-height: 0;
 
@@ -34,6 +33,129 @@
 
   &__list {
     min-height: 0;
+  }
+}
+
+@mixin dialog-inline-rename($full-width: false) {
+  @if $full-width {
+    width: 100%;
+  }
+
+  margin-block-end: $size-4;
+  padding: $size-3 $size-4;
+
+  border: 1px solid hsl(var(--neutral-950) / 0.2);
+  border-radius: $border-radius-1;
+
+  input {
+    width: 100%;
+    margin-block-end: $size-3;
+  }
+
+  .actions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: $size-2;
+  }
+}
+
+@mixin dialog-empty($opacity: 0.8) {
+  margin: 1rem auto;
+
+  text-align: center;
+  font-size: 14px;
+  color: hsl(var(--neutral-950) / $opacity);
+}
+
+@mixin dialog-heading-copy {
+  .copy {
+    font-size: 14px;
+    color: hsl(var(--neutral-950) / 0.8);
+  }
+}
+
+@mixin dialog-move-buttons {
+  margin-inline-end: $size-1;
+
+  display: flex;
+  flex-direction: column;
+  gap: $size-2;
+
+  .button[data-type="icon"] {
+    border: 1px solid hsl(var(--neutral-950) / 0.2);
+
+    &:disabled {
+      background-color: $color-neutral-200;
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+  }
+}
+
+@mixin dialog-edit-delete-colors {
+  .edit {
+    color: hsl(221 83% 53%);
+  }
+
+  .delete {
+    color: hsl(4 75% 55%);
+  }
+}
+
+@mixin dialog-entity-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: $size-2;
+
+  padding-block: $size-3;
+
+  .badge--manage {
+    justify-self: flex-start;
+    margin-right: auto;
+  }
+
+  .button[data-type="icon"] {
+    width: 21px;
+  }
+
+  @include dialog-edit-delete-colors;
+}
+
+@mixin dialog-entity-index {
+  @include dialog-inner-screen;
+
+  &__heading {
+    @include dialog-heading-copy;
+  }
+
+  &__summary {
+    margin-block-end: $size-4;
+  }
+
+  &__row {
+    display: flex;
+
+    .move-btns {
+      @include dialog-move-buttons;
+    }
+
+    .row-name {
+      width: 100%;
+
+      display: flex;
+      flex-direction: column;
+      gap: $size-2;
+    }
+  }
+
+  &__actions {
+    @include dialog-entity-actions;
+  }
+
+  &__rename {
+    @include dialog-inline-rename;
   }
 }
 
@@ -183,6 +305,11 @@
     align-items: center;
     gap: $size-4;
 
+    .normal-state {
+      display: flex;
+      width: 100%;
+    }
+
     > .button {
       flex: 2;
 
@@ -210,10 +337,13 @@
         align-items: center;
         justify-content: flex-end;
       }
-
-      .edit { color: hsl(221 83% 53%); }
-      .delete { color: hsl(4 75% 55%); }
+      
+      @include dialog-edit-delete-colors;
     }
+  }
+
+  &__rename {
+    @include dialog-inline-rename($full-width: true);
   }
 }
 
@@ -256,104 +386,23 @@
   }
 
   &__empty {
-    margin: 1rem auto;
-    text-align: center;
-    color: hsl(var(--neutral-950) / 0.6);
-    font-size: 14px;
+    @include dialog-empty($opacity: 0.6);
   }
 }
 
 /* INDEX */
 .routine-dialog {
   /* ITEM */
-  @include dialog-inner-screen;
+  @include dialog-entity-index;
 
   &__heading {
-    .copy {
-      font-size: 14px;
-      color: hsl(var(--neutral-950) / 0.8);
+    small {
+      color: hsl(var(--neutral-950) / 0.5);
     }
-
-    small { color: hsl(var(--neutral-950) / 0.5); }
 
     .exercise-count {
       display: block;
       margin-block-start: $size-4;
-    }
-  }
-
-  &__summary { margin-block-end: $size-4; }
-
-  &__row {
-    display: flex;
-
-    .move-btns {
-      margin-inline-end: $size-1;
-
-      display: flex;
-      flex-direction: column;
-      gap: $size-2;
-
-      .button[data-type="icon"] {
-        border: 1px solid hsl(var(--neutral-950) / 0.2);
-
-        &:disabled {
-          background-color: $color-neutral-200;
-          opacity: 0.35;
-          cursor: not-allowed;
-        }
-      }
-    }
-
-    .row-name {
-      display: flex;
-      flex-direction: column;
-      gap: $size-2;
-      
-      width: 100%;
-    }
-  }
-
-  &__actions {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: $size-2;
-    
-    padding-block: $size-3;
-
-    .badge--manage {
-      justify-self: flex-start;
-      margin-right: auto;
-    }
-
-    .button[data-type="icon"] {
-      width: 21px;
-    }
-
-    .edit { color: hsl(221 83% 53%); }
-    .delete { color: hsl(4 75% 55%); }
-  }
-
-  &__list { min-height: 0; }
-
-  &__rename {
-    padding: $size-4;
-    border: 1px solid hsl(var(--neutral-950) / 0.2);
-    border-radius: $border-radius-1;
-    margin-block-end: $size-4;
-    padding-block: $size-3;
-
-    input {
-      width: 100%;
-      margin-block-end: $size-3;
-    }
-
-    .actions {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: $size-2;
     }
   }
 }
@@ -361,6 +410,7 @@
 /* ACCION MANAGE */
 .manage-exercises-dialog {
   @include dialog-inner-screen;
+
   &__content {
     padding: 0;
   }
@@ -382,21 +432,7 @@
       }
 
       .move-btns {
-        margin-inline-end: $size-1;
-
-        display: flex;
-        flex-direction: column;
-        gap: $size-2;
-
-        .button[data-type="icon"] {
-          border: 1px solid hsl(var(--neutral-950) / 0.2);
-
-          &:disabled {
-            background-color: $color-neutral-200;
-            opacity: 0.35;
-            cursor: not-allowed;
-          }
-        }
+        @include dialog-move-buttons;
       }
 
       .item-summary {
@@ -431,93 +467,10 @@
 /* INDEX */
 .playlist-dialog {
   /* ITEM */
-  @include dialog-inner-screen;
-
-  &__heading {
-    .copy {
-      font-size: 14px;
-      color: hsl(var(--neutral-950) / 0.8);
-    }
-  }
-
-  &__summary { margin-block-end: $size-4; }
-
-  &__row {
-    display: flex;
-
-    .move-btns {
-      margin-inline-end: $size-1;
-
-      display: flex;
-      flex-direction: column;
-      gap: $size-2;
-
-      .button[data-type="icon"] {
-        border: 1px solid hsl(var(--neutral-950) / 0.2);
-
-        &:disabled {
-          background-color: $color-neutral-200;
-          opacity: 0.35;
-          cursor: not-allowed;
-        }
-      }
-    }
-
-    .row-name {
-      display: flex;
-      flex-direction: column;
-      gap: $size-2;
-      
-      width: 100%;
-    }
-  }
-
-  &__actions {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: $size-2;
-    
-    padding-block: $size-3;
-
-    .badge--manage {
-      justify-self: flex-start;
-      margin-right: auto;
-    }
-
-    .button[data-type="icon"] {
-      width: 21px;
-    }
-
-    .edit { color: hsl(221 83% 53%); }
-    .delete { color: hsl(4 75% 55%); }
-  }
-
-  &__rename {
-    padding: $size-4;
-    border: 1px solid hsl(var(--neutral-950) / 0.2);
-    border-radius: $border-radius-1;
-    margin-block-end: $size-4;
-    padding-block: $size-3;
-
-    input {
-      width: 100%;
-      margin-block-end: $size-3;
-    }
-
-    .actions {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: $size-2;
-    }
-  }
+  @include dialog-entity-index;
 
   &__empty {
-    margin: 1rem auto;
-    text-align: center;
-    color: hsl(var(--neutral-950) / 0.8);
-    font-size: 14px;
+    @include dialog-empty;
   }
 }
 
@@ -575,21 +528,7 @@
       }
 
       .move-btns {
-        margin-inline-end: $size-1;
-
-        display: flex;
-        flex-direction: column;
-        gap: $size-2;
-
-        .button[data-type="icon"] {
-          border: 1px solid hsl(var(--neutral-950) / 0.2);
-
-          &:disabled {
-            background-color: $color-neutral-200;
-            opacity: 0.35;
-            cursor: not-allowed;
-          }
-        }
+        @include dialog-move-buttons;
       }
 
       .item-summary {
@@ -652,9 +591,6 @@
   }
 
   &__empty {
-    margin: 1rem auto;
-    text-align: center;
-    color: hsl(var(--neutral-950) / 0.8);
-    font-size: 14px;
+    @include dialog-empty;
   }
 }

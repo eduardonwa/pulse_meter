@@ -200,7 +200,7 @@
 
         <x-windows.pattern-delete />
         
-        <x-windows.pattern-rename />
+        {{-- <x-windows.pattern-rename /> --}}
 
         <livewire:practice-dialog
             :routine="$routine"

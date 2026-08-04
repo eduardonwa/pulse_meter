@@ -37,9 +37,7 @@ export function interaction() {
                 '(hover: hover) and (pointer: fine)'
             ).matches
 
-            if (!canHover) {
-                return
-            }
+            if (!canHover) { return }
 
             const rect =
                 event.currentTarget.getBoundingClientRect()
@@ -129,6 +127,8 @@ export function interaction() {
         },
 
         closePatternDialog() {
+            this.cancelRenamingPattern()
+            
             this.isPatternDialogOpen = false
             this.$refs.patternDialog?.close()
         },
@@ -181,36 +181,30 @@ export function interaction() {
             return true
         },
 
-        // RENAME DIALOG
-        openRenamePatternDialog(pattern) {
-            this.patternPendingRenameId = pattern.id
-            this.patternRenameName = pattern.name
-
-            this.$refs.renamePatternDialog.showModal()
+        // INLINE PATTERN RENAME
+        startRenamingPattern(pattern) {
+            this.patternPendingRenameId = Number(pattern.id)
+            this.patternRenameName = String(pattern.name ?? '')
         },
 
-        closeRenamePatternDialog() {
-            this.$refs.renamePatternDialog.close()
-
+        cancelRenamingPattern() {
             this.patternPendingRenameId = null
             this.patternRenameName = ''
         },
 
-        async confirmRenamePattern() {
-            if (!this.patternPendingRenameId) {
-                return
-            }
+        async submitPatternRename() {
+            const id = Number(this.patternPendingRenameId)
+            const name = this.patternRenameName.trim()
 
-            const renamed = await this.renamePulsePattern(
-                this.patternPendingRenameId,
-                this.patternRenameName
-            )
+            if (!id || !name) { return false }
 
-            if (!renamed) {
-                return
-            }
+            const renamed = await this.renamePulsePattern(id, name)
 
-            this.closeRenamePatternDialog()
+            if (!renamed) { return false }
+
+            this.cancelRenamingPattern()
+
+            return true
         },
     }
 }
