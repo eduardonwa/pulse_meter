@@ -215,6 +215,62 @@
                     color: $color-neutral-600;
                 }
             }
+
+            .playlist-practice {
+                &__empty {
+                    margin: 1rem auto;
+                    text-align: center;
+                    color: hsl(var(--neutral-950) / 0.6);
+                    font-size: 14px;
+                }
+
+                &__group {
+                    margin-block-end: $size-6;
+                    border-block-end: 1px solid $color-neutral-400;
+                }
+                
+                &__heading {
+                    font-weight: 600;
+                    border-block-start: 1px solid $color-neutral-400;
+                    padding: $size-4;
+                    font-size: 15px;
+
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                }
+
+                .exercise-layout {
+                    &__bpm {
+                        font-weight: 500;
+                        color: $color-neutral-700;
+                    }
+
+                    &__info {
+                        .summary {
+                            gap: 0;
+                        
+                            .exercise-name {
+                                color: $color-neutral-700;
+                                font-size: 14px;
+                            }
+
+                            .timer {
+                                color: $color-neutral-500;
+                            }
+                        }
+                    }
+
+                    // ACTIVE STYLES
+                    &.is-active {
+                        .exercise-row__bpm,
+                        .exercise-name,
+                        .timer {
+                            color: $color-neutral-200;
+                        }
+                    }
+                }
+            }
         }
 
         .settings {

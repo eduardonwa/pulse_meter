@@ -25,6 +25,12 @@
         cursor: pointer;
     }
 
+    &--starter-routine {
+        color: $color-secondary-900;
+        background-color: hsl(var(--secondary-200) / .2);
+        border: 1px solid $color-secondary-400;
+    }
+
     &--group-beat-a {
         --group-border-color: #{$color-primary-400};
 
