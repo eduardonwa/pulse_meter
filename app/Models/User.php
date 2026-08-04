@@ -17,6 +17,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use App\Services\TrialMode\TrialAccess;
 
 #[Fillable(['name', 'email', 'password'])]
 #[Hidden(['password', 'remember_token'])]
@@ -75,15 +76,7 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
     // ACCESS
     public function hasActiveTrial(): bool
     {
-        $trial = $this->trialEntitlement;
-
-        if (! $trial) {
-            return false;
-        }
-
-        return $trial->status === 'active'
-            && $trial->expires_at->isFuture()
-            && $trial->used_seconds < $trial->granted_seconds;
+        return app(TrialAccess::class)->allows($this);
     }
 
     public function isPro(): bool
