@@ -10,6 +10,22 @@ export function audioEngine() {
         accentBuffer: null,
         finishBuffer: null,
 
+        defaultPlaybackPulse: {
+            timeSignature: {
+                numerator: 4,
+                denominator: 4
+            },
+
+            grouping: [4],
+
+            pattern: [
+                { sound: 'accent', groupStart: true },
+                { sound: 'click', groupStart: false },
+                { sound: 'click', groupStart: false },
+                { sound: 'click', groupStart: false },
+            ]
+        },
+
         // AUDIO CONTEXT
         ensureAudioContext() {
             this.audioContext ??= new AudioContext()
@@ -86,36 +102,39 @@ export function audioEngine() {
 
             await this.loadClickSounds()
 
-            this.activeMetronomeBpm = bpm
+            const playbackPulse = this.getPlaybackPulse()
 
+            this.activeMetronomeBpm = bpm
             this.currentBeat = 1
+            
             this.playPatternBeat()
 
             this.intervalId = setInterval(() => {
+                const playbackPulse = this.getPlaybackPulse()
+                const numerator = playbackPulse.timeSignature.numerator
+
                 this.currentBeat++
 
-                if (this.currentBeat > this.timeSignature.numerator) {
+                if (this.currentBeat > numerator) {
                     this.currentBeat = 1
                 }
 
                 this.playPatternBeat()
-
             }, this.getBeatIntervalMs(bpm))
         },
 
         getBeatIntervalMs(bpm) {
-            const denominator = this.timeSignature.denominator
+            const playbackPulse = this.getPlaybackPulse()
+            const denominator = playbackPulse.timeSignature.denominator
 
             return (60000 / bpm) * (4 / denominator)
         },
 
         playPatternBeat(beat = this.currentBeat) {
-            const patternBeat =
-                this.pattern[beat - 1]
+            const playbackPulse = this.getPlaybackPulse()
+            const patternBeat = playbackPulse.pattern[beat - 1]
 
-            if (!patternBeat) {
-                return
-            }
+            if (!patternBeat) { return }
 
             /*
             * PULSE MODE
@@ -135,7 +154,8 @@ export function audioEngine() {
                 }
 
                 this.playPulseTone({
-                    groupSize: this.getGroupSizeForBeat(beat),
+                    groupSize:
+                        this.getGroupSizeForBeat(beat),
 
                     isDownbeat:
                         this.pulseDownbeatEnabled
@@ -145,11 +165,6 @@ export function audioEngine() {
                 return
             }
 
-            /*
-            * CLICK MODE
-            *
-            * Comportamiento original.
-            */
             if (patternBeat.sound === 'rest') {
                 return
             }
@@ -259,6 +274,18 @@ export function audioEngine() {
             }
         },
 
+        getPlaybackPulse() {
+            if (this.metronome.mode === 'creative') {
+                return {
+                    timeSignature: this.timeSignature,
+                    grouping: this.grouping,
+                    pattern: this.pattern,
+                }
+            }
+
+            return this.defaultPlaybackPulse
+        },
+
         // PLAYBACK CONTROLS
         stopMetronome() {
             clearInterval(this.intervalId)
@@ -282,6 +309,13 @@ export function audioEngine() {
             this.isPlaying = false
             this.remaining = null
             this.activeExerciseIndex = null
+        },
+
+        getPlaybackBeatCount() {
+            return this
+                .getPlaybackPulse()
+                .timeSignature
+                .numerator
         },
 
         // FINISH SOUND

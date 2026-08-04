@@ -2,12 +2,8 @@
     <h2 class="current-beat" x-text="currentBeat"></h2>
 
     <article class="beats">
-        <template x-for="beat in timeSignature.numerator" :key="beat">
-            <div
-                class="beat-mark"
-                x-text="beat"
-                :class="{ 'is-active': currentBeat === beat }"
-            ></div>
+        <template x-for="beat in getPlaybackBeatCount()" :key="`${metronome.mode}-${beat}`">
+            <div class="beat-mark" x-text="beat" :class="{ 'is-active': currentBeat === beat }"></div>
         </template>
     </article>
 

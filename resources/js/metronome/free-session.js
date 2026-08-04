@@ -100,5 +100,24 @@ export function freeSession() {
             this.stop()
             this.playFinishSound()
         },
+
+        handleSessionModeChange(mode) {
+            if (this.isPlaying) {
+                this.stop('mode_changed')
+            }
+
+            this.metronome.mode = mode
+            this.currentBeat = 1
+
+            if (mode === 'timer') {
+                this.$nextTick(() => {
+                    requestAnimationFrame(() => {
+                        window.dispatchEvent(
+                            new Event('picker:sync')
+                        )
+                    })
+                })
+            }
+        },
     }
 }

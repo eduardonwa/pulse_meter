@@ -78,10 +78,18 @@
                 </button>
 
                 <button class="button delete" type="button" data-type="icon" aria-label="Delete {{ $playlistOption['name'] }}"
-                    wire:click="deletePlaylist({{ $playlistOption['id'] }})"
-                    wire:confirm="Delete this playlist? Its routines will not be deleted."
                     wire:loading.attr="disabled"
                     wire:target="deletePlaylist"
+                    @click.stop="
+                        openConfirmModal({
+                            title: 'Delete playlist?',
+                            message: 'This playlist will be deleted. Its routines will not be deleted.',
+                            confirmLabel: 'Delete',
+                            action: () => $wire.deletePlaylist(
+                                {{ $playlistOption['id'] }}
+                            ),
+                        })
+                    "
                 >
                     <x-heroicon-o-trash />
                 </button>

@@ -81,11 +81,17 @@
 
                 <button class="button delete" type="button" data-type="icon"
                     aria-label="Delete {{ $routineOption['name'] }}"
-                    wire:click="deleteRoutine({{ $routineOption['id'] }})"
-                    wire:confirm="Delete this routine and all its exercises?"
                     wire:loading.attr="disabled"
                     wire:target="deleteRoutine"
                     @disabled(! $canDelete)
+                    @click.stop="openConfirmModal({
+                        title: 'Delete routine?',
+                        message: 'All exercises will be deleted. Are you sure?',
+                        confirmLabel: 'Delete',
+                        action: () => $wire.deleteRoutine(
+                            {{ $routineOption['id'] }}
+                        )
+                    })"
                 >
                     <x-heroicon-o-trash />
                 </button>

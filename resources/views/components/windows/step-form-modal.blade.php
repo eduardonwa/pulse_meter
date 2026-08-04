@@ -2,6 +2,8 @@
     x-ref="stepDialog"
     x-trap.noscroll="isStepFormOpen"
     @close="isStepFormOpen = false"
+    @click.self="closeStepFormModal()"
+    @cancel.prevent="closeStepFormModal()"
 >
     <form class="new-exercise-form" @submit.prevent="saveStepForm()">
         <header class="heading">

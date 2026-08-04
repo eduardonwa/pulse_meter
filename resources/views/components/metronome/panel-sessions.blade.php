@@ -4,9 +4,7 @@
         
         <label for="mode">
             <select class="mode-selector" x-model="metronome.mode"
-                @change="
-                    trackSessionTypeSelected($event.target.value);
-
+                @change="trackSessionTypeSelected($event.target.value); handleSessionModeChange($event.target.value);
                     $event.target.value === 'timer'
                         && $nextTick(() => {
                             requestAnimationFrame(() => {
@@ -15,12 +13,13 @@
                                 )
                             })
                         })
+                    
                 "
             >
                 <option value="classic">Classic</option>
-                @can('use-pro')
-                    <option value="creative">Creative</option>
-                @endcan
+                    @can('use-pro')
+                        <option value="creative">Creative</option>
+                    @endcan
                 <option value="timer">Timer</option>
             </select>
         </label>
