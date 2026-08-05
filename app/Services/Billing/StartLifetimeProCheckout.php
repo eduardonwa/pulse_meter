@@ -41,6 +41,9 @@ class StartLifetimeProCheckout
 
                     'dorelog_purchase' =>
                         'pro_lifetime',
+
+                    'dorelog_price_id' =>
+                        $priceId,
                 ],
             ]
         );
