@@ -88,4 +88,32 @@ class DowngradeToFreeTest extends TestCase
             $user->refresh()->plan
         );
     }
+
+    public function test_it_preserves_pro_for_an_active_lifetime_entitlement(): void
+    {
+        $user = User::factory()->create([
+            'plan' => 'pro',
+        ]);
+
+        $user->lifetimeEntitlement()->create([
+            'stripe_checkout_session_id' =>
+                'cs_lifetime_downgrade_guard',
+            'stripe_payment_intent_id' =>
+                'pi_lifetime_downgrade_guard',
+            'stripe_price_id' =>
+                'price_dorelog_lifetime',
+            'granted_at' => now(),
+        ]);
+
+        app(DowngradeToFree::class)->downgrade($user);
+
+        $this->assertSame(
+            'pro',
+            $user->refresh()->plan
+        );
+
+        $this->assertTrue(
+            $user->hasLifetimePro()
+        );
+    }
 }

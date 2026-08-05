@@ -14,6 +14,10 @@ class DowngradeToFree
                 ->lockForUpdate()
                 ->findOrFail($user->getKey());
 
+            if ($lockedUser->hasLifetimePro()) {
+                return;
+            }
+
             $lockedUser->forceFill([
                 'plan' => 'free',
             ])->save();
