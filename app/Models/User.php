@@ -139,4 +139,17 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
         return $limit !== null
             && $this->practicePlaylists()->count() >= $limit;
     }
+
+    public function lifetimeEntitlement(): HasOne
+    {
+        return $this->hasOne(LifetimeEntitlement::class);
+    }
+
+    public function hasLifetimePro(): bool
+    {
+        return $this
+            ->lifetimeEntitlement()
+            ->whereNull('revoked_at')
+            ->exists();
+    }
 }
