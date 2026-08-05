@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Billing\MonthlyProCheckoutController;
 use App\Http\Controllers\LocalRoutineImportController;
 use App\Http\Controllers\PracticeRoutineController;
 use App\Http\Controllers\PracticeRoutineStepController;
@@ -20,6 +21,14 @@ Route::post('/analytics/events', ProductEventController::class)
 Route::view('/profile', 'profile.edit')
     ->middleware(['auth'])
     ->name('profile.edit');
+
+// CHECKOUT
+Route::post(
+    '/billing/pro/monthly/checkout',
+    MonthlyProCheckoutController::class
+)
+    ->middleware('auth')
+    ->name('billing.pro.monthly.checkout');
 
 // ROUTINES
 Route::middleware(['auth', 'can:use-pro'])->group(function () {
