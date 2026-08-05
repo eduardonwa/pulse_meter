@@ -320,12 +320,21 @@ export function exercises() {
                     updatedStep
                 )
 
-                if (
+                const isActiveExercise =
                     this.activeExerciseIndex === this.stepFormIndex
                     && this.isPlaying
-                ) {
-                    this.metronome.bpm = payload.bpm
-                    this.startMetronome(payload.bpm)
+
+                if (isActiveExercise) {
+                    const playbackConfigurationChanged =
+                        changedFields.includes('mode')
+                        || changedFields.includes('duration_seconds')
+
+                    if (playbackConfigurationChanged) {
+                        this.stop('exercise_changed')
+                    } else if (changedFields.includes('bpm')) {
+                        this.metronome.bpm = payload.bpm
+                        this.startMetronome(payload.bpm)
+                    }
                 }
 
                 if (changedFields.length > 0) {
