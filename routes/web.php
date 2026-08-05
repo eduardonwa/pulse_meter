@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Billing\LifetimeProCheckoutController;
 use App\Http\Controllers\Billing\MonthlyProCheckoutController;
 use App\Http\Controllers\LocalRoutineImportController;
 use App\Http\Controllers\PracticeRoutineController;
@@ -29,6 +30,13 @@ Route::post(
 )
     ->middleware('auth')
     ->name('billing.pro.monthly.checkout');
+
+Route::post(
+    '/billing/pro/lifetime/checkout',
+    LifetimeProCheckoutController::class
+)
+    ->middleware('auth')
+    ->name('billing.pro.lifetime.checkout');
 
 // ROUTINES
 Route::middleware(['auth', 'can:use-pro'])->group(function () {
