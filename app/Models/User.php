@@ -145,6 +145,11 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
         return $this->hasOne(LifetimeEntitlement::class);
     }
 
+    public function lifetimePurchases(): HasMany
+    {
+        return $this->hasMany(LifetimePurchase::class);
+    }
+
     public function hasLifetimePro(): bool
     {
         return $this
