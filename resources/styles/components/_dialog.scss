@@ -598,3 +598,47 @@
     @include dialog-empty;
   }
 }
+
+/* LOCAL EXERCISES IMPORT  */
+.local-exercises-dialog {
+  height: min(32dvh, 28rem);
+
+  @include mq(medium) {
+    height: min(28dvh, 15rem);
+  }
+
+  &__heading {
+    text-align: center;
+    font-weight: 500;
+    border-block-end: 1px solid transparent;
+    padding-block: $size-4 $size-2;
+  }
+
+  &__content {
+    font-size: 15px;
+    text-align: center;
+    padding-block-start: $size-3;
+
+    .exercises-found {
+      font-weight: 600;
+      color: $color-neutral-800;
+    }
+
+    p + p {
+      margin-block: $size-4;
+
+      @include mq(medium) {
+        margin-block: $size-2;
+      }
+    }
+  }
+
+  &__actions {
+    padding-block: $size-4;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: $size-4;
+  }
+}
