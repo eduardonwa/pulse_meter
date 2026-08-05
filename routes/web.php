@@ -16,14 +16,10 @@ Route::post('/analytics/events', ProductEventController::class)
     ->middleware('throttle:product-analytics')
     ->name('analytics.events.store');
 
-
-
-// TODOS LOS USUARIOS AUTENTICADOS 
+// TODOS LOS USUARIOS AUTENTICADOS
 Route::view('/profile', 'profile.edit')
     ->middleware(['auth'])
     ->name('profile.edit');
-
-
 
 // ROUTINES
 Route::middleware(['auth', 'can:use-pro'])->group(function () {
@@ -42,7 +38,7 @@ Route::middleware(['auth', 'can:use-pro'])->group(function () {
         '/practice-routines/{practiceRoutine}',
         [PracticeRoutineController::class, 'update']
     )->name('practice-routines.update');
-    
+
     Route::delete(
         '/practice-routines/{practiceRoutine}',
         [PracticeRoutineController::class, 'destroy']
@@ -58,52 +54,50 @@ Route::middleware(['auth', 'can:use-pro'])->group(function () {
     Route::post('/practice-routines/{practiceRoutine}/steps',
         [PracticeRoutineStepController::class, 'store'])
     ->name('practice-routine-steps.store');
-    
+
     Route::patch(
         '/practice-routine-steps/{practiceRoutineStep}',
         [PracticeRoutineStepController::class, 'update']
     )->name('practice-routine-steps.update');
-    
+
     Route::delete(
         '/practice-routine-steps/{practiceRoutineStep}',
         [PracticeRoutineStepController::class, 'destroy']
     )->name('practice-routine-steps.destroy');
-});
 
 
-
-// PULSE PATTERNS
-Route::post('/pulse-presets', [PulsePresetController::class, 'store'])
-    ->middleware('auth')
+    // PULSE PATTERNS
+    Route::post('/pulse-presets',
+        [PulsePresetController::class, 'store'])
     ->name('pulse-presets.store');
 
-Route::get('/pulse-presets', [PulsePresetController::class, 'index'])
-    ->middleware('auth')
+    Route::get('/pulse-presets',
+        [PulsePresetController::class, 'index'])
     ->name('pulse-presets.index');
 
-Route::patch('/pulse-presets/{pulsePreset}', [PulsePresetController::class, 'update'])
-    ->middleware('auth')
+    Route::patch('/pulse-presets/{pulsePreset}',
+        [PulsePresetController::class, 'update'])
     ->name('pulse-presets.update');
 
-Route::delete('/pulse-presets/{pulsePreset}', [PulsePresetController::class, 'destroy'])
-    ->middleware('auth')
+    Route::delete('/pulse-presets/{pulsePreset}',
+        [PulsePresetController::class, 'destroy'])
     ->name('pulse-presets.destroy');
-
+});
 
 Route::middleware(['auth', 'verified'])->group(function () {
     // TRIAL MODE
     Route::post('/trial/activate',
         [TrialController::class, 'activate'])
     ->name('trial.activate');
-    
+
     Route::post('/trial/heartbeat',
         [TrialController::class, 'heartbeat'])
     ->name('trial.heartbeat');
-    
+
     Route::post('/trial/resume',
         [TrialController::class, 'resume'])
     ->name('trial.resume');
-    
+
     Route::post('/trial/pause',
         [TrialController::class, 'pause'])
     ->name('trial.pause');
