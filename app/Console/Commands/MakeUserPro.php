@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\User;
+use App\Services\Plans\UpgradeToPro;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
@@ -14,7 +15,7 @@ class MakeUserPro extends Command
     /**
      * Execute the console command.
      */
-    public function handle(): int
+    public function handle(UpgradeToPro $upgradeToPro): int
     {
         $email = (string) $this->argument('email');
 
@@ -28,9 +29,7 @@ class MakeUserPro extends Command
             return self::FAILURE;
         }
 
-        $user->plan = 'pro';
-        $user->save();
-
+        $upgradeToPro->upgrade($user);
         $this->info("{$user->email} is now Pro.");
 
         return self::SUCCESS;
