@@ -95,6 +95,9 @@ export function playbackSession() {
         },
 
         stop(reason = 'user') {
+            clearTimeout(this.bpmChangeTimeoutId)
+            this.bpmChangeTimeoutId = null
+
             const wasPlaying = this.isPlaying
 
             if (wasPlaying) {
