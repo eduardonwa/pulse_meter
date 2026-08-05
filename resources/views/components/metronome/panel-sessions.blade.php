@@ -32,7 +32,7 @@
                 <div class="time-picker">
                     <x-inputs.number-picker
                         class="minutes"
-                        options="minutesOptions"
+                        options="timerMinutesOptions"
                         model="metronomeMinutes"
                         disabled="isPlaying"
                     />
@@ -41,7 +41,7 @@
 
                     <x-inputs.number-picker
                         class="seconds"
-                        options="secondsOptions"
+                        options="timerSecondsOptions"
                         model="metronomeSeconds"
                         disabled="isPlaying"
                         format="(value) => String(value).padStart(2, '0')"

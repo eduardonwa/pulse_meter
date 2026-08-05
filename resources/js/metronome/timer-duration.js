@@ -36,10 +36,47 @@ export function timerDuration() {
             this.remaining = null
         },
 
+        get timerMinutesOptions() {
+            const maxDuration = Number(this.maxExerciseDurationSeconds)
+
+            const maxMinutes = Math.floor(maxDuration / 60)
+
+            return Array.from(
+                {
+                    length: maxMinutes + 1,
+                },
+                (_, index) => index
+            )
+        },
+
+        get timerSecondsOptions() {
+            const maxDuration = Number(this.maxExerciseDurationSeconds)
+
+            const selectedMinutes =
+                Math.floor(
+                    Number(
+                        this.metronome.duration_seconds
+                    ) / 60
+                )
+
+            const maxMinutes = Math.floor(maxDuration / 60)
+
+            const remainingSeconds = maxDuration % 60
+
+            const maxSeconds = selectedMinutes >= maxMinutes
+                ? remainingSeconds
+                : 59
+
+            return Array.from({ length: maxSeconds + 1, }, (_, index) => index )
+        },
+
         // DURATION LIMITS
         clampMetronomeDuration() {
-            if (this.metronome.duration_seconds > 300) {
-                this.metronome.duration_seconds = 300
+            const maxDuration =
+                Number(this.maxExerciseDurationSeconds)
+
+            if (this.metronome.duration_seconds > maxDuration) {
+                this.metronome.duration_seconds = maxDuration
             }
 
             if (this.metronome.duration_seconds < 1) {

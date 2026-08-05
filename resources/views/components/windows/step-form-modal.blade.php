@@ -59,7 +59,7 @@
                 <article class="length-inputs">
                     <div class="minutes">
                         <x-inputs.number-picker
-                            options="minutesOptions"
+                            options="stepFormMinutesOptions"
                             model="stepFormMinutes"
                             after-change="
                                 normalizeStepFormDuration();
@@ -73,7 +73,7 @@
                     
                     <div class="seconds">
                         <x-inputs.number-picker
-                            options="secondsOptions"
+                            options="stepFormSecondsOptions"
                             model="stepFormSeconds"
                             format="(value) => String(value).padStart(2, '0')"
                             after-change="
