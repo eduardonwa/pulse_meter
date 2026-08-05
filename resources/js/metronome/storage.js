@@ -1,4 +1,4 @@
-import { defaultSteps, defaultMetronome } from './state'
+import { defaultSteps, defaultMetronome } from './state.js'
 
 // DATA MIGRATION
 function normalizeMode(mode) {
@@ -11,6 +11,11 @@ export function storage() {
     return {
         storageKey: 'pulse_meter_routine',
         showResetAppModal: false,
+
+        pendingLocalRoutineImport: null,
+        isLocalRoutineImportOpen: false,
+        isLocalRoutineImportBusy: false,
+        localRoutineImportError: null,
         
         // ROUTINE PERSISTENCE
         saveToLocalStorage() {
@@ -47,6 +52,374 @@ export function storage() {
                 }
             } catch (error) {
                 this.steps = defaultSteps()
+            }
+        },
+
+        getLocalRoutineImportConfig() {
+            const importUrl = this.$root?.dataset?.localRoutineImportUrl
+            const markerKey = this.$root?.dataset?.localRoutineImportMarkerKey
+
+            if (
+                !this.usesServerPersistence
+                || !importUrl
+                || !markerKey
+            ) {
+                return null
+            }
+
+            return {
+                importUrl,
+                markerKey,
+            }
+        },
+
+        normalizeLocalRoutineImportSteps(
+            rawSteps
+        ) {
+            if (
+                !Array.isArray(rawSteps)
+                || rawSteps.length === 0
+            ) {
+                return null
+            }
+
+            const normalizedSteps = rawSteps
+                .slice(0, this.maxSteps ?? 10)
+                .map(step => {
+                    const mode =
+                        normalizeMode(step.mode)
+
+                    return {
+                        name:
+                            String(step.name ?? '')
+                                .trim(),
+
+                        bpm:
+                            Number(step.bpm),
+
+                        mode,
+
+                        duration_seconds:
+                            mode === 'timer'
+                                ? Number(
+                                    step.duration_seconds
+                                )
+                                : null,
+                    }
+                })
+
+            const hasInvalidStep =
+                normalizedSteps.some(step => {
+                    if (
+                        step.name.length === 0
+                        || step.name.length > 255
+                    ) {
+                        return true
+                    }
+
+                    if (
+                        !Number.isInteger(step.bpm)
+                        || step.bpm < 30
+                        || step.bpm > 300
+                    ) {
+                        return true
+                    }
+
+                    if (
+                        ![
+                            'timer',
+                            'classic',
+                        ].includes(step.mode)
+                    ) {
+                        return true
+                    }
+
+                    if (
+                        step.mode === 'timer'
+                        && (
+                            !Number.isInteger(
+                                step.duration_seconds
+                            )
+                            || step.duration_seconds < 1
+                            || step.duration_seconds > 300
+                        )
+                    ) {
+                        return true
+                    }
+
+                    return false
+                })
+
+            if (hasInvalidStep) {
+                return null
+            }
+
+            return normalizedSteps
+        },
+
+        getPendingLocalRoutineImport() {
+            const config = this.getLocalRoutineImportConfig()
+
+            if (!config) { return null }
+
+            const saved = localStorage.getItem(this.storageKey)
+
+            if (!saved) { return null }
+
+            let rawSteps
+
+            try { rawSteps = JSON.parse(saved) } catch {
+                return null
+            }
+
+            const steps = this.normalizeLocalRoutineImportSteps(rawSteps)
+
+            if (!steps) { return null }
+
+            /*
+            * La firma representa exactamente la versión
+            * actual de los ejercicios Free.
+            */
+            const signature = JSON.stringify(steps)
+            const handledSignature = localStorage.getItem(config.markerKey)
+
+            /*
+            * Esta versión ya fue importada o rechazada
+            * explícitamente por el usuario.
+            */
+            if (handledSignature === signature) { return null }
+
+            return {
+                type: handledSignature === null
+                    ? 'first_import'
+                    : 'update',
+                    
+                signature,
+                steps,
+            }
+        },
+
+        keepServerRoutine(pending) {
+            const config =
+                this.getLocalRoutineImportConfig()
+
+            if (
+                !config
+                || !pending?.signature
+            ) {
+                return null
+            }
+
+            /*
+            * El usuario decidió conservar el servidor.
+            * Registramos únicamente esta versión Free.
+            */
+            localStorage.setItem(
+                config.markerKey,
+                pending.signature
+            )
+
+            return 'kept'
+        },
+
+        prepareLocalRoutineImport() {
+            this.localRoutineImportError = null
+
+            const pending = this.getPendingLocalRoutineImport()
+
+            if (!pending) {
+                this.pendingLocalRoutineImport = null
+                this.isLocalRoutineImportOpen = false
+
+                return null
+            }
+
+            this.pendingLocalRoutineImport = pending
+            this.isLocalRoutineImportOpen = true
+
+            return pending
+        },
+
+        closeLocalRoutineImport() {
+            this.isLocalRoutineImportOpen = false
+            this.pendingLocalRoutineImport = null
+            this.localRoutineImportError = null
+        },
+
+        async resolveLocalRoutineImport(
+            decision
+        ) {
+            if (
+                this.isLocalRoutineImportBusy
+                || !this.pendingLocalRoutineImport
+            ) {
+                return null
+            }
+
+            this.isLocalRoutineImportBusy = true
+            this.localRoutineImportError = null
+
+            const pending = this.pendingLocalRoutineImport
+
+            try {
+                let result
+
+                if (decision === 'use_free') {
+                    result =
+                        await this.importLocalRoutine(
+                            pending
+                        )
+                } else if (
+                    decision === 'keep_server'
+                ) {
+                    result = this.keepServerRoutine(pending)
+                } else {
+                    this.localRoutineImportError =
+                        'The selected import option is invalid.'
+
+                    return 'failed'
+                }
+
+                if (
+                    result === 'imported'
+                    || result === 'kept'
+                ) {
+                    this.closeLocalRoutineImport()
+
+                    return result
+                }
+
+                if (result === 'ambiguous') {
+                    this.localRoutineImportError =
+                        'Your server routines could not be resolved automatically.'
+
+                    return result
+                }
+
+                this.localRoutineImportError =
+                    'Your Free exercises could not be processed. Please try again.'
+
+                return result ?? 'failed'
+            } catch (error) {
+                console.error(
+                    'Could not resolve local exercises.',
+                    error
+                )
+
+                this.localRoutineImportError =
+                    'Your Free exercises could not be processed. Please try again.'
+
+                return 'failed'
+            } finally {
+                this.isLocalRoutineImportBusy =
+                    false
+            }
+        },
+
+        async importLocalRoutine(pending) {
+            const config =
+                this.getLocalRoutineImportConfig()
+
+            /*
+            * Exigir pending es intencional.
+            *
+            * La llamada automática antigua desde init(),
+            * que no pasa argumentos, no importará nada.
+            */
+            if (
+                !config
+                || !pending?.signature
+                || !Array.isArray(pending.steps)
+            ) {
+                return null
+            }
+
+            /*
+            * Evita aceptar un objeto pending alterado
+            * o accidentalmente inconsistente.
+            */
+            if (
+                JSON.stringify(pending.steps)
+                !== pending.signature
+            ) {
+                return 'failed'
+            }
+
+            try {
+                const response = await fetch(
+                    config.importUrl,
+                    {
+                        method: 'POST',
+                        credentials: 'same-origin',
+
+                        headers: {
+                            'Content-Type':
+                                'application/json',
+
+                            Accept:
+                                'application/json',
+
+                            'X-CSRF-TOKEN':
+                                document
+                                    .querySelector(
+                                        'meta[name="csrf-token"]'
+                                    )
+                                    ?.content ?? '',
+                        },
+
+                        body: JSON.stringify({
+                            steps:
+                                pending.steps,
+                        }),
+                    }
+                )
+
+                const data = await response
+                    .json()
+                    .catch(() => ({}))
+
+                if (
+                    response.ok
+                    && data.status === 'imported'
+                ) {
+                    /*
+                    * Guardamos la firma exacta que
+                    * acaba de ser importada.
+                    */
+                    localStorage.setItem(
+                        config.markerKey,
+                        pending.signature
+                    )
+
+                    return 'imported'
+                }
+
+                if (
+                    response.status === 409
+                    && data.reason
+                        === 'free_local_routine_ambiguous'
+                ) {
+                    /*
+                    * No guardamos la firma:
+                    * el usuario todavía no resolvió
+                    * qué rutina debe reemplazarse.
+                    */
+                    return 'ambiguous'
+                }
+
+                console.error(
+                    'Could not import local exercises.',
+                    data
+                )
+
+                return 'failed'
+            } catch (error) {
+                console.error(
+                    'Could not import local exercises.',
+                    error
+                )
+
+                return 'failed'
             }
         },
 

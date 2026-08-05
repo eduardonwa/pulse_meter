@@ -24,7 +24,9 @@ export function lifecycle() {
             this.setPulseBaseline?.()
 
             this.$nextTick(() => {
-                // Cada numberPicker puede centrarse solo.
+                if (this.usesServerPersistence) {
+                    this.prepareLocalRoutineImport?.()
+                }
             })
         },
 

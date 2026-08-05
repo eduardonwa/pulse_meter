@@ -103,14 +103,17 @@
         </div>
     </div>
 
-    <main
-        class="metronome | container"
-        data-type="wide"
-        data-spacing="none"
+    <main class="metronome | container" data-type="wide" data-spacing="none"
         x-data="routinePlayer(
             @js($practiceContext),
             @js($pulsePresets)
         )"
+        
+        @if ($usesServerPersistence && $user)
+            data-local-routine-import-url="{{ route('practice-routines.import-local') }}"
+            data-local-routine-import-marker-key="pulse_meter_routine_import_user_{{ $user->id }}"
+        @endif
+        
         @keydown.window="handleKeydown($event)"
         @click.window="handleToolTetherClick($event)"
         @pointermove.window="handleToolTetherPointerMove($event)"
@@ -200,7 +203,9 @@
 
         <x-windows.pattern-delete />
         
-        {{-- <x-windows.pattern-rename /> --}}
+        @if ($usesServerPersistence)
+            <x-windows.local-routine-import-modal />
+        @endif
 
         <livewire:practice-dialog
             :routine="$routine"

@@ -12,6 +12,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class PracticeRoutine extends Model
 {
+    public const SYNC_SOURCE_FREE_LOCAL = 'free_local';
+    
     protected function casts(): array
     {
         return [

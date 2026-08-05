@@ -24,6 +24,9 @@ return new class extends Migration
             $table->timestamps();
 
             $table->index(['user_id', 'position']);
+
+            $table->string('sync_source', 32)->nullable();
+            $table->unique(['user_id', 'sync_source'], 'practice_routines_user_sync_source_unique');
         });
     }
 

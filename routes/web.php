@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\LocalRoutineImportController;
 use App\Http\Controllers\PracticeRoutineController;
 use App\Http\Controllers\PracticeRoutineStepController;
 use App\Http\Controllers\ProductEventController;
@@ -16,15 +17,22 @@ Route::post('/analytics/events', ProductEventController::class)
     ->name('analytics.events.store');
 
 
+
 // TODOS LOS USUARIOS AUTENTICADOS 
 Route::view('/profile', 'profile.edit')
     ->middleware(['auth'])
     ->name('profile.edit');
 
 
+
 // ROUTINES
 Route::middleware(['auth', 'can:use-pro'])->group(function () {
     // ROUTINES
+    Route::post(
+        '/practice-routines/import-local',
+        LocalRoutineImportController::class
+    )->name('practice-routines.import-local');
+
     Route::post(
         '/practice-routines',
         [PracticeRoutineController::class, 'store']
@@ -82,19 +90,21 @@ Route::delete('/pulse-presets/{pulsePreset}', [PulsePresetController::class, 'de
     ->name('pulse-presets.destroy');
 
 
-// TRIAL MODE
-Route::post('/trial/activate', [TrialController::class, 'activate'])
-    ->middleware(['auth', 'verified'])
+Route::middleware(['auth', 'verified'])->group(function () {
+    // TRIAL MODE
+    Route::post('/trial/activate',
+        [TrialController::class, 'activate'])
     ->name('trial.activate');
-
-Route::post('/trial/heartbeat', [TrialController::class, 'heartbeat'])
-    ->middleware(['auth', 'verified'])
+    
+    Route::post('/trial/heartbeat',
+        [TrialController::class, 'heartbeat'])
     ->name('trial.heartbeat');
-
-Route::post('/trial/resume', [TrialController::class, 'resume'])
-    ->middleware(['auth', 'verified'])
+    
+    Route::post('/trial/resume',
+        [TrialController::class, 'resume'])
     ->name('trial.resume');
-
-Route::post('/trial/pause', [TrialController::class, 'pause'])
-    ->middleware(['auth', 'verified'])
+    
+    Route::post('/trial/pause',
+        [TrialController::class, 'pause'])
     ->name('trial.pause');
+});
