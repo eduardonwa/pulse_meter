@@ -32,6 +32,10 @@ export function defaultMetronome() {
     }
 }
 
+/* BPM LIMITS */
+export const MIN_BPM = 30
+export const MAX_BPM = 400
+
 export function state(practiceContext = null) {
     const practiceMode = practiceContext?.mode === 'playlist'
             ? 'playlist'
@@ -110,11 +114,9 @@ export function state(practiceContext = null) {
                 (_, i) => i
             ),
 
-        bpmOptions:
-            Array.from(
-                { length: 271 },
-                (_, i) => i + 30
-            ),
+        bpmOptions: Array.from({
+            length: MAX_BPM - MIN_BPM + 1,},
+            (_, i) => i + MIN_BPM),
 
         // CONFIRMATION
         confirmModal: {

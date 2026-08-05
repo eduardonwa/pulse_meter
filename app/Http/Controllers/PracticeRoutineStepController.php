@@ -19,12 +19,18 @@ class PracticeRoutineStepController extends Controller
             403
         );
 
+        $exerciseLimit = $request->user()->exerciseLimit();
+
         // temporal: por ahora conserva limite actual Free
         abort_if(
-            $practiceRoutine->steps()->count() >= 10,
+            $practiceRoutine->steps()->count() >= $exerciseLimit,
             422,
             'Exercise limit reached'
         );
+
+        $durationLimit = $request->user()->isPro()
+            ? 900
+            : 300;
 
         $validated = $request->validate([
             'name' => [
@@ -46,10 +52,11 @@ class PracticeRoutineStepController extends Controller
             ],
 
             'duration_seconds' => [
+                'required_if:mode,timer',
                 'nullable',
                 'integer',
                 'min:1',
-                'max:300',
+                "max:{$durationLimit}"
             ],
         ]);
 
@@ -79,6 +86,10 @@ class PracticeRoutineStepController extends Controller
             403
         );
 
+        $durationLimit = $request->user()->isPro()
+            ? 900
+            : 300;
+
         $validated = $request->validate([
             'name' => [
                 'required',
@@ -99,10 +110,11 @@ class PracticeRoutineStepController extends Controller
             ],
 
             'duration_seconds' => [
+                'required_if:mode,timer',
                 'nullable',
                 'integer',
                 'min:1',
-                'max:300',
+                "max:{$durationLimit}",
             ],
         ]);
 

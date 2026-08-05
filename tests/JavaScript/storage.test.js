@@ -178,6 +178,8 @@ test(
                 assert.deepEqual(
                     pending,
                     {
+                        type: 'first_import',
+
                         signature:
                             JSON.stringify(
                                 expectedSteps

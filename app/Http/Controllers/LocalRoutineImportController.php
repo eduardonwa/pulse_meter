@@ -12,6 +12,12 @@ class LocalRoutineImportController extends Controller
     public function __invoke(
         Request $request
     ): JsonResponse {
+        $user = $request->user();
+
+        $durationLimit = $user->isPro()
+            ? 900
+            : 300;
+
         $validated = $request->validate([
             'steps' => [
                 'required',
@@ -30,7 +36,7 @@ class LocalRoutineImportController extends Controller
                 'required',
                 'integer',
                 'min:30',
-                'max:300',
+                'max:400',
             ],
 
             'steps.*.mode' => [
@@ -42,11 +48,9 @@ class LocalRoutineImportController extends Controller
                 'nullable',
                 'integer',
                 'min:1',
-                'max:300',
+                "max:{$durationLimit}",
             ],
         ]);
-
-        $user = $request->user();
 
         $routine = DB::transaction(
             function () use (

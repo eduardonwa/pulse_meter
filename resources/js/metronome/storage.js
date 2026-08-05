@@ -1,4 +1,9 @@
-import { defaultSteps, defaultMetronome } from './state.js'
+import {
+    defaultSteps,
+    defaultMetronome,
+    MIN_BPM,
+    MAX_BPM
+} from './state.js'
 
 // DATA MIGRATION
 function normalizeMode(mode) {
@@ -119,8 +124,8 @@ export function storage() {
 
                     if (
                         !Number.isInteger(step.bpm)
-                        || step.bpm < 30
-                        || step.bpm > 300
+                            || step.bpm < MIN_BPM
+                            || step.bpm > MAX_BPM
                     ) {
                         return true
                     }
