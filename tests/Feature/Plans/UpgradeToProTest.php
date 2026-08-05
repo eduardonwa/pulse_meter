@@ -175,4 +175,78 @@ class UpgradeToProTest extends TestCase
             }
         }
     }
+
+    public function test_it_upgrades_a_user_without_a_trial(): void
+    {
+        $user = User::factory()->create([
+            'plan' => 'free',
+        ]);
+
+        app(UpgradeToPro::class)->upgrade($user);
+
+        $this->assertSame(
+            'pro',
+            $user->refresh()->plan
+        );
+
+        $this->assertDatabaseCount(
+            'trial_entitlements',
+            0
+        );
+    }
+
+    public function test_upgrading_twice_preserves_the_original_trial_conversion(): void
+    {
+        Carbon::setTestNow(
+            Carbon::parse('2026-08-05 12:00:00')
+        );
+
+        try {
+            $user = User::factory()->create([
+                'plan' => 'free',
+            ]);
+
+            $trial = new TrialEntitlement();
+
+            $trial->forceFill([
+                'status' => 'active',
+                'granted_seconds' => 3600,
+                'used_seconds' => 49,
+                'started_at' => now()->subMinute(),
+                'expires_at' => now()->addDays(30),
+                'active_session_id' => (string) Str::uuid(),
+                'last_heartbeat_at' => now(),
+            ]);
+
+            $trial->user()->associate($user);
+            $trial->save();
+
+            app(UpgradeToPro::class)->upgrade($user);
+
+            $originalConvertedAt = $trial
+                ->refresh()
+                ->converted_at
+                ->copy();
+
+            Carbon::setTestNow(
+                Carbon::parse('2026-08-05 12:05:00')
+            );
+
+            app(UpgradeToPro::class)->upgrade($user);
+
+            $user->refresh();
+            $trial->refresh();
+
+            $this->assertSame('pro', $user->plan);
+            $this->assertSame('converted', $trial->status);
+
+            $this->assertTrue(
+                $trial->converted_at->equalTo(
+                    $originalConvertedAt
+                )
+            );
+        } finally {
+            Carbon::setTestNow();
+        }
+    }
 }
