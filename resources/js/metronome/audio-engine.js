@@ -2,6 +2,7 @@ export function audioEngine() {
     return {
         audioContext: null,
         intervalId: null,
+        metronomeRunId: 0,
 
         activeMetronomeBpm: null,
         currentBeat: 1,
@@ -98,20 +99,42 @@ export function audioEngine() {
 
         // START METRONOME
         async startMetronome(bpm) {
+            /*
+            * Cada Start invalida cualquier inicio anterior
+            * que todavía esté esperando la carga de sonidos.
+            */
+            const runId = ++this.metronomeRunId
+
             clearInterval(this.intervalId)
+            this.intervalId = null
 
             await this.loadClickSounds()
 
-            const playbackPulse = this.getPlaybackPulse()
+            /*
+            * Durante la espera pudo ocurrir:
+            *
+            * - Stop
+            * - otro Start
+            * - cambio de BPM
+            *
+            * En esos casos, esta ejecución ya es antigua
+            * y no debe comenzar a sonar.
+            */
+            if (runId !== this.metronomeRunId) {
+                return
+            }
 
             this.activeMetronomeBpm = bpm
             this.currentBeat = 1
-            
+
             this.playPatternBeat()
 
             this.intervalId = setInterval(() => {
-                const playbackPulse = this.getPlaybackPulse()
-                const numerator = playbackPulse.timeSignature.numerator
+                const playbackPulse =
+                    this.getPlaybackPulse()
+
+                const numerator =
+                    playbackPulse.timeSignature.numerator
 
                 this.currentBeat++
 
@@ -288,6 +311,12 @@ export function audioEngine() {
 
         // PLAYBACK CONTROLS
         stopMetronome() {
+            /*
+            * Invalida también cualquier Start que siga
+            * esperando la carga asíncrona de sonidos.
+            */
+            this.metronomeRunId += 1
+
             clearInterval(this.intervalId)
 
             this.intervalId = null
