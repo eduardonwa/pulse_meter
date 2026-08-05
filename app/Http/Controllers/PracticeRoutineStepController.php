@@ -12,8 +12,7 @@ class PracticeRoutineStepController extends Controller
     public function store(
         Request $request,
         PracticeRoutine $practiceRoutine
-    ): JsonResponse
-    {
+    ): JsonResponse {
         abort_unless(
             $practiceRoutine->user_id === $request->user()->id,
             403
@@ -54,7 +53,7 @@ class PracticeRoutineStepController extends Controller
                 'nullable',
                 'integer',
                 'min:1',
-                "max:{$durationLimit}"
+                "max:{$durationLimit}",
             ],
         ]);
 
@@ -64,11 +63,11 @@ class PracticeRoutineStepController extends Controller
 
         $nextPosition =
             ((int) $practiceRoutine->steps()->max('position')) + 1;
-        
+
         $step = $practiceRoutine->steps()->create([
             ...$validated,
             'position' => $nextPosition,
-            'origin' => 'custom'
+            'origin' => 'custom',
         ]);
 
         return response()->json($step, 201);
@@ -97,7 +96,7 @@ class PracticeRoutineStepController extends Controller
                 'required',
                 'integer',
                 'min:30',
-                'max:300',
+                'max:400',
             ],
 
             'mode' => [

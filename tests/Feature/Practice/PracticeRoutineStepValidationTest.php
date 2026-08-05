@@ -15,9 +15,31 @@ class PracticeRoutineStepValidationTest extends TestCase
     {
         /** @var User $user */
         $user = User::factory()->create([
-                'plan' => 'pro',
+            'plan' => 'pro',
         ]);
-        
+
+        return $user;
+    }
+
+    private function createActiveTrialUser(): User
+    {
+        $user = User::factory()->create([
+            'plan' => 'free',
+        ]);
+
+        $trial = new TrialEntitlement;
+
+        $trial->forceFill([
+            'status' => 'active',
+            'granted_seconds' => 3600,
+            'used_seconds' => 0,
+            'started_at' => now(),
+            'expires_at' => now()->addDays(15),
+        ]);
+
+        $trial->user()->associate($user);
+        $trial->save();
+
         return $user;
     }
 
@@ -59,28 +81,6 @@ class PracticeRoutineStepValidationTest extends TestCase
                 'name' => 'Timer without duration',
             ]
         );
-    }
-
-    private function createActiveTrialUser(): User
-    {
-        $user = User::factory()->create([
-            'plan' => 'free',
-        ]);
-
-        $trial = new TrialEntitlement();
-
-        $trial->forceFill([
-            'status' => 'active',
-            'granted_seconds' => 3600,
-            'used_seconds' => 0,
-            'started_at' => now(),
-            'expires_at' => now()->addDays(15),
-        ]);
-
-        $trial->user()->associate($user);
-        $trial->save();
-
-        return $user;
     }
 
     public function test_pro_can_create_a_timer_exercise_of_up_to_fifteen_minutes(): void
@@ -261,7 +261,7 @@ class PracticeRoutineStepValidationTest extends TestCase
 
         foreach (range(0, 9) as $position) {
             $routine->steps()->create([
-                'name' => 'Exercise ' . ($position + 1),
+                'name' => 'Exercise '.($position + 1),
                 'bpm' => 120,
                 'mode' => 'timer',
                 'duration_seconds' => 60,
@@ -314,7 +314,7 @@ class PracticeRoutineStepValidationTest extends TestCase
 
         foreach (range(0, 9) as $position) {
             $routine->steps()->create([
-                'name' => 'Exercise ' . ($position + 1),
+                'name' => 'Exercise '.($position + 1),
                 'bpm' => 120,
                 'mode' => 'timer',
                 'duration_seconds' => 60,
@@ -399,6 +399,101 @@ class PracticeRoutineStepValidationTest extends TestCase
         $this->assertSame(
             900,
             $proUser->exerciseDurationLimit()
+        );
+    }
+
+    public function test_pro_can_update_an_exercise_to_400_bpm(): void
+    {
+        $user = $this->createProUser();
+
+        $routine = $user->practiceRoutines()->create([
+            'name' => 'Routine 1',
+            'position' => 0,
+            'is_default' => true,
+        ]);
+
+        $exercise = $routine->steps()->create([
+            'name' => 'Fast Exercise',
+            'bpm' => 300,
+            'mode' => 'classic',
+            'duration_seconds' => null,
+            'position' => 0,
+            'origin' => 'custom',
+        ]);
+
+        $response = $this
+            ->actingAs($user)
+            ->patchJson(
+                route(
+                    'practice-routine-steps.update',
+                    $exercise
+                ),
+                [
+                    'name' => 'Fast Exercise',
+                    'bpm' => 400,
+                    'mode' => 'classic',
+                    'duration_seconds' => null,
+                ]
+            );
+
+        $response->assertOk();
+
+        $this->assertDatabaseHas(
+            'practice_routine_steps',
+            [
+                'id' => $exercise->id,
+                'bpm' => 400,
+            ]
+        );
+    }
+
+    public function test_pro_cannot_update_an_exercise_beyond_400_bpm(): void
+    {
+        $user = $this->createProUser();
+
+        $routine = $user->practiceRoutines()->create([
+            'name' => 'Routine 1',
+            'position' => 0,
+            'is_default' => true,
+        ]);
+
+        $exercise = $routine->steps()->create([
+            'name' => 'Fast Exercise',
+            'bpm' => 400,
+            'mode' => 'classic',
+            'duration_seconds' => null,
+            'position' => 0,
+            'origin' => 'custom',
+        ]);
+
+        $response = $this
+            ->actingAs($user)
+            ->patchJson(
+                route(
+                    'practice-routine-steps.update',
+                    $exercise
+                ),
+                [
+                    'name' => 'Too Fast Exercise',
+                    'bpm' => 401,
+                    'mode' => 'classic',
+                    'duration_seconds' => null,
+                ]
+            );
+
+        $response
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors([
+                'bpm',
+            ]);
+
+        $this->assertDatabaseHas(
+            'practice_routine_steps',
+            [
+                'id' => $exercise->id,
+                'name' => 'Fast Exercise',
+                'bpm' => 400,
+            ]
         );
     }
 }
