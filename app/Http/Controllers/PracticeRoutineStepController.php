@@ -28,9 +28,7 @@ class PracticeRoutineStepController extends Controller
             'Exercise limit reached'
         );
 
-        $durationLimit = $request->user()->isPro()
-            ? 900
-            : 300;
+        $durationLimit = $request->user()->exerciseDurationLimit();
 
         $validated = $request->validate([
             'name' => [
@@ -86,9 +84,7 @@ class PracticeRoutineStepController extends Controller
             403
         );
 
-        $durationLimit = $request->user()->isPro()
-            ? 900
-            : 300;
+        $durationLimit = $request->user()->exerciseDurationLimit();
 
         $validated = $request->validate([
             'name' => [

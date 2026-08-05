@@ -14,9 +14,7 @@ class LocalRoutineImportController extends Controller
     ): JsonResponse {
         $user = $request->user();
 
-        $durationLimit = $user->isPro()
-            ? 900
-            : 300;
+        $durationLimit = $user->exerciseDurationLimit();
 
         $validated = $request->validate([
             'steps' => [

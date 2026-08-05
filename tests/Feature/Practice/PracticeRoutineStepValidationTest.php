@@ -382,4 +382,23 @@ class PracticeRoutineStepValidationTest extends TestCase
             ]
         );
     }
+
+    public function test_trial_and_pro_have_the_expected_exercise_duration_limits(): void
+    {
+        $trialUser =
+            $this->createActiveTrialUser();
+
+        $proUser =
+            $this->createProUser();
+
+        $this->assertSame(
+            300,
+            $trialUser->exerciseDurationLimit()
+        );
+
+        $this->assertSame(
+            900,
+            $proUser->exerciseDurationLimit()
+        );
+    }
 }

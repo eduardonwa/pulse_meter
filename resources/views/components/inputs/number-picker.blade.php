@@ -28,6 +28,7 @@
             format: {{ $format }},
         })"
         x-effect="
+            options = {{ $options }};
             {{ $model }};
             $nextTick(() => syncExternalValue())
         "
@@ -95,8 +96,9 @@
             format: {{ $format }},
         })"
         x-effect="
+            options = {{ $options }};
             {{ $model }};
-             $nextTick(() => syncExternalValue())
+            $nextTick(() => syncExternalValue())
         "
         x-ref="scroller"
         @picker:sync.window="$nextTick(() => syncExternalValue())"

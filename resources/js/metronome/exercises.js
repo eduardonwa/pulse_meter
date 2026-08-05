@@ -2,7 +2,6 @@ export function exercises() {
     return {
         // EXERCISE STATE
         activeExerciseIndex: null,
-        maxSteps: 10,
 
         // EXERCISE FORM
         stepFormMode: 'create',
@@ -652,6 +651,68 @@ export function exercises() {
 
         closePracticeReviewModal() {
             this.isPracticeReviewOpen = false
-        }
+        },
+
+        get stepFormMinutesOptions() {
+            const maxDuration =
+                Number(this.maxExerciseDurationSeconds)
+
+            const maxMinutes =
+                Math.floor(maxDuration / 60)
+
+            return Array.from(
+                {
+                    length: maxMinutes + 1,
+                },
+                (_, index) => index
+            )
+        },
+
+        get stepFormSecondsOptions() {
+            const maxDuration =
+                Number(this.maxExerciseDurationSeconds)
+
+            const selectedMinutes =
+                Number(this.stepFormMinutes)
+
+            const maxMinutes =
+                Math.floor(maxDuration / 60)
+
+            const remainingSeconds =
+                maxDuration % 60
+
+            const maxSeconds =
+                selectedMinutes >= maxMinutes
+                    ? remainingSeconds
+                    : 59
+
+            return Array.from(
+                {
+                    length: maxSeconds + 1,
+                },
+                (_, index) => index
+            )
+        },
+
+        normalizeStepFormDuration() {
+            const maxDuration =
+                Number(this.maxExerciseDurationSeconds)
+
+            const currentDuration =
+                (Number(this.stepFormMinutes) * 60)
+                + Number(this.stepFormSeconds)
+
+            const normalizedDuration =
+                Math.min(
+                    currentDuration,
+                    maxDuration
+                )
+
+            this.stepFormMinutes =
+                Math.floor(normalizedDuration / 60)
+
+            this.stepFormSeconds =
+                normalizedDuration % 60
+        },
     }
 }

@@ -23,11 +23,13 @@ use App\Services\TrialMode\TrialAccess;
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable implements FilamentUser, MustVerifyEmail
 {
-    public const TRIAL_EXERCISE_LIMIT = 10;
-    public const PRO_EXERCISE_LIMIT = 20;
-
+    public const TRIAL_EXERCISE_LIMIT = 10;    
+    public const TRIAL_EXERCISE_DURATION_LIMIT = 300;
     public const TRIAL_ROUTINE_LIMIT = 3;
     public const TRIAL_PLAYLIST_LIMIT = 1;
+    
+    public const PRO_EXERCISE_LIMIT = 20;
+    public const PRO_EXERCISE_DURATION_LIMIT = 900;
 
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
@@ -92,11 +94,19 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
         return $this->isPro() || $this->hasActiveTrial();
     }
 
+    /* PLAN LIMITS */
     public function exerciseLimit(): int
     {
         return $this->isPro()
             ? self::PRO_EXERCISE_LIMIT
             : self::TRIAL_EXERCISE_LIMIT;
+    }
+
+    public function exerciseDurationLimit(): int
+    {
+        return $this->isPro()
+            ? self::PRO_EXERCISE_DURATION_LIMIT
+            : self::TRIAL_EXERCISE_DURATION_LIMIT;
     }
 
     public function routineLimit(): ?int

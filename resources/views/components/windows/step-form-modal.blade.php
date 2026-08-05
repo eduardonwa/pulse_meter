@@ -61,6 +61,10 @@
                         <x-inputs.number-picker
                             options="minutesOptions"
                             model="stepFormMinutes"
+                            after-change="
+                                normalizeStepFormDuration();
+                                $dispatch('picker:sync');
+                            "
                         />
                         <span class="unit">m</span>
                     </div>
@@ -72,6 +76,10 @@
                             options="secondsOptions"
                             model="stepFormSeconds"
                             format="(value) => String(value).padStart(2, '0')"
+                            after-change="
+                                normalizeStepFormDuration();
+                                $dispatch('picker:sync');
+                            "
                         />
                         <span class="unit">s</span>
                     </div>

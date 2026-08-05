@@ -6,6 +6,7 @@ use App\Models\PulsePreset;
 use App\Services\PlaylistPlaybackBuilder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Models\User;
 
 class WelcomeController extends Controller
 {
@@ -206,8 +207,7 @@ class WelcomeController extends Controller
              * carga la rutina 4 únicamente si pertenece
              * al usuario autenticado.
              */
-            $requestedRoutineId =
-                $request->query('routine');
+            $requestedRoutineId = $request->query('routine');
 
             if ($requestedRoutineId === null) {
                 $routine = $defaultRoutine;
@@ -312,6 +312,16 @@ class WelcomeController extends Controller
 
             'groups' => $practiceGroups,
 
+            'limits' => [
+                'exercise_count' =>
+                    $user?->exerciseLimit()
+                    ?? User::TRIAL_EXERCISE_LIMIT,
+
+                'exercise_duration_seconds' =>
+                    $user?->exerciseDurationLimit()
+                    ?? User::TRIAL_EXERCISE_DURATION_LIMIT,
+            ],
+
             /*
             * Tanto Routine Mode como Playlist Mode entregan
             * una lista plana al reproductor.
@@ -321,7 +331,7 @@ class WelcomeController extends Controller
                 : ($routinePayload['steps'] ?? []),
         ];
 
-            return view('welcome', [
+        return view('welcome', [
             'practiceContext' => $practiceContext,
 
             'routine' => $routinePayload,

@@ -32,11 +32,44 @@ export function defaultMetronome() {
     }
 }
 
-/* BPM LIMITS */
+/* LIMITS */
 export const MIN_BPM = 30
 export const MAX_BPM = 400
 
+export const DEFAULT_EXERCISE_COUNT_LIMIT = 10
+export const DEFAULT_EXERCISE_DURATION_LIMIT = 300
+
 export function state(practiceContext = null) {
+    const configuredExerciseCountLimit =
+        Number(
+            practiceContext
+                ?.limits
+                ?.exercise_count
+        )
+
+    const configuredExerciseDurationLimit =
+        Number(
+            practiceContext
+                ?.limits
+                ?.exercise_duration_seconds
+        )
+
+    const maxSteps =
+        Number.isInteger(
+            configuredExerciseCountLimit
+        )
+        && configuredExerciseCountLimit > 0
+            ? configuredExerciseCountLimit
+            : DEFAULT_EXERCISE_COUNT_LIMIT
+
+    const maxExerciseDurationSeconds =
+        Number.isInteger(
+            configuredExerciseDurationLimit
+        )
+        && configuredExerciseDurationLimit > 0
+            ? configuredExerciseDurationLimit
+            : DEFAULT_EXERCISE_DURATION_LIMIT
+
     const practiceMode = practiceContext?.mode === 'playlist'
             ? 'playlist'
             : 'routine'
@@ -48,10 +81,7 @@ export function state(practiceContext = null) {
      * Una rutina activa o una playlist activa significan
      * que los datos vienen del servidor.
      */
-    const usesServerPersistence = Boolean(
-        activeRoutine?.id
-        || activePlaylist?.id
-    )
+    const usesServerPersistence = Boolean(activeRoutine?.id || activePlaylist?.id)
 
     /*
      * En Routine Mode contiene los ejercicios de la rutina.
@@ -74,9 +104,7 @@ export function state(practiceContext = null) {
 
         practiceGroups,
 
-        practiceQueue: practiceMode === 'playlist'
-                ? serverQueue
-                : [],
+        practiceQueue: practiceMode === 'playlist' ? serverQueue : [],
 
         /*
          * Solamente Routine Mode puede modificar ejercicios
@@ -87,6 +115,10 @@ export function state(practiceContext = null) {
         canManageExercises: practiceMode === 'routine',
 
         usesServerPersistence,
+
+        // EXERCISE LIMITS
+        maxSteps,
+        maxExerciseDurationSeconds,
 
         /*
          * El reproductor existente puede seguir trabajando
@@ -114,9 +146,7 @@ export function state(practiceContext = null) {
                 (_, i) => i
             ),
 
-        bpmOptions: Array.from({
-            length: MAX_BPM - MIN_BPM + 1,},
-            (_, i) => i + MIN_BPM),
+        bpmOptions: Array.from({ length: MAX_BPM - MIN_BPM + 1 }, (_, i) => i + MIN_BPM),
 
         // CONFIRMATION
         confirmModal: {
