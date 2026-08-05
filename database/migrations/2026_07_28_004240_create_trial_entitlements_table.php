@@ -38,6 +38,8 @@ return new class extends Migration
             $table->timestamp('completed_at')->nullable();
 
             $table->timestamps();
+
+            $table->timestamp('converted_at')->nullable();
         });
     }
 

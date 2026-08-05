@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\PracticeRoutine;
+use App\Services\Practice\CreatePracticeRoutine;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -16,52 +17,19 @@ class PracticeRoutineController extends Controller
             ->get();
     }
 
-    public function store(Request $request)
-    {
-        $user = $request->user();
+    public function store(
+        Request $request,
+        CreatePracticeRoutine $creator,
+    ) {
+        $routine = $creator->create(
+            $request->user()
+        );
 
-        $routine = DB::transaction(function () use ($user) {
-            /*
-             * La nueva rutina se coloca después
-             * de las rutinas existentes.
-             */
-            $lastPosition = $user->practiceRoutines()
-                ->max('position');
-
-            $nextPosition =
-                $lastPosition === null
-                    ? 0
-                    : $lastPosition + 1;
-
-            /*
-             * En el flujo normal ya existe la default,
-             * pero esto mantiene el método seguro si por
-             * alguna razón se llama sin rutinas previas.
-             */
-            $isFirstRoutine = $user->practiceRoutines()
-                ->doesntExist();
-
-            $routine = $user->practiceRoutines()->create([
-                'name' => 'Routine ' . ($nextPosition + 1),
-                'position' => $nextPosition,
-                'is_default' => $isFirstRoutine,
-            ]);
-
-            /*
-             * Toda rutina comienza con al menos
-             * un ejercicio editable.
-             */
-            $routine->steps()->create([
-                'name' => 'New Exercise',
-                'bpm' => 100,
-                'mode' => 'timer',
-                'duration_seconds' => 60,
-                'position' => 0,
-                'origin' => 'custom',
-            ]);
-
-            return $routine;
-        });
+        abort_if(
+            $routine === null,
+            422,
+            'Trial Mode supports up to 3 routines.'
+        );
 
         return redirect()->route('welcome', [
             'routine' => $routine->id,

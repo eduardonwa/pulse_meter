@@ -26,3 +26,9 @@
         </span>
     </button>
 </header>
+
+@error('playlistLimit')
+    <p class="dialog-error" role="alert">
+        {{ $message }}
+    </p>
+@enderror

@@ -2,13 +2,15 @@
 
 namespace App\Livewire;
 
+use App\Services\Practice\CreatePracticeRoutine;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Locked;
-use Livewire\Component;
 use Livewire\Attributes\Url;
+use Livewire\Component;
+use App\Services\Practice\CreatePracticePlaylist;
 
 class PracticeDialog extends Component
 {
@@ -168,36 +170,17 @@ class PracticeDialog extends Component
     {
         Gate::authorize('use-pro');
 
-        $user = Auth::user();
+        $routine = app(CreatePracticeRoutine::class)
+            ->create(Auth::user());
 
-        $routine = DB::transaction(function () use ($user) {
-            $lastPosition = $user->practiceRoutines()
-                ->max('position');
+        if ($routine === null) {
+            $this->addError(
+                'routineLimit',
+                'Trial Mode supports up to 3 routines.'
+            );
 
-            $nextPosition = $lastPosition === null
-                ? 0
-                : $lastPosition + 1;
-
-            $isFirstRoutine = $user->practiceRoutines()
-                ->doesntExist();
-
-            $routine = $user->practiceRoutines()->create([
-                'name' => 'Routine ' . ($nextPosition + 1),
-                'position' => $nextPosition,
-                'is_default' => $isFirstRoutine,
-            ]);
-
-            $routine->steps()->create([
-                'name' => 'New Exercise',
-                'bpm' => 100,
-                'mode' => 'timer',
-                'duration_seconds' => 60,
-                'position' => 0,
-                'origin' => 'custom',
-            ]);
-
-            return $routine;
-        });
+            return;
+        }
 
         $this->redirect(
             route('welcome', [
@@ -444,34 +427,17 @@ class PracticeDialog extends Component
     {
         Gate::authorize('use-pro');
 
-        $user = Auth::user();
+        $playlist = app(CreatePracticePlaylist::class)
+            ->create(Auth::user());
 
-        $playlist = DB::transaction(
-            function () use ($user) {
-                $lastPosition = $user
-                    ->practicePlaylists()
-                    ->max('position');
+        if ($playlist === null) {
+            $this->addError(
+                'playlistLimit',
+                'Trial Mode supports up to 1 playlist.'
+            );
 
-                $nextPosition = $lastPosition === null
-                    ? 0
-                    : $lastPosition + 1;
-
-                $playlist = $user
-                    ->practicePlaylists()
-                    ->create([
-                        'name' => 'New Playlist',
-                        'starter_routine_id' => null,
-                        'position' => $nextPosition,
-                    ]);
-
-                $playlist->name =
-                    'Playlist ' . ($nextPosition + 1);
-
-                $playlist->save();
-
-                return $playlist;
-            }
-        );
+            return;
+        }
 
         $this->refreshPlaylists();
     }

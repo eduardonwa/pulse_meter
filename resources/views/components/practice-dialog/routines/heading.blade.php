@@ -25,3 +25,9 @@
         </span>
     </button>
 </header>
+
+@error('routineLimit')
+    <p class="dialog-error" role="alert">
+        {{ $message }}
+    </p>
+@enderror

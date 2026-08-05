@@ -6,3 +6,10 @@
     font-family: $font-family-base;
     font-size: 16px;
 }
+
+.dialog-error {
+    font-size: 14px;
+    margin-inline: auto;
+    padding: 1rem;
+    color: hsl(0 72% 51%);
+}

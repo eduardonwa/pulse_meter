@@ -18,6 +18,7 @@ class TrialEntitlement extends Model
             'paused_at' => 'datetime',
             'last_heartbeat_at' => 'datetime',
             'completed_at' => 'datetime',
+            'converted_at' => 'datetime'
         ];
     }
 

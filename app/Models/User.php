@@ -26,6 +26,9 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
     public const TRIAL_EXERCISE_LIMIT = 10;
     public const PRO_EXERCISE_LIMIT = 20;
 
+    public const TRIAL_ROUTINE_LIMIT = 3;
+    public const TRIAL_PLAYLIST_LIMIT = 1;
+
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
@@ -94,5 +97,35 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
         return $this->isPro()
             ? self::PRO_EXERCISE_LIMIT
             : self::TRIAL_EXERCISE_LIMIT;
+    }
+
+    public function routineLimit(): ?int
+    {
+        return $this->isPro()
+            ? null
+            : self::TRIAL_ROUTINE_LIMIT;
+    }
+
+    public function hasReachedRoutineLimit(): bool
+    {
+        $limit = $this->routineLimit();
+
+        return $limit !== null
+            && $this->practiceRoutines()->count() >= $limit;
+    }
+
+    public function playlistLimit(): ?int
+    {
+        return $this->isPro()
+            ? null
+            : self::TRIAL_PLAYLIST_LIMIT;
+    }
+
+    public function hasReachedPlaylistLimit(): bool
+    {
+        $limit = $this->playlistLimit();
+
+        return $limit !== null
+            && $this->practicePlaylists()->count() >= $limit;
     }
 }
