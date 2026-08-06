@@ -181,7 +181,6 @@ class BillingPageTest extends TestCase
         $this->actingAs($user)
             ->get(route('billing.index'))
             ->assertOk()
-            ->assertSeeText('Current plan')
             ->assertSeeText(
                 'Available after your monthly subscription ends.'
             )

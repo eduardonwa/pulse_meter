@@ -45,7 +45,9 @@
                     <div class="billing-plan__header">
                         <x-heroicon-s-sparkles class="subscription-icon" />
 
-                        <p class="subscription-type subscription-type--monthly | subheader uppercase">Subscription</p>
+                        <p class="subscription-type subscription-type--monthly | subheader uppercase">
+                            {{ $hasMonthlyPro ? 'Current plan' : 'Subscription' }}
+                        </p>
                     </div>
 
                     <h3 class="title title--monthly">Monthly Pro</h3>
@@ -103,7 +105,9 @@
                 <article @class(['billing-plan', 'billing-plan--current' => $hasLifetimePro ])>
                     <div class="billing-plan__header">
                         <x-heroicon-s-star class="subscription-icon" />
-                        <p class="subscription-type subscription-type--lifetime | subheader uppercase">One-time purchase</p>
+                        <p class="subscription-type subscription-type--lifetime | subheader uppercase">
+                            {{ $hasLifetimePro ? 'You own this' : 'One-time payment' }}
+                        </p>
                     </div>
 
                     <h3 class="title title--lifetime">Lifetime Pro</h3>
