@@ -23,6 +23,10 @@ Route::view('/profile', 'profile.edit')
     ->middleware(['auth'])
     ->name('profile.edit');
 
+Route::view('/billing', 'billing.index')
+    ->middleware(['auth', 'verified'])
+    ->name('billing.index');
+
 // CHECKOUT
 Route::post(
     '/billing/pro/monthly/checkout',

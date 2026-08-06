@@ -110,6 +110,12 @@
                         <span>My profile</span>
                     </a>
 
+                    <a class="button" data-type="icon" href="{{ route('billing.index') }}" wire:navigate>
+                        <x-heroicon-o-credit-card />
+
+                        <span>Plans &amp; billing</span>
+                    </a>
+
                     <form class="logout" method="POST" action="{{ route('logout') }}">
                         @csrf
                         <button class="button" data-type="icon" type="submit">
@@ -117,7 +123,7 @@
                             
                             Log out
                         </button>
-                    </form> 
+                    </form>
                 @endauth
             </nav>
         </aside>
