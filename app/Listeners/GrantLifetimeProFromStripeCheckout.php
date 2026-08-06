@@ -4,7 +4,7 @@ namespace App\Listeners;
 
 use App\Models\User;
 use App\Services\Plans\GrantLifetimePro;
-use Laravel\Cashier\Events\WebhookHandled;
+use Laravel\Cashier\Events\WebhookReceived;
 
 class GrantLifetimeProFromStripeCheckout
 {
@@ -12,7 +12,7 @@ class GrantLifetimeProFromStripeCheckout
         private GrantLifetimePro $grantLifetimePro
     ) {}
 
-    public function handle(WebhookHandled $event): void
+    public function handle(WebhookReceived $event): void
     {
         if (
             ($event->payload['type'] ?? null)

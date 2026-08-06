@@ -5,7 +5,7 @@ namespace Tests\Feature\Billing;
 use App\Listeners\GrantLifetimeProFromStripeCheckout;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Laravel\Cashier\Events\WebhookHandled;
+use Laravel\Cashier\Events\WebhookReceived;
 use Tests\TestCase;
 
 class GrantLifetimeProFromStripeCheckoutTest extends TestCase
@@ -30,7 +30,7 @@ class GrantLifetimeProFromStripeCheckoutTest extends TestCase
         app(
             GrantLifetimeProFromStripeCheckout::class
         )->handle(
-            new WebhookHandled([
+            new WebhookReceived([
                 'type' => 'checkout.session.completed',
                 'data' => [
                     'object' => [
@@ -93,7 +93,7 @@ class GrantLifetimeProFromStripeCheckoutTest extends TestCase
         app(
             GrantLifetimeProFromStripeCheckout::class
         )->handle(
-            new WebhookHandled([
+            new WebhookReceived([
                 'type' => 'checkout.session.completed',
                 'data' => [
                     'object' => [
@@ -149,7 +149,7 @@ class GrantLifetimeProFromStripeCheckoutTest extends TestCase
         app(
             GrantLifetimeProFromStripeCheckout::class
         )->handle(
-            new WebhookHandled([
+            new WebhookReceived([
                 'type' => 'checkout.session.completed',
                 'data' => [
                     'object' => [
@@ -200,7 +200,7 @@ class GrantLifetimeProFromStripeCheckoutTest extends TestCase
         app(
             GrantLifetimeProFromStripeCheckout::class
         )->handle(
-            new WebhookHandled([
+            new WebhookReceived([
                 'type' => 'checkout.session.completed',
                 'data' => [
                     'object' => [
