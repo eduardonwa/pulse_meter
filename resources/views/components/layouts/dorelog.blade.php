@@ -107,13 +107,7 @@
                     <a class="button" data-type="icon" href="{{ route('profile.edit') }}">
                         <x-heroicon-o-user />
                         
-                        <span>My profile</span>
-                    </a>
-
-                    <a class="button" data-type="icon" href="{{ route('billing.index') }}" wire:navigate>
-                        <x-heroicon-o-credit-card />
-
-                        <span>Plans &amp; billing</span>
+                        <span>Account</span>
                     </a>
 
                     <form class="logout" method="POST" action="{{ route('logout') }}">

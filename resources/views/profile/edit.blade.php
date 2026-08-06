@@ -1,14 +1,13 @@
 <x-layouts.dorelog>
     <main class="profile-page | container">
+        <x-account.navigation />
+
         <h1 class="heading-3">Profile</h1>
 
         <section class="profile-page__section">
             <h2 class="heading-3">Account information</h2>
 
-            <form class="profile-form | form-panel form"
-                method="POST"
-                action="{{ route('user-profile-information.update') }}"
-            >
+            <form class="profile-form | form-panel form" method="POST" action="{{ route('user-profile-information.update') }}">
                 @csrf
                 @method('PUT')
 

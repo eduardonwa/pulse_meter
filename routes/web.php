@@ -20,13 +20,22 @@ Route::post('/analytics/events', ProductEventController::class)
     ->name('analytics.events.store');
 
 // TODOS LOS USUARIOS AUTENTICADOS
-Route::view('/profile', 'profile.edit')
-    ->middleware(['auth'])
+Route::view('/account/profile', 'profile.edit')
+    ->middleware('auth')
     ->name('profile.edit');
 
-Route::get('/billing', BillingPageController::class)
+Route::get('/account/billing', BillingPageController::class)
     ->middleware(['auth', 'verified'])
     ->name('billing.index');
+
+/*
+ * Enlaces antiguos conservados temporalmente.
+ */
+Route::redirect('/profile', '/account/profile')
+    ->middleware('auth');
+
+Route::redirect('/billing', '/account/billing')
+    ->middleware(['auth', 'verified']);
 
 // CHECKOUT
 Route::post(

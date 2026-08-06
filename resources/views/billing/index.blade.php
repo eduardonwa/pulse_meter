@@ -2,6 +2,8 @@
 
 <x-layouts.dorelog :user="$user">
     <main class="billing-page | container">
+        <x-account.navigation />
+
         <header class="billing-page__header">
             <p class="uppercase">Account</p>
 
@@ -12,10 +14,7 @@
                 or a one-time Lifetime purchase.
             </p>
         </header>
-        <section
-            class="billing-summary"
-            aria-labelledby="billing-current-access"
-        >
+        <section class="billing-summary" aria-labelledby="billing-current-access">
             <p class="uppercase">Current access</p>
 
             <h2 id="billing-current-access">
