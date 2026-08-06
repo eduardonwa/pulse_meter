@@ -24,6 +24,33 @@ class BillingPageController extends Controller
             && ! $hasMonthlyPro
             && ! $user->isPro();
 
+        $checkoutNotice = match (
+            $request->query('checkout')
+        ) {
+            'monthly-success' => [
+                'status' => 'success',
+                'message' =>
+                    'Checkout completed. Your Pro access will appear here '
+                    .'after Stripe confirms the subscription.',
+            ],
+
+            'lifetime-success' => [
+                'status' => 'success',
+                'message' =>
+                    'Payment completed. Your Lifetime Pro access will appear '
+                    .'here after Stripe confirms the purchase.',
+            ],
+
+            'cancelled' => [
+                'status' => 'cancelled',
+                'message' =>
+                    'Checkout was cancelled. No changes were made '
+                    .'to your account.',
+            ],
+
+            default => null,
+        };
+
         /*
          * Validar el Trial mediante el servicio existente también
          * normaliza trials vencidos, consumidos o abandonados.
@@ -89,6 +116,9 @@ class BillingPageController extends Controller
             'hasMonthlyPro' => $hasMonthlyPro,
             'canPurchaseMonthly' => $canPurchaseMonthly,
             'canPurchaseLifetime' => $canPurchaseLifetime,
+            'checkoutNotice' => $checkoutNotice,
+            'monthlyDisplayPrice' => config('billing.pro.monthly_display_price'),
+            'lifetimeDisplayPrice' => config('billing.pro.lifetime_display_price'),
         ]);
     }
 }

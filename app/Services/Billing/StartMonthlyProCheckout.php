@@ -28,11 +28,15 @@ class StartMonthlyProCheckout
         return $user
             ->newSubscription('pro', $priceId)
             ->checkout([
-                'success_url' => url('/')
-                    . '?checkout=success',
+                'success_url' => route(
+                    'billing.index',
+                    ['checkout' => 'monthly-success']
+                ),
 
-                'cancel_url' => url('/')
-                    . '?checkout=cancelled',
+                'cancel_url' => route(
+                    'billing.index',
+                    ['checkout' => 'cancelled']
+                ),
             ]);
     }
 }

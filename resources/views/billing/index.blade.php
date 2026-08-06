@@ -15,6 +15,16 @@
             </p>
         </header>
 
+        @if ($checkoutNotice)
+            <p
+                class="billing-notice"
+                data-status="{{ $checkoutNotice['status'] }}"
+                role="status"
+            >
+                {{ $checkoutNotice['message'] }}
+            </p>
+        @endif
+
         <section class="billing-summary" aria-labelledby="billing-current-access">
             <p class="uppercase">Current access</p>
 
@@ -41,6 +51,12 @@
                     <p class="uppercase">Subscription</p>
 
                     <h3>Monthly Pro</h3>
+
+                    @if ($monthlyDisplayPrice)
+                        <p class="billing-plan__price">
+                            {{ $monthlyDisplayPrice }}
+                        </p>
+                    @endif
 
                     <p>
                         Recurring Pro access. Your subscription continues
@@ -73,6 +89,12 @@
                     <p class="uppercase">One-time purchase</p>
 
                     <h3>Lifetime Pro</h3>
+
+                    @if ($lifetimeDisplayPrice)
+                        <p class="billing-plan__price">
+                            {{ $lifetimeDisplayPrice }}
+                        </p>
+                    @endif
 
                     <p>
                         Pay once for Pro access that does not expire.

@@ -233,6 +233,72 @@ class BillingPageTest extends TestCase
             );
     }
 
+    public function test_billing_page_displays_configured_prices(): void
+    {
+        config()->set(
+            'billing.pro.monthly_display_price',
+            '$5 USD / month'
+        );
+
+        config()->set(
+            'billing.pro.lifetime_display_price',
+            '$40 USD one-time'
+        );
+
+        $user = $this->createFreeUser();
+
+        $this->actingAs($user)
+            ->get(route('billing.index'))
+            ->assertOk()
+            ->assertSeeText('$5 USD / month')
+            ->assertSeeText('$40 USD one-time');
+    }
+
+    public function test_monthly_checkout_return_shows_confirmation_notice(): void
+    {
+        $user = $this->createFreeUser();
+
+        $this->actingAs($user)
+            ->get(route('billing.index', [
+                'checkout' => 'monthly-success',
+            ]))
+            ->assertOk()
+            ->assertSeeText(
+                'Checkout completed. Your Pro access will appear here '
+                .'after Stripe confirms the subscription.'
+            );
+    }
+
+    public function test_lifetime_checkout_return_shows_confirmation_notice(): void
+    {
+        $user = $this->createFreeUser();
+
+        $this->actingAs($user)
+            ->get(route('billing.index', [
+                'checkout' => 'lifetime-success',
+            ]))
+            ->assertOk()
+            ->assertSeeText(
+                'Payment completed. Your Lifetime Pro access will appear '
+                .'here after Stripe confirms the purchase.'
+            );
+    }
+
+    public function test_cancelled_checkout_shows_no_changes_notice(): void
+    {
+        $user = $this->createFreeUser();
+
+        $this->actingAs($user)
+            ->get(route('billing.index', [
+                'checkout' => 'cancelled',
+            ]))
+            ->assertOk()
+            ->assertSeeText(
+                'Checkout was cancelled. No changes were made '
+                .'to your account.'
+            );
+    }
+
     private function createTrial(
         User $user,
         string $status

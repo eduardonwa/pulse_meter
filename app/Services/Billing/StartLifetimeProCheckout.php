@@ -30,12 +30,16 @@ class StartLifetimeProCheckout
         return $user->checkout(
             $priceId,
             [
-                'success_url' => url('/')
-                    . '?checkout=lifetime-success'
+                'success_url' => route(
+                    'billing.index',
+                    ['checkout' => 'lifetime-success']
+                )
                     . '&session_id={CHECKOUT_SESSION_ID}',
 
-                'cancel_url' => url('/')
-                    . '?checkout=cancelled',
+                'cancel_url' => route(
+                    'billing.index',
+                    ['checkout' => 'cancelled']
+                ),
 
                 'metadata' => [
                     'dorelog_user_id' =>
