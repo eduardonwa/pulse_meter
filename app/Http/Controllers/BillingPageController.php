@@ -16,6 +16,29 @@ class BillingPageController extends Controller
         $hasLifetimePro = $user->hasLifetimePro();
         $hasMonthlyPro = $user->subscribed('pro');
 
+        $monthlySubscription = $hasMonthlyPro
+            ? $user->subscription('pro')
+            : null;
+
+        $monthlyManagement = match (true) {
+            $monthlySubscription?->onGracePeriod()
+                && $monthlySubscription->ends_at !== null => [
+                    'status' => 'cancelling',
+                    'detail' =>
+                        'Your subscription ends on '
+                        .$monthlySubscription->ends_at->format('M j, Y')
+                        .'.',
+                ],
+
+            $monthlySubscription !== null => [
+                'status' => 'active',
+                'detail' =>
+                    'Your subscription renews automatically until cancelled.',
+            ],
+
+            default => null,
+        };
+
         $canPurchaseMonthly = ! $hasLifetimePro
             && ! $hasMonthlyPro
             && ! $user->isPro();
@@ -117,6 +140,7 @@ class BillingPageController extends Controller
             'canPurchaseMonthly' => $canPurchaseMonthly,
             'canPurchaseLifetime' => $canPurchaseLifetime,
             'checkoutNotice' => $checkoutNotice,
+            'monthlyManagement' => $monthlyManagement,
             'monthlyDisplayPrice' => config('billing.pro.monthly_display_price'),
             'lifetimeDisplayPrice' => config('billing.pro.lifetime_display_price'),
         ]);

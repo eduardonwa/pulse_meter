@@ -299,6 +299,62 @@ class BillingPageTest extends TestCase
             );
     }
 
+    public function test_active_monthly_user_can_manage_subscription(): void
+    {
+        $user = $this->createMonthlyProUser();
+
+        $this->actingAs($user)
+            ->get(route('billing.index'))
+            ->assertOk()
+            ->assertSeeText(
+                'Your subscription renews automatically until cancelled.'
+            )
+            ->assertSeeText('Manage subscription')
+            ->assertSee(
+                'action="'.route('billing.portal').'"',
+                false
+            );
+    }
+
+    public function test_monthly_grace_period_displays_end_date(): void
+    {
+        $user = $this->createMonthlyProUser();
+
+        $endsAt = now()->addDays(10)->startOfDay();
+
+        $user->subscription('pro')->forceFill([
+            'stripe_status' => 'canceled',
+            'ends_at' => $endsAt,
+        ])->save();
+
+        $this->actingAs($user->refresh())
+            ->get(route('billing.index'))
+            ->assertOk()
+            ->assertSeeText(
+                'Your subscription ends on '
+                .$endsAt->format('M j, Y')
+                .'.'
+            )
+            ->assertSeeText('Manage subscription')
+            ->assertDontSeeText(
+                'Your subscription renews automatically until cancelled.'
+            );
+    }
+
+    public function test_free_user_does_not_see_subscription_management(): void
+    {
+        $user = $this->createFreeUser();
+
+        $this->actingAs($user)
+            ->get(route('billing.index'))
+            ->assertOk()
+            ->assertDontSeeText('Manage subscription')
+            ->assertDontSee(
+                'action="'.route('billing.portal').'"',
+                false
+            );
+    }
+
     private function createTrial(
         User $user,
         string $status

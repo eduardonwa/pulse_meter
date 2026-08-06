@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Billing\BillingPortalController;
 use App\Http\Controllers\Billing\LifetimeProCheckoutController;
 use App\Http\Controllers\Billing\MonthlyProCheckoutController;
 use App\Http\Controllers\BillingPageController;
@@ -51,6 +52,13 @@ Route::post(
 )
     ->middleware('auth')
     ->name('billing.pro.lifetime.checkout');
+
+Route::post(
+    '/account/billing/portal',
+    BillingPortalController::class
+)
+    ->middleware(['auth', 'verified'])
+    ->name('billing.portal');
 
 // ROUTINES
 Route::middleware(['auth', 'can:use-pro'])->group(function () {

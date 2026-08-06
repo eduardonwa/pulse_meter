@@ -64,12 +64,7 @@
                     </p>
 
                     @if ($canPurchaseMonthly)
-                        <form
-                            method="POST"
-                            action="{{ route(
-                                'billing.pro.monthly.checkout'
-                            ) }}"
-                        >
+                        <form method="POST" action="{{ route( 'billing.pro.monthly.checkout' ) }}">
                             @csrf
 
                             <button class="button" type="submit">
@@ -78,6 +73,20 @@
                         </form>
                     @elseif ($hasMonthlyPro)
                         <p>Current plan</p>
+
+                        @if ($monthlyManagement)
+                            <p data-status="{{ $monthlyManagement['status'] }}">
+                                {{ $monthlyManagement['detail'] }}
+                            </p>
+                        @endif
+
+                        <form method="POST" action="{{ route('billing.portal') }}">
+                            @csrf
+
+                            <button class="button" type="submit">
+                                Manage subscription
+                            </button>
+                        </form>
                     @elseif ($hasLifetimePro)
                         <p>Included with Lifetime Pro</p>
                     @else
