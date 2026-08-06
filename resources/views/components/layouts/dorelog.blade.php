@@ -47,12 +47,10 @@
                         aria-controls="sidebar"
                         @click="sidebar = !sidebar"
                     >
-                        @if ($user->plan === 'pro')
-                            <x-heroicon-s-star class="profile-link__pro-icon"
-                                aria-hidden="true"
-                                width="16"
-                                height="16"
-                            />
+                        @if ($user->hasLifetimePro())
+                            <x-heroicon-s-bolt class="pro-icon pro-icon--lifetime" />
+                        @elseif ($user->isPro())
+                            <x-heroicon-s-star class="pro-icon pro-icon--monthly" />
                         @endif
 
                         {{ $user->name }}
@@ -119,6 +117,15 @@
                         </button>
                     </form>
                 @endauth
+
+                {{-- links --}}
+                <div class="links">
+                    <a class="button" data-type="icon" href="mailto:{{ config('mail.support_address') }}">
+                        <x-heroicon-o-lifebuoy />
+    
+                        <span>Contact Support</span>
+                    </a>
+                </div>
             </nav>
         </aside>
     </header>

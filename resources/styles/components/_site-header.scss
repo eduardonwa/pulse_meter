@@ -68,13 +68,28 @@
         align-items: center;
         justify-content: flex-start;
         gap: $size-3;
-        border-radius: $border-radius-1;
         padding: 1.2rem;
+        border-radius: 0;
         color: $color-neutral-100;
+        
+        @include mq(large) {
+          border-radius: $border-radius-1;
+        }
 
         &:hover {
           background-color: $color-neutral-200;
           color: $color-neutral-950;
+        }
+      }
+
+      .links {
+        margin-block-start: $size-4;
+        border-block-start: 1px solid hsl(var(--neutral-300) / .5);
+        padding-block: $size-4;
+
+        @include mq(large) {
+          margin-block-start: $size-2;
+          padding-block: $size-2 0;
         }
       }
     }

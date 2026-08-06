@@ -30,6 +30,8 @@
     &__navigation {
         margin-block-end: $size-4;
 
+        border-block-end: 1px solid hsl(var(--neutral-950) / .1);
+
         .button {
             &.is-selected {
                 background-color: hsl(var(--primary-950) / .8);
@@ -203,5 +205,30 @@
                 margin-block-end: $size-3;
             }
         }
+    }
+}
+
+.billing-notice {
+    margin-block-start: $size-2;
+    padding: $size-2;
+
+    font-size: 15px;
+    
+    border: 1px solid hsl(var(--primary-950) / .2);
+    border-radius: $border-radius-1;
+
+    background: hsl(var(--primary-400) / .1);
+    color: $color-primary-950;
+}
+
+.billing-support {
+    text-align: center;
+    margin-top: 32px;
+    color: $color-neutral-500;
+    font-size: 14px;
+
+    a {
+        color: inherit;
+        text-decoration: underline;
     }
 }

@@ -27,7 +27,7 @@
     }
   }
 
-  .profile-link__pro-icon {
+  .pro-icon {
     display: block;
     box-sizing: content-box;
     flex: 0 0 16px;
@@ -36,8 +36,16 @@
     height: 16px;
     padding: 4px;
 
-    color: white;
     background-color: red;
     border-radius: 50%;
+
+    /* SUB EMOTE */
+    &--monthly {
+      color: white;
+    }
+
+    &--lifetime {
+      background-color: $color-extra-400;
+    }
   }
 }
