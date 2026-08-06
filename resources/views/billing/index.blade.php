@@ -12,5 +12,19 @@
                 or a one-time Lifetime purchase.
             </p>
         </header>
+        <section
+            class="billing-summary"
+            aria-labelledby="billing-current-access"
+        >
+            <p class="uppercase">Current access</p>
+
+            <h2 id="billing-current-access">
+                {{ $billingState['name'] }}
+            </h2>
+
+            <p>
+                {{ $billingState['detail'] }}
+            </p>
+        </section>
     </main>
 </x-layouts.dorelog>

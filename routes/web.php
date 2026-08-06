@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Billing\LifetimeProCheckoutController;
 use App\Http\Controllers\Billing\MonthlyProCheckoutController;
+use App\Http\Controllers\BillingPageController;
 use App\Http\Controllers\LocalRoutineImportController;
 use App\Http\Controllers\PracticeRoutineController;
 use App\Http\Controllers\PracticeRoutineStepController;
@@ -23,7 +24,7 @@ Route::view('/profile', 'profile.edit')
     ->middleware(['auth'])
     ->name('profile.edit');
 
-Route::view('/billing', 'billing.index')
+Route::get('/billing', BillingPageController::class)
     ->middleware(['auth', 'verified'])
     ->name('billing.index');
 
