@@ -102,36 +102,22 @@ class LifetimeProCheckoutTest extends TestCase
         );
     }
 
-    public function test_a_monthly_pro_user_is_not_rejected_as_lifetime(): void
+    public function test_a_monthly_pro_user_cannot_start_lifetime_checkout(): void
     {
         $user = $this->createProUser();
 
-        $this->mock(
-            StartLifetimeProCheckout::class,
-            function (MockInterface $mock) use ($user): void {
-                $mock
-                    ->shouldReceive('start')
-                    ->once()
-                    ->withArgs(
-                        fn (User $receivedUser): bool =>
-                            $receivedUser->is($user)
-                    )
-                    ->andReturn(
-                        redirect()->away(
-                            'https://checkout.stripe.test/lifetime'
-                        )
-                    );
-            }
-        );
+        $user->subscriptions()->create([
+            'type' => 'pro',
+            'stripe_id' => 'sub_lifetime_checkout_monthly',
+            'stripe_status' => 'active',
+            'stripe_price' => 'price_monthly_pro',
+            'quantity' => 1,
+            'trial_ends_at' => null,
+            'ends_at' => null,
+        ]);
 
-        $response = $this
-            ->actingAs($user)
-            ->post(
-                route('billing.pro.lifetime.checkout')
-            );
-
-        $response->assertRedirect(
-            'https://checkout.stripe.test/lifetime'
-        );
+        $this->actingAs($user)
+            ->post(route('billing.pro.lifetime.checkout'))
+            ->assertStatus(Response::HTTP_CONFLICT);
     }
 }

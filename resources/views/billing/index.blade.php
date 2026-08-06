@@ -14,6 +14,7 @@
                 or a one-time Lifetime purchase.
             </p>
         </header>
+
         <section class="billing-summary" aria-labelledby="billing-current-access">
             <p class="uppercase">Current access</p>
 
@@ -24,6 +25,83 @@
             <p>
                 {{ $billingState['detail'] }}
             </p>
+        </section>
+
+        <section class="billing-plans" aria-labelledby="billing-plan-options">
+            <header>
+                <p class="uppercase">Pro options</p>
+
+                <h2 id="billing-plan-options">
+                    Choose how you want Pro
+                </h2>
+            </header>
+
+            <div class="billing-plans__options">
+                <article class="billing-plan">
+                    <p class="uppercase">Subscription</p>
+
+                    <h3>Monthly Pro</h3>
+
+                    <p>
+                        Recurring Pro access. Your subscription continues
+                        until you cancel its renewal.
+                    </p>
+
+                    @if ($canPurchaseMonthly)
+                        <form
+                            method="POST"
+                            action="{{ route(
+                                'billing.pro.monthly.checkout'
+                            ) }}"
+                        >
+                            @csrf
+
+                            <button class="button" type="submit">
+                                Choose Monthly Pro
+                            </button>
+                        </form>
+                    @elseif ($hasMonthlyPro)
+                        <p>Current plan</p>
+                    @elseif ($hasLifetimePro)
+                        <p>Included with Lifetime Pro</p>
+                    @else
+                        <p>Unavailable while Pro access is active.</p>
+                    @endif
+                </article>
+
+                <article class="billing-plan">
+                    <p class="uppercase">One-time purchase</p>
+
+                    <h3>Lifetime Pro</h3>
+
+                    <p>
+                        Pay once for Pro access that does not expire.
+                    </p>
+
+                    @if ($canPurchaseLifetime)
+                        <form
+                            method="POST"
+                            action="{{ route(
+                                'billing.pro.lifetime.checkout'
+                            ) }}"
+                        >
+                            @csrf
+
+                            <button class="button" type="submit">
+                                Choose Lifetime Pro
+                            </button>
+                        </form>
+                    @elseif ($hasLifetimePro)
+                        <p>Owned</p>
+                    @elseif ($hasMonthlyPro)
+                        <p>
+                            Available after your monthly subscription ends.
+                        </p>
+                    @else
+                        <p>Unavailable while Pro access is active.</p>
+                    @endif
+                </article>
+            </div>
         </section>
     </main>
 </x-layouts.dorelog>

@@ -16,6 +16,14 @@ class BillingPageController extends Controller
         $hasLifetimePro = $user->hasLifetimePro();
         $hasMonthlyPro = $user->subscribed('pro');
 
+        $canPurchaseMonthly = ! $hasLifetimePro
+            && ! $hasMonthlyPro
+            && ! $user->isPro();
+
+        $canPurchaseLifetime = ! $hasLifetimePro
+            && ! $hasMonthlyPro
+            && ! $user->isPro();
+
         /*
          * Validar el Trial mediante el servicio existente también
          * normaliza trials vencidos, consumidos o abandonados.
@@ -77,6 +85,10 @@ class BillingPageController extends Controller
         return view('billing.index', [
             'user' => $user,
             'billingState' => $billingState,
+            'hasLifetimePro' => $hasLifetimePro,
+            'hasMonthlyPro' => $hasMonthlyPro,
+            'canPurchaseMonthly' => $canPurchaseMonthly,
+            'canPurchaseLifetime' => $canPurchaseLifetime,
         ]);
     }
 }

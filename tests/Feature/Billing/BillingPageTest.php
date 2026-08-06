@@ -110,7 +110,9 @@ class BillingPageTest extends TestCase
             ->assertSeeText(
                 'Monthly subscription · Pro access is active.'
             )
-            ->assertDontSeeText('Lifetime Pro');
+            ->assertDontSeeText(
+                'One-time purchase · Pro access does not expire.'
+            );
     }
 
     public function test_lifetime_user_sees_lifetime_access(): void
@@ -131,7 +133,104 @@ class BillingPageTest extends TestCase
             ->assertSeeText(
                 'One-time purchase · Pro access does not expire.'
             )
-            ->assertDontSeeText('Monthly Pro');
+            ->assertDontSeeText(
+                'Monthly subscription · Pro access is active.'
+            );
+    }
+
+    public function test_free_user_can_choose_monthly_or_lifetime(): void
+    {
+        $user = $this->createFreeUser();
+
+        $this->actingAs($user)
+            ->get(route('billing.index'))
+            ->assertOk()
+            ->assertSeeText('Choose Monthly Pro')
+            ->assertSeeText('Choose Lifetime Pro')
+            ->assertSee(
+                'action="'.
+                    route('billing.pro.monthly.checkout').
+                '"',
+                false
+            )
+            ->assertSee(
+                'action="'.
+                    route('billing.pro.lifetime.checkout').
+                '"',
+                false
+            );
+    }
+
+    public function test_trial_user_can_choose_monthly_or_lifetime(): void
+    {
+        $user = $this->createFreeUser();
+
+        $this->createTrial($user, 'active');
+
+        $this->actingAs($user)
+            ->get(route('billing.index'))
+            ->assertOk()
+            ->assertSeeText('Choose Monthly Pro')
+            ->assertSeeText('Choose Lifetime Pro');
+    }
+
+    public function test_monthly_user_cannot_start_another_purchase(): void
+    {
+        $user = $this->createMonthlyProUser();
+
+        $this->actingAs($user)
+            ->get(route('billing.index'))
+            ->assertOk()
+            ->assertSeeText('Current plan')
+            ->assertSeeText(
+                'Available after your monthly subscription ends.'
+            )
+            ->assertDontSeeText('Choose Monthly Pro')
+            ->assertDontSeeText('Choose Lifetime Pro')
+            ->assertDontSee(
+                'action="'.
+                    route('billing.pro.monthly.checkout').
+                '"',
+                false
+            )
+            ->assertDontSee(
+                'action="'.
+                    route('billing.pro.lifetime.checkout').
+                '"',
+                false
+            );
+    }
+
+    public function test_lifetime_user_cannot_purchase_pro_again(): void
+    {
+        $user = $this->createProUser();
+
+        app(GrantLifetimePro::class)->grant(
+            $user,
+            'cs_billing_options_lifetime',
+            'pi_billing_options_lifetime',
+            'price_billing_options_lifetime'
+        );
+
+        $this->actingAs($user->refresh())
+            ->get(route('billing.index'))
+            ->assertOk()
+            ->assertSeeText('Included with Lifetime Pro')
+            ->assertSeeText('Owned')
+            ->assertDontSeeText('Choose Monthly Pro')
+            ->assertDontSeeText('Choose Lifetime Pro')
+            ->assertDontSee(
+                'action="'.
+                    route('billing.pro.monthly.checkout').
+                '"',
+                false
+            )
+            ->assertDontSee(
+                'action="'.
+                    route('billing.pro.lifetime.checkout').
+                '"',
+                false
+            );
     }
 
     private function createTrial(

@@ -10,9 +10,11 @@ class StartLifetimeProCheckout
     public function start(User $user)
     {
         abort_if(
-            $user->hasLifetimePro(),
+            $user->isPro()
+                || $user->subscribed('pro')
+                || $user->hasLifetimePro(),
             409,
-            'This account already has Lifetime Pro access.'
+            'This account already has Pro access.'
         );
 
         $priceId = config(
