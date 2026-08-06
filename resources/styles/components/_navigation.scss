@@ -12,6 +12,10 @@
 
   position: relative;
 
+  .button {
+    color: $color-neutral-50;
+  }
+
   a {
     color: $navigation-color;
     font-size: 14px;
@@ -21,5 +25,19 @@
       color: $navigation-color-hover;
       text-decoration: underline;
     }
+  }
+
+  .profile-link__pro-icon {
+    display: block;
+    box-sizing: content-box;
+    flex: 0 0 16px;
+
+    width: 16px;
+    height: 16px;
+    padding: 4px;
+
+    color: white;
+    background-color: red;
+    border-radius: 50%;
   }
 }

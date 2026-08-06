@@ -13,7 +13,7 @@
   padding: $button-padding;
   border: $button-border;
   border-radius: $button-border-radius;
-  transition: 275ms ease;
+  transition: 150ms ease;
 
   &[data-type="accent"] {
     background-color: $button-accent-background;
