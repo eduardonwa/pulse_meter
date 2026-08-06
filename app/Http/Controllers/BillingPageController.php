@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
+use Carbon\CarbonImmutable;
 
 class BillingPageController extends Controller
 {
@@ -20,6 +21,19 @@ class BillingPageController extends Controller
             ? $user->subscription('pro')
             : null;
 
+        $currentPeriodEnd =
+            $monthlySubscription?->getRawOriginal(
+                'current_period_ends_at'
+            );
+
+        $monthlyRenewalDate = is_string($currentPeriodEnd)
+            && $currentPeriodEnd !== ''
+                ? CarbonImmutable::parse(
+                    $currentPeriodEnd,
+                    'UTC'
+                )
+                : null;
+
         $monthlyManagement = match (true) {
             $monthlySubscription?->onGracePeriod()
                 && $monthlySubscription->ends_at !== null => [
@@ -27,6 +41,15 @@ class BillingPageController extends Controller
                     'detail' =>
                         'Your subscription ends on '
                         .$monthlySubscription->ends_at->format('M j, Y')
+                        .'.',
+                ],
+
+            $monthlySubscription !== null
+                && $monthlyRenewalDate !== null => [
+                    'status' => 'active',
+                    'detail' =>
+                        'Your subscription renews on '
+                        .$monthlyRenewalDate->format('M j, Y')
                         .'.',
                 ],
 

@@ -5,6 +5,7 @@ namespace Tests\Feature\Billing;
 use App\Listeners\ActivateProFromStripeSubscription;
 use App\Models\TrialEntitlement;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Laravel\Cashier\Events\WebhookHandled;
@@ -44,6 +45,21 @@ class ActivateProFromStripeSubscriptionTest extends TestCase
         $trial->user()->associate($user);
         $trial->save();
 
+        $periodEnd = now()
+            ->addMonth()
+            ->startOfSecond()
+            ->timestamp;
+
+        $localSubscription = $user->subscriptions()->create([
+            'type' => 'pro',
+            'stripe_id' => 'sub_dorelog_monthly',
+            'stripe_status' => 'active',
+            'stripe_price' => 'price_dorelog_monthly',
+            'quantity' => 1,
+            'trial_ends_at' => null,
+            'ends_at' => null,
+        ]);
+
         app(
             ActivateProFromStripeSubscription::class
         )->handle(
@@ -51,15 +67,25 @@ class ActivateProFromStripeSubscriptionTest extends TestCase
                 'type' => 'customer.subscription.created',
                 'data' => [
                     'object' => [
+                        'id' => 'sub_dorelog_monthly',
                         'customer' => 'cus_dorelog_user',
                         'status' => 'active',
                         'items' => [
                             'data' => [
                                 [
                                     'price' => [
+                                        'id' => 'price_another_product',
+                                    ],
+                                    'current_period_end' =>
+                                        now()->addDays(5)->timestamp,
+                                ],
+                                [
+                                    'price' => [
                                         'id' =>
                                             'price_dorelog_monthly',
                                     ],
+                                    'current_period_end' =>
+                                        $periodEnd,
                                 ],
                             ],
                         ],
@@ -74,6 +100,20 @@ class ActivateProFromStripeSubscriptionTest extends TestCase
         $this->assertSame('pro', $user->plan);
         $this->assertSame('converted', $trial->status);
         $this->assertNotNull($trial->converted_at);
+
+        $storedPeriodEnd = $localSubscription
+            ->fresh()
+            ->getRawOriginal('current_period_ends_at');
+
+        $this->assertNotNull($storedPeriodEnd);
+
+        $this->assertSame(
+            $periodEnd,
+            Carbon::parse(
+                $storedPeriodEnd,
+                'UTC'
+            )->timestamp
+        );
     }
 
     public function test_it_ignores_an_inactive_or_unrelated_subscription(): void

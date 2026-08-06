@@ -325,6 +325,7 @@ class BillingPageTest extends TestCase
         $user->subscription('pro')->forceFill([
             'stripe_status' => 'canceled',
             'ends_at' => $endsAt,
+            'current_period_ends_at' => $endsAt,
         ])->save();
 
         $this->actingAs($user->refresh())
@@ -336,6 +337,7 @@ class BillingPageTest extends TestCase
                 .'.'
             )
             ->assertSeeText('Manage subscription')
+            ->assertDontSeeText('Your subscription renews on')
             ->assertDontSeeText(
                 'Your subscription renews automatically until cancelled.'
             );
@@ -352,6 +354,35 @@ class BillingPageTest extends TestCase
             ->assertDontSee(
                 'action="'.route('billing.portal').'"',
                 false
+            );
+    }
+
+    public function test_active_monthly_user_displays_renewal_date(): void
+    {
+        $user = $this->createMonthlyProUser();
+
+        $renewsAt = now()
+            ->addMonth()
+            ->startOfDay();
+
+        $subscription = $user->subscription('pro');
+
+        $subscription->newQuery()
+            ->whereKey($subscription->getKey())
+            ->update([
+                'current_period_ends_at' => $renewsAt,
+            ]);
+
+        $this->actingAs($user->refresh())
+            ->get(route('billing.index'))
+            ->assertOk()
+            ->assertSeeText(
+                'Your subscription renews on '
+                .$renewsAt->format('M j, Y')
+                .'.'
+            )
+            ->assertDontSeeText(
+                'Your subscription renews automatically until cancelled.'
             );
     }
 

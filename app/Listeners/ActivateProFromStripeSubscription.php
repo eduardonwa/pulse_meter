@@ -3,13 +3,15 @@
 namespace App\Listeners;
 
 use App\Models\User;
+use App\Services\Billing\SyncMonthlySubscriptionPeriod;
 use App\Services\Plans\UpgradeToPro;
 use Laravel\Cashier\Events\WebhookHandled;
 
 class ActivateProFromStripeSubscription
 {
     public function __construct(
-        private UpgradeToPro $upgradeToPro
+        private UpgradeToPro $upgradeToPro,
+        private SyncMonthlySubscriptionPeriod $syncPeriod
     ) {}
 
     public function handle(WebhookHandled $event): void
@@ -50,15 +52,16 @@ class ActivateProFromStripeSubscription
             return;
         }
 
-        $usesMonthlyProPrice = collect(
+        $monthlyItem = collect(
             data_get($subscription, 'items.data', [])
-        )->contains(
-            fn (array $item): bool =>
-                data_get($item, 'price.id')
+        )->first(
+            fn (mixed $item): bool =>
+                is_array($item)
+                && data_get($item, 'price.id')
                     === $monthlyPriceId
         );
 
-        if (! $usesMonthlyProPrice) {
+        if (! is_array($monthlyItem)) {
             return;
         }
 
@@ -77,5 +80,10 @@ class ActivateProFromStripeSubscription
         }
 
         $this->upgradeToPro->upgrade($user);
+        $this->syncPeriod->sync(
+            $user,
+            $subscription,
+            $monthlyItem
+        );
     }
 }
