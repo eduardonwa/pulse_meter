@@ -1,10 +1,12 @@
 <x-layouts.dorelog>
-    <main class="profile-page | container">
+    <main class="account-page | container">
         <x-account.navigation />
 
-        <h1 class="heading-3">Profile</h1>
+        <header class="account-page__header">
+            <p> Review your profile and make your neccesary adjustment. </p>
+        </header>
 
-        <section class="profile-page__section">
+        <section class="account-page__section">
             <h2 class="heading-3">Account information</h2>
 
             <form class="profile-form | form-panel form" method="POST" action="{{ route('user-profile-information.update') }}">
@@ -51,7 +53,7 @@
             </form>
         </section>
 
-        <section class="profile-page__section">
+        <section class="account-page__section">
             <h2 class="heading-3">Change password</h2>
 
             <form class="profile-form | form-panel form"

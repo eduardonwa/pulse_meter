@@ -1,14 +1,10 @@
 @php($user = auth()->user())
 
 <x-layouts.dorelog :user="$user">
-    <main class="billing-page | container">
+    <main class="account-page | container">
         <x-account.navigation />
 
-        <header class="billing-page__header">
-            <p class="uppercase">Account</p>
-
-            <h1>Plans &amp; billing</h1>
-
+        <header class="account-page__header">
             <p>
                 Review your DoreLog access and choose between monthly Pro
                 or a one-time Lifetime purchase.
@@ -25,112 +21,121 @@
             </p>
         @endif
 
-        <section class="billing-summary" aria-labelledby="billing-current-access">
-            <p class="uppercase">Current access</p>
+        <section class="account-page__section | billing-summary" aria-labelledby="billing-current-access">
+            <div class="current-access">
+                <p class="subheader | uppercase">Current access</p>
+    
+                <h2 class="heading-3" id="billing-current-access">
+                    {{ $billingState['name'] }}
+                </h2>
+            </div>
 
-            <h2 id="billing-current-access">
-                {{ $billingState['name'] }}
-            </h2>
-
-            <p>
-                {{ $billingState['detail'] }}
-            </p>
+            <p class="summary-detail"> {{ $billingState['detail'] }} </p>
         </section>
 
-        <section class="billing-plans" aria-labelledby="billing-plan-options">
+        <section class="account-page__section | billing-plans" aria-labelledby="billing-plan-options">
             <header>
-                <p class="uppercase">Pro options</p>
-
-                <h2 id="billing-plan-options">
+                <h2 class="heading-3" id="billing-plan-options">
                     Choose how you want Pro
                 </h2>
             </header>
 
             <div class="billing-plans__options">
-                <article class="billing-plan">
-                    <p class="uppercase">Subscription</p>
+                <article @class(['billing-plan', 'billing-plan--current' => $hasMonthlyPro ])>
+                    <div class="billing-plan__header">
+                        <x-heroicon-s-sparkles class="subscription-icon" />
 
-                    <h3>Monthly Pro</h3>
+                        <p class="subscription-type subscription-type--monthly | subheader uppercase">Subscription</p>
+                    </div>
 
+                    <h3 class="title title--monthly">Monthly Pro</h3>
                     @if ($monthlyDisplayPrice)
                         <p class="billing-plan__price">
                             {{ $monthlyDisplayPrice }}
                         </p>
                     @endif
 
-                    <p>
+                    <p class="billing-plan__description">
                         Recurring Pro access. Your subscription continues
                         until you cancel its renewal.
                     </p>
 
-                    @if ($canPurchaseMonthly)
-                        <form method="POST" action="{{ route( 'billing.pro.monthly.checkout' ) }}">
-                            @csrf
+                    <div class="billing-plan__footer">
+                        @if ($canPurchaseMonthly)
+                            <form class="billing-plan__action" method="POST" action="{{ route('billing.pro.monthly.checkout') }}">
+                                @csrf
 
-                            <button class="button" type="submit">
-                                Choose Monthly Pro
-                            </button>
-                        </form>
-                    @elseif ($hasMonthlyPro)
-                        <p>Current plan</p>
+                                <button class="button" type="submit">
+                                    Choose Monthly Pro
+                                </button>
+                            </form>
+                        @elseif ($hasMonthlyPro)
+                            <div class="billing-plan__status">
+                                @if ($monthlyManagement)
+                                    <p
+                                        class="billing-plan__status-detail"
+                                        data-status="{{ $monthlyManagement['status'] }}"
+                                    >
+                                        {{ $monthlyManagement['detail'] }}
+                                    </p>
+                                @endif
+                            </div>
 
-                        @if ($monthlyManagement)
-                            <p data-status="{{ $monthlyManagement['status'] }}">
-                                {{ $monthlyManagement['detail'] }}
+                            <form class="billing-plan__action" method="POST" action="{{ route('billing.portal') }}">
+                                @csrf
+
+                                <button class="button" type="submit">
+                                    Manage subscription
+                                </button>
+                            </form>
+                        @elseif ($hasLifetimePro)
+                            <p class="billing-plan__status">
+                                Included with Lifetime Pro
+                            </p>
+                        @else
+                            <p class="billing-plan__status">
+                                Unavailable while Pro access is active.
                             </p>
                         @endif
-
-                        <form method="POST" action="{{ route('billing.portal') }}">
-                            @csrf
-
-                            <button class="button" type="submit">
-                                Manage subscription
-                            </button>
-                        </form>
-                    @elseif ($hasLifetimePro)
-                        <p>Included with Lifetime Pro</p>
-                    @else
-                        <p>Unavailable while Pro access is active.</p>
-                    @endif
+                    </div>
                 </article>
 
-                <article class="billing-plan">
-                    <p class="uppercase">One-time purchase</p>
+                <article @class(['billing-plan', 'billing-plan--current' => $hasLifetimePro ])>
+                    <div class="billing-plan__header">
+                        <x-heroicon-s-star class="subscription-icon" />
+                        <p class="subscription-type subscription-type--lifetime | subheader uppercase">One-time purchase</p>
+                    </div>
 
-                    <h3>Lifetime Pro</h3>
-
+                    <h3 class="title title--lifetime">Lifetime Pro</h3>
                     @if ($lifetimeDisplayPrice)
                         <p class="billing-plan__price">
                             {{ $lifetimeDisplayPrice }}
                         </p>
                     @endif
 
-                    <p>
+                    <p class="billing-plan__description">
                         Pay once for Pro access that does not expire.
                     </p>
 
-                    @if ($canPurchaseLifetime)
-                        <form
-                            method="POST"
-                            action="{{ route(
-                                'billing.pro.lifetime.checkout'
-                            ) }}"
-                        >
-                            @csrf
-
-                            <button class="button" type="submit">
-                                Choose Lifetime Pro
-                            </button>
-                        </form>
-                    @elseif ($hasLifetimePro)
-                        <p>Owned</p>
-                    @elseif ($hasMonthlyPro)
-                        <p>
-                            Available after your monthly subscription ends.
-                        </p>
-                    @else
-                        <p>Unavailable while Pro access is active.</p>
-                    @endif
+                    <div class="billing-plan__footer">
+                        @if ($canPurchaseLifetime)
+                            <form class="billing-plan__action" method="POST" action="{{ route('billing.pro.lifetime.checkout') }}">
+                                @csrf
+    
+                                <button class="button" type="submit">
+                                    Choose Lifetime Pro
+                                </button>
+                            </form>
+                        @elseif ($hasLifetimePro)
+                            <p class="billing-plan__status-label">Owned</p>
+                        @elseif ($hasMonthlyPro)
+                            <p class="billing-plan__status">
+                                Available after your monthly subscription ends.
+                            </p>
+                        @else
+                            <p class="billing-plan__status">Unavailable while Pro access is active.</p>
+                        @endif
+                    </div>
                 </article>
             </div>
         </section>

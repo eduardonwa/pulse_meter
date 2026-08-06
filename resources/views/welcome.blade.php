@@ -8,7 +8,7 @@
             <section class="trial-mode-banner">
                 <p> Create an account to access <span class="fw-bold">Trial Mode</span>. </p>
 
-                <a class="badge" href="{{ route('register') }}">
+                <a class="badge badge--trial-register" href="{{ route('register') }}">
                     Register
                 </a>
             </section>

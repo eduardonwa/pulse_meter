@@ -1,25 +1,24 @@
-<nav
-    class="account-navigation"
-    aria-label="Account"
->
-    <a
-        class="button"
-        href="{{ route('profile.edit') }}"
+<nav class="account-page__navigation" aria-label="Account">
+    <a data-type="outline" data-variant="link" href="{{ route('profile.edit') }}" wire:navigate
+        @class([
+            'button',
+            'is-selected' => request()->routeIs('profile.edit'),
+        ])    
         @if (request()->routeIs('profile.edit'))
             aria-current="page"
         @endif
-        wire:navigate
     >
         Profile
     </a>
 
-    <a
-        class="button"
-        href="{{ route('billing.index') }}"
+    <a  data-type="outline" data-variant="link" href="{{ route('billing.index') }}" wire:navigate
+        @class([
+            'button',
+            'is-selected' => request()->routeIs('billing.index'),
+        ])
         @if (request()->routeIs('billing.index'))
             aria-current="page"
         @endif
-        wire:navigate
     >
         Plans &amp; billing
     </a>
