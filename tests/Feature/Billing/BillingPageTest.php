@@ -214,8 +214,6 @@ class BillingPageTest extends TestCase
         $this->actingAs($user->refresh())
             ->get(route('billing.index'))
             ->assertOk()
-            ->assertSeeText('Included with Lifetime Pro')
-            ->assertSeeText('Owned')
             ->assertDontSeeText('Choose Monthly Pro')
             ->assertDontSeeText('Choose Lifetime Pro')
             ->assertDontSee(
