@@ -90,15 +90,16 @@
 
                         <span>Log in</span>
                     </a>
+                    @if (Route::has('register'))
+                        <a class="button" data-type="icon"
+                            href="{{ route('register') }}"
+                            wire:navigate
+                        >
+                            <x-heroicon-o-cursor-arrow-rays />
 
-                    <a class="button" data-type="icon"
-                        href="{{ route('register') }}"
-                        wire:navigate
-                    >
-                        <x-heroicon-o-cursor-arrow-rays />
-
-                        <span>Register</span>
-                    </a>
+                            <span>Register</span>
+                        </a>
+                    @endif
                 @endguest
 
                 @auth

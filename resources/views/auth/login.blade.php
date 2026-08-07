@@ -55,12 +55,14 @@
             </button>
         </form>
 
-        <p>
-            No account yet?
+        @if (Route::has('register'))
+            <p>
+                No account yet?
 
-            <a href="{{ route('register') }}">
-                Register
-            </a>
-        </p>
+                <a href="{{ route('register') }}">
+                    Register
+                </a>
+            </p>
+        @endif
     </main>
 </x-layouts-dorelog>

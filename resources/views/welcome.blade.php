@@ -5,13 +5,15 @@
 <x-layouts.dorelog :user="$user">
     <div class="account-bar">
         @guest
-            <section class="trial-mode-banner">
-                <p> Create an account to access <span class="fw-bold">Trial Mode</span>. </p>
+            @if (Route::has('register'))
+                <section class="trial-mode-banner">
+                    <p> Create an account to access <span class="fw-bold">Trial Mode</span>. </p>
 
-                <a class="badge badge--trial-register" href="{{ route('register') }}">
-                    Register
-                </a>
-            </section>
+                    <a class="badge badge--trial-register" href="{{ route('register') }}">
+                        Register
+                    </a>
+                </section>
+            @endif
         @endguest
 
         @auth
