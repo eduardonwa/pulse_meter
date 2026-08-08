@@ -28,7 +28,7 @@ class Resume
             if (! $trial) {
                 return back()->with(
                     'trial_error',
-                    'Trial Mode was not found.'
+                    'Trial Mode was not found'
                 );
             }
 
@@ -46,7 +46,7 @@ class Resume
 
                 return back()->with(
                     'trial_error',
-                    'Your Trial Mode has expired.'
+                    'Your Trial Mode has expired'
                 );
             }
 
@@ -63,14 +63,14 @@ class Resume
 
                 return back()->with(
                     'trial_error',
-                    'Your Trial Mode is complete.'
+                    'Your Trial Mode is complete'
                 );
             }
 
             if ($trial->status !== 'paused') {
                 return back()->with(
                     'trial_error',
-                    'Trial Mode cannot be resumed.'
+                    'Trial Mode cannot be resumed'
                 );
             }
 
@@ -89,7 +89,7 @@ class Resume
 
             return back()->with(
                 'trial_status',
-                'Trial Mode resumed.'
+                'Trial Mode resumed'
             );
         });
     }

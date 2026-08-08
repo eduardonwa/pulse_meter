@@ -29,7 +29,7 @@ class Pause
             if (! $trial->active_session_id || $trial->active_session_id !== $sessionId) {
                 return back()->with(
                     'trial_error',
-                    'Trial Mode is active in another tab.',
+                    'Trial Mode is active in another tab',
                 );
             }
 
@@ -75,7 +75,7 @@ class Pause
 
             return back()->with(
                 'trial_status',
-                'Trial Mode paused.'
+                'Trial Mode paused'
             );
         });
     }

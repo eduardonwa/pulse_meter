@@ -25,11 +25,7 @@
                 {{-- Trial activo y disponible para esta cuenta --}}
                 @if ($trial?->status === 'active' && $user->can('use-pro'))
                     <div class="trial-mode-status">
-                        <div
-                            id="trial-mode-status"
-                            data-heartbeat-url="{{ route('trial.heartbeat') }}"
-                            data-remaining-seconds="{{ $trial->remainingSeconds() }}"
-                        >
+                        <div id="trial-mode-status" data-heartbeat-url="{{ route('trial.heartbeat') }}" data-remaining-seconds="{{ $trial->remainingSeconds() }}">
                             <span>Trial Mode</span>
 
                             <span id="trial-running-status">
@@ -48,30 +44,32 @@
                         <form method="POST" action="{{ route('trial.pause') }}">
                             @csrf
 
-                            <button type="submit">
+                            <button class="button" data-type="icon-text" type="submit">
+                                <x-heroicon-o-pause-circle />
                                 Pause Trial Mode
                             </button>
                         </form>
                     </div>
+
                 {{-- Nunca ha activado el trial --}}
                 @elseif (! $trial)
-                    <form method="POST" action="{{ route('trial.activate') }}">
+                    <form class="form-panel enable-trial" method="POST" action="{{ route('trial.activate') }}">
                         @csrf
 
-                        <button type="submit">
+                        <button class="badge badge--trial-register" type="submit">
                             Enable Trial Mode
                         </button>
                     </form>
 
                 {{-- Trial consumido o vencido --}}
                 @elseif (in_array($trial->status, ['completed', 'expired'], true))
-                    <span>
-                        Trial complete · Continue creating with Pro.
-                    </span>
+                    <div class="trial-mode-status trial-mode-status--completed">
+                        <span>Trial mode completed</span> <a class="badge badge--trial-register" href="#">Continue creating with Pro</a>
+                    </div>
 
                 {{-- Trial pausado --}}
                 @elseif ($trial->status === 'paused')
-                    <div>
+                    <div class="trial-mode-status">
                         <span>
                             Trial Mode paused ·
                             {{ $trial->remainingTimeLabel() }}
@@ -81,7 +79,8 @@
                         <form method="POST" action="{{ route('trial.resume') }}">
                             @csrf
 
-                            <button type="submit">
+                            <button class="button" data-type="icon-text" type="submit">
+                                <x-heroicon-o-play-circle />
                                 Resume Trial Mode
                             </button>
                         </form>

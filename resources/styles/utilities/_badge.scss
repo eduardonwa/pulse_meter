@@ -31,7 +31,8 @@
         border: 1px solid $color-secondary-400;
     }
 
-    &--trial-register {
+    &--trial-register,
+    &--verification-resent {
         color: $color-primary-900;
         background-color: hsl(var(--primary-200) / .2);
         border: 1px solid $color-primary-400;

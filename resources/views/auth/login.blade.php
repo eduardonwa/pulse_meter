@@ -12,7 +12,7 @@
 
         <form class="auth-form | form-panel form" method="POST" action="{{ route('login') }}">
             @csrf
-    
+
             <h1 class="heading-3">Log in to DoreLog</h1>
 
             <div class="form-group">

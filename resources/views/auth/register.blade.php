@@ -16,7 +16,7 @@
             <h1 class="heading-3">Create your DoreLog account</h1>
 
             <div class="form-group">
-                <label for="name">Name</label>
+                <label for="name">Username</label>
     
                 <input
                     id="name"
