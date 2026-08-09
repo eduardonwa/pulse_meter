@@ -15,7 +15,7 @@ class Activate
         if ($user->plan === 'pro') {
             return back()->with(
                 'trial_error',
-                'Your account already has Pro access'
+                'Your account already has Pro access.'
             );
         }
 
@@ -41,13 +41,13 @@ class Activate
         if (! $trial->wasRecentlyCreated) {
             return back()->with(
                 'trial_error',
-                'This account has already used its Pro trial'
+                'This account has already used its Pro trial.'
             );
         }
 
         return back()->with(
             'trial_status',
-            'Trial Mode enabled. You have 60 minutes of Pro access'
+            'Trial Mode enabled. You have 60 minutes of Pro access.'
         );
     }
 }

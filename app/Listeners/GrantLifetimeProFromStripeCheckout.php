@@ -2,6 +2,7 @@
 
 namespace App\Listeners;
 
+use App\Models\LifetimeCheckoutReservation;
 use App\Models\User;
 use App\Services\Plans\GrantLifetimePro;
 use Laravel\Cashier\Events\WebhookReceived;
@@ -59,9 +60,21 @@ class GrantLifetimeProFromStripeCheckout
 
         $userId = $metadata['dorelog_user_id'] ?? null;
 
+        $reservationToken =
+            $metadata['dorelog_lifetime_reservation']
+                ?? null;
+
+        $reservationSlot =
+            $metadata['dorelog_lifetime_slot']
+                ?? null;
+
         if (
             ! is_string($userId)
             || ! ctype_digit($userId)
+            || ! is_string($reservationToken)
+            || $reservationToken === ''
+            || ! is_string($reservationSlot)
+            || ! ctype_digit($reservationSlot)
         ) {
             return;
         }
@@ -92,11 +105,29 @@ class GrantLifetimeProFromStripeCheckout
             return;
         }
 
+        $reservation =
+            LifetimeCheckoutReservation::query()
+                ->where('token',$reservationToken)
+                ->where('user_id',$user->getKey())
+                ->where('slot_number',(int) $reservationSlot)
+                ->where('stripe_checkout_session_id',$checkoutSessionId)
+                ->first();
+
+        if ($reservation === null) {
+            return;
+        }
+
         $this->grantLifetimePro->grant(
             $user,
             $checkoutSessionId,
             $paymentIntentId,
             $lifetimePriceId
         );
+
+        if ($reservation->completed_at === null) {
+            $reservation->forceFill([
+                'completed_at' => now(),
+            ])->save();
+        }
     }
 }

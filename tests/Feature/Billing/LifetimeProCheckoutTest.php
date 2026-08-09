@@ -8,6 +8,8 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Mockery\MockInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Tests\TestCase;
+use Laravel\Cashier\Checkout;
+use Stripe\Checkout\Session;
 
 class LifetimeProCheckoutTest extends TestCase
 {
@@ -59,8 +61,10 @@ class LifetimeProCheckoutTest extends TestCase
                             $receivedUser->is($user)
                     )
                     ->andReturn(
-                        redirect()->away(
-                            'https://checkout.stripe.test/lifetime'
+                        new Checkout($user, Session::constructFrom([
+                                'id' => 'cs_test_lifetime_checkout',
+                                'url' => 'https://checkout.stripe.test/lifetime',
+                            ])
                         )
                     );
             }

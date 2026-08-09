@@ -48,9 +48,20 @@
                         </div>
 
                         <h3 class="title title--monthly">Monthly Pro</h3>
+
                         @if ($monthlyDisplayPrice)
+                            @php($monthlyPriceParts = explode(' ', trim($monthlyDisplayPrice), 2))
+
                             <p class="billing-plan__price">
-                                {{ $monthlyDisplayPrice }}
+                                <span class="billing-plan__price-amount">
+                                    {{ $monthlyPriceParts[0] }}
+                                </span>
+
+                                @if (isset($monthlyPriceParts[1]))
+                                    <span class="billing-plan__price-period">
+                                        {{ $monthlyPriceParts[1] }}
+                                    </span>
+                                @endif
                             </p>
                         @endif
 
@@ -87,10 +98,6 @@
                                         Manage subscription
                                     </button>
                                 </form>
-                            @elseif ($hasLifetimePro)
-                                <p class="billing-plan__status">
-                                    Included with Lifetime Pro
-                                </p>
                             @else
                                 <p class="billing-plan__status">
                                     Unavailable while Pro access is active.
@@ -109,22 +116,46 @@
                         </p>
                     </div>
 
-                    <h3 class="title title--lifetime">Lifetime Pro</h3>
+                    <h3 class="title title--lifetime">Founding Lifetime Pro</h3>
 
                     @if (! $hasLifetimePro && $lifetimeDisplayPrice)
+                        @php($lifetimePriceParts = explode(' ', trim($lifetimeDisplayPrice), 2))
+
                         <p class="billing-plan__price">
-                            {{ $lifetimeDisplayPrice }}
+                            <span class="billing-plan__price-amount">
+                                {{ $lifetimePriceParts[0] }}
+                            </span>
+
+                            @if (isset($lifetimePriceParts[1]))
+                                <span class="billing-plan__price-period">
+                                    {{ $lifetimePriceParts[1] }}
+                                </span>
+                            @endif
                         </p>
                     @endif
 
                     @if ($hasLifetimePro)
                         <p class="billing-plan__description">
-                            You are a Lifetime user of DoreLog. You are entitled to all future updates.
+                            You are a Founding Lifetime member of DoreLog.
+                            Your Pro access does not expire.
                         </p>
-                    @else
-                        <p class="billing-plan__description">
-                            Pay once for Pro access that does not expire.
-                        </p>
+                    @elseif ($lifetimeSpotsRemaining > 0)
+                        <div class="billing-plan__founder-offer">
+                            <p class="billing-plan__availability">
+                                Only {{ $lifetimeSpotsRemaining }} founding
+                                {{ Str::plural('membership', $lifetimeSpotsRemaining) }}
+                                remaining
+                            </p>
+
+                            <p class="billing-plan__comparison">
+                                12 months of Monthly Pro:
+                                <s>$60 USD</s>
+                            </p>
+
+                            <p class="billing-plan__savings">
+                                Save $20, then never pay again.
+                            </p>
+                        </div>
                     @endif
 
                     @unless ($hasLifetimePro)
@@ -134,12 +165,20 @@
                                     @csrf
 
                                     <button class="button" type="submit">
-                                        Choose Lifetime Pro
+                                        Choose Founding Lifetime Pro
                                     </button>
                                 </form>
+                            @elseif ($lifetimeSpotsRemaining === 0)
+                                <p class="billing-plan__status">
+                                    Founding Lifetime is sold out.
+                                </p>
                             @elseif ($hasMonthlyPro)
                                 <p class="billing-plan__status">
                                     Available after your monthly subscription ends.
+                                </p>
+                            @else
+                                <p class="billing-plan__status">
+                                    Unavailable while Pro access is active.
                                 </p>
                             @endif
                         </div>

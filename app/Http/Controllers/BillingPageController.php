@@ -3,16 +3,23 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Services\Billing\ReserveLifetimeCheckoutSlot;
+use Carbon\CarbonImmutable;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
-use Carbon\CarbonImmutable;
 
 class BillingPageController extends Controller
 {
-    public function __invoke(Request $request): View
-    {
+    public function __invoke(
+        Request $request,
+        ReserveLifetimeCheckoutSlot $reserveLifetimeSlot
+    ): View {
+
         /** @var User $user */
         $user = $request->user();
+
+        $lifetimeLimit = (int) config('billing.pro.lifetime_limit', 50);
+        $lifetimeSpotsRemaining = $reserveLifetimeSlot->remaining();
 
         $hasLifetimePro = $user->hasLifetimePro();
         $hasMonthlyPro = $user->subscribed('pro');
@@ -55,8 +62,7 @@ class BillingPageController extends Controller
 
             $monthlySubscription !== null => [
                 'status' => 'active',
-                'detail' =>
-                    'Your subscription renews automatically until cancelled.',
+                'detail' => 'Your subscription renews automatically until cancelled.',
             ],
 
             default => null,
@@ -66,7 +72,8 @@ class BillingPageController extends Controller
             && ! $hasMonthlyPro
             && ! $user->isPro();
 
-        $canPurchaseLifetime = ! $hasLifetimePro
+        $canPurchaseLifetime = $lifetimeSpotsRemaining > 0
+            && ! $hasLifetimePro
             && ! $hasMonthlyPro
             && ! $user->isPro();
 
@@ -156,16 +163,18 @@ class BillingPageController extends Controller
         };
 
         return view('billing.index', [
-            'user' => $user,
-            'billingState' => $billingState,
-            'hasLifetimePro' => $hasLifetimePro,
-            'hasMonthlyPro' => $hasMonthlyPro,
-            'canPurchaseMonthly' => $canPurchaseMonthly,
-            'canPurchaseLifetime' => $canPurchaseLifetime,
-            'checkoutNotice' => $checkoutNotice,
-            'monthlyManagement' => $monthlyManagement,
-            'monthlyDisplayPrice' => config('billing.pro.monthly_display_price'),
-            'lifetimeDisplayPrice' => config('billing.pro.lifetime_display_price'),
+            'user'                   => $user,
+            'billingState'           => $billingState,
+            'hasLifetimePro'         => $hasLifetimePro,
+            'hasMonthlyPro'          => $hasMonthlyPro,
+            'canPurchaseMonthly'     => $canPurchaseMonthly,
+            'canPurchaseLifetime'    => $canPurchaseLifetime,
+            'checkoutNotice'         => $checkoutNotice,
+            'monthlyManagement'      => $monthlyManagement,
+            'lifetimeLimit'          => $lifetimeLimit,
+            'lifetimeSpotsRemaining' => $lifetimeSpotsRemaining,
+            'monthlyDisplayPrice'    => config('billing.pro.monthly_display_price'),
+            'lifetimeDisplayPrice'   => config('billing.pro.lifetime_display_price'),
         ]);
     }
 }

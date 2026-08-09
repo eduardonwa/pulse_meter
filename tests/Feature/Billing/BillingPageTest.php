@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Billing;
 
+use App\Models\LifetimeCheckoutReservation;
 use App\Models\TrialEntitlement;
 use App\Models\User;
 use App\Services\Plans\GrantLifetimePro;
@@ -146,7 +147,7 @@ class BillingPageTest extends TestCase
             ->get(route('billing.index'))
             ->assertOk()
             ->assertSeeText('Choose Monthly Pro')
-            ->assertSeeText('Choose Lifetime Pro')
+            ->assertSeeText('Choose Founding Lifetime Pro')
             ->assertSee(
                 'action="'.
                     route('billing.pro.monthly.checkout').
@@ -171,7 +172,7 @@ class BillingPageTest extends TestCase
             ->get(route('billing.index'))
             ->assertOk()
             ->assertSeeText('Choose Monthly Pro')
-            ->assertSeeText('Choose Lifetime Pro');
+            ->assertSeeText('Choose Founding Lifetime Pro');
     }
 
     public function test_monthly_user_cannot_start_another_purchase(): void
@@ -185,7 +186,7 @@ class BillingPageTest extends TestCase
                 'Available after your monthly subscription ends.'
             )
             ->assertDontSeeText('Choose Monthly Pro')
-            ->assertDontSeeText('Choose Lifetime Pro')
+            ->assertDontSeeText('Choose Founding Lifetime Pro')
             ->assertDontSee(
                 'action="'.
                     route('billing.pro.monthly.checkout').
@@ -215,7 +216,7 @@ class BillingPageTest extends TestCase
             ->get(route('billing.index'))
             ->assertOk()
             ->assertDontSeeText('Choose Monthly Pro')
-            ->assertDontSeeText('Choose Lifetime Pro')
+            ->assertDontSeeText('Choose Founding Lifetime Pro')
             ->assertDontSee(
                 'action="'.
                     route('billing.pro.monthly.checkout').
@@ -380,6 +381,70 @@ class BillingPageTest extends TestCase
             )
             ->assertDontSeeText(
                 'Your subscription renews automatically until cancelled.'
+            );
+    }
+
+    public function test_free_user_sees_founder_spots_and_savings(): void
+    {
+        config()->set(
+            'billing.pro.lifetime_limit',
+            50
+        );
+
+        $user = $this->createFreeUser();
+
+        $this->actingAs($user)
+            ->get(route('billing.index'))
+            ->assertOk()
+            ->assertSeeText(
+                'Only 50 founding memberships remaining'
+            )
+            ->assertSeeText(
+                '12 months of Monthly Pro: $60 USD'
+            )
+            ->assertSeeText(
+                'Save $20, then never pay again.'
+            )
+            ->assertSeeText(
+                'Choose Founding Lifetime Pro'
+            );
+    }
+
+    public function test_sold_out_lifetime_hides_checkout(): void
+    {
+        config()->set(
+            'billing.pro.lifetime_limit',
+            1
+        );
+
+        $buyer = $this->createFreeUser();
+        $visitor = $this->createFreeUser();
+
+        LifetimeCheckoutReservation::query()->create([
+            'user_id' => $buyer->getKey(),
+            'slot_number' => 1,
+            'token' =>
+                '11111111-1111-4111-8111-111111111111',
+            'stripe_checkout_session_id' =>
+                'cs_sold_out_lifetime',
+            'reserved_until' => now()->addMinutes(40),
+            'completed_at' => now(),
+        ]);
+
+        $this->actingAs($visitor)
+            ->get(route('billing.index'))
+            ->assertOk()
+            ->assertSeeText(
+                'Founding Lifetime is sold out.'
+            )
+            ->assertDontSeeText(
+                'Choose Founding Lifetime Pro'
+            )
+            ->assertDontSee(
+                'action="'.
+                    route('billing.pro.lifetime.checkout').
+                '"',
+                false
             );
     }
 

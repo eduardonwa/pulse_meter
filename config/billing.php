@@ -17,5 +17,9 @@ return [
         'lifetime_display_price' => env(
             'DORELOG_PRO_LIFETIME_DISPLAY_PRICE'
         ),
+
+        'lifetime_limit' => (int) env(
+            'DORELOG_PRO_LIFETIME_LIMIT', 50
+        )
     ],
 ];

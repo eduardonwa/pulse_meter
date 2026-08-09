@@ -44,6 +44,6 @@ class AccountAccessTest extends TestCase
         $response
             ->assertOk()
             ->assertSeeText('Verify your email')
-            ->assertSeeText('Send another verification email');
+            ->assertSeeText('Resend email');
     }
 }

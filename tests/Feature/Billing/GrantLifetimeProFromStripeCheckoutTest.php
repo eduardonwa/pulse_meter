@@ -3,6 +3,7 @@
 namespace Tests\Feature\Billing;
 
 use App\Listeners\GrantLifetimeProFromStripeCheckout;
+use App\Models\LifetimeCheckoutReservation;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Cashier\Events\WebhookReceived;
@@ -23,9 +24,17 @@ class GrantLifetimeProFromStripeCheckoutTest extends TestCase
             'plan' => 'free',
         ]);
 
-        $user->forceFill([
-            'stripe_id' => 'cus_lifetime_user',
-        ])->save();
+        $user->forceFill(['stripe_id' => 'cus_lifetime_user',])->save();
+
+        $reservation = LifetimeCheckoutReservation::query()
+            ->create([
+                'user_id'                    => $user->getKey(),
+                'slot_number'                => 1,
+                'token'                      => '11111111-1111-4111-8111-111111111111',
+                'stripe_checkout_session_id' => 'cs_lifetime_paid',
+                'reserved_until'             => now()->addMinutes(40),
+                'completed_at'               => null,
+            ]);
 
         app(
             GrantLifetimeProFromStripeCheckout::class
@@ -34,19 +43,17 @@ class GrantLifetimeProFromStripeCheckoutTest extends TestCase
                 'type' => 'checkout.session.completed',
                 'data' => [
                     'object' => [
-                        'id' => 'cs_lifetime_paid',
-                        'mode' => 'payment',
+                        'id'             => 'cs_lifetime_paid',
+                        'mode'           => 'payment',
                         'payment_status' => 'paid',
-                        'customer' => 'cus_lifetime_user',
-                        'payment_intent' =>
-                            'pi_lifetime_paid',
+                        'customer'       => 'cus_lifetime_user',
+                        'payment_intent' =>'pi_lifetime_paid',
                         'metadata' => [
-                            'dorelog_user_id' =>
-                                (string) $user->getKey(),
-                            'dorelog_purchase' =>
-                                'pro_lifetime',
-                            'dorelog_price_id' =>
-                                'price_dorelog_lifetime',
+                            'dorelog_user_id'  => (string) $user->getKey(),
+                            'dorelog_purchase' => 'pro_lifetime',
+                            'dorelog_price_id' => 'price_dorelog_lifetime',
+                            'dorelog_lifetime_reservation' => $reservation->token,
+                            'dorelog_lifetime_slot' => (string) $reservation->slot_number,
                         ],
                     ],
                 ],
@@ -72,6 +79,10 @@ class GrantLifetimeProFromStripeCheckoutTest extends TestCase
             $user
                 ->lifetimeEntitlement
                 ->stripe_checkout_session_id
+        );
+
+        $this->assertNotNull(
+            $reservation->refresh()->completed_at
         );
     }
 

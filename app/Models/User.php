@@ -95,6 +95,24 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
         return $this->isPro() || $this->hasActiveTrial();
     }
 
+    public function lifetimeEntitlement(): HasOne
+    {
+        return $this->hasOne(LifetimeEntitlement::class);
+    }
+
+    public function lifetimePurchases(): HasMany
+    {
+        return $this->hasMany(LifetimePurchase::class);
+    }
+
+    public function hasLifetimePro(): bool
+    {
+        return $this
+            ->lifetimeEntitlement()
+            ->whereNull('revoked_at')
+            ->exists();
+    }
+
     /* PLAN LIMITS */
     public function exerciseLimit(): int
     {
@@ -138,23 +156,5 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
 
         return $limit !== null
             && $this->practicePlaylists()->count() >= $limit;
-    }
-
-    public function lifetimeEntitlement(): HasOne
-    {
-        return $this->hasOne(LifetimeEntitlement::class);
-    }
-
-    public function lifetimePurchases(): HasMany
-    {
-        return $this->hasMany(LifetimePurchase::class);
-    }
-
-    public function hasLifetimePro(): bool
-    {
-        return $this
-            ->lifetimeEntitlement()
-            ->whereNull('revoked_at')
-            ->exists();
     }
 }
