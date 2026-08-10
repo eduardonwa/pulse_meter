@@ -12,9 +12,16 @@ use App\Http\Controllers\PulsePresetController;
 use App\Http\Controllers\TrialController;
 use App\Http\Controllers\WelcomeController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Auth\LoginController;
 
 Route::get('/', [WelcomeController::class, 'index'])
     ->name('welcome');
+
+Route::get('/auth/google', [LoginController::class, 'redirectToProvider'])
+    ->name('auth.google');
+
+Route::get('/auth/google/callback', [LoginController::class, 'handleProviderCallback'])
+    ->name('auth.google.callback');
 
 Route::post('/analytics/events', ProductEventController::class)
     ->middleware('throttle:product-analytics')
@@ -28,15 +35,6 @@ Route::view('/account/profile', 'profile.edit')
 Route::get('/account/billing', BillingPageController::class)
     ->middleware(['auth', 'verified'])
     ->name('billing.index');
-
-/*
- * Enlaces antiguos conservados temporalmente.
- */
-Route::redirect('/profile', '/account/profile')
-    ->middleware('auth');
-
-Route::redirect('/billing', '/account/billing')
-    ->middleware(['auth', 'verified']);
 
 // CHECKOUT
 Route::post(

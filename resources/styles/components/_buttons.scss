@@ -261,4 +261,23 @@
 
     svg { width: 20px; }
   }
+
+  &[data-type="google-auth"] {
+    background: $color-neutral-000;
+    color: $color-neutral-900;
+    display: flex;
+    align-items: center;
+    gap: $size-4;
+    border: 1px solid transparent;
+
+    &:hover {
+      background: $color-neutral-50;
+      border: 1px solid hsl(var(--neutral-950) / .2);
+    }
+
+    svg {
+      width: 24px;
+      height: 24px;
+    }
+  }
 }

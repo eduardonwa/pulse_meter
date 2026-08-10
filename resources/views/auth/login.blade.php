@@ -53,6 +53,11 @@
             <button class="button" type="submit">
                 Log in
             </button>
+
+            <a class="button" data-type="google-auth" href="auth/google">
+                <x-ui.google-icon />
+                Continue with Google
+            </a>
         </form>
 
         @if (Route::has('register'))

@@ -15,6 +15,11 @@
 
             <h1 class="heading-3">Create your DoreLog account</h1>
 
+            <a class="button" data-type="google-auth" href="auth/google">
+                <x-ui.google-icon />
+                Sign up with Google
+            </a>
+
             <div class="form-group">
                 <label for="name">Username</label>
     
