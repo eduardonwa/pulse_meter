@@ -38,6 +38,12 @@
         border: 1px solid $color-primary-400;
     }
 
+    &--error {
+        background: oklch(57.7% 0.245 27.325);
+        color: oklch(97.1% 0.013 17.38);
+        border-color: oklch(70.4% 0.191 22.216);
+    }
+
     &--group-beat-a {
         --group-border-color: #{$color-primary-400};
 

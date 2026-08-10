@@ -163,7 +163,14 @@ input[type="checkbox"] {
 /* AUTH */
 .auth-form {
   width: min(100%, 30rem);
-    
+
+  &--top {
+    @include mq(large) {
+      margin-top: $size-8;
+      margin-bottom: auto;
+    }
+  }
+
   .heading-3 {
     text-align: center;
   }
@@ -175,7 +182,7 @@ input[type="checkbox"] {
 }
 
 .profile-form {
-    width: min(100%, 45rem);
+  width: min(100%, 45rem);
 }
 
 /* AUTH SEPARATOR */

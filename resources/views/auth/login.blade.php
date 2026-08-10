@@ -64,6 +64,10 @@
             <button class="button" type="submit">
                 Log in
             </button>
+            
+            <a class="text-center" href="{{ route('password.request') }}">
+                Forgot your password?
+            </a>
         </form>
 
         @if (Route::has('register'))
