@@ -44,16 +44,16 @@ class AccountNavigationTest extends TestCase
             );
     }
 
-    public function test_old_profile_url_redirects_to_account(): void
+    public function test_old_profile_url_returns_not_found(): void
     {
         $user = User::factory()->create();
 
         $this->actingAs($user)
             ->get('/profile')
-            ->assertRedirect(route('profile.edit'));
+            ->assertNotFound();
     }
 
-    public function test_old_billing_url_redirects_to_account(): void
+    public function test_old_billing_url_returns_not_found(): void
     {
         $user = User::factory()->create([
             'email_verified_at' => now(),
@@ -61,6 +61,6 @@ class AccountNavigationTest extends TestCase
 
         $this->actingAs($user)
             ->get('/billing')
-            ->assertRedirect(route('billing.index'));
+            ->assertNotFound();
     }
 }
