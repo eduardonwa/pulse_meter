@@ -15,7 +15,7 @@
 
             <h1 class="heading-3">Create your DoreLog account</h1>
 
-            <a class="button" data-type="google-auth" href="auth/google">
+            <a class="button" data-type="google-auth" href="{{ route('auth.google') }}">
                 <x-ui.google-icon />
                 Continue with Google
             </a>
