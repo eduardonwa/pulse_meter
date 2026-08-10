@@ -17,8 +17,14 @@
 
             <a class="button" data-type="google-auth" href="auth/google">
                 <x-ui.google-icon />
-                Sign up with Google
+                Continue with Google
             </a>
+
+            <div class="auth-separator">
+                <hr>
+                <span>or</span>
+                <hr>
+            </div>
 
             <div class="form-group">
                 <label for="name">Username</label>
