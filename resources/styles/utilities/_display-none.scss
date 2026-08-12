@@ -1,0 +1,33 @@
+@use "../abstracts/" as *;
+
+.display-none {
+    &--on-mobile {
+        @media (max-width: 767px) {
+            display: none !important;
+        }
+    }
+
+    &--on-tablet {
+        @media (min-width: 768px) and (max-width: 1279px) {
+            display: none !important;
+        }
+    }
+
+    &--on-desktop {
+        @media (min-width: 1280px) {
+            display: none !important;
+        }
+    }
+
+    &--until-tablet {
+        @media (max-width: 767px) {
+            display: none !important;
+        }
+    }
+
+    &--until-desktop {
+        @media (max-width: 1279px) {
+            display: none !important;
+        }
+    }
+}

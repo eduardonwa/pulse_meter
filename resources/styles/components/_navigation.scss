@@ -12,7 +12,7 @@
 
   position: relative;
 
-  .button {
+  .button.toggle-btn {
     color: $color-neutral-50;
   }
 
@@ -46,6 +46,40 @@
 
     &--lifetime {
       background-color: $color-extra-400;
+    }
+  }
+
+  .horizontal-nav {
+    display: flex;
+    align-items: center;
+
+    a {
+      width: fit-content;
+      border: 1px solid transparent;
+      text-decoration: none;
+      transition: background-color 150ms ease, color 150ms ease;
+
+      &:hover {
+        color: $color-primary-400;
+      }
+
+      svg {
+        display: none;
+      }
+    }
+
+    .links {
+      display: flex;
+      align-items: center;
+      gap: $size-4;
+    }
+
+    .auth {
+      margin-left: clamp($size-10, 6vw, $size-15);
+
+      display: flex;
+      align-items: center;
+      gap: $size-4;
     }
   }
 }

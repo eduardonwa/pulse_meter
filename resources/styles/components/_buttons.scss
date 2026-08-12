@@ -111,7 +111,6 @@
     justify-content: center;
     gap: $size-2;
     padding: $size-2;
-    font-size: $font-size-300;
     color: $color-neutral-100;
 
     &:hover {
@@ -119,8 +118,8 @@
     }
 
     svg {
-      width: 24px;
-      height: 24px;
+      width: 20px;
+      height: 20px;
     }
   }
 

@@ -1,5 +1,5 @@
 <header class="site-header" x-data="{ sidebar: false }">
-    <div class="site-header__inner">
+    <div class="site-header__inner container" data-type="site-header">
         <a href="/" class="wordmark" wire:navigate>dorelog</a>
 
         <nav class="nav">
@@ -23,7 +23,7 @@
             @endauth
 
             @guest
-                <button class="button"
+                <button class="button toggle-btn display-none--on-desktop"
                     type="button"
                     data-type="icon"
                     :aria-expanded="sidebar"
@@ -32,6 +32,31 @@
                 >
                     <x-heroicon-o-bars-3-center-left />
                 </button>
+
+                <div class="horizontal-nav display-none--until-desktop">
+                    <div class="links">
+                        <a class="button" data-type="icon" href="{{ route('blog.index', ['locale' => app()->getLocale()]) }}">
+                            <x-heroicon-o-user-group />
+                            Blog
+                        </a>
+                    </div>
+
+                    <div class="auth">
+                        <a class="button" data-type="icon" href="{{ route('login') }}" wire:navigate>
+                            <x-heroicon-o-user />
+    
+                            <span>Log in</span>
+                        </a>
+                        
+                        @if (Route::has('register'))
+                            <a class="button" data-type="icon" href="{{ route('register') }}" wire:navigate>
+                                <x-heroicon-o-cursor-arrow-rays />
+    
+                                <span>Register</span>
+                            </a>
+                        @endif
+                    </div>
+                </div>
             @endguest
         </nav>
     </div>
