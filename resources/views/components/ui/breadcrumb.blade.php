@@ -6,11 +6,7 @@
     </li>
 
     <li>
-        <a
-            href="{{ route('blog.index', [
-                'locale' => app()->getLocale(),
-            ]) }}"
-        >
+        <a href="{{ route('blog.index', ['locale' => app()->getLocale()]) }}">
             Blog
         </a>
     </li>
