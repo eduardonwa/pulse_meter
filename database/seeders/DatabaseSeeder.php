@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use Database\Seeders\AdminUserFixtureSeeder;
 use Database\Seeders\HomeUserSeeder;
+use Database\Seeders\PostSeeder;
 use Database\Seeders\PulsePresetSeeder;
 use Database\Seeders\TrafficLogFixtureSeeder;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -24,6 +25,7 @@ class DatabaseSeeder extends Seeder
             AdminUserFixtureSeeder::class,
             ProductEventFixtureSeeder::class,
             TrafficLogFixtureSeeder::class,
+            PostSeeder::class
         ]);
     }
 }

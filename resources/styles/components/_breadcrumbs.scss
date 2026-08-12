@@ -1,0 +1,56 @@
+@use "../abstracts/" as *;
+
+.breadcrumbs {
+    margin-block: $size-8;
+    
+    display: flex;
+    justify-content: flex-end;
+    
+    font-size: $font-size-300;
+    color: $color-neutral-600;
+
+    ol {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: $size-2;
+
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    li {
+        display: flex;
+        align-items: center;
+        gap: $size-2;
+
+        &:not(:last-child)::after {
+            content: "/";
+            color: var(--neutral-400);
+        }
+    }
+
+    a {
+        color: inherit;
+        text-decoration: none;
+
+        &:hover {
+            color: var(--primary-600);
+            text-decoration: underline;
+        }
+    }
+
+    [aria-current="page"] {
+        min-width: 0;
+        color: $color-primary-700;
+
+        span {
+            display: block;
+            max-width: 35ch;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+    }
+}

@@ -20,6 +20,10 @@
   --max-width: 100%;
 }
 
+.container[data-type="blog-post"] {
+    --container-max-width: 65ch;
+}
+
 .container[data-spacing="none"] {
   --container-margin: 0px;
 }

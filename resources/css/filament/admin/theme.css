@@ -4,3 +4,88 @@
 
 @source '../../../../app/Filament/**/*';
 @source '../../../../resources/views/filament/**/*';
+
+.youtube-embed {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+}
+
+.youtube-embed iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+}
+
+.youtube-preview {
+    width: 610px;
+    height: auto;
+}
+
+/* INPUTS */
+.fi-fo-text-input.fi-input-wrp,
+.fi-fo-textarea.fi-input-wrp {
+    background: transparent;
+}
+
+/* TABS SETTINGS | SEO */
+nav.fi-tabs[aria-label='Post settings'] {
+    background: transparent;
+    padding: .5rem;
+    width: 100%;
+}
+
+/* TOGGLE */
+.visibility-toggle-field {
+    display: flex;
+    justify-content: flex-end;
+}
+
+/* BODY */
+.post-body-editor {
+    background: transparent;
+}
+
+.post-body-editor
+    > .fi-input-wrp-content-ctn
+    > [role="group"] {
+    display: flex;
+    flex-direction: column-reverse;
+}
+
+.post-body-editor .fi-fo-rich-editor-toolbar {
+    border-block-end-width: 0;
+    border-block-start-style: var(--tw-border-style);
+    border-block-start-width: 1px;
+    
+    flex-wrap: nowrap;
+    
+    overflow-x: auto;
+    overflow-y: hidden;
+    
+    scrollbar-width: none;
+
+    gap: 0.25rem;
+}
+
+.post-body-editor .fi-fo-rich-editor-toolbar button {
+    border-radius: 0.375rem;
+    
+    color: var(--gray-400);
+    
+    padding: .2rem;
+    margin-inline: .1rem;
+}
+
+.post-body-editor [contenteditable="true"] {
+    height: clamp(20rem, 55vh, 38rem);
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--primary-500) transparent;
+}
+
+/* IMG WRAP */
+.img-wrapper {
+    
+}

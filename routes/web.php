@@ -1,10 +1,12 @@
 <?php
 
+use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Billing\BillingPortalController;
 use App\Http\Controllers\Billing\LifetimeProCheckoutController;
 use App\Http\Controllers\Billing\MonthlyProCheckoutController;
 use App\Http\Controllers\BillingPageController;
 use App\Http\Controllers\LocalRoutineImportController;
+use App\Http\Controllers\PostController;
 use App\Http\Controllers\PracticeRoutineController;
 use App\Http\Controllers\PracticeRoutineStepController;
 use App\Http\Controllers\ProductEventController;
@@ -12,7 +14,6 @@ use App\Http\Controllers\PulsePresetController;
 use App\Http\Controllers\TrialController;
 use App\Http\Controllers\WelcomeController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Auth\LoginController;
 
 Route::get('/', [WelcomeController::class, 'index'])
     ->name('welcome');
@@ -22,6 +23,20 @@ Route::get('/auth/google', [LoginController::class, 'redirectToProvider'])
 
 Route::get('/auth/google/callback', [LoginController::class, 'handleProviderCallback'])
     ->name('auth.google.callback');
+
+/* BLOG */
+Route::redirect('/blog', '/en/blog');
+
+Route::prefix('{locale}')
+    ->whereIn('locale', ['es', 'en'])
+    ->middleware('setLocale')
+    ->group(function () {
+        Route::get('/blog', [PostController::class, 'index'])
+            ->name('blog.index');
+
+        Route::get('/blog/{slug}', [PostController::class, 'show'])
+            ->name('blog.show');
+    });
 
 Route::post('/analytics/events', ProductEventController::class)
     ->middleware('throttle:product-analytics')

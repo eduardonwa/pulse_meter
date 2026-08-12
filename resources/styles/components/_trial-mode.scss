@@ -1,19 +1,19 @@
 @use "../abstracts" as *;
 
 .enable-trial {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
-  .badge {
-    padding-inline: $size-14;
-    cursor: pointer;
+    .badge {
+        padding-inline: $size-14;
+        cursor: pointer;
 
-    &:hover {
-      color: $color-secondary-400;
-      text-decoration: underline;
+        &:hover {
+        color: $color-secondary-400;
+        text-decoration: underline;
+        }
     }
-  }
 }
 
 .trial-mode-status {

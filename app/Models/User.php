@@ -3,10 +3,12 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Models\Post;
 use App\Models\PracticePlaylist;
 use App\Models\PracticeRoutine;
 use App\Models\PulsePreset;
 use App\Models\TrialEntitlement;
+use App\Services\TrialMode\TrialAccess;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
@@ -17,7 +19,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use App\Services\TrialMode\TrialAccess;
 use Laravel\Cashier\Billable;
 
 #[Fillable(['name', 'email', 'password'])]
@@ -68,6 +69,11 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
     public function practicePlaylists(): HasMany
     {
         return $this->hasMany(PracticePlaylist::class);
+    }
+
+    public function posts(): HasMany
+    {
+        return $this->hasMany(Post::class);
     }
 
     // ADMIN

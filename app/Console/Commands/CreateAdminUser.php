@@ -9,7 +9,7 @@ use Illuminate\Support\Str;
 
 class CreateAdminUser extends Command
 {
-    protected $signature = 'user:create-admin
+    protected $signature = 'user:make-admin
         {email : User email}
         {--name= : User name}
         {--password= : User password}';

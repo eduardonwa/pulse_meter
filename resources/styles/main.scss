@@ -3,3 +3,9 @@
 @use "layout";
 @use "utilities";
 @use "vendor";
+
+@property --pattern-color {
+    syntax: "<color>";
+    initial-value: #f00;
+    inherits: true;
+}

@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
+use Symfony\Component\HtmlSanitizer\HtmlSanitizerConfig;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -17,7 +18,17 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->extend(
+            HtmlSanitizerConfig::class,
+            fn (HtmlSanitizerConfig $config): HtmlSanitizerConfig =>
+                $config->allowElement('iframe', [
+                    'src',
+                    'title',
+                    'loading',
+                    'allow',
+                    'allowfullscreen',
+                ]),
+        );
     }
 
     /**

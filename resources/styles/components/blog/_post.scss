@@ -1,0 +1,115 @@
+@use "../../abstracts" as *;
+
+@mixin styles {
+    align-items: start;
+
+    margin-block: $size-8 $size-10;
+    
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: $size-6;
+
+    @include mq(large) {
+        grid-template-columns: 1fr 2fr;
+    }
+
+    &__header {
+        align-self: stretch;
+        
+        padding-block-end: $size-4;
+        border-block-end: 2px solid hsl(var(--neutral-700) / .3);
+
+        @include mq(large) {
+            border-block-end: 2px solid hsl(var(--neutral-700) / .3);
+        }
+        
+        .info {
+            padding-block: $size-4;
+
+            display: flex;
+            gap: $size-2;
+
+            font-size: 14px;
+        }
+
+        .excerpt {
+            font-size: 15px;
+        }
+    }
+
+    .thumbnail {
+        display: block;
+        width: 100%;
+        height: auto;
+
+        @include mq(large) {
+            padding-block-end: $size-6;
+            border-block-end: 2px solid hsl(var(--neutral-700) / .3);
+        }
+    }
+
+    .table-of-contents {
+        padding-block-end: $size-4;
+        border-block-end: 2px solid hsl(var(--neutral-700) / .3);
+
+        @include mq(large) {
+            padding-block-end: 0;
+            border-block-end: 2px solid transparent;
+        }
+
+        .header {
+            margin-block-end: $size-2;
+            margin-left: auto;
+            font-size: $font-size-600;
+        }
+
+        .items {
+            margin-inline-start: $size-4;
+        }
+    }
+
+    &__body {
+        font-size: $font-size-400;
+        line-height: 1.7;
+
+        p + p {
+            margin-block-start: .3rem;
+        }
+
+        h2 { font-size: $font-size-700; }
+        h3 { font-size: $font-size-600; }
+
+        h2,
+        h3 {
+            scroll-margin-top: $size-8;
+            color: $color-neutral-800;
+        }
+
+        ul,
+        ol {
+            margin-block: $size-4;
+            margin-inline-start: $size-4;
+        }
+
+        p + h2 {
+            margin-block-start: $size-2;
+        }
+
+        .youtube-embed {
+            margin-block: $size-4;
+
+            width: 100%;
+            max-width: 60rem;
+            margin-inline: auto;
+            aspect-ratio: 16 / 9;
+            overflow: hidden;
+
+            iframe {
+                display: block;
+                width: 100%;
+                height: 100%;
+                border: 0;
+            }
+        }
+    }
+}
