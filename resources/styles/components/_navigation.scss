@@ -12,8 +12,8 @@
 
   position: relative;
 
-  .button.toggle-btn {
-    color: $color-neutral-50;
+  .button {
+    color: $color-neutral-100;
   }
 
   a {
@@ -60,7 +60,7 @@
       transition: background-color 150ms ease, color 150ms ease;
 
       &:hover {
-        color: $color-primary-400;
+        color: $color-primary-300;
       }
 
       svg {

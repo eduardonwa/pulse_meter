@@ -82,10 +82,7 @@
                             @elseif ($hasMonthlyPro)
                                 <div class="billing-plan__status">
                                     @if ($monthlyManagement)
-                                        <p
-                                            class="billing-plan__status-detail"
-                                            data-status="{{ $monthlyManagement['status'] }}"
-                                        >
+                                        <p class="billing-plan__status-detail" data-status="{{ $monthlyManagement['status'] }}" >
                                             {{ $monthlyManagement['detail'] }}
                                         </p>
                                     @endif

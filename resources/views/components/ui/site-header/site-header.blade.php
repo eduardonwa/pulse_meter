@@ -4,28 +4,44 @@
 
         <nav class="nav">
             @auth
-                <button class="button"
-                    data-type="icon-text"
-                    wire:navigate
+                {{-- Trigger mobile --}}
+                <button
+                    class="button toggle-btn display-none--on-desktop"
+                    data-type="icon"
+                    type="button"
                     :aria-expanded="sidebar"
                     aria-controls="sidebar"
                     @click="sidebar = !sidebar"
                 >
-                    @if ($user->hasLifetimePro())
-                        <x-heroicon-s-bolt class="pro-icon pro-icon--lifetime" />
-                    @elseif ($user->isPro())
-                        <x-heroicon-s-star class="pro-icon pro-icon--monthly" />
-                    @endif
-
-                    {{ $user->name }}
-                    <x-heroicon-m-chevron-down />
+                    <x-heroicon-o-bars-3-center-left />
                 </button>
+                
+                <x-ui.site-header.horizontal-bar>
+                    <x-slot:actions>
+                        <button class="button" data-type="icon-text" type="button"
+                            :aria-expanded="sidebar"
+                            aria-controls="sidebar"
+                            @click="sidebar = !sidebar"
+                        >
+                            @if ($user->hasLifetimePro())
+                                <x-heroicon-s-bolt class="pro-icon pro-icon--lifetime" />
+                            @elseif ($user->isPro())
+                                <x-heroicon-s-star class="pro-icon pro-icon--monthly" />
+                            @endif
+
+                            {{ $user->name }}
+                            <x-heroicon-m-chevron-down />
+                        </button>
+                    </x-slot:actions>
+                </x-ui.site-header.horizontal-bar>
             @endauth
 
             @guest
-                <button class="button toggle-btn display-none--on-desktop"
-                    type="button"
+                {{-- Trigger mobile --}}
+                <button
+                    class="button toggle-btn display-none--on-desktop"
                     data-type="icon"
+                    type="button"
                     :aria-expanded="sidebar"
                     aria-controls="sidebar"
                     @click="sidebar = !sidebar"
@@ -33,33 +49,22 @@
                     <x-heroicon-o-bars-3-center-left />
                 </button>
 
-                <div class="horizontal-nav display-none--until-desktop">
-                    <div class="links">
-                        <a class="button" data-type="icon" href="{{ route('blog.index', ['locale' => app()->getLocale()]) }}">
-                            <x-heroicon-o-user-group />
-                            Blog
+                <x-ui.site-header.horizontal-bar>
+                    <x-slot:actions>
+                        <a href="{{ route('login') }}" wire:navigate>
+                            Log in
                         </a>
-                    </div>
 
-                    <div class="auth">
-                        <a class="button" data-type="icon" href="{{ route('login') }}" wire:navigate>
-                            <x-heroicon-o-user />
-    
-                            <span>Log in</span>
-                        </a>
-                        
                         @if (Route::has('register'))
-                            <a class="button" data-type="icon" href="{{ route('register') }}" wire:navigate>
-                                <x-heroicon-o-cursor-arrow-rays />
-    
-                                <span>Register</span>
+                            <a href="{{ route('register') }}" wire:navigate>
+                                Register
                             </a>
                         @endif
-                    </div>
-                </div>
+                    </x-slot:actions>
+                </x-ui.site-header.horizontal-bar>
             @endguest
+
+            <x-ui.site-header.sidebar />
         </nav>
     </div>
-
-    <x-ui.site-header.sidebar />
 </header>

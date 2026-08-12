@@ -25,40 +25,45 @@
   }
   
   .sidebar {
-    position: absolute;
-    top: 100%;
+    position: fixed;
+    top: 84px;
     left: 0;
     right: 0;
-  
+    
+    width: 100%;
     min-height: calc(100dvh - 64px);
   
     z-index: 100;
     background: $color-neutral-800;
 
     @include mq(large) {
-      top: 64px;
+      position: absolute;
+      top: calc(100% + #{$size-2});
       left: auto;
-      right: 144px;
+      right: 0;
 
       width: max-content;
       min-width: 180px;
       max-width: 240px;
-
-      height: auto;
       min-height: 0;
+      height: auto;
 
       padding: $size-2;
       border-radius: $border-radius-2;
     }
 
     &__menu {
-      margin-block-start: $size-4;
+      margin-block: $size-4;
 
       display: flex;
       flex-direction: column;
 
       @include mq(large) {
-        margin-block-start: 0;
+        margin-block: 0;
+      }
+
+      a + a {
+        margin-block-start: $size-4;
       }
 
       .button {
@@ -71,6 +76,7 @@
         padding: 1.2rem;
         border-radius: 0;
         color: $color-neutral-100;
+        text-decoration: none;
         
         @include mq(large) {
           border-radius: $border-radius-1;
@@ -87,7 +93,12 @@
         border-block-start: 1px solid hsl(var(--neutral-300) / .5);
         padding-block: $size-4;
 
+        
         @include mq(large) {
+          .button {
+            margin-block-start: 0;
+          }
+          
           margin-block-start: $size-2;
           padding-block: $size-2 0;
         }

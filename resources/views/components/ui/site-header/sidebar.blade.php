@@ -20,17 +20,13 @@
                     <span>Register</span>
                 </a>
             @endif
-            <a class="button" data-type="icon" href="{{ route('blog.index', ['locale' => app()->getLocale()]) }}">
-                <x-heroicon-o-user-group />
-                Blog
-            </a>
         @endguest
 
         @auth
             <a class="button" data-type="icon" href="{{ route('profile.edit') }}">
                 <x-heroicon-o-user />
                 
-                <span>Account</span>
+                <span>My Account</span>
             </a>
 
             <form class="logout" method="POST" action="{{ route('logout') }}">
@@ -45,6 +41,11 @@
 
         {{-- links --}}
         <div class="links">
+            <a class="button display-none--on-desktop" data-type="icon" href="{{ route('blog.index', ['locale' => app()->getLocale()]) }}">
+                <x-heroicon-o-user-group />
+                Blog
+            </a>
+
             <a class="button" data-type="icon" href="mailto:{{ config('mail.support_address') }}">
                 <x-heroicon-o-lifebuoy />
 
