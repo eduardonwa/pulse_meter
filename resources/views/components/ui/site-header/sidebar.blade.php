@@ -23,20 +23,22 @@
         @endguest
 
         @auth
-            <a class="button" data-type="icon" href="{{ route('profile.edit') }}">
-                <x-heroicon-o-user />
-                
-                <span>My Account</span>
-            </a>
-
-            <form class="logout" method="POST" action="{{ route('logout') }}">
-                @csrf
-                <button class="button" data-type="icon" type="submit">
-                    <x-heroicon-o-arrow-right-start-on-rectangle />
+            <div class="auth">
+                <a class="button" data-type="icon" href="{{ route('profile.edit') }}">
+                    <x-heroicon-o-user />
                     
-                    Log out
-                </button>
-            </form>
+                    <span>My Account</span>
+                </a>
+    
+                <form class="logout" method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <button class="button" data-type="icon" type="submit">
+                        <x-heroicon-o-arrow-right-start-on-rectangle />
+                        
+                        Log out
+                    </button>
+                </form>
+            </div>
         @endauth
 
         {{-- links --}}

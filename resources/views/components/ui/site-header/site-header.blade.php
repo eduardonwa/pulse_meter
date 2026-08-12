@@ -5,17 +5,24 @@
         <nav class="nav">
             @auth
                 {{-- Trigger mobile --}}
-                <button
-                    class="button toggle-btn display-none--on-desktop"
-                    data-type="icon"
-                    type="button"
-                    :aria-expanded="sidebar"
-                    aria-controls="sidebar"
-                    @click="sidebar = !sidebar"
-                >
-                    <x-heroicon-o-bars-3-center-left />
-                </button>
+                <div class="display-none--on-desktop">
+                    <button class="button" data-type="icon-text" type="button"
+                        :aria-expanded="sidebar"
+                        aria-controls="sidebar"
+                        @click="sidebar = !sidebar"
+                    >
+                        @if ($user->hasLifetimePro())
+                            <x-heroicon-s-bolt class="pro-icon pro-icon--lifetime" />
+                        @elseif ($user->isPro())
+                            <x-heroicon-s-star class="pro-icon pro-icon--monthly" />
+                        @endif
+
+                        {{ $user->name }}
+                        <x-heroicon-m-chevron-down />
+                    </button>
+                </div>
                 
+                {{-- Desktop trigger --}}
                 <x-ui.site-header.horizontal-bar>
                     <x-slot:actions>
                         <button class="button" data-type="icon-text" type="button"
@@ -63,7 +70,7 @@
                     </x-slot:actions>
                 </x-ui.site-header.horizontal-bar>
             @endguest
-
+            
             <x-ui.site-header.sidebar />
         </nav>
     </div>
