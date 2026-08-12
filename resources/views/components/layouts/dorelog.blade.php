@@ -21,6 +21,11 @@
     <meta name="twitter:title" content="DoreLog - Save your drills. Keep your tempo.">
     <meta name="twitter:description" content="Save your exercises, BPMs, and practice routines so you can pick up exactly where you left off.">
     <meta name="twitter:image" content="https://dorelog.com/og-image.png">
+
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="manifest" href="/site.webmanifest">
     
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
