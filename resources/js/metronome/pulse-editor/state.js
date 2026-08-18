@@ -21,11 +21,11 @@ export function pulseState(pulsePresets = []) {
             },
             {
                 value: 2,
-                label: 'Eight notes — 1 &',
+                label: '1 &',
             },
             {
                 value: 4,
-                label: 'Sixteenth notes — 1 e & a',
+                label: '1 e & a',
             }
         ],
 

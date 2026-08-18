@@ -14,10 +14,21 @@
         display: grid;
         grid-template-columns: repeat(3, minmax(0, 1fr));
         grid-template-areas: 
-            "meter   current-meter grouping"
-            "pattern pattern       pattern"
-            "cue     structure     playback"
-            "actions actions       actions";
+            "pattern     pattern     pattern"
+            "meter       meter       current-meter"
+            "grouping    structure   subdivision"
+            "cue         cue         cue"
+            "playback    playback    playback"
+            "actions     actions     actions";
+
+        @include mq(medium) {
+            grid-template-areas: 
+                "pattern     pattern        pattern"
+                "meter       current-meter  grouping"
+                "cue         structure      playback"
+                "subdivision subdivision    subdivision"
+                "actions     actions        actions";
+        }
 
         > div {
             padding: $size-4;
@@ -52,6 +63,12 @@
                             
             display: flex;
             flex-direction: column;
+
+            border-inline-end: 1px solid transparent;
+
+            @include mq(medium) {
+                border-inline-end: var(--border);
+            }
 
             .meter-control {
                 display: flex;
@@ -117,11 +134,11 @@
                     background-color 100ms ease,
                     border-color 100ms ease;
 
-                &.is-active {
-                    transform: scale(1.08);
-                    background-color: hsl(var(--neutral-900) / .08);
-                    border-color: hsl(var(--neutral-950) / .5);
-                }
+                    &.is-active {
+                        transform: scale(1.08);
+                        background-color: hsl(var(--neutral-900) / .08);
+                        border-color: hsl(var(--neutral-950) / .5);
+                    }
 
                 small {
                     opacity: .7;
@@ -167,6 +184,23 @@
                 }
             }
         }
+
+        &__subdivision {
+            grid-area: subdivision;
+
+            border-block-end: var(--border);
+            border-inline-end: 1px solid transparent;
+           
+            .subdivision-selector {
+                width: 100%;
+            }
+
+            @include mq(medium) {
+                .subdivision-selector {
+                    width: fit-content;
+                }
+            }
+        }
     
         &__rhythm-tools {
             grid-area: cue;
@@ -177,6 +211,12 @@
             flex-direction: column;
             
             flex-wrap: wrap;
+
+            border-inline-end: 1px solid transparent;
+
+            @include mq(medium) {
+                border-inline-end: var(--border);
+            }
 
             .tool-group {
                 display: flex;
@@ -238,7 +278,7 @@
 
         &__actions {
             grid-area: actions;
-            margin-left: auto;
+            margin-inline: auto;
             display: flex;
             align-items: center;
             gap: $size-4;
