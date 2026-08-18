@@ -11,6 +11,7 @@ use App\Http\Controllers\PracticeRoutineController;
 use App\Http\Controllers\PracticeRoutineStepController;
 use App\Http\Controllers\ProductEventController;
 use App\Http\Controllers\PulsePresetController;
+use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\TrialController;
 use App\Http\Controllers\WelcomeController;
 use Illuminate\Support\Facades\Route;
@@ -20,6 +21,9 @@ Route::get('/', [WelcomeController::class, 'index'])
 
 Route::get('/auth/google', [LoginController::class, 'redirectToProvider'])
     ->name('auth.google');
+
+Route::get('/sitemap.xml', [SitemapController::class, 'index'])
+    ->name('sitemap');
 
 Route::get('/auth/google/callback', [LoginController::class, 'handleProviderCallback'])
     ->name('auth.google.callback');
