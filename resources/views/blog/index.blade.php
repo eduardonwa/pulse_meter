@@ -26,9 +26,9 @@
             </div>
 
             <h1 class="heading-3">Dorelog Blog</h1>
-            <p class="fs-300">
-                Useful ideas, practical examples, and the occasional recommendation. Open to relevant partnerships and sponsorships. <a href="/contact">Contact me</a>.
-            </p>
+            <div class="fs-300">
+                {{ __('blog.subheader') }} <a href="">{{ __('blog.contact_link') }}</a>
+            </div>
         </div>
         
         @foreach ($posts as $post)
