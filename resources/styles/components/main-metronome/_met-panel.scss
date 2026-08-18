@@ -107,7 +107,7 @@
                     
                     .button[data-type="icon-text"] {
                         padding: $size-3;
-                        border: 1px solid $color-neutral-900;
+                        border: 1px solid hsl(var(--neutral-950) / 0.4);
                     }
 
                     @include mq(large) {

@@ -8,10 +8,10 @@
     .badge {
         padding-inline: $size-14;
         cursor: pointer;
+        transition: 150ms box-shadow ease-in;
 
         &:hover {
-        color: $color-secondary-400;
-        text-decoration: underline;
+            box-shadow: $box-shadow-2;
         }
     }
 }
@@ -34,8 +34,15 @@
     }
 
     .button[data-type="icon-text"] {
-        padding: $size-1;
-        border: 1px solid hsl(var(--neutral-400));
+        padding: $size-3;
+        background: $color-neutral-900;
+        color: $color-neutral-100;
+
+        transition: background-color 150ms ease-in;
+
+        &:hover {
+            background-color: $color-neutral-600;
+        }
     }
 
     /* COMPLETED */

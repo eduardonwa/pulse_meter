@@ -12,6 +12,23 @@
 
         border-radius: $border-radius-1;
         padding: $size-2;
+
+        .button {
+            padding: $size-2;
+            background: hsl(var(--neutral-400) / .1);
+            border: 1px solid $color-neutral-400;
+            color: $color-neutral-900;
+
+            &:hover {
+                background-color: hsl(var(--neutral-400) / .3);
+            }
+        }
+    }
+
+    &__back-icon {
+        width: 18px;
+        height: 18px;
+        flex: 0 0 18px;
     }
 }
 
@@ -66,7 +83,7 @@
     position: fixed;
     z-index: 100;
     inset: 0;
-
+    
     pointer-events: none;
 
     margin-inline: $size-3;
@@ -85,13 +102,17 @@
         inset-block-start: $size-13;
         inset-block-end: auto;
 
-        inset-inline-start: $size-3;
-        inset-inline-end: $size-3;
+        inset-inline-start: $size-1;
+        inset-inline-end: $size-1;
 
         overflow-y: auto;
         will-change: transform;
 
         margin-block: 0;
+
+        max-height: calc(
+            100dvh - #{$size-13} - #{$size-3}
+        );
         
         background: $color-neutral-000;
         border-radius: $border-radius-2;
@@ -101,8 +122,13 @@
         @include mq(medium) {
             inset-block-start: $size-4;
             inset-inline-start: auto;
+            
             width: 32rem;
             max-width: calc(100% - 1.5rem);
+
+            max-height: calc(
+                100dvh - (#{$size-4} * 2)
+            );
         }
     }
 

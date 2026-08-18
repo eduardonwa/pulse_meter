@@ -33,7 +33,12 @@
                         'locale' => app()->getLocale(),
                     ]) }}"
                 >
-                    <x-heroicon-o-arrow-left />
+                    <x-heroicon-o-arrow-left
+                        class="routine-detail__back-icon"
+                        width="18"
+                        height="18"
+                        aria-hidden="true"
+                    />
 
                     <span>Routines</span>
                 </a>
