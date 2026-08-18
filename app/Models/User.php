@@ -76,6 +76,22 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
         return $this->hasMany(Post::class);
     }
 
+    public function lifetimeEntitlement(): HasOne
+    {
+        return $this->hasOne(LifetimeEntitlement::class);
+    }
+
+    public function lifetimePurchases(): HasMany
+    {
+        return $this->hasMany(LifetimePurchase::class);
+    }
+
+    // DORELOG ROUTINES
+    public function routineTemplates(): HasMany
+    {
+        return $this->hasMany(RoutineTemplate::class);
+    }
+
     // ADMIN
     public function canAccessPanel(Panel $panel): bool
     {
@@ -99,16 +115,6 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
     public function hasProAccess(): bool
     {
         return $this->isPro() || $this->hasActiveTrial();
-    }
-
-    public function lifetimeEntitlement(): HasOne
-    {
-        return $this->hasOne(LifetimeEntitlement::class);
-    }
-
-    public function lifetimePurchases(): HasMany
-    {
-        return $this->hasMany(LifetimePurchase::class);
     }
 
     public function hasLifetimePro(): bool
