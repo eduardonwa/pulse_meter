@@ -52,6 +52,37 @@ export function pattern() {
             return true
         },
 
+        setPatternSubdivision(beat, subdivisionIndex, type) {
+            const allowedTypes = [
+                'accent',
+                'click',
+                'rest',
+            ]
+
+            if (!allowedTypes.includes(type)) {
+                return false
+            }
+
+            const patternBeat = this.pattern[beat - 1]
+
+            if (!patternBeat) {
+                return false
+            }
+
+            const subdivision =
+                patternBeat.subdivisions?.[subdivisionIndex]
+
+            if (!subdivision) {
+                return false
+            }
+
+            subdivision.sound = type
+
+            this.syncPulseDirty()
+
+            return true
+        },
+
         cyclePatternBeat(beat) {
             const current = this.pattern[beat - 1]
 
@@ -92,6 +123,57 @@ export function pattern() {
             }
 
             return groups
+        },
+
+        // SUBDIVISIONS
+        getSubdivisionLabels() {
+            if (this.subdivision === 2) {
+                return ['&']
+            }
+
+            if (this.subdivision === 4) {
+                return ['e', '&', 'a']
+            }
+
+            return []
+        },
+
+        setSubdivision(value) {
+            const subdivision = Number(value)
+
+            if (![1, 2, 4].includes(subdivision)) {
+                return false
+            }
+
+            this.subdivision = subdivision
+
+            const labels = this.getSubdivisionLabels()
+
+            this.pattern.forEach(beat => {
+                beat.subdivisions = labels.map(label => ({
+                    label,
+                    sound: 'click',
+                }))
+            })
+
+            this.syncPulseDirty()
+
+            return true
+        },
+
+        getSubdivisionFromPattern(pattern = this.pattern) {
+            const subdivisionCount =
+                pattern[0]?.subdivisions?.length ?? 0
+
+            if (subdivisionCount === 1) {
+                return 2
+            }
+
+            if (subdivisionCount === 3) {
+                return 4
+            }
+
+            return 1
         },
     }
 }

@@ -14,6 +14,12 @@ export function draft() {
 
                 pattern: this.pattern.map(beat => ({
                     ...beat,
+
+                    subdivisions: (beat.subdivisions ?? []).map(
+                        subdivision => ({
+                            ...subdivision,
+                        })
+                    ),
                 })),
             }
         },

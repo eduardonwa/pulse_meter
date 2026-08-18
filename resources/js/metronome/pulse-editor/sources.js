@@ -13,7 +13,15 @@ export function sources() {
 
             this.pattern = preset.pattern.map(beat => ({
                 ...beat,
+
+                subdivisions: (beat.subdivisions ?? []).map(
+                    subdivision => ({
+                        ...subdivision,
+                    })
+                ),
             }))
+
+            this.subdivision = this.getSubdivisionFromPattern(this.pattern)
 
             this.patternName = preset.name
 
@@ -24,6 +32,7 @@ export function sources() {
             }
 
             this.currentBeat = 1
+            this.currentSubdivision = 0
             this.editorTool = null
 
             this.setPulseBaseline()
@@ -47,6 +56,8 @@ export function sources() {
             // Desde cero = un solo grupo inicialmente.
             this.grouping = [4]
 
+            this.subdivision = 1
+
             this.pattern = this.buildPatternFromGrouping(
                 this.grouping
             )
@@ -60,6 +71,7 @@ export function sources() {
             }
 
             this.currentBeat = 1
+            this.currentSubdivision = 0
 
             this.setPulseBaseline()
         },
@@ -84,7 +96,15 @@ export function sources() {
 
             this.pattern = userPattern.pattern.map(beat => ({
                 ...beat,
+
+                subdivisions: (beat.subdivisions ?? []).map(
+                    subdivision => ({
+                        ...subdivision,
+                    })
+                ),
             }))
+
+            this.subdivision = this.getSubdivisionFromPattern(this.pattern)
 
             this.patternName = userPattern.name
 
@@ -95,6 +115,7 @@ export function sources() {
             }
 
             this.currentBeat = 1
+            this.currentSubdivision = 0
             this.editorTool = null
 
             this.setPulseBaseline()

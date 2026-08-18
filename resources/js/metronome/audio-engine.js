@@ -6,6 +6,7 @@ export function audioEngine() {
 
         activeMetronomeBpm: null,
         currentBeat: 1,
+        currentSubdivision: 0,
 
         clickBuffer: null,
         accentBuffer: null,
@@ -16,6 +17,8 @@ export function audioEngine() {
                 numerator: 4,
                 denominator: 4
             },
+            
+            subdivision: 1,
 
             grouping: [4],
 
@@ -126,24 +129,14 @@ export function audioEngine() {
 
             this.activeMetronomeBpm = bpm
             this.currentBeat = 1
+            this.currentSubdivision = 0
 
             this.playPatternBeat()
 
             this.intervalId = setInterval(() => {
-                const playbackPulse =
-                    this.getPlaybackPulse()
-
-                const numerator =
-                    playbackPulse.timeSignature.numerator
-
-                this.currentBeat++
-
-                if (this.currentBeat > numerator) {
-                    this.currentBeat = 1
-                }
-
-                this.playPatternBeat()
-            }, this.getBeatIntervalMs(bpm))
+                this.advancePatternPosition()
+                this.playPatternPosition()
+            }, this.getSubdivisionIntervalMs(bpm))
         },
 
         getBeatIntervalMs(bpm) {
@@ -151,6 +144,36 @@ export function audioEngine() {
             const denominator = playbackPulse.timeSignature.denominator
 
             return (60000 / bpm) * (4 / denominator)
+        },
+
+        getSubdivisionIntervalMs(bpm) {
+            const playbackPulse = this.getPlaybackPulse()
+
+            const subdivision =
+                Number(playbackPulse.subdivision) || 1
+
+            return this.getBeatIntervalMs(bpm) / subdivision
+        },
+
+        advancePatternPosition() {
+            const playbackPulse = this.getPlaybackPulse()
+
+            const subdivision =
+                Number(playbackPulse.subdivision) || 1
+
+            const numerator =
+                playbackPulse.timeSignature.numerator
+
+            this.currentSubdivision++
+
+            if (this.currentSubdivision >= subdivision) {
+                this.currentSubdivision = 0
+                this.currentBeat++
+
+                if (this.currentBeat > numerator) {
+                    this.currentBeat = 1
+                }
+            }
         },
 
         playPatternBeat(beat = this.currentBeat) {
@@ -194,6 +217,45 @@ export function audioEngine() {
 
             this.tick(
                 patternBeat.sound === 'accent'
+            )
+        },
+
+        playPatternPosition() {
+            // Beat principal: 1, 2, 3, 4...
+            if (this.currentSubdivision === 0) {
+                this.playPatternBeat(this.currentBeat)
+                return
+            }
+
+            // En Pulse mode las subdivisiones no generan
+            // los tonos de agrupación.
+            if (
+                this.metronome.mode === 'creative'
+                && this.creativePlaybackMode === 'pulse'
+            ) {
+                return
+            }
+
+            const playbackPulse = this.getPlaybackPulse()
+
+            const patternBeat =
+                playbackPulse.pattern[this.currentBeat - 1]
+
+            const subdivisionItem =
+                patternBeat?.subdivisions?.[
+                    this.currentSubdivision - 1
+                ]
+
+            if (!subdivisionItem) {
+                return
+            }
+
+            if (subdivisionItem.sound === 'rest') {
+                return
+            }
+
+            this.tick(
+                subdivisionItem.sound === 'accent'
             )
         },
 
@@ -301,6 +363,7 @@ export function audioEngine() {
             if (this.metronome.mode === 'creative') {
                 return {
                     timeSignature: this.timeSignature,
+                    subdivision: this.subdivision,
                     grouping: this.grouping,
                     pattern: this.pattern,
                 }
@@ -321,6 +384,7 @@ export function audioEngine() {
 
             this.intervalId = null
             this.currentBeat = 1
+            this.currentSubdivision = 0
         },
 
         getPlaybackBeatCount() {

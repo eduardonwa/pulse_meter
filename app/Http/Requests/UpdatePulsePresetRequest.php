@@ -76,6 +76,30 @@ class UpdatePulsePresetRequest extends FormRequest
                 'required',
                 'boolean',
             ],
+
+            'pattern.*.subdivisions' => [
+                'sometimes',
+                'array',
+            ],
+
+            'pattern.*.subdivisions.*.label' => [
+                'required',
+                'string',
+                Rule::in([
+                    'e',
+                    '&',
+                    'a',
+                ]),
+            ],
+
+            'pattern.*.subdivisions.*.sound' => [
+                'required',
+                Rule::in([
+                    'accent',
+                    'click',
+                    'rest',
+                ]),
+            ],
         ];
     }
 

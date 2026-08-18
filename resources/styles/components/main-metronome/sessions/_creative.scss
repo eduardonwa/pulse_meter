@@ -95,6 +95,39 @@
                 gap: $size-4;
             }
 
+            .beat-unit {
+                display: flex;
+                align-items: center;
+                gap: $size-1;
+            }
+
+            .subdivision-mark {
+                padding: $size-2;
+                background-color: transparent;
+
+                border: 1px solid hsl(var(--neutral-950) / .2);
+                border-radius: $border-radius-1;
+
+                color: hsl(var(--neutral-950) / .65);
+
+                font-size: .875em;
+
+                transition:
+                    transform 100ms ease,
+                    background-color 100ms ease,
+                    border-color 100ms ease;
+
+                &.is-active {
+                    transform: scale(1.08);
+                    background-color: hsl(var(--neutral-900) / .08);
+                    border-color: hsl(var(--neutral-950) / .5);
+                }
+
+                small {
+                    opacity: .7;
+                }
+            }
+
             .beat-group {
                 padding: $size-2;
                 

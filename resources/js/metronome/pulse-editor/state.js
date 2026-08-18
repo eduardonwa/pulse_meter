@@ -11,6 +11,24 @@ export function pulseState(pulsePresets = []) {
         
         grouping: [4],
 
+        // SUBDIVISIONS
+        subdivision: 1,
+
+        subdivisionOptions: [
+            {
+                value: 1,
+                label: 'None',
+            },
+            {
+                value: 2,
+                label: 'Eight notes — 1 &',
+            },
+            {
+                value: 4,
+                label: 'Sixteenth notes — 1 e & a',
+            }
+        ],
+
         meterNumeratorOptions:
             Array.from({ length: 16 }, (_, i) => i + 1),
         

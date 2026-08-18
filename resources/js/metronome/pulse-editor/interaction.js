@@ -31,6 +31,25 @@ export function interaction() {
             this.cancelToolTether()
         },
 
+        applyEditorToolToSubdivision(beat, subdivisionIndex) {
+            if (!this.editorTool) {
+                return
+            }
+
+            // Group start solo aplica a los beats principales.
+            if (this.editorTool === 'groupStart') {
+                return
+            }
+
+            this.setPatternSubdivision(
+                beat,
+                subdivisionIndex,
+                this.editorTool
+            )
+
+            this.cancelToolTether()
+        },
+
         // TOOL TETHER
         startToolTether(event) {
             const canHover = window.matchMedia(

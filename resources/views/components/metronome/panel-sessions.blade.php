@@ -146,6 +146,18 @@
                         <div class="current" x-text="getGroupingFromPattern().join(' + ')"></div>
                     </div>
                     
+                    <div class="time-signature__subdivision">
+                        <h2 class="heading">Subdivision</h2>
+
+                        <label>
+                            <select class="subdivision-selector" x-model.number="subdivision" @change="setSubdivision($event.target.value)">
+                                <template x-for="option in subdivisionOptions" :key="option.value">
+                                    <option :value="option.value" x-text="option.label"></option>
+                                </template>
+                            </select>
+                        </label>
+                    </div>
+                    
                     <div class="time-signature__beats">
                         <h2 class="heading">Beats</h2>
 
@@ -160,28 +172,64 @@
                                     ][groupIndex % 4]"
                                 >
                                     <template x-for="item in group" :key="item.beat">
-                                        <button class="beat-mark" type="button" @click="applyEditorTool(item.beat)"
-                                            :class="{
-                                                'is-group-start': item.groupStart,
-                                                'is-active': currentBeat === item.beat,
-                                                'is-accent': item.sound === 'accent',
-                                                'is-click': item.sound === 'click',
-                                                'is-rest': item.sound === 'rest'
-                                            }"
-                                        >
-                                            <span x-text="
-                                                item.sound === 'accent'
-                                                    ? 'A'
-                                                    : item.sound === 'click'
-                                                        ? 'C'
-                                                        : item.sound === 'rest'
-                                                            ? 'R'
-                                                            : '-'
-                                                "
-                                            ></span>
+                                        <div class="beat-unit">
+                                            {{-- MAIN BEAT --}}
+                                            <button
+                                                class="beat-mark"
+                                                type="button"
+                                                @click="applyEditorTool(item.beat)"
+                                                :class="{
+                                                    'is-group-start': item.groupStart,
 
-                                            <small x-text="item.beat"></small>
-                                        </button>
+                                                    'is-active': currentBeat === item.beat && currentSubdivision === 0,
+                                                    'is-accent': item.sound === 'accent',
+                                                    'is-click': item.sound === 'click',
+                                                    'is-rest': item.sound === 'rest'
+                                                }"
+                                            >
+                                                <span
+                                                    x-text="
+                                                        item.sound === 'accent'
+                                                            ? 'A'
+                                                            : item.sound === 'click'
+                                                                ? 'C'
+                                                                : item.sound === 'rest'
+                                                                    ? 'R'
+                                                                    : '-'
+                                                    "
+                                                ></span>
+
+                                                <small x-text="item.beat"></small>
+                                            </button>
+
+                                            {{-- SUBDIVISIONS --}}
+                                            <template
+                                                x-for="(subdivisionItem, subdivisionIndex) in (item.subdivisions ?? [])"
+                                                :key="`${item.beat}-${subdivisionIndex}`"
+                                            >
+                                                <button class="subdivision-mark" type="button"
+                                                    @click="applyEditorToolToSubdivision(
+                                                        item.beat,
+                                                        subdivisionIndex
+                                                    )"
+                                                    :class="{
+                                                        'is-active': currentBeat === item.beat && currentSubdivision === subdivisionIndex + 1,
+                                                        'is-accent': subdivisionItem.sound === 'accent',
+                                                        'is-click': subdivisionItem.sound === 'click',
+                                                        'is-rest': subdivisionItem.sound === 'rest'
+                                                    }"
+                                                >
+                                                    <span x-text="subdivisionItem.sound === 'accent'
+                                                        ? 'A'
+                                                        : subdivisionItem.sound === 'click'
+                                                            ? 'C'
+                                                            : 'R'
+                                                    "></span>
+
+                                                    <small x-text="subdivisionItem.label"></small>
+                                                </button>
+                                            </template>
+                                        </div>
                                     </template>
                                 </div>
                             </template>
