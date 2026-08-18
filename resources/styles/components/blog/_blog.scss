@@ -4,6 +4,48 @@
 .posts {
     margin-block: $size-8 $size-10;
 
+    .lang {
+        position: relative;
+
+        display: flex;
+        justify-content: flex-end;
+        gap: $size-4;
+
+        .button {
+            padding: 4px;
+            border: 1px solid hsl(var(--neutral-900) / .2);
+        }
+
+        &__options {
+            position: absolute;
+            top: 28px;
+
+            display: flex;
+            flex-direction: column;
+            gap: $size-3;
+            font-size: 14px;
+            font-weight: 500;
+
+            width: 89px;
+
+            text-align: center;
+
+            background: $color-neutral-000;
+            border-radius: $border-radius-1;
+            padding: $size-3;
+        }
+
+        .option {
+            text-decoration: none;
+            text-transform: uppercase;
+            color: $color-neutral-800;
+
+            &:hover {
+                text-decoration: underline;
+            }
+        }
+    }
+
     &__item {
         --pattern-color: #000;
 
