@@ -103,6 +103,9 @@ export function draft() {
             const currentLength = this.pattern.length
 
             if (value > currentLength) {
+                const subdivisionLabels =
+                    this.getSubdivisionLabels()
+
                 for (
                     let beat = currentLength;
                     beat < value;
@@ -111,6 +114,12 @@ export function draft() {
                     this.pattern.push({
                         sound: 'click',
                         groupStart: false,
+
+                        subdivisions:
+                            subdivisionLabels.map(label => ({
+                                label,
+                                sound: 'click',
+                            })),
                     })
                 }
             }
@@ -124,8 +133,7 @@ export function draft() {
 
             this.timeSignature.numerator = value
 
-            this.grouping =
-                this.getGroupingFromPattern()
+            this.grouping = this.getGroupingFromPattern()
 
             this.currentBeat = Math.min(
                 this.currentBeat,
