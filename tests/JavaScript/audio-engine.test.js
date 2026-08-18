@@ -210,3 +210,104 @@ test(
         )
     }
 )
+
+test(
+    'eighth-note subdivisions run at half the beat interval',
+    () => {
+        const engine = audioEngine()
+
+        engine.metronome = {
+            mode: 'creative',
+            bpm: 120,
+        }
+
+        engine.timeSignature = {
+            numerator: 4,
+            denominator: 4,
+        }
+
+        engine.grouping = [4]
+        engine.pattern = []
+        engine.subdivision = 2
+
+        assert.equal(
+            engine.getBeatIntervalMs(120),
+            500
+        )
+
+        assert.equal(
+            engine.getSubdivisionIntervalMs(120),
+            250
+        )
+    }
+)
+
+test(
+    'sixteenth-note subdivisions run at one quarter of the beat interval',
+    () => {
+        const engine = audioEngine()
+
+        engine.metronome = {
+            mode: 'creative',
+            bpm: 120,
+        }
+
+        engine.timeSignature = {
+            numerator: 4,
+            denominator: 4,
+        }
+
+        engine.grouping = [4]
+        engine.pattern = []
+        engine.subdivision = 4
+
+        assert.equal(
+            engine.getSubdivisionIntervalMs(120),
+            125
+        )
+    }
+)
+
+test(
+    'eighth-note playback advances beat then offbeat',
+    () => {
+        const engine = audioEngine()
+
+        engine.metronome = {
+            mode: 'creative',
+            bpm: 120,
+        }
+
+        engine.timeSignature = {
+            numerator: 4,
+            denominator: 4,
+        }
+
+        engine.grouping = [4]
+        engine.pattern = []
+        engine.subdivision = 2
+
+        engine.currentBeat = 1
+        engine.currentSubdivision = 0
+
+        engine.advancePatternPosition()
+
+        assert.equal(engine.currentBeat, 1)
+        assert.equal(engine.currentSubdivision, 1)
+
+        engine.advancePatternPosition()
+
+        assert.equal(engine.currentBeat, 2)
+        assert.equal(engine.currentSubdivision, 0)
+
+        engine.advancePatternPosition()
+
+        assert.equal(engine.currentBeat, 2)
+        assert.equal(engine.currentSubdivision, 1)
+
+        engine.advancePatternPosition()
+
+        assert.equal(engine.currentBeat, 3)
+        assert.equal(engine.currentSubdivision, 0)
+    }
+)
