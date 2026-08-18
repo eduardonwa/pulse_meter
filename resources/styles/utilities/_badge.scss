@@ -13,7 +13,7 @@
     background: hsl(var(--extra-500) / .1);
     border: 1px solid $color-extra-500;
     color: $color-extra-900;
-    font-size: 13px !important;
+    font-size: 12px !important;
     text-transform: uppercase;
 
     svg, img { width: 1em; height: 1em; }
@@ -44,6 +44,7 @@
         border-color: oklch(70.4% 0.191 22.216);
     }
 
+    // PULSE EDITOR
     &--group-beat-a {
         --group-border-color: #{$color-primary-400};
 
@@ -74,5 +75,24 @@
         background: hsl(var(--extra-400) / .1);
         border: 1px solid var(--group-border-color);
         color: $color-extra-900;
+    }
+
+    // ROUTINES
+    &--routine-type {
+        background: hsl(var(--secondary-400) / .1);
+        border: 1px solid hsl(var(--secondary-300));
+        color: $color-secondary-900;
+    }
+
+    &--routine-instrument {
+        background: hsl(var(--primary-400) / .1);
+        border: 1px solid hsl(var(--primary-300));
+        color: $color-primary-900;
+    }
+
+    &--routine-difficulty {
+        background: hsl(var(--accent-400) / .1);
+        border: 1px solid hsl(var(--accent-300));
+        color: $color-accent-900;
     }
 }

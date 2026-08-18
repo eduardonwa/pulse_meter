@@ -2,12 +2,14 @@
 
 namespace App\Filament\Resources\RoutineTemplates\Schemas;
 
+use App\Models\RoutineTemplateTranslation;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Group;
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
@@ -104,19 +106,58 @@ class RoutineTemplateForm
                     ->collapsible(),
 
                 FileUpload::make('cover_image')
-                    ->image(),
-                TextInput::make('type')
-                    ->required()
-                    ->default('routine'),
-                TextInput::make('instrument')
-                    ->required()
-                    ->default('guitar'),
-                TextInput::make('difficulty')
+                    ->image()
+                    ->disk('public')
+                    ->directory('routines/covers')
+                    ->visibility('public')
+                    ->imageEditor()
+                    ->imageEditorAspectRatioOptions([
+                        '4:5',
+                    ]),
+
+                Select::make('type')
+                    ->options([
+                        'routine' => 'Routine',
+                        'weekly_challenge' => 'Weekly challenge',
+                    ])
+                    ->default('routine')
+                    ->live()
                     ->required(),
+
+                Select::make('instrument')
+                    ->options([
+                        'guitar' => 'Guitar',
+                        'bass' => 'Bass',
+                        'drums' => 'Drums',
+                    ])
+                    ->default('guitar')
+                    ->required(),
+
+                Select::make('difficulty')
+                    ->options([
+                        'beginner' => 'Beginner',
+                        'intermediate' => 'Intermediate',
+                        'advanced' => 'Advanced',
+                    ])
+                    ->required(),
+
                 TextInput::make('challenge_days')
-                    ->numeric(),
+                    ->numeric()
+                    ->minValue(1)
+                    ->maxValue(255)
+                    ->visible(
+                        fn (Get $get): bool =>
+                            $get('type') === 'weekly_challenge'
+                    ),
+
                 TextInput::make('recommended_sessions')
-                    ->numeric(),
+                    ->numeric()
+                    ->minValue(1)
+                    ->maxValue(255)
+                    ->visible(
+                        fn (Get $get): bool =>
+                            $get('type') === 'weekly_challenge'
+                    ),
                 Hidden::make('user_id')->default(fn () => Auth::id()),
             ]);
     }
@@ -158,6 +199,25 @@ class RoutineTemplateForm
 
             Textarea::make('instructions')
                 ->rows(6),
+    
+            Toggle::make('published_at')
+                ->label('Published')
+                ->formatStateUsing(
+                    fn ($state): bool => filled($state)
+                )
+                ->dehydrateStateUsing(
+                    fn (
+                        bool $state,
+                        ?RoutineTemplateTranslation $record,
+                    ) =>
+                        $state
+                            ? ($record?->published_at ?? now())
+                            : null
+                ),
+
+            TextInput::make('cover_alt')
+                ->label('Cover image alt text')
+                ->maxLength(255),
 
             TextInput::make('meta_title')
                 ->required($requiredWhenTranslated)

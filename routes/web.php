@@ -11,6 +11,7 @@ use App\Http\Controllers\PracticeRoutineController;
 use App\Http\Controllers\PracticeRoutineStepController;
 use App\Http\Controllers\ProductEventController;
 use App\Http\Controllers\PulsePresetController;
+use App\Http\Controllers\RoutineTemplateController;
 use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\TrialController;
 use App\Http\Controllers\WelcomeController;
@@ -30,6 +31,7 @@ Route::get('/auth/google/callback', [LoginController::class, 'handleProviderCall
 
 /* BLOG */
 Route::redirect('/blog', '/en/blog');
+Route::redirect('/routines', '/en/routines');
 
 Route::prefix('{locale}')
     ->whereIn('locale', ['es', 'en'])
@@ -40,6 +42,16 @@ Route::prefix('{locale}')
 
         Route::get('/blog/{slug}', [PostController::class, 'show'])
             ->name('blog.show');
+
+        Route::get('/routines', [
+            RoutineTemplateController::class,
+            'index',
+        ])->name('routines.index');
+
+        Route::get('/routines/{slug}', [
+            RoutineTemplateController::class,
+            'show',
+        ])->name('routines.show');
     });
 
 Route::post('/analytics/events', ProductEventController::class)

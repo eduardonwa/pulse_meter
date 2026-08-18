@@ -1,0 +1,247 @@
+@use "../../abstracts" as *;
+
+.routine-detail {
+    position: relative;
+
+    &__navigation {
+        margin-block: $size-4;
+        width: 100%;
+
+        display: flex;
+        justify-content: flex-start;
+
+        border-radius: $border-radius-1;
+        padding: $size-2;
+    }
+}
+
+.routine-cover {
+    display: flex;
+    flex-direction: column;
+    gap: $size-4;
+    border-radius: $border-radius-1;
+
+    &__content {
+        border: 1px solid hsl(var(--neutral-950) / .2);
+        border-radius: $border-radius-1;
+        padding: $size-3;
+    }
+
+    &__image {
+        display: block;
+        width: 100%;
+        height: auto;
+    }
+
+    &__badges {
+        padding-block-end: $size-3;
+    }
+
+    &__header {
+        .title {
+            font-size: 15px;
+            font-weight: 500;
+            color: $color-neutral-950;
+        }
+
+        .summary {
+            font-size: 14px;
+        }
+    }
+
+    .button {
+        margin-block-start: $size-4;
+        background: $color-primary-600;
+        color: $color-primary-50;
+        width: 100%;
+        padding: $size-3;
+
+        &:hover {
+            background: hsl(var(--primary-700) / .8);
+        }
+    }
+}
+
+.routine-drawer {
+    position: fixed;
+    z-index: 100;
+    inset: 0;
+
+    pointer-events: none;
+
+    margin-inline: $size-3;
+
+    &--open {
+        pointer-events: auto;
+    }
+    
+    .button[data-type="icon"] {
+        margin-left: auto;
+    }
+
+    &__panel {
+        position: absolute;
+
+        inset-block-start: $size-13;
+        inset-block-end: auto;
+
+        inset-inline-start: $size-3;
+        inset-inline-end: $size-3;
+
+        overflow-y: auto;
+        will-change: transform;
+
+        margin-block: 0;
+        
+        background: $color-neutral-000;
+        border-radius: $border-radius-2;
+        box-shadow: $box-shadow-4;
+        padding: $size-4;
+
+        @include mq(medium) {
+            inset-block-start: $size-4;
+            inset-inline-start: auto;
+            width: 32rem;
+            max-width: calc(100% - 1.5rem);
+        }
+    }
+
+    &__header {
+        border-block-end: 1px solid;
+        width: 100%;
+
+        display: flex;
+        align-items: flex-start;
+    }
+
+    &__heading {
+        padding-block-end: $size-2;
+
+        .eyebrow {
+            font-size: 13px;
+        }
+
+        .title {
+            font-size: 15px;
+            font-weight: 500;
+            color: $color-neutral-950;
+        }
+    }
+
+    &__footer {
+        padding-block: $size-4;
+
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: $size-2;
+
+        border: 1px solid hsl(var(--primary-900) / .5);
+        border-radius: $border-radius-1;
+        padding: $size-4;
+
+        .button {
+            width: 100%;
+        }
+    }
+}
+
+.routine-facts {
+    padding-block: $size-3;
+
+    border-block-end: 1px solid hsl(var(--neutral-950) / .5);
+
+    &__item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: $size-4;
+        font-size: 13px;
+
+        padding-block: $size-1;
+
+        .value {
+            font-size: 15px;
+            font-weight: 500;
+            color: $color-neutral-950;
+        }
+    }
+}
+
+.routine-section {
+    padding-block: $size-3;
+
+    &__title {
+        font-size: 13px;
+    }
+
+    &__description {
+        font-size: 15px;
+        color: $color-neutral-950;
+        font-weight: 500;
+    }
+}
+
+// LISTA DE EJERCICIOS
+.routine-exercises {
+    border-block-start: 1px solid hsl(var(--neutral-950) / .5);
+
+    &__list {
+        margin-block-start: $size-2;
+        list-style: none;
+    }
+}
+
+// UN EJERCICIO
+.routine-exercise {
+    &__content {
+        display: flex;
+        flex-direction: column;
+        gap: $size-1;
+    }
+
+    &__header {
+        border: 1px solid hsl(var(--primary-950) / .5);
+        border-radius: $border-radius-1;
+        padding: $size-2;
+        font-size: 15px;
+        color: $color-primary-950;
+
+        background: hsl(var(--primary-500) / .1);
+    }
+
+    &__name {
+        padding-block-end: $size-2;
+        font-weight: 500;
+    }
+
+    &__metadata {
+        display: flex;
+        flex-direction: column;
+    }
+
+    &__notes {
+        padding: 8px;
+
+        font-size: 14px;
+
+        border-radius: $border-radius-1;
+        border: 1px solid hsl(var(--neutral-300));
+        color: $color-neutral-950;
+    }
+}
+
+.routine-drawer-enter,
+.routine-drawer-leave {
+    transition: transform 260ms ease-out;
+}
+
+.routine-drawer-enter-start,
+.routine-drawer-leave-end {
+    transform: translate3d(110%, 0, 0);
+}
+
+.routine-drawer-enter-end,
+.routine-drawer-leave-start {
+    transform: translate3d(0, 0, 0);
+}
