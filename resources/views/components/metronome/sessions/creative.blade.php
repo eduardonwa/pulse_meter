@@ -1,0 +1,231 @@
+<section class="mode-creative" x-show="metronome.mode === 'creative'" x-cloak>
+    <!-- RHYTHM EDITOR -->
+    <div class="pulse-editor">
+        <div class="time-signature">
+            <div class="time-signature__pattern">
+                <h2 class="heading">
+                    Patterns
+                </h2>
+
+                <button class="button" data-type="outline" type="button" @click="openPatternDialog()">
+                    <span x-text="getCurrentPulseSourceLabel()"></span>
+                </button>
+
+                {{-- esta en welcome --}}
+            </div>
+
+            <div class="time-signature__meter">
+                <h2 class="heading">
+                    Meter
+                </h2>
+
+                <div class="meter-control">
+                    <x-inputs.number-picker
+                        class="meter-numerator"
+                        options="meterNumeratorOptions"
+                        model="timeSignature.numerator"
+                        afterChange="setDraftNumerator(value)"
+                        :controls="true"
+                        decrease-label="Decrease numerator"
+                        increase-label="Increase numerator"
+                        hint="Scroll to change numerator"
+                        :controls-on-mobile="false"
+                    />
+
+                    <span class="meter-control__separator">/</span>
+
+                    <x-inputs.number-picker
+                        class="meter-denominator"
+                        options="meterDenominatorOptions"
+                        model="timeSignature.denominator"
+                        afterChange="setDraftDenominator(value)"
+                        :controls="true"
+                        decrease-label="Decrease beat unit"
+                        increase-label="Increase beat unit"
+                        hint="Scroll to change beat unit"
+                        :controls-on-mobile="false"
+                    />
+                </div>
+            </div>
+
+            <div class="time-signature__grouping">
+                <h2 class="heading">Grouping</h2>
+                <div class="current" x-text="getGroupingFromPattern().join(' + ')"></div>
+            </div>
+            
+            <div class="time-signature__subdivision">
+                <h2 class="heading">Subdivision</h2>
+
+                <label>
+                    <select class="subdivision-selector" x-model.number="subdivision" @change="setSubdivision($event.target.value)">
+                        <template x-for="option in subdivisionOptions" :key="option.value">
+                            <option :value="option.value" x-text="option.label"></option>
+                        </template>
+                    </select>
+                </label>
+            </div>
+            
+            <div class="time-signature__beats">
+                <h2 class="heading">Beats</h2>
+
+                <div class="beat-groups">
+                    <template x-for="(group, groupIndex) in getPatternGroups()" :key="groupIndex">
+                        <div class="beat-group badge"
+                            :class="[
+                                'badge--group-beat-a',
+                                'badge--group-beat-b',
+                                'badge--group-beat-c',
+                                'badge--group-beat-d'
+                            ][groupIndex % 4]"
+                        >
+                            <template x-for="item in group" :key="item.beat">
+                                <div class="beat-unit">
+                                    {{-- MAIN BEAT --}}
+                                    <button
+                                        class="beat-mark"
+                                        type="button"
+                                        @click="applyEditorTool(item.beat)"
+                                        :class="{
+                                            'is-group-start': item.groupStart,
+
+                                            'is-active': currentBeat === item.beat && currentSubdivision === 0,
+                                            'is-accent': item.sound === 'accent',
+                                            'is-click': item.sound === 'click',
+                                            'is-rest': item.sound === 'rest'
+                                        }"
+                                    >
+                                        <span
+                                            x-text="
+                                                item.sound === 'accent'
+                                                    ? 'A'
+                                                    : item.sound === 'click'
+                                                        ? 'C'
+                                                        : item.sound === 'rest'
+                                                            ? 'R'
+                                                            : '-'
+                                            "
+                                        ></span>
+
+                                        <small x-text="item.beat"></small>
+                                    </button>
+
+                                    {{-- SUBDIVISIONS --}}
+                                    <template
+                                        x-for="(subdivisionItem, subdivisionIndex) in (item.subdivisions ?? [])"
+                                        :key="`${item.beat}-${subdivisionIndex}`"
+                                    >
+                                        <button class="subdivision-mark" type="button"
+                                            @click="applyEditorToolToSubdivision(
+                                                item.beat,
+                                                subdivisionIndex
+                                            )"
+                                            :class="{
+                                                'is-active': currentBeat === item.beat && currentSubdivision === subdivisionIndex + 1,
+                                                'is-accent': subdivisionItem.sound === 'accent',
+                                                'is-click': subdivisionItem.sound === 'click',
+                                                'is-rest': subdivisionItem.sound === 'rest'
+                                            }"
+                                        >
+                                            <span x-text="subdivisionItem.sound === 'accent'
+                                                ? 'A'
+                                                : subdivisionItem.sound === 'click'
+                                                    ? 'C'
+                                                    : 'R'
+                                            "></span>
+
+                                            <small x-text="subdivisionItem.label"></small>
+                                        </button>
+                                    </template>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+                </div>
+            </div>
+            
+            <div class="time-signature__rhythm-tools">
+                <h2 class="heading">Cue</h2>
+
+                <div class="tool-group">
+                    <button class="button" type="button" data-tether-trigger
+                        @click="
+                            editorTool = 'accent';
+                            startToolTether($event);
+                        "
+                        :class="{ 'is-selected': editorTool === 'accent' }"
+                    >
+                        Accent
+                    </button>
+
+                    <button class="button" type="button" data-tether-trigger
+                        @click="
+                            editorTool = 'click';
+                            startToolTether($event);
+                        "
+                        :class="{ 'is-selected': editorTool === 'click' }"
+                    >
+                        Click
+                    </button>
+
+                    <button class="button" type="button" data-tether-trigger
+                        @click="
+                            editorTool = 'rest';
+                            startToolTether($event);
+                        "
+                        :class="{ 'is-selected': editorTool === 'rest' }"
+                    >
+                        Rest
+                    </button>
+                </div>
+            </div>
+
+            <div class="time-signature__playback">
+                <h2 class="heading">Playback</h2>
+
+                <div class="tool-group">
+                    <button
+                        class="button"
+                        type="button"
+                        @click="creativePlaybackMode = 'click'"
+                        :class="{ 'is-selected': creativePlaybackMode === 'click' }"
+                    >
+                        Click
+                    </button>
+
+                    <button
+                        class="button"
+                        type="button"
+                        @click="creativePlaybackMode = 'pulse'"
+                        :class="{ 'is-selected': creativePlaybackMode === 'pulse' }"
+                    >
+                        Pulse
+                    </button>
+                </div>
+            </div>
+
+            <div class="time-signature__rhythm-structure">
+                <h2 class="heading">Structure</h2>
+
+                <button class="button" type="button" data-tether-trigger
+                    @click="
+                        editorTool = 'groupStart';
+                        startToolTether($event);
+                    "
+                    :class="{ 'is-selected': editorTool === 'groupStart' }"
+                >
+                    Group start
+                </button>
+            </div>
+
+            <div class="time-signature__actions">
+                <button class="button" data-type="primary" type="button" @click="savePulsePattern()" x-show="pulseDraft.origin === 'new' || pulseDraft.origin === 'user'">
+                    Save
+                </button>
+
+                <button class="button" data-type="primary" data-variant="outline" type="button" @click="savePulsePatternAs()" x-show="pulseDraft.origin === 'preset' || pulseDraft.origin === 'user'">
+                    Save as copy
+                </button>
+            </div>
+        </div>
+    </div>
+</section>
