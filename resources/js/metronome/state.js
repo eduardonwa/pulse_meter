@@ -135,7 +135,7 @@ export function state(practiceContext = null) {
         isPlaying: false,
 
         // NAVIGATION
-        activeTab: 'sessions',
+        activeTab: 'exercises',
 
         // PICKING OPTIONS
         minutesOptions: [0, 1, 2, 3, 4, 5],
