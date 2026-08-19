@@ -13,6 +13,7 @@ import { analytics } from './analytics'
 import { notifications } from './notifications.js'
 import { routinePersistence } from './routine-persistence.js'
 import { playbackSession } from './playback-session.js'
+import { routineTemplateActions } from '../routine-template-player.js'
 
 window.routinePlayer = function (
     practiceContext = null,
@@ -23,6 +24,7 @@ window.routinePlayer = function (
         lifecycle(),
         storage(),
         routinePersistence(),
+        routineTemplateActions(),
         audioEngine(),
         pulseEditor(pulsePresets),
         playbackSession(),

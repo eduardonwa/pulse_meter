@@ -21,6 +21,7 @@ export function storage() {
         isLocalRoutineImportOpen: false,
         isLocalRoutineImportBusy: false,
         localRoutineImportError: null,
+        localRoutineImportLimitReached: false,
         
         // ROUTINE PERSISTENCE
         saveToLocalStorage() {
@@ -173,9 +174,7 @@ export function storage() {
 
             let rawSteps
 
-            try { rawSteps = JSON.parse(saved) } catch {
-                return null
-            }
+            try { rawSteps = JSON.parse(saved) } catch { return null }
 
             const steps = this.normalizeLocalRoutineImportSteps(rawSteps)
 
@@ -254,6 +253,8 @@ export function storage() {
         async resolveLocalRoutineImport(
             decision
         ) {
+            this.localRoutineImportLimitReached = false
+
             if (
                 this.isLocalRoutineImportBusy
                 || !this.pendingLocalRoutineImport
@@ -294,9 +295,9 @@ export function storage() {
                     return result
                 }
 
-                if (result === 'ambiguous') {
-                    this.localRoutineImportError =
-                        'Your server routines could not be resolved automatically.'
+                if (result === 'trial_routine_limit') {
+                    this.localRoutineImportLimitReached = true
+                    this.localRoutineImportError = null
 
                     return result
                 }
@@ -401,15 +402,9 @@ export function storage() {
 
                 if (
                     response.status === 409
-                    && data.reason
-                        === 'free_local_routine_ambiguous'
+                    && data.reason === 'trial_routine_limit'
                 ) {
-                    /*
-                    * No guardamos la firma:
-                    * el usuario todavía no resolvió
-                    * qué rutina debe reemplazarse.
-                    */
-                    return 'ambiguous'
+                    return 'trial_routine_limit'
                 }
 
                 console.error(

@@ -2,7 +2,18 @@ export function routinePersistence() {
     return {
         routineStepUpdateTimeouts: {},
 
+        canPersistRoutineSteps() {
+            return (
+                this.usesServerPersistence
+                && !this.isTemplatePlayback
+            )
+        },
+
         async storeRoutineStep(payload) {
+            if (!this.canPersistRoutineSteps()) {
+                return null
+            }
+
             console.log('Sending exercise payload:', payload)
 
             const response = await fetch(
@@ -43,6 +54,10 @@ export function routinePersistence() {
         },
 
         async updateRoutineStep(id, payload) {
+            if (!this.canPersistRoutineSteps()) {
+                return null
+            }
+
             const playerRoot = this.$root.closest(
                 '[data-routine-step-update-url]'
             )
@@ -92,15 +107,14 @@ export function routinePersistence() {
         },
 
         queueRoutineStepUpdate(step, delay = 700) {
-            if (!step?.id) {
+            if (!this.canPersistRoutineSteps()) {
                 return
             }
 
-            const stepId = step.id
+            if (!step?.id) { return }
 
-            clearTimeout(
-                this.routineStepUpdateTimeouts[stepId]
-            )
+            const stepId = step.id
+            clearTimeout(this.routineStepUpdateTimeouts[stepId])
 
             this.routineStepUpdateTimeouts[stepId] =
                 setTimeout(async () => {
@@ -135,9 +149,11 @@ export function routinePersistence() {
         },
 
         async destroyRoutineStep(id) {
-            const playerRoot = this.$root.closest(
-                '[data-routine-step-destroy-url]'
-            )
+            if (!this.canPersistRoutineSteps()) {
+                return null
+            }
+            
+            const playerRoot = this.$root.closest('[data-routine-step-destroy-url]')
 
             const urlTemplate =
                 playerRoot?.dataset.routineStepDestroyUrl

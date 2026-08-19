@@ -307,6 +307,10 @@ class WelcomeController extends Controller
         $practiceContext = [
             'mode' => $practiceMode,
 
+            'persistence' => $usesServerPersistence
+                ? 'server'
+                : 'local',
+
             'active_routine' => $routinePayload,
             'active_playlist' => $activePlaylistPayload,
 

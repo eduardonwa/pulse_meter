@@ -459,7 +459,7 @@ test(
 )
 
 test(
-    'does not record the Free version when the import is rejected',
+    'does not record the Free version when Trial rejects the import',
     async () => {
         const browserStorage =
             createMemoryStorage({
@@ -480,7 +480,7 @@ test(
                             'not_imported',
 
                         reason:
-                            'free_local_routine_ambiguous',
+                            'trial_routine_limit',
                     }
                 },
             }
@@ -510,12 +510,12 @@ test(
 
                 assert.equal(
                     result,
-                    'ambiguous'
+                    'trial_routine_limit'
                 )
 
                 /*
-                 * No registramos una decisión porque
-                 * la importación no sucedió.
+                 * No registramos la firma porque
+                 * la importación no ocurrió.
                  */
                 assert.equal(
                     browserStorage.getItem(
@@ -727,7 +727,7 @@ test(
 )
 
 test(
-    'keeps the prompt open when the import cannot be resolved',
+    'keeps the prompt open when Trial has reached the routine limit',
     async () => {
         const browserStorage =
             createMemoryStorage({
@@ -748,7 +748,7 @@ test(
                             'not_imported',
 
                         reason:
-                            'free_local_routine_ambiguous',
+                            'trial_routine_limit',
                     }
                 },
             }
@@ -777,7 +777,7 @@ test(
 
                 assert.equal(
                     result,
-                    'ambiguous'
+                    'trial_routine_limit'
                 )
 
                 assert.equal(
@@ -794,7 +794,7 @@ test(
                 assert.equal(
                     instance
                         .localRoutineImportError,
-                    'Your server routines could not be resolved automatically.'
+                    'Your Trial has reached the maximum number of routines.'
                 )
             }
         )

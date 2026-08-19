@@ -10,6 +10,10 @@
 
 <article {{ $attributes->class('routine-cover') }}>
     <div class="routine-cover__media">
+        <span class="badge badge--routine-type">
+            {{ $typeLabel }}
+        </span>
+        
         @if ($coverUrl)
             <img
                 class="routine-cover__image"
@@ -28,10 +32,6 @@
 
     <div class="routine-cover__content">
         <div class="routine-cover__badges">
-            <span class="badge badge--routine-type">
-                {{ $typeLabel }}
-            </span>
-
             <span class="badge badge--routine-instrument">
                 {{ str($template->instrument)->title() }}
             </span>

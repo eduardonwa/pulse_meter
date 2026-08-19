@@ -47,6 +47,10 @@ input[type="checkbox"] {
   height: 18px;
 }
 
+select {
+  cursor: pointer;
+}
+
 .checkbox {
   display: flex;
   align-items: center;
@@ -74,11 +78,11 @@ input[type="checkbox"] {
       margin-left: auto;
       border: 1px solid transparent;
       background: transparent;
+      color: $color-neutral-950;
 
       svg {
         width: 24px;
         height: 24px;
-        stroke: $color-neutral-600;
       }
     }
   }

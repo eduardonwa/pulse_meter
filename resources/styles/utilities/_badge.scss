@@ -79,20 +79,26 @@
 
     // ROUTINES
     &--routine-type {
-        background: hsl(var(--secondary-400) / .1);
-        border: 1px solid hsl(var(--secondary-300));
-        color: $color-secondary-900;
+        background: #fff2ec;
+        border: 1px solid hsl(var(--secondary-200));
+        color: $color-secondary-950;
     }
 
     &--routine-instrument {
         background: hsl(var(--primary-400) / .1);
-        border: 1px solid hsl(var(--primary-300));
+        border: 1px solid hsl(var(--primary-200));
         color: $color-primary-900;
     }
 
     &--routine-difficulty {
         background: hsl(var(--accent-400) / .1);
-        border: 1px solid hsl(var(--accent-300));
+        border: 1px solid hsl(var(--accent-200));
         color: $color-accent-900;
+    }
+
+    &--upsell-pro {
+        background-color: $color-neutral-900;
+        color: $color-neutral-100;
+        border: 1px solid transparent;
     }
 }

@@ -21,20 +21,46 @@
 
     <div class="dialog-shell__content local-exercises-dialog__content">
         <p x-show="pendingLocalRoutineImport?.type === 'first_import'">
-            We found exercises saved in Free Mode on this device.
-            Would you like to use them in Trial/Pro or keep your
-            current Trial/Pro routine?
+            We found exercises you created earlier in Free Mode.
+            Would you like to keep them or start from scratch?
         </p>
 
         <p x-show="pendingLocalRoutineImport?.type === 'update'">
-            Your Free exercises have changed. Would you like to
-            update your imported Free routine or keep your current
-            Trial/Pro routine?
+            Your Free exercises have changed.
+            Would you like to update your imported routine
+            with these changes?
         </p>
 
-        <p> Other routines and playlists won't change. </p>
+        <p>
+            Other routines and playlists won't change.
+        </p>
 
-        <p role="alert" x-show="localRoutineImportError" x-text="localRoutineImportError" x-cloak></p>
+        <div x-show="localRoutineImportLimitReached" x-cloak>
+            <p>
+                Your Trial already has the maximum of 3 routines.
+                Upgrade to Pro to keep your Free exercises.
+            </p>
+
+            <p>
+                Get unlimited routines, playlists,
+                and save shared routines.
+            </p>
+
+            <a
+                class="button"
+                data-type="primary"
+                href="{{ route('billing.index') }}"
+            >
+                Upgrade to Pro
+            </a>
+        </div>
+
+        <p
+            role="alert"
+            x-show="localRoutineImportError"
+            x-text="localRoutineImportError"
+            x-cloak
+        ></p>
     </div>
 
     <footer class="local-exercises-dialog__actions">
@@ -50,7 +76,7 @@
             "
         >
             <span x-show="!isLocalRoutineImportBusy">
-                Keep Trial/Pro routine
+                Start from scratch
             </span>
 
             <span x-show="isLocalRoutineImportBusy" x-cloak>
@@ -78,7 +104,7 @@
                     isLocalRoutineImportBusy
                         ? 'Importing...'
                         : pendingLocalRoutineImport?.type === 'first_import'
-                            ? 'Use Free exercises'
+                            ? 'Keep my exercises'
                             : 'Update from Free'
                 "
             ></span>

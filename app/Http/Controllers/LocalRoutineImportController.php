@@ -9,9 +9,7 @@ use Illuminate\Support\Facades\DB;
 
 class LocalRoutineImportController extends Controller
 {
-    public function __invoke(
-        Request $request
-    ): JsonResponse {
+    public function __invoke(Request $request): JsonResponse {
         $user = $request->user();
 
         $durationLimit = $user->exerciseDurationLimit();
@@ -51,14 +49,11 @@ class LocalRoutineImportController extends Controller
         ]);
 
         $routine = DB::transaction(
-            function () use (
-                $user,
-                $validated,
-            ): ?PracticeRoutine {
+            function () use ($user, $validated ): ?PracticeRoutine {
                 /*
-                 * Bloquear al usuario serializa las sincronizaciones
-                 * incluso cuando todavía no tiene ninguna rutina.
-                 */
+                * Bloquear al usuario serializa las sincronizaciones
+                * incluso cuando todavía no tiene ninguna rutina.
+                */
                 $lockedUser = $user
                     ->newQuery()
                     ->whereKey($user->id)
@@ -73,92 +68,63 @@ class LocalRoutineImportController extends Controller
                     ->get();
 
                 /*
-                 * Si ya existe una rutina vinculada con Free,
-                 * siempre actualizamos únicamente esa.
-                 */
+                * Si ya existe una rutina vinculada con Free,
+                * siempre actualizamos únicamente esa.
+                */
                 $freeLocalRoutine = $routines->first(
                     fn (PracticeRoutine $routine): bool =>
                         $routine->sync_source
                         === PracticeRoutine::SYNC_SOURCE_FREE_LOCAL
                 );
 
+                /*
+                * Si no existe, esta es la primera importación:
+                * creamos una rutina nueva y dejamos intactas
+                * las rutinas normales del servidor.
+                */
                 if (! $freeLocalRoutine) {
                     /*
-                     * Una rutina sin sync_source todavía no tiene
-                     * una procedencia especial asignada.
-                     */
-                    $unlinkedRoutines = $routines
-                        ->filter(
-                            fn (PracticeRoutine $routine): bool =>
-                                $routine->sync_source === null
-                        )
-                        ->values();
+                    * La primera importación necesita crear
+                    * una rutina adicional.
+                    *
+                    * Si Trial ya alcanzó su límite,
+                    * no modificamos ninguna rutina existente.
+                    */
+                    $routineLimit = $lockedUser->routineLimit();
 
-                    /*
-                     * Si hay varias candidatas, no adivinamos cuál
-                     * debe ser reemplazada por los ejercicios Free.
-                     */
-                    if ($unlinkedRoutines->count() > 1) {
+                    if (
+                        $routineLimit !== null
+                        && $routines->count() >= $routineLimit
+                    ) {
                         return null;
                     }
 
-                    /*
-                     * Si solamente existe una rutina antigua,
-                     * la adoptamos como la rutina Free.
-                     */
-                    if ($unlinkedRoutines->count() === 1) {
-                        $freeLocalRoutine =
-                            $unlinkedRoutines->first();
+                    $freeLocalRoutine = $lockedUser
+                        ->practiceRoutines()
+                        ->create([
+                            'name' => 'Free Exercises',
 
-                        $freeLocalRoutine->sync_source =
-                            PracticeRoutine::SYNC_SOURCE_FREE_LOCAL;
+                            'position' =>
+                                ((int) ($routines->max('position') ?? -1)) + 1,
 
-                        $freeLocalRoutine->save();
-                    } else {
-                        /*
-                         * Este caso cubre una cuenta sin rutinas.
-                         * El flujo normal suele crear una antes,
-                         * pero el endpoint queda completo por sí mismo.
-                         */
-                        $lastPosition =
-                            $routines->max('position');
+                            'is_default' =>
+                                $routines->isEmpty(),
 
-                        $freeLocalRoutine = $lockedUser
-                            ->practiceRoutines()
-                            ->create([
-                                'name' => 'Free Exercises',
-
-                                'position' =>
-                                    $lastPosition === null
-                                        ? 0
-                                        : ((int) $lastPosition) + 1,
-
-                                'is_default' =>
-                                    $routines->isEmpty(),
-
-                                'sync_source' =>
-                                    PracticeRoutine::SYNC_SOURCE_FREE_LOCAL,
-                            ]);
-                    }
+                            'sync_source' =>
+                                PracticeRoutine::SYNC_SOURCE_FREE_LOCAL,
+                        ]);
                 }
 
                 /*
-                 * La elección "Use my Free exercises" es explícita:
-                 * reemplazamos solo los ejercicios de free_local.
-                 */
-                $freeLocalRoutine
-                    ->steps()
-                    ->delete();
+                * La elección de conservar los ejercicios Free
+                * reemplaza solamente el contenido de free_local.
+                */
+                $freeLocalRoutine->steps()->delete();
 
-                $stepsToCreate = collect(
-                    $validated['steps']
-                )
+                $stepsToCreate = collect($validated['steps'])
                     ->values()
                     ->map(
-                        function (
-                            array $step,
-                            int $position,
-                        ): array {
+                        function (array $step,int $position): array {
                             $mode = $step['mode'];
 
                             return [
@@ -173,9 +139,7 @@ class LocalRoutineImportController extends Controller
 
                                 'duration_seconds' =>
                                     $mode === 'timer'
-                                        ? (int) $step[
-                                            'duration_seconds'
-                                        ]
+                                        ? (int) $step['duration_seconds']
                                         : null,
 
                                 'position' =>
@@ -188,9 +152,7 @@ class LocalRoutineImportController extends Controller
                     )
                     ->all();
 
-                $freeLocalRoutine
-                    ->steps()
-                    ->createMany($stepsToCreate);
+                $freeLocalRoutine->steps()->createMany($stepsToCreate);
 
                 $freeLocalRoutine->load([
                     'steps' => fn ($query) => $query
@@ -205,9 +167,7 @@ class LocalRoutineImportController extends Controller
         if ($routine === null) {
             return response()->json([
                 'status' => 'not_imported',
-
-                'reason' =>
-                    'free_local_routine_ambiguous',
+                'reason' => 'trial_routine_limit',
             ], 409);
         }
 

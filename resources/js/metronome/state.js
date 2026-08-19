@@ -71,27 +71,47 @@ export function state(practiceContext = null) {
             : DEFAULT_EXERCISE_DURATION_LIMIT
 
     const practiceMode = practiceContext?.mode === 'playlist'
-            ? 'playlist'
-            : 'routine'
+        ? 'playlist'
+        : 'routine'
 
-    const activeRoutine = practiceContext?.active_routine ?? null
-    const activePlaylist = practiceContext?.active_playlist ?? null
+    const activeRoutine =
+        practiceContext?.active_routine ?? null
 
-     /*
-     * Una rutina activa o una playlist activa significan
-     * que los datos vienen del servidor.
-     */
-    const usesServerPersistence = Boolean(activeRoutine?.id || activePlaylist?.id)
+    const activePlaylist =
+        practiceContext?.active_playlist ?? null
 
-    /*
-     * En Routine Mode contiene los ejercicios de la rutina.
-     * En Playlist Mode contiene la cola plana completa.
-     */
-    const serverQueue = Array.isArray(practiceContext?.queue)
+    const inferredPersistenceMode =
+        activeRoutine?.id || activePlaylist?.id
+            ? 'server'
+            : 'local'
+
+    const requestedPersistenceMode =
+        practiceContext?.persistence
+
+    const persistenceMode = [
+        'local',
+        'server',
+        'template',
+    ].includes(requestedPersistenceMode)
+        ? requestedPersistenceMode
+        : inferredPersistenceMode
+
+    const usesServerPersistence =
+        persistenceMode === 'server'
+
+    const usesLocalPersistence =
+        persistenceMode === 'local'
+
+    const isTemplatePlayback =
+        persistenceMode === 'template'
+
+    const contextQueue =
+        Array.isArray(practiceContext?.queue)
             ? practiceContext.queue
             : []
 
-    const practiceGroups = Array.isArray(practiceContext?.groups)
+    const practiceGroups =
+        Array.isArray(practiceContext?.groups)
             ? practiceContext.groups
             : []
 
@@ -104,7 +124,10 @@ export function state(practiceContext = null) {
 
         practiceGroups,
 
-        practiceQueue: practiceMode === 'playlist' ? serverQueue : [],
+        practiceQueue:
+            practiceMode === 'playlist'
+                ? contextQueue
+                : [],
 
         /*
          * Solamente Routine Mode puede modificar ejercicios
@@ -112,7 +135,9 @@ export function state(practiceContext = null) {
          *
          * Free/localStorage también sigue siendo Routine Mode.
          */
-        canManageExercises: practiceMode === 'routine',
+        canManageExercises:
+            practiceMode === 'routine'
+            && !isTemplatePlayback,
 
         usesServerPersistence,
 
@@ -124,9 +149,9 @@ export function state(practiceContext = null) {
          * El reproductor existente puede seguir trabajando
          * con steps sin conocer todavía Playlist Mode.
          */
-        steps: usesServerPersistence
-                ? serverQueue
-                : defaultSteps(),
+        steps: usesLocalPersistence
+            ? defaultSteps()
+            : contextQueue,
 
         currentIndex: 0,
 
@@ -156,5 +181,10 @@ export function state(practiceContext = null) {
             confirmLabel: 'Confirm',
             action: null
         },
+
+        persistenceMode,
+        usesServerPersistence,
+        usesLocalPersistence,
+        isTemplatePlayback,
     }
 }

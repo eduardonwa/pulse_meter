@@ -111,18 +111,25 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
     {
         return $this->plan === 'pro';
     }
-
-    public function hasProAccess(): bool
-    {
-        return $this->isPro() || $this->hasActiveTrial();
-    }
-
+    
     public function hasLifetimePro(): bool
     {
         return $this
             ->lifetimeEntitlement()
             ->whereNull('revoked_at')
             ->exists();
+    }
+
+    public function hasPaidProAccess(): bool
+    {
+        return $this->isPro()
+            || $this->hasLifetimePro();
+    }
+
+    public function hasProAccess(): bool
+    {
+        return $this->hasPaidProAccess()
+            || $this->hasActiveTrial();
     }
 
     /* PLAN LIMITS */

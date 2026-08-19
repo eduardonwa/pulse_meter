@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\PulsePreset;
 use App\Models\RoutineTemplateTranslation;
+use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
@@ -30,6 +32,9 @@ class RoutineTemplateController extends Controller
                         ? ($step->duration_seconds ?? 0)
                         : 0
             );
+            
+            /** @var FilesystemAdapter $publicDisk */
+            $publicDisk = Storage::disk('public');
 
             return [
                 $template->id => [
@@ -43,7 +48,7 @@ class RoutineTemplateController extends Controller
 
                     'coverAlt' => $routine->cover_alt ?: $routine->title,
                     'coverUrl' => $template->cover_image
-                        ? Storage::disk('public')->url($template->cover_image)
+                        ? $publicDisk->url($template->cover_image)
                         : asset('og-image.png'),
 
                     'type' => $template->type,
@@ -94,7 +99,11 @@ class RoutineTemplateController extends Controller
         ));
     }
 
-    public function show(string $locale,string $slug): View {
+    public function show(
+        string $locale,
+        string $slug,
+        PulsePreset $pulsePresets
+    ): View {
         $routine = RoutineTemplateTranslation::query()
             ->with([
                 'routineTemplate.user',
@@ -106,8 +115,75 @@ class RoutineTemplateController extends Controller
             ->published()
             ->firstOrFail();
 
+        $template = $routine->routineTemplate;
+
+        $templateSteps = $template->steps
+            ->sortBy('position')
+            ->values()
+            ->map(function ($step) use ($locale) {
+                return [
+                    'id' => $step->id,
+
+                    'name' => $locale === 'en'
+                        ? ($step->name_en ?: $step->name_es)
+                        : $step->name_es,
+
+                    'bpm' => $step->bpm,
+                    'mode' => $step->mode,
+
+                    'duration_seconds' =>
+                        $step->duration_seconds,
+
+                    'position' => $step->position,
+                    'origin' => 'preset',
+                ];
+            })
+            ->all();
+
+        $practiceContext = [
+            'mode' => 'routine',
+            'persistence' => 'template',
+
+            'active_routine' => null,
+            'active_playlist' => null,
+
+            'groups' => [],
+
+            'queue' => $templateSteps,
+        ];
+
+        $pulsePresets = PulsePreset::query()
+            ->where('user_id', '=', null)
+            ->orderBy('id', 'asc')
+            ->get();
+
+        $user = request()->user();
+
+        $viewerHasTemplate = $user
+            ? $user
+                ->practiceRoutines()
+                ->where(
+                    'routine_template_id',
+                    $routine->routineTemplate->id
+                )
+                ->exists()
+            : false;
+
+        $viewerType = match (true) {
+            ! $user => 'guest',
+            $user->hasLifetimePro() => 'lifetime',
+            $user->isPro() => 'pro',
+            $user->hasActiveTrial() => 'trial',
+            default => 'free'
+        };
+
         return view('routines.show', [
             'routine' => $routine,
+            'viewerType' => $viewerType,
+            'viewerHasTemplate' => $viewerHasTemplate,
+            
+            'practiceContext' => $practiceContext,
+            'pulsePresets' => $pulsePresets,
         ]);
     }
 }

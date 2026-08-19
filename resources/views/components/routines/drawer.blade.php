@@ -36,7 +36,7 @@
                 x-ref="closeButton"
                 @click="closeRoutine()"
             >
-                <x-heroicon-o-x-mark />
+                <x-heroicon-o-x-circle />
             </button>
         </header>
 

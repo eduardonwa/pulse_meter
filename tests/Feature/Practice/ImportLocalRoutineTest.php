@@ -11,88 +11,6 @@ class ImportLocalRoutineTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_it_adopts_the_only_server_routine_as_the_free_local_routine(): void
-    {
-        $user = $this->createUser([
-            'plan' => 'pro',
-        ]);
-
-        $routine = $this->createRoutine(
-            $user,
-            [
-                'name' => 'My Exercises',
-                'position' => 0,
-                'is_default' => true,
-            ],
-            [
-                [
-                    'name' => 'SERVER OLD',
-                    'bpm' => 180,
-                ],
-            ],
-        );
-
-        $response = $this
-            ->actingAs($user)
-            ->postJson(
-                '/practice-routines/import-local',
-                [
-                    'steps' => $this->localSteps(),
-                ],
-            );
-
-        $response
-            ->assertOk()
-            ->assertJsonPath('status', 'imported')
-            ->assertJsonPath(
-                'routine.id',
-                $routine->id,
-            )
-            ->assertJsonPath(
-                'routine.sync_source',
-                PracticeRoutine::SYNC_SOURCE_FREE_LOCAL,
-            )
-            ->assertJsonCount(2, 'routine.steps');
-
-        $routine->refresh();
-
-        $this->assertSame(
-            PracticeRoutine::SYNC_SOURCE_FREE_LOCAL,
-            $routine->sync_source,
-        );
-
-        /*
-         * Adoptamos la rutina existente.
-         * No creamos una segunda rutina.
-         */
-        $this->assertSame(
-            1,
-            $user->practiceRoutines()->count(),
-        );
-
-        $this->assertSame(
-            [
-                'LOCAL TEST',
-                'ONLY FREE',
-            ],
-            $routine
-                ->steps()
-                ->pluck('name')
-                ->all(),
-        );
-
-        $this->assertSame(
-            [
-                145,
-                120,
-            ],
-            $routine
-                ->steps()
-                ->pluck('bpm')
-                ->all(),
-        );
-    }
-
     public function test_it_updates_the_existing_free_local_routine_only(): void
     {
         $user = $this->createUser([
@@ -252,7 +170,7 @@ class ImportLocalRoutineTest extends TestCase
         $this->assertSame(45, $step->duration_seconds);
     }
 
-    public function test_it_refuses_to_guess_between_multiple_unlinked_routines(): void
+    public function test_it_creates_a_free_local_routine_without_touching_existing_routines(): void
     {
         $user = $this->createUser([
             'plan' => 'pro',
@@ -296,16 +214,19 @@ class ImportLocalRoutineTest extends TestCase
             );
 
         $response
-            ->assertStatus(409)
+            ->assertOk()
             ->assertJsonPath(
                 'status',
-                'not_imported',
+                'imported',
             )
             ->assertJsonPath(
-                'reason',
-                'free_local_routine_ambiguous',
+                'routine.sync_source',
+                PracticeRoutine::SYNC_SOURCE_FREE_LOCAL,
             );
 
+        /*
+        * Las rutinas existentes siguen siendo normales.
+        */
         $this->assertNull(
             $firstRoutine->fresh()->sync_source,
         );
@@ -315,9 +236,7 @@ class ImportLocalRoutineTest extends TestCase
         );
 
         $this->assertSame(
-            [
-                'Technique Exercise',
-            ],
+            ['Technique Exercise'],
             $firstRoutine
                 ->steps()
                 ->pluck('name')
@@ -325,13 +244,97 @@ class ImportLocalRoutineTest extends TestCase
         );
 
         $this->assertSame(
-            [
-                'Song Exercise',
-            ],
+            ['Song Exercise'],
             $secondRoutine
                 ->steps()
                 ->pluck('name')
                 ->all(),
+        );
+
+        /*
+        * Ahora existe una tercera rutina:
+        * la copia de Free.
+        */
+        $this->assertSame(
+            3,
+            $user->practiceRoutines()->count(),
+        );
+
+        $freeRoutine = $user
+            ->practiceRoutines()
+            ->where(
+                'sync_source',
+                PracticeRoutine::SYNC_SOURCE_FREE_LOCAL,
+            )
+            ->sole();
+
+        $this->assertSame(
+            ['LOCAL TEST', 'ONLY FREE'],
+            $freeRoutine
+                ->steps()
+                ->pluck('name')
+                ->all(),
+        );
+    }
+
+    public function test_trial_cannot_import_free_routine_when_routine_limit_is_reached(): void
+    {
+        $user = $this->createUser([
+            'plan' => 'free',
+        ]);
+
+        // Aquí necesitas activar Trial de la misma manera
+        // que ya usan tus otros tests de Trial.
+
+        $this->createRoutine($user, [
+            'name' => 'Routine 1',
+            'position' => 0,
+            'is_default' => true,
+        ]);
+
+        $this->createRoutine($user, [
+            'name' => 'Routine 2',
+            'position' => 1,
+        ]);
+
+        $this->createRoutine($user, [
+            'name' => 'Routine 3',
+            'position' => 2,
+        ]);
+
+        $response = $this
+            ->actingAs($user)
+            ->postJson(
+                '/practice-routines/import-local',
+                [
+                    'steps' => $this->localSteps(),
+                ],
+            );
+
+        $response
+            ->assertStatus(409)
+            ->assertJsonPath(
+                'status',
+                'not_imported',
+            )
+            ->assertJsonPath(
+                'reason',
+                'trial_routine_limit',
+            );
+
+        $this->assertSame(
+            3,
+            $user->practiceRoutines()->count(),
+        );
+
+        $this->assertFalse(
+            $user
+                ->practiceRoutines()
+                ->where(
+                    'sync_source',
+                    PracticeRoutine::SYNC_SOURCE_FREE_LOCAL,
+                )
+                ->exists(),
         );
     }
 

@@ -4,7 +4,7 @@ export function lifecycle() {
     return {
         // INITIALIZATION
         async init() {
-            if (!this.usesServerPersistence) {
+            if (this.usesLocalPersistence) {
                 this.loadFromLocalStorage()
 
                 this.$watch('steps', () => {

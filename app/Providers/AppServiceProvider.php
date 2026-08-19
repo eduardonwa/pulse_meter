@@ -50,5 +50,10 @@ class AppServiceProvider extends ServiceProvider
             'use-pro',
             fn (User $user): bool => $user->hasProAccess(),
         );
+
+        Gate::define(
+            'use-paid-pro',
+            fn (User $user): bool => $user->hasPaidProAccess(),
+        );
     }
 }

@@ -12,6 +12,7 @@ use App\Http\Controllers\PracticeRoutineStepController;
 use App\Http\Controllers\ProductEventController;
 use App\Http\Controllers\PulsePresetController;
 use App\Http\Controllers\RoutineTemplateController;
+use App\Http\Controllers\SaveRoutineTemplateController;
 use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\TrialController;
 use App\Http\Controllers\WelcomeController;
@@ -170,3 +171,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         [TrialController::class, 'pause'])
     ->name('trial.pause');
 });
+
+
+Route::post(
+    '/routines/{routineTemplate}/save-copy',
+    SaveRoutineTemplateController::class
+)
+    ->middleware(['auth', 'can:use-paid-pro'])
+    ->name('routines.save-copy');

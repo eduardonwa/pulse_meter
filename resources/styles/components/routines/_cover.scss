@@ -12,6 +12,16 @@
         padding: $size-3;
     }
 
+    &__media {
+        position: relative;
+
+        .badge {
+            position: absolute;
+            top: $size-3;
+            left: $size-3;
+        }
+    }
+
     &__image {
         display: block;
         width: 100%;

@@ -49,7 +49,6 @@
             <button
                 type="button"
                 class="button"
-                data-type="secondary"
                 @click="clearAllRecentSessions()"
             >
                 Clear session history
