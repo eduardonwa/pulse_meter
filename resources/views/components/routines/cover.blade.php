@@ -5,6 +5,7 @@
     'typeLabel',
     'totalSeconds' => 0,
     'totalMinutes' => 0,
+    'catalogue' => false,
 ])
 
 <article {{ $attributes->class('routine-cover') }}>
@@ -49,15 +50,21 @@
                 {{ $routine->summary }}
             </p>
         </header>
-{{-- 
-        <x-routines.facts
-            :template="$template"
-            :total-seconds="$totalSeconds"
-            :total-minutes="$totalMinutes"
-            variant="cover"
-        /> --}}
 
-        <button class="button" data-type="icon-text" type="button" aria-controls="routine-details-drawer" :aria-expanded="drawerOpen.toString()" @click="drawerOpen = true">
+        <button class="button" data-type="icon-text" type="button" aria-controls="routine-details-drawer"
+            @if ($catalogue)
+                :aria-expanded="
+                    (
+                        drawerOpen &&
+                        selectedRoutine?.id === {{ $template->id }}
+                    ).toString()
+                "
+                @click="openRoutine({{ $template->id }})"
+            @else
+                :aria-expanded="drawerOpen.toString()"
+                @click="drawerOpen = true"
+            @endif
+        >
             <x-heroicon-o-queue-list />
 
             <span>View routine</span>

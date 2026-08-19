@@ -1,18 +1,11 @@
-@props([
-    'routine',
-    'template',
-    'typeLabel',
-    'totalSeconds' => 0,
-    'totalMinutes' => 0,
-])
-
 <div class="routine-drawer" :class="{ 'routine-drawer--open': drawerOpen }" x-cloak>
     <aside class="routine-drawer__panel"
+        @click.outside="closeRoutine()"
         id="routine-details-drawer"
         role="dialog"
         aria-modal="true"
         aria-labelledby="routine-drawer-title"
-        x-show="drawerOpen"
+        x-show="drawerOpen && selectedRoutine"
         x-trap.noscroll="drawerOpen"
         x-transition:enter="routine-drawer-enter"
         x-transition:enter-start="routine-drawer-enter-start"
@@ -23,16 +16,16 @@
     >
         <header class="routine-drawer__header">
             <div class="routine-drawer__heading">
-                <span class="eyebrow">
-                    {{ $typeLabel }}
-                </span>
+                <span
+                    class="eyebrow"
+                    x-text="selectedRoutine?.typeLabel"
+                ></span>
 
                 <h2
                     class="title"
                     id="routine-drawer-title"
-                >
-                    {{ $routine->title }}
-                </h2>
+                    x-text="selectedRoutine?.title"
+                ></h2>
             </div>
 
             <button
@@ -40,7 +33,8 @@
                 data-type="icon"
                 type="button"
                 aria-label="Close routine details"
-                @click="drawerOpen = false"
+                x-ref="closeButton"
+                @click="closeRoutine()"
             >
                 <x-heroicon-o-x-mark />
             </button>
@@ -48,82 +42,50 @@
 
         <div class="routine-drawer__body">
             <x-routines.facts
-                :template="$template"
-                :total-seconds="$totalSeconds"
-                :total-minutes="$totalMinutes"
                 variant="drawer"
+                :dynamic="true"
             />
 
-            @if ($template->type === 'weekly_challenge')
-                <section
-                    class="routine-section routine-challenge"
-                >
+            <template x-if="selectedRoutine?.type === 'weekly_challenge'">
+                <section class="routine-section routine-challenge">
                     <h3 class="routine-section__title">
                         Your challenge
                     </h3>
 
-                    <p class="routine-section__description">
-                        @if ($template->recommended_sessions)
-                            Practice this routine
-                            {{ $template->recommended_sessions }}
-                            times
-                        @else
-                            Practice this routine
-                        @endif
-
-                        @if ($template->challenge_days)
-                            over
-                            {{ $template->challenge_days }}
-                            days.
-                        @else
-                            this week.
-                        @endif
-                    </p>
+                    <p class="routine-section__description" x-text="challengeDescription()"></p>
                 </section>
-            @endif
+            </template>
 
-            @if ($routine->purpose)
-                <section
-                    class="routine-section routine-purpose"
-                >
+            <template x-if="selectedRoutine?.purpose">
+                <section class="routine-section routine-purpose">
                     <h3 class="routine-section__title">
                         Purpose
                     </h3>
 
-                    <p class="routine-section__description">
-                        {!! nl2br(e($routine->purpose)) !!}
-                    </p>
+                    <p
+                        class="routine-section__description"
+                        x-text="selectedRoutine.purpose"
+                    ></p>
                 </section>
-            @endif
+            </template>
 
-            <x-routines.exercise-list
-                :template="$template"
-            />
+            <x-routines.exercise-list :dynamic="true" />
 
-            @if ($routine->instructions)
-                <section
-                    class="routine-section routine-instructions"
-                >
+            <template x-if="selectedRoutine?.instructions">
+                <section class="routine-section routine-instructions">
                     <h3 class="routine-section__title">
                         How to use it
                     </h3>
 
-                    <p class="routine-section__description">
-                        {!! nl2br(e($routine->instructions)) !!}
-                    </p>
+                    <p class="routine-section__description" x-text="selectedRoutine.instructions"></p>
                 </section>
-            @endif
+            </template>
         </div>
 
         <footer class="routine-drawer__footer">
-            <button
-                class="routine-drawer__cta button"
-                data-type="primary"
-                data-routine-template-id="{{ $template->id }}"
-                type="button"
-            >
+            <a class="routine-drawer__cta button" data-type="primary" :href="selectedRoutine?.showUrl ?? '#'">
                 Practice this routine
-            </button>
+            </a>
 
             <small class="routine-drawer__notice">
                 A free account is required.

@@ -1,0 +1,21 @@
+.routine-drawer-enter,
+.routine-drawer-leave {
+    transition: transform 260ms ease-out;
+}
+
+.routine-drawer-enter-start,
+.routine-drawer-leave-end {
+    transform: translate3d(110%, 0, 0);
+}
+
+.routine-drawer-enter-end,
+.routine-drawer-leave-start {
+    transform: translate3d(0, 0, 0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .routine-drawer-enter,
+    .routine-drawer-leave {
+        transition-duration: 1ms;
+    }
+}

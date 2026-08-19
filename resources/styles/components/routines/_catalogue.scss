@@ -1,0 +1,30 @@
+@use "../../abstracts" as *;
+
+.routines-index {
+    position: relative;
+}
+
+.routine-grid {
+    display: grid;
+    grid-template-columns: repeat(
+        auto-fill,
+        minmax(16rem, 20rem)
+    );
+    gap: $size-4;
+    align-items: start;
+}
+
+.routine-card {
+    min-width: 0;
+
+    .routine-cover__media {
+        aspect-ratio: 4 / 5;
+        overflow: hidden;
+    }
+
+    .routine-cover__image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+}

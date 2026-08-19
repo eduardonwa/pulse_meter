@@ -1,74 +1,32 @@
 @props([
-    'template',
+    'template' => null,
+    'dynamic' => false,
 ])
 
-<section
-    {{ $attributes->class([
-        'routine-section',
-        'routine-exercises',
-    ]) }}
->
+<section class="routine-section routine-exercises">
     <ul class="routine-exercises__list">
-        @foreach ($template->steps as $step)
-            @php
-                $stepName = app()->isLocale('en')
-                    ? ($step->name_en ?: $step->name_es)
-                    : $step->name_es;
-
-                $stepNotes = app()->isLocale('en')
-                    ? ($step->notes_en ?: $step->notes_es)
-                    : $step->notes_es;
-
-                $duration = $step->duration_seconds;
-
-                $durationLabel = match (true) {
-                    ! $duration => null,
-
-                    $duration < 60 =>
-                        "{$duration} sec",
-
-                    $duration % 60 === 0 =>
-                        ((int) ($duration / 60)) . ' min',
-
-                    default =>
-                        intdiv($duration, 60)
-                        . ' min '
-                        . ($duration % 60)
-                        . ' sec',
-                };
-            @endphp
-
+        <template x-for="step in selectedRoutine?.steps ?? []" :key="step.id">
             <li class="routine-exercise">
                 <div class="routine-exercise__content">
                     <header class="routine-exercise__header">
-                        <h4 class="routine-exercise__name">
-                            {{ $stepName }}
-                        </h4>
+                        <h4 class="routine-exercise__name" x-text="step.name"></h4>
 
                         <div class="routine-exercise__metadata">
-                            <span class="routine-exercise__bpm">
-                                {{ $step->bpm }} BPM
-                            </span>
+                            <span class="routine-exercise__bpm" x-text="`${step.bpm} BPM`"></span>
 
-                            @if ($durationLabel)
-                                <span class="routine-exercise__duration">
-                                    {{ $durationLabel }}
-                                </span>
-                            @endif
-                            
-                            <span class="routine-exercise__mode">
-                                {{ str($step->mode)->title() }}
-                            </span>
+                            <template x-if="step.durationSeconds">
+                                <span class="routine-exercise__duration" x-text="formatDuration( step.durationSeconds )"></span>
+                            </template>
+
+                            <span class="routine-exercise__mode" x-text="step.modeLabel" ></span>
                         </div>
                     </header>
 
-                    @if ($stepNotes)
-                        <p class="routine-exercise__notes">
-                            {{ $stepNotes }}
-                        </p>
-                    @endif
+                    <template x-if="step.notes">
+                        <p class="routine-exercise__notes" x-text="step.notes" ></p>
+                    </template>
                 </div>
             </li>
-        @endforeach
+        </template>
     </ul>
 </section>

@@ -1,0 +1,33 @@
+@use "../../abstracts" as *;
+
+.routine-detail {
+    position: relative;
+
+    &__navigation {
+        margin-block: $size-4;
+        width: 100%;
+
+        display: flex;
+        justify-content: flex-start;
+
+        border-radius: $border-radius-1;
+        padding: $size-2;
+
+        .button {
+            padding: $size-2;
+            background: hsl(var(--neutral-400) / .1);
+            border: 1px solid $color-neutral-400;
+            color: $color-neutral-900;
+
+            &:hover {
+                background-color: hsl(var(--neutral-400) / .3);
+            }
+        }
+    }
+
+    &__back-icon {
+        width: 18px;
+        height: 18px;
+        flex: 0 0 18px;
+    }
+}
