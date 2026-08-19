@@ -95,11 +95,32 @@ class RoutineTemplateForm
                                 'classic' => 'Classic',
                             ])
                             ->default('timer')
-                            ->required(),
+                            ->required()
+                            ->live()
+                            ->afterStateUpdated(function(
+                                Set $set,
+                                ?string $state,
+                            ): void {
+                                if ($state === 'classic') {
+                                    $set('duration_seconds', null);
+                                }
+                            }),
 
                         TextInput::make('duration_seconds')
                             ->numeric()
-                            ->nullable(),
+                            ->minValue(1)
+                            ->maxValue(300)
+                            ->required(
+                                fn (Get $get): bool => $get('mode') === 'timer'
+                            )
+                            ->visible(
+                                fn (Get $get): bool => $get('mode') === 'timer'
+                            )
+                            ->dehydrateStateUsing(
+                                fn ($state, Get $get) => $get('mode') === 'timer'
+                                    ? $state
+                                    : null
+                            ),
                     ])
                     ->defaultItems(1)
                     ->reorderable()

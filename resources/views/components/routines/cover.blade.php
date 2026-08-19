@@ -67,7 +67,7 @@
         >
             <x-heroicon-o-queue-list />
 
-            <span>View routine</span>
+            <span>View</span>
         </button>
     </div>
 </article>

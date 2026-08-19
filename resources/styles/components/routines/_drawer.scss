@@ -3,7 +3,9 @@
 .routine-drawer {
     position: fixed;
     z-index: 100;
+
     inset: 0;
+    inset-block-start: 89px;
 
     pointer-events: none;
     margin-inline: $size-3;
@@ -19,18 +21,14 @@
     &__panel {
         position: absolute;
 
-        inset-block-start: $size-13;
-        inset-block-end: auto;
-        inset-inline-start: $size-1;
-        inset-inline-end: $size-1;
+        inset-block: 0 auto;
+        inset-inline: $size-1;
 
         overflow-y: auto;
         will-change: transform;
 
         margin-block: 0;
-        max-height: calc(
-            100dvh - #{$size-13} - #{$size-3}
-        );
+        max-height: calc(100% - #{$size-3});
 
         background: $color-neutral-000;
         border-radius: $border-radius-2;
@@ -43,9 +41,8 @@
 
             width: 32rem;
             max-width: calc(100% - 1.5rem);
-            max-height: calc(
-                100dvh - (#{$size-4} * 2)
-            );
+            
+            max-height: calc(100% - (#{$size-4} * 2));
         }
     }
 
@@ -128,12 +125,15 @@
 }
 
 .routine-exercises {
-    border-block-start: 1px solid
-        hsl(var(--neutral-950) / .5);
+    border-block-start: 1px solid hsl(var(--neutral-950) / .5);
 
     &__list {
         margin-block-start: $size-2;
         list-style: none;
+        
+        display: flex;
+        flex-direction: column;
+        gap: $size-4;
     }
 }
 
@@ -148,8 +148,7 @@
         padding: $size-2;
 
         background: hsl(var(--primary-500) / .1);
-        border: 1px solid
-            hsl(var(--primary-950) / .5);
+        border: 1px solid hsl(var(--primary-950) / .5);
         border-radius: $border-radius-1;
         color: $color-primary-950;
         font-size: 15px;
@@ -168,7 +167,7 @@
     &__notes {
         padding: 8px;
 
-        border: 1px solid hsl(var(--neutral-300));
+        border: 1px solid hsl(var(--neutral-950) / .5);
         border-radius: $border-radius-1;
         color: $color-neutral-950;
         font-size: 14px;

@@ -48,6 +48,11 @@
                 Blog
             </a>
 
+            <a class="button display-none--on-desktop" data-type="icon" href="{{ route('routines.index', ['locale' => app()->getLocale()]) }}">
+                <x-heroicon-o-queue-list />
+                Routines
+            </a>
+
             <a class="button" data-type="icon" href="mailto:{{ config('mail.support_address') }}">
                 <x-heroicon-o-lifebuoy />
 

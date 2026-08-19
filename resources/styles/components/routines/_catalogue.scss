@@ -2,19 +2,31 @@
 
 .routines-index {
     position: relative;
+    margin-block: $size-4;
+
+    &__container {
+        .heading-3 {
+            padding-block-end: $size-8;
+        }
+    }
 }
 
 .routine-grid {
     display: grid;
-    grid-template-columns: repeat(
-        auto-fill,
-        minmax(16rem, 20rem)
-    );
+    grid-template-columns: minmax(0, 1fr);
     gap: $size-4;
     align-items: start;
+
+    @include mq(medium) {
+        grid-template-columns: repeat(
+            auto-fill,
+            minmax(16rem, 20rem)
+        );
+    }
 }
 
 .routine-card {
+    width: 100%;
     min-width: 0;
 
     .routine-cover__media {

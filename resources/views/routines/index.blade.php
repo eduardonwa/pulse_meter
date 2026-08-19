@@ -4,7 +4,7 @@
         @keydown.escape.window="closeRoutine()"
     >
         <div class="routines-index__container container">
-            <h1 class="routines-index__title">
+            <h1 class="heading-3">
                 Routines
             </h1>
 
