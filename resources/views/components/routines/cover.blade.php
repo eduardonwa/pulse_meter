@@ -65,7 +65,7 @@
                 @click="drawerOpen = true"
             @endif
         >
-            <x-heroicon-o-queue-list />
+            <x-heroicon-o-eye />
 
             <span>View</span>
         </button>
