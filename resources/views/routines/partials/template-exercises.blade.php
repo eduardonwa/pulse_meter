@@ -67,7 +67,19 @@
                         <span>{{ $step->bpm }} BPM</span>
 
                         @if ($durationLabel)
-                            <span>{{ $durationLabel }}</span>
+                            <span
+                                @if ($step->mode === 'timer' && in_array($viewerType, ['trial', 'pro', 'lifetime'], true))
+                                    x-text=" isPlaying && activeExerciseIndex === {{ $loop->index }} && remaining !== null
+                                        ? (remaining < 60 ? `${remaining} sec` : remaining % 60 === 0
+                                            ? `${remaining / 60} min`
+                                            : `${Math.floor(remaining / 60)} min ${remaining % 60} sec`
+                                        )
+                                        : @js($durationLabel)
+                                    "
+                                @endif
+                            >
+                                {{ $durationLabel }}
+                            </span>
                         @endif
                     </span>
 

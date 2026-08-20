@@ -15,16 +15,27 @@
         </header>
 
         <div class="routine-player__beats" aria-label="Metronome beats">
-            @foreach (range(1, 4) as $beat)
-                <span
-                    @class([
-                        'routine-player__beat',
-                        'routine-player__beat--active' => $beat === 1,
-                    ])
-                >
-                    {{ $beat }}
-                </span>
-            @endforeach
+            @if (in_array($viewerType, ['trial', 'pro', 'lifetime'], true))
+                <div class="routine-player__beats" aria-label="Metronome beats">
+                    <template x-for="beat in getPlaybackBeatCount()" :key="`${metronome.mode}-${beat}`">
+                        <span class="routine-player__beat" 
+                            x-text="beat"
+                            :class="{
+                                'routine-player__beat--active':
+                                    currentBeat === beat
+                            }"
+                        ></span>
+                    </template>
+                </div>
+            @else
+                <div class="routine-player__beats" aria-label="Metronome beats">
+                    @foreach (range(1, 4) as $beat)
+                        <span class="routine-player__beat">
+                            {{ $beat }}
+                        </span>
+                    @endforeach
+                </div>
+            @endif
         </div>
 
         <div class="routine-player__tempo">
@@ -37,8 +48,7 @@
             </span>
         </div>
 
-        <input
-            class="routine-player__tempo-control"
+        <input class="routine-player__tempo-control"
             type="range"
             min="30"
             max="400"
@@ -48,17 +58,13 @@
         />
 
         @if (in_array($viewerType, ['guest', 'free'], true))
-            <button
-                class="routine-player__start button"
-                data-type="primary"
-                type="button"
+            <button class="routine-player__start button" data-type="primary" type="button"
                 @click="useTemplateAsLocalRoutine()"
             >
                 Use this routine
             </button>
         @else
-            <button
-                class="routine-player__start button"
+            <button class="routine-player__start button"
                 data-type="primary"
                 type="button"
 
