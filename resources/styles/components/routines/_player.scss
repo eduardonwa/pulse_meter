@@ -148,10 +148,62 @@
     &__tempo-control {
         width: 100%;
         accent-color: $color-primary-500;
+        
+        appearance: none;
+        -webkit-appearance: none;
+
+        background: transparent;
+        border: none;
+        padding: 0;
+        
+        /* Firefox */
+        // Bolita
+        &::-moz-range-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+
+            background: $color-primary-500;
+            border: 1px solid transparent;
+            cursor: pointer;
+        }
+
+        // Barra
+        &::-moz-range-track {
+            height: 4px;
+            background: $color-neutral-300;
+            border-radius: 999px;
+        }
+
+        /* Otros */
+        // Bolita
+        &::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+
+            background: $color-primary-500;
+            border: 1px solid transparent;
+            cursor: pointer;
+        }
+
+        // Barra
+        &::-webkit-slider-runnable-track {
+            height: 4px;
+            background: $color-neutral-300;
+            border-radius: 999px;
+        }
     }
 
     &__start {
         width: 100%;
+        background-color: $color-primary-600 !important;
     }
 
     &__queue {

@@ -11,13 +11,10 @@
                         Create an account to access
                         <span class="fw-bold">
                             Trial Mode
-                        </span>.
+                        </span>
                     </p>
 
-                    <a
-                        class="badge badge--trial-register"
-                        href="{{ route('register') }}"
-                    >
+                    <a class="badge badge--trial-register" href="{{ route('register') }}">
                         Register
                     </a>
                 </section>

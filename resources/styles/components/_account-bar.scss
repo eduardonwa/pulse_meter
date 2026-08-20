@@ -17,6 +17,14 @@
         border-radius: $border-radius-1;
         border: 1px solid hsl(var(--neutral-950) / 0.4);
 
+        .badge {
+            text-decoration: none;
+            
+            &:hover {
+                color: $color-primary-900;
+            }
+        }
+
         @include mq(large) {
             max-width: fit-content;
         }

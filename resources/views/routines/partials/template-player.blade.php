@@ -58,16 +58,17 @@
         />
 
         @if (in_array($viewerType, ['guest', 'free'], true))
-            <button class="routine-player__start button" data-type="primary" type="button"
+            <button class="routine-player__start button"
+                data-type="play-metronome"
+                type="button"
                 @click="useTemplateAsLocalRoutine()"
             >
                 Use this routine
             </button>
         @else
             <button class="routine-player__start button"
-                data-type="primary"
+                data-type="play-metronome"
                 type="button"
-
                 @click="
                     if (isPlaying) {
                         stop('manual')
