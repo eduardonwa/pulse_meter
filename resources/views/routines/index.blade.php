@@ -82,19 +82,43 @@
                 return '';
             }
 
+            const sessions = Number(routine.recommendedSessions) || null;
+            const days = Number(routine.challengeDays) || null;
+            const isWeeklyChallenge = routine.type === 'weekly_challenge';
+
             let description = 'Practice this routine';
 
-            if (routine.recommendedSessions) {
-                description += ` ${routine.recommendedSessions} times`;
+            if (sessions) {
+                description += ` ${sessions} ${sessions === 1 ? 'time' : 'times'}`;
             }
 
-            if (routine.challengeDays) {
-                description += ` over ${routine.challengeDays} days.`;
-            } else {
-                description += ' this week.';
+            if (days) {
+                description += ` over ${days} ${days === 1 ? 'day' : 'days'}`;
+            } else if (isWeeklyChallenge) {
+                description += ' this week';
             }
 
-            return description;
+            return `${description}.`;
+        },
+
+        hasRecommendedSchedule() {
+            const routine = this.selectedRoutine;
+
+            if (!routine) {
+                return false;
+            }
+
+            return (
+                routine.type === 'weekly_challenge' ||
+                Boolean(routine.recommendedSessions) ||
+                Boolean(routine.challengeDays)
+            );
+        },
+
+        scheduleLabel() {
+            return this.selectedRoutine?.type === 'weekly_challenge'
+                ? 'Your challenge'
+                : 'Recommended schedule';
         },
     });
 </script>

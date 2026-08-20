@@ -1,6 +1,12 @@
 @use '../abstracts' as *;
 
-.account-bar {
+.guest-bar {
+    &__header {
+        text-align: center;
+        padding-block: $size-4 0;
+        font-weight: 600;
+    }
+
     .trial-mode-banner {
         display: flex;
         align-items: center;

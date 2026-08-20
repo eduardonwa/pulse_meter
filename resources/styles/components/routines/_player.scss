@@ -202,8 +202,11 @@
     }
 
     &__start {
-        width: 100%;
         background-color: $color-primary-600 !important;
+
+        @include mq(medium) {
+            width: 100% !important;
+        }
     }
 
     &__queue {
@@ -241,6 +244,8 @@
     &__exercise-trigger {
         width: 100%;
         padding: $size-3;
+
+        cursor: pointer;
 
         display: grid;
         grid-template-columns:

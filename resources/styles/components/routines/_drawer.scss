@@ -131,29 +131,69 @@
 
     &__list {
         margin-block-start: $size-2;
-        list-style: none;
-        
-        display: flex;
-        flex-direction: column;
+
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
         gap: $size-4;
+        align-items: stretch;
     }
 }
 
 .routine-exercise {
+    display: grid;
+    min-width: 0;
+
     &__content {
-        display: flex;
-        flex-direction: column;
-        gap: $size-1;
+        display: grid;
+        grid-template-rows: 1fr min-content;
     }
 
     &__header {
-        padding: $size-2;
+        position: relative;
+        isolation: isolate;
+        overflow: hidden;
 
+        padding: $size-2;
+        
         background: hsl(var(--primary-500) / .1);
         border: 1px solid hsl(var(--primary-950) / .5);
         border-radius: $border-radius-1;
         color: $color-primary-950;
         font-size: 15px;
+
+        &::after {
+            content: attr(data-step);
+
+            position: absolute;
+            inset-inline-end: -0.04em;
+            inset-block-end: -0.2em;
+            z-index: 0;
+
+            color: hsl(var(--primary-950) / 0.08);
+
+            font-family: Consolas, "Liberation Mono", monospace;
+            font-size: 89px;
+            font-weight: 900;
+            line-height: 1;
+            letter-spacing: -0.01em;
+
+            pointer-events: none;
+            user-select: none;
+        }
+
+        > * {
+            position: relative;
+            z-index: 1;
+        }
+    }
+
+    &__number {
+        flex: 0 0 auto;
+
+        opacity: 0.55;
+        font-size: 12px;
+        font-weight: 600;
+        font-variant-numeric: tabular-nums;
     }
 
     &__name {
@@ -167,6 +207,7 @@
     }
 
     &__notes {
+        margin-block-start: $size-2;
         padding: 8px;
 
         border: 1px solid hsl(var(--neutral-950) / .5);

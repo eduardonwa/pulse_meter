@@ -3,8 +3,10 @@
 @endphp
 
 <x-layouts.dorelog :user="$user">
-    <div class="account-bar">
+    <header class="guest-bar">
         @guest
+            <h1 class="guest-bar__header">Save your drills. Keep your tempo.</h1>
+
             @if (Route::has('register'))
                 <section class="trial-mode-banner">
                     <p>
@@ -70,7 +72,7 @@
                 @endif
             @endif
         @endauth
-    </div>
+    </header>
 
     <main class="metronome | container" data-type="wide" data-spacing="none"
         x-data="routinePlayer(

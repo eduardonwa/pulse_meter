@@ -5,11 +5,13 @@
 
 <section class="routine-section routine-exercises">
     <ul class="routine-exercises__list">
-        <template x-for="step in selectedRoutine?.steps ?? []" :key="step.id">
+        <template x-for="(step, index) in selectedRoutine?.steps ?? []" :key="step.id">
             <li class="routine-exercise">
                 <div class="routine-exercise__content">
-                    <header class="routine-exercise__header">
-                        <h4 class="routine-exercise__name" x-text="step.name"></h4>
+                    <header class="routine-exercise__header" :data-step="String(index + 1).padStart(2, '0')">
+                        <div class="routine-exercise__name">
+                            <span x-text="step.name"></span>
+                        </div>
 
                         <div class="routine-exercise__metadata">
                             <span class="routine-exercise__bpm" x-text="`${step.bpm} BPM`"></span>

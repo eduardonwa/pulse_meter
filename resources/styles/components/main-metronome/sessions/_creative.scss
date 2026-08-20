@@ -251,6 +251,10 @@
                 gap: $size-3;
 
                 .button {
+                    &:active {
+                        transform: scale(0.96);
+                    }
+
                     &.is-selected {
                         color: $color-neutral-50;
                         background: $color-neutral-950;

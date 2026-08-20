@@ -112,6 +112,10 @@
     gap: $size-2;
     padding: $size-2;
     color: $color-neutral-100;
+    
+    &:active {
+      transform: scale(0.96);
+    }
 
     &:hover {
       background: #a83232;
@@ -151,13 +155,17 @@
     display: flex;
     align-items: center;
 
+    &:active {
+      transform: scale(0.96);
+    }
+
     &:hover {
       background: hsl(var(--neutral-950) / .1);
     }
 
     svg {
-      width: 16px;
-      height: 16px;
+      width: 18px;
+      height: 18px;
       flex-shrink: 0;
     }
   }
@@ -252,6 +260,9 @@
     border-end-end-radius: 0;
     border-end-start-radius: 0;
 
+    &:active {
+      transform: scale(0.96);
+    }
   }
 
   // EXERCISES
@@ -259,6 +270,10 @@
     padding: $size-2;
     background: transparent;
     border: 1px solid transparent;
+
+    &:active {
+      transform: scale(0.96);
+    }
 
     svg { width: 20px; }
   }
@@ -270,6 +285,10 @@
     align-items: center;
     gap: $size-4;
     border: 1px solid transparent;
+    
+    &:active {
+      transform: scale(0.96);
+    }
 
     &:hover {
       background: $color-neutral-50;

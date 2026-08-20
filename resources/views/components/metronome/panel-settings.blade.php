@@ -49,8 +49,11 @@
             <button
                 type="button"
                 class="button"
+                data-type="icon-text"
                 @click="clearAllRecentSessions()"
             >
+                <x-heroicon-o-backspace />
+                
                 Clear session history
             </button>
         </div>

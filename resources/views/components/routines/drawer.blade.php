@@ -46,11 +46,21 @@
                 :dynamic="true"
             />
 
-            <template x-if="selectedRoutine?.type === 'weekly_challenge'">
+            <template
+                x-if="
+                    selectedRoutine?.type === 'weekly_challenge' ||
+                    selectedRoutine?.recommendedSessions ||
+                    selectedRoutine?.challengeDays
+                "
+            >
                 <section class="routine-section routine-challenge">
-                    <h3 class="routine-section__title">
-                        Your challenge
-                    </h3>
+                    <h3 class="routine-section__title"
+                        x-text="
+                            selectedRoutine?.type === 'weekly_challenge'
+                                ? 'Your challenge'
+                                : 'Recommended schedule'
+                        "
+                    ></h3>
 
                     <p class="routine-section__description" x-text="challengeDescription()"></p>
                 </section>
