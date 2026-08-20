@@ -12,8 +12,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
     <title>{{ $title }}</title>
-
-    <meta name="title" content="DoreLog - The metronome that remembers your drills.">
     <meta name="description" content="{{ $description }}">
 
     <meta property="og:type" content="website">
