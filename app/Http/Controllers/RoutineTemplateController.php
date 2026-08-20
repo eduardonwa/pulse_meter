@@ -132,7 +132,9 @@ class RoutineTemplateController extends Controller
                     'mode' => $step->mode,
 
                     'duration_seconds' =>
-                        $step->duration_seconds,
+                        $step->mode === 'timer'
+                            ? $step->duration_seconds
+                            : null,
 
                     'position' => $step->position,
                     'origin' => 'preset',

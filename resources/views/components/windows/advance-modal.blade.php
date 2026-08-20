@@ -4,6 +4,7 @@
     x-trap.noscroll="isWaitingForNextExercise"
     x-transition
     @click.stop
+    x-cloak
 >
     <div class="modal-panel" data-type="advance">
         <h2 class="heading | desktop-only">PRESS SPACEBAR TO CONTINUE</h2>

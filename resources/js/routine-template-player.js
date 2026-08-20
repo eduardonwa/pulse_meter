@@ -1,14 +1,21 @@
 export function routineTemplateActions() {
     return {
         useTemplateAsLocalRoutine() {
-            const confirmed = window.confirm(
-                'This will replace your current Free routine. Continue?'
-            )
+            this.openConfirmModal({
+                title: 'Replace your current routine?',
 
-            if (!confirmed) {
-                return
-            }
+                message:
+                    'This routine will replace the one currently saved in Free Mode.',
 
+                confirmLabel: 'Use this routine',
+
+                action: () => {
+                    this.replaceLocalRoutineWithTemplate()
+                },
+            })
+        },
+
+        replaceLocalRoutineWithTemplate() {
             const localSteps = this.steps.map(step => ({
                 name: step.name,
                 bpm: Number(step.bpm),

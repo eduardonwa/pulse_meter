@@ -133,4 +133,13 @@
             }
         }
     }
+
+    &[data-type="about-routine-template"] {
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-block: $size-4 $size-8;
+        }
+    }
 }

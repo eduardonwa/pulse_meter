@@ -1,12 +1,8 @@
 <section class="routine-player__queue">
-    <header class="routine-player__queue-header">
+    <header class="routine-player__queue-header display-none--until-desktop">
         <h2 class="routine-player__section-title">
-            Exercises
+            {{ $routine->title }}
         </h2>
-
-        <span style="font-size: 15px;">
-            {{ $template->steps->count() }}
-        </span>
     </header>
 
     <ol class="routine-player__exercise-list">
@@ -23,10 +19,11 @@
                 $duration = $step->duration_seconds;
 
                 $durationLabel = match (true) {
+                    $step->mode === 'classic' => 'Classic',
                     ! $duration => null,
                     $duration < 60 => "{$duration} sec",
-                    $duration % 60 === 0 =>
-                        ((int) ($duration / 60)) . ' min',
+                    $duration % 60 === 0 => ((int) ($duration / 60)) . ' min',
+
                     default =>
                         intdiv($duration, 60)
                         . ' min '
@@ -44,7 +41,11 @@
                     :aria-pressed="
                         (activeExerciseIndex === {{ $loop->index }}).toString()
                     "
-                    @click="startExercise({{ $loop->index }})"
+                    @if (in_array($viewerType, ['trial', 'pro', 'lifetime'], true))
+                        @click="startExercise({{ $loop->index }})"
+                    @else
+                        disabled
+                    @endif
                 >
                     <span class="routine-player__exercise-position">
                         {{ str($loop->iteration)->padLeft(2, '0') }}

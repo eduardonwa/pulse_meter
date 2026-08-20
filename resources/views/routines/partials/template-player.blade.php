@@ -47,26 +47,37 @@
             aria-label="Tempo"
         />
 
-        <button
-            class="routine-player__start button"
-            data-type="primary"
-            type="button"
-
-            @click="
-                if (isPlaying) {
-                    stop('manual')
-                } else {
-                    startExercise(
-                        activeExerciseIndex ?? currentIndex
-                    )
-                }
-            "
-        >
-            <span
-                x-text="isPlaying ? 'Stop' : 'Start'"
+        @if (in_array($viewerType, ['guest', 'free'], true))
+            <button
+                class="routine-player__start button"
+                data-type="primary"
+                type="button"
+                @click="useTemplateAsLocalRoutine()"
             >
-                Start
-            </span>
-        </button>
+                Use this routine
+            </button>
+        @else
+            <button
+                class="routine-player__start button"
+                data-type="primary"
+                type="button"
+
+                @click="
+                    if (isPlaying) {
+                        stop('manual')
+                    } else {
+                        startExercise(
+                            activeExerciseIndex ?? currentIndex
+                        )
+                    }
+                "
+            >
+                <span
+                    x-text="isPlaying ? 'Stop' : 'Start'"
+                >
+                    Start
+                </span>
+            </button>
+        @endif
     </div>
 </section>

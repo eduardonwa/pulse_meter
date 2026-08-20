@@ -5,9 +5,7 @@
     x-transition
     @click.stop
 >
-    <div class="modal-panel"
-        data-type="practice-review"
-    >
+    <div class="modal-panel" data-type="practice-review">
         <template x-if="!practiceFeeling">
             <div class="practice-review">
                 <h2 class="heading">How are you feeling about your progress?</h2>

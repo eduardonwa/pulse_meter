@@ -37,4 +37,31 @@ window.routinePlayer = function (
     )
 }
 
+window.routineTemplateGuest = function ({
+    steps = [],
+} = {}) {
+    const templateSteps =
+        Array.isArray(steps)
+            ? steps
+            : []
+
+    return compose(
+        {
+            steps: templateSteps,
+
+            currentIndex: 0,
+            activeExerciseIndex: null,
+
+            metronome: {
+                bpm: Number(
+                    templateSteps[0]?.bpm ?? 100
+                ),
+            },
+        },
+
+        notifications(),
+        routineTemplateActions()
+    )
+}
+
 window.numberPicker = numberPicker

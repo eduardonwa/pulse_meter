@@ -1,59 +1,48 @@
-<section class="routine-player__details">
+{{-- DESKTOP --}}
+<section class="routine-player__details desktop-only">
     <h2 class="routine-player__section-title">
         About this routine
     </h2>
 
-    <dl class="routine-player__facts">
-        <div class="routine-player__fact">
-            <dt>Instrument</dt>
-
-            <dd>
-                {{ str($template->instrument)->title() }}
-            </dd>
-        </div>
-
-        <div class="routine-player__fact">
-            <dt>Difficulty</dt>
-
-            <dd>
-                {{ str($template->difficulty)->title() }}
-            </dd>
-        </div>
-        
-        @if ($totalSeconds > 0)
-            <div class="routine-player__fact">
-                <dt>Duration</dt>
-
-                <dd>{{ $totalMinutes }} minutes</dd>
-            </div>
-        @endif
-
-        <div class="routine-player__fact">
-            <dt>Exercises</dt>
-
-            <dd>{{ $template->steps->count() }}</dd>
-        </div>
-    </dl>
-
-    <div class="routine-player__description">
-        <h3>Summary</h3>
-
-        <p>{{ $routine->summary }}</p>
-    </div>
-
-    @if ($routine->purpose)
-        <div class="routine-player__description">
-            <h3>Purpose</h3>
-
-            <p>{{ $routine->purpose }}</p>
-        </div>
-    @endif
-
-    @if ($routine->instructions)
-        <div class="routine-player__description">
-            <h3>How to use it</h3>
-
-            <p>{{ $routine->instructions }}</p>
-        </div>
-    @endif
+    @include('routines.partials.template-details-content')
 </section>
+
+{{-- MOBILE --}}
+<div class="routine-player__details-mobile mobile-only" x-data="{ aboutModalOpen: false }">
+    <button class="routine-player__details-button button"
+        type="button"
+        data-type="outline"
+        @click="aboutModalOpen = true"
+    >
+        About this routine
+    </button>
+
+    <div class="modal-shell"
+        x-cloak
+        x-show="aboutModalOpen"
+        x-trap.noscroll="aboutModalOpen"
+        x-transition
+        @keydown.escape.window="aboutModalOpen = false"
+        @click.self="aboutModalOpen = false"
+    >
+        <div class="modal-panel" data-type="about-routine-template" @click.stop>
+            <div class="header">
+                <h2 class="heading">
+                    About this routine
+                </h2>
+
+                <button class="button" type="button" data-type="icon" aria-label="Close" @click="aboutModalOpen = false">
+                    <x-heroicon-o-x-circle
+                        width="20"
+                        height="20"
+                        aria-hidden="true"
+                    />
+                </button>
+            </div>
+
+            <section class="routine-player__details">
+                @include('routines.partials.template-details-content')
+            </section>
+        </div>
+    </div>
+</div>

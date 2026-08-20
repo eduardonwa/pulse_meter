@@ -1,6 +1,8 @@
 @use "../../abstracts" as *;
 
 .routine-player {
+    margin-block-end: $size-8;
+
     &__layout {
         display: grid;
         gap: $size-5;
@@ -262,6 +264,12 @@
         border-radius: $border-radius-2;
     }
 
+    &__details-button {
+        width: 100%;
+        border: 1px solid hsl(var(--neutral-950)) !important;
+        color: $color-neutral-900 !important;
+    }
+
     &__section-title {
         font-size: 15px;
     }
@@ -269,6 +277,10 @@
     &__facts {
         display: flex;
         flex-direction: column;
+        
+        @include mq(large) {
+            padding-block-start: $size-2;
+        }
     }
 
     &__fact {
@@ -277,8 +289,12 @@
         gap: $size-4;
 
         padding-block: $size-2;
-        border-block-end: 1px solid
-            hsl(var(--neutral-950) / .12);
+
+        &:first-child {
+            padding-block-start: 0;
+        }
+
+        border-block-end: 1px solid hsl(var(--neutral-950) / .12);
 
         dt {
             color: $color-neutral-600;
@@ -296,6 +312,10 @@
         display: flex;
         flex-direction: column;
         gap: $size-1;
+        
+        @include mq(large) {
+            padding-block: $size-2;
+        }
 
         h3 {
             font-size: $font-size-300;

@@ -38,13 +38,21 @@
 <x-layouts.dorelog>
     <main class="routine-player"
 
-        x-data="routinePlayer(
-            @js($practiceContext),
-            @js($pulsePresets)
-        )"
+        @if (in_array($viewerType, ['trial', 'pro', 'lifetime'], true))
+            x-data="routinePlayer(
+                @js($practiceContext),
+                @js($pulsePresets)
+            )"
+
+            @keydown.window="handleKeydown($event)"
+        @else
+            x-data="routineTemplateGuest({
+                steps: @js($practiceContext['queue'])
+            })"
+        @endif
 
         data-template-title="{{ $routine->title }}"
-
+        
         @if (in_array($viewerType, ['guest', 'free'], true))
             data-use-template-url="{{ route('welcome') }}"
         @endif
@@ -89,6 +97,12 @@
                 @include('routines.partials.template-exercises')
             </div>
         </div>
+        
+        @if (in_array( $viewerType, ['trial', 'pro', 'lifetime'], true))
+            <x-windows.advance-modal />
+        @endif
+
+        <x-windows.confirm-modal />
     </main>
 
     <x-windows.pro-upsell-modal :viewer-type="$viewerType" />
