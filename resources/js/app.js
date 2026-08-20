@@ -8,6 +8,7 @@ import {
 } from './analytics/product-events'
 
 import './metronome'
+import './trial-mode'
 
 window.Alpine = Alpine
 

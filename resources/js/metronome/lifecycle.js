@@ -30,6 +30,10 @@ export function lifecycle() {
             })
         },
 
+        destroy() {
+            this.stop?.('navigation')
+        },
+
         // GLOBAL SHORCUTS
         handleKeydown(event) {
             if (event.key === 'Escape') {

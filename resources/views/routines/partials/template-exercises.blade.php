@@ -83,12 +83,38 @@
                         @endif
                     </span>
 
-                    <x-heroicon-o-play
-                        class="routine-player__exercise-icon"
-                        width="18"
-                        height="18"
-                        aria-hidden="true"
-                    />
+                    @if (in_array($viewerType, ['trial', 'pro', 'lifetime'], true))
+                        <x-heroicon-o-pause
+                            class="routine-player__exercise-icon"
+                            width="18"
+                            height="18"
+                            aria-hidden="true"
+                            x-show="
+                                isPlaying
+                                && activeExerciseIndex === {{ $loop->index }}
+                            "
+                            x-cloak
+                        />
+
+                        <x-heroicon-o-play
+                            class="routine-player__exercise-icon"
+                            width="18"
+                            height="18"
+                            aria-hidden="true"
+                            x-show="
+                                !isPlaying
+                                || activeExerciseIndex !== {{ $loop->index }}
+                            "
+                        />
+                    @else
+                        <x-heroicon-o-play
+                            class="routine-player__exercise-icon"
+                            width="18"
+                            height="18"
+                            aria-hidden="true"
+                        />
+
+                    @endif
                 </button>
             </li>
         @endforeach

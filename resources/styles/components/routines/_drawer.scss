@@ -35,6 +35,8 @@
         box-shadow: $box-shadow-4;
         padding: $size-4;
 
+        scrollbar-width: thin;
+
         @include mq(medium) {
             inset-block-start: $size-4;
             inset-inline-start: auto;

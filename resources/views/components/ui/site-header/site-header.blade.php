@@ -1,7 +1,7 @@
 <header class="site-header" x-data="{ sidebar: false }">
     <div class="site-header__inner container" data-type="site-header">
         <a href="/" class="wordmark" wire:navigate>dorelog</a>
-
+        
         <nav class="nav">
             @auth
                 {{-- Trigger mobile --}}
@@ -74,4 +74,8 @@
             <x-ui.site-header.sidebar />
         </nav>
     </div>
+    
+    @auth
+        <x-ui.site-header.trial-mode :user="$user" />
+    @endauth
 </header>

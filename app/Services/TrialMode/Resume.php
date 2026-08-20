@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\DB;
 
 class Resume
 {
-        public function resume(Request $request): RedirectResponse
+    public function resume(Request $request): RedirectResponse
     {
         $data = $request->validate([
             'session_id' => ['required', 'uuid'],
