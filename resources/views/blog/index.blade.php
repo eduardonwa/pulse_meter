@@ -1,4 +1,4 @@
-<x-layouts.dorelog>
+<x-layouts.dorelog title="{{ __('blog.title') }}" description="{{ __('blog.description') }}">
     <section class="container | posts" data-type="blog-post">
         <div class="flow">
             <div class="lang" x-data="{ dropdownOpen: false }">

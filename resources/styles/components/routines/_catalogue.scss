@@ -17,6 +17,8 @@
     gap: $size-4;
     align-items: start;
 
+    margin-block-end: $size-12;
+
     @include mq(medium) {
         grid-template-columns: repeat(
             auto-fill,

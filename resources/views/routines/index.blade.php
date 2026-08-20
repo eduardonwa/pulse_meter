@@ -1,4 +1,4 @@
-<x-layouts.dorelog>
+<x-layouts.dorelog title="{{ __('routines.title') }}" description="{{ __('routines.description') }}">
     <main class="routines-index"
         x-data="routineCatalogue(@js($routineData))"
         @keydown.escape.window="closeRoutine()"
