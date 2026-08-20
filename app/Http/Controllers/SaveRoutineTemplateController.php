@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\RoutineTemplate;
 use App\Services\Practice\CreateRoutineFromTemplate;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\Request;
 
 class SaveRoutineTemplateController extends Controller
@@ -55,12 +56,32 @@ class SaveRoutineTemplateController extends Controller
             ],
         ]);
 
-        $routine = $creator->create(
-            $user,
-            $routineTemplate->id,
-            $validated['name'],
-            $validated['steps'],
-        );
+        $alreadySaved = $user
+            ->practiceRoutines()
+            ->where(
+                'routine_template_id',
+                $routineTemplate->id
+            )
+            ->exists();
+
+        if ($alreadySaved) {
+            return response()->json([
+                'message' => 'This routine is already in your routines.',
+            ], 409);
+        }
+
+        try {
+            $routine = $creator->create(
+                $user,
+                $routineTemplate->id,
+                $validated['name'],
+                $validated['steps'],
+            );
+        } catch (UniqueConstraintViolationException $exception) {
+            return response()->json([
+                'message' => 'This routine is already in your routines.',
+            ], 409);
+        }
 
         return response()->json([
             'status' => 'saved',
