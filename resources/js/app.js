@@ -9,6 +9,7 @@ import {
 
 import './metronome'
 import './trial-mode'
+import './alphatab-exercises'
 
 window.Alpine = Alpine
 

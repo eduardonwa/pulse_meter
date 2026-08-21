@@ -13,6 +13,10 @@
         "laravel-vite-plugin": "^3.1",
         "sass": "^1.99.0",
         "tailwindcss": "^4.3.2",
-        "vite": "^8.0.0"
+        "vite": "^8.2.2"
+    },
+    "dependencies": {
+        "@coderline/alphatab": "^1.8.4",
+        "@coderline/alphatab-vite": "^1.8.4"
     }
 }

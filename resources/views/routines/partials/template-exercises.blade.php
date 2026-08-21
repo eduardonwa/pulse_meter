@@ -32,7 +32,18 @@
                 };
             @endphp
 
-            <li class="routine-player__exercise">
+            <li class="routine-player__exercise"
+                x-data="{ detailsOpen: false }"
+
+                @routine:exercise-clear-active.window="
+                    detailsOpen = false
+                "
+
+                @routine:exercise-active.window="
+                    const isActive = $event.detail.index === {{ $loop->index }};
+                    detailsOpen = isActive && {{ $step->alpha_tex ? 'true' : 'false' }};
+                "
+            >
                 <button class="routine-player__exercise-trigger" type="button"
                     :class="{
                         'routine-player__exercise-trigger--active':
@@ -116,6 +127,63 @@
 
                     @endif
                 </button>
+
+                @if ($step->alpha_tex)
+                    <button class="routine-player__exercise-details-toggle button" type="button"
+                        :aria-expanded="detailsOpen.toString()"
+                        @click="
+                            detailsOpen = !detailsOpen;
+
+                            if (detailsOpen) {
+                                $nextTick(() => {
+                                    window.dispatchEvent(new CustomEvent('alphatab:mount', {
+                                        detail: { element: $refs.alphaTab }
+                                    }));
+                                });
+                            } else {
+                                window.dispatchEvent(new Event('alphatab:stop'));
+                            }
+                        "
+                    >
+                        <span x-text="detailsOpen ? 'Hide exercise' : 'View exercise'">View exercise</span>
+                    </button>
+
+                    <div class="routine-player__exercise-details" x-show="detailsOpen" x-cloak>
+                        <div x-ref="alphaTab"
+                            data-alphatab
+                            data-exercise-index="{{ $loop->index }}"
+                            data-alpha-tex="{{ base64_encode($step->alpha_tex) }}"
+                            data-bpm="{{ $step->bpm }}">
+                        </div>
+
+                        <div class="routine-player__exercise-audio-controls" x-data="{ looping: true, hearing: false }">
+                            <button class="badge badge--neutral" type="button"
+                                @click="
+                                    hearing = !hearing;
+
+                                    window.dispatchEvent(new CustomEvent('alphatab:play-pause', {
+                                        detail: { element: $refs.alphaTab }
+                                    }));
+                                "
+                            >
+                                <span x-text="hearing ? 'Mute' : 'Listen'">Listen</span>
+                            </button>
+
+                            <button class="badge badge--neutral" type="button"
+                                :aria-pressed="looping.toString()"
+                                @click="
+                                    looping = !looping;
+
+                                    window.dispatchEvent(new CustomEvent('alphatab:toggle-loop', {
+                                        detail: { element: $refs.alphaTab }
+                                    }));
+                                "
+                            >
+                                <span x-text="looping ? 'Enable loop' : 'Disable loop'">Loop on</span>
+                            </button>
+                        </div>
+                    </div>
+                @endif
             </li>
         @endforeach
     </ol>

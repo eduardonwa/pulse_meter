@@ -17,16 +17,91 @@
     }
 
     &__controls {
+        border: 1px solid hsl(var(--neutral-950) / .2);
+        border-radius: $border-radius-2;
+
+        padding: $size-4;
+
         display: flex;
-        align-items: center;
-        gap: $size-2;
+        flex-direction: column;
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            font-size: 13px;
+            text-transform: uppercase;
+            color: $color-neutral-600;
+            font-weight: 600;
+
+            .button {
+                padding: $size-1;
+                border: 1px solid hsl(var(--neutral-950));
+                border-radius: 50%;
+
+                svg {
+                    transition: transform 150ms ease;
+                    color: $color-neutral-950;
+                    stroke-width: 2.5;
+                }
+            }
+        }
+
+        .rotate-180 { transform: rotate(180deg); }
+
+        .save-routine {
+            margin-block: $size-2;
+            
+            .button {
+                background-color: $color-accent-400;
+                padding: $size-2;
+    
+                &:hover { background-color: $color-accent-500; }
+            }
+
+            .button.disabled {
+                background-color: $color-neutral-200;
+                border: 1px solid hsl(var(--neutral-400) / .3);
+            }
+        }
         
-        .button {
-            background-color: $color-accent-400;
+        .loop-control {
             padding: $size-2;
 
-            &:hover {
-                background-color: $color-accent-500;
+            display: flex;
+            flex-direction: column;
+
+            .label { font-size: 14px; }
+
+            /* control de loop */
+            &__toggle {
+                margin-block-start: $size-2;
+
+                display: inline-flex;
+                align-items: center;
+
+                border-radius: 999px;
+
+                .option {
+                    border: 0;
+                    border-radius: 999px;
+                    padding: $size-1 $size-4;
+
+                    background-color: transparent;
+                    font-size: 13px;
+
+                    cursor: pointer;
+                    
+                    &:active {
+                        transform: scale(0.96);
+                    }
+
+                    &--active {
+                        color: $color-neutral-100;
+                        background-color: $color-neutral-900;
+                    }
+                }
             }
         }
     }
@@ -310,6 +385,21 @@
         flex: 0 0 18px;
     }
 
+    &__exercise-audio-controls {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: $size-4;
+
+        padding-block-end: $size-4;
+
+        .badge {
+            &:active {
+                transform: scale(0.96);
+            }
+        }
+    }
+
     &__details {
         padding: $size-4;
 
@@ -319,6 +409,16 @@
 
         border: 1px solid hsl(var(--neutral-950) / .2);
         border-radius: $border-radius-2;
+    }
+
+    &__exercise-details-toggle.button {
+        width: 100%;
+
+        font-size: 13px;
+        border-radius: 0;
+
+        color: $color-extra-50;
+        background-color: hsl(var(--neutral-800) / .9);
     }
 
     &__details-button {
@@ -385,4 +485,17 @@
             white-space: pre-line;
         }
     }
+}
+
+/* AlphaTex */
+
+/* cursor sobre la nota*/
+.at-cursor-beat {
+    width: 3px;
+    background: $color-primary-400;
+}
+
+/* seleccion del usuario */
+.at-selection div {
+    background: rgba(64, 64, 255, 0.1);
 }

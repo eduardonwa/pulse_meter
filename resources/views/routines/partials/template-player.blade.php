@@ -13,7 +13,7 @@
                 {{ $initialStepName }}
             </h2>
         </header>
-
+                
         <div class="routine-player__beats" aria-label="Metronome beats">
             @if (in_array($viewerType, ['trial', 'pro', 'lifetime'], true))
                 <div class="routine-player__beats" aria-label="Metronome beats">

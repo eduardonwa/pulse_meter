@@ -7,7 +7,7 @@
     <ul class="routine-exercises__list">
         <template x-for="(step, index) in selectedRoutine?.steps ?? []" :key="step.id">
             <li class="routine-exercise">
-                <div class="routine-exercise__content">
+                <div class="routine-exercise__content">                   
                     <header class="routine-exercise__header" :data-step="String(index + 1).padStart(2, '0')">
                         <div class="routine-exercise__name">
                             <span x-text="step.name"></span>

@@ -23,6 +23,7 @@ export function exercises() {
 
         // PLAYBACK FLOW
         autoAdvance: true,
+        loopAllExercises: true,
         isWaitingForNextExercise: false,
         nextExerciseIndex: null,
 
@@ -438,6 +439,22 @@ export function exercises() {
                 exerciseIndex: index,
             })
 
+            window.dispatchEvent(new CustomEvent('routine:exercise-active', {
+                detail: { index }
+            }))
+
+            // Esto es por si hay auto advance y queremos activar tambien alphaTex
+            this.$nextTick(() => {
+                requestAnimationFrame(() => {
+                    window.dispatchEvent(new CustomEvent('alphatab:start-exercise', {
+                        detail: {
+                            index,
+                            loop: this.loopAllExercises
+                        }
+                    }))
+                })
+            })
+
             /*
             * Tracking específico del ejercicio.
             */
@@ -583,9 +600,7 @@ export function exercises() {
                     bpm: Number(completedStep.bpm),
                     duration_seconds:
                         completedStep.mode === 'timer'
-                            ? Number(
-                                completedStep.duration_seconds ?? 60
-                            )
+                            ? Number(completedStep.duration_seconds ?? 60)
                             : null,
                     auto_advance: Boolean(this.autoAdvance),
                 })
@@ -594,25 +609,38 @@ export function exercises() {
             this.playFinishSound()
 
             if (!this.autoAdvance) {
+                window.dispatchEvent(
+                    new Event('routine:exercise-clear-active')
+                )
+
                 this.stop('completed')
                 return
             }
 
-            const nextIndex =
-                this.activeExerciseIndex + 1
+            const nextIndex = this.activeExerciseIndex + 1
 
             if (nextIndex >= this.steps.length) {
+                window.dispatchEvent(
+                    new Event('routine:exercise-clear-active')
+                )
+
                 this.stop()
                 this.openPracticeReviewModal()
                 return
             }
+
+            window.dispatchEvent(
+                new Event('routine:exercise-clear-active')
+            )
 
             this.stop('completed')
 
             this.nextExerciseIndex = nextIndex
             this.isWaitingForNextExercise = true
 
-            this.$nextTick(() => { document.activeElement?.blur() })
+            this.$nextTick(() => {
+                document.activeElement?.blur()
+            })
         },
 
         continueToNextExercise() {

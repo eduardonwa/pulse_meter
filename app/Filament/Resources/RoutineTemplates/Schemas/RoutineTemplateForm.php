@@ -121,6 +121,10 @@ class RoutineTemplateForm
                                     ? $state
                                     : null
                             ),
+                        Textarea::make('alpha_tex')
+                            ->label('AlphaTex pattern')
+                            ->rows(8)
+                            ->helperText('Optional alphaTab/alphaTex pattern for this exercise.')
                     ])
                     ->defaultItems(1)
                     ->reorderable()

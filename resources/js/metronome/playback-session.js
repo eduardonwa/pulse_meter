@@ -119,6 +119,8 @@ export function playbackSession() {
             this.remaining = null
             this.activeExerciseIndex = null
             this.playbackSource = null
+
+            window.dispatchEvent(new Event('alphatab:stop'))
         },
         
         // BPM UPDATES

@@ -18,6 +18,13 @@
 
     svg, img { width: 1em; height: 1em; }
 
+    &--neutral {
+        background: hsl(var(--neutral-200) / .4);
+        border-color: $color-neutral-500;
+        color: $color-neutral-900;
+        cursor: pointer;
+    }
+
     &--manage {
         background: hsl(var(--primary-200) / .4);
         border-color: $color-primary-200;

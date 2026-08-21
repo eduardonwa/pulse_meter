@@ -115,6 +115,23 @@ export function state(practiceContext = null) {
             ? practiceContext.groups
             : []
 
+    const initialSteps = usesLocalPersistence
+        ? defaultSteps()
+        : contextQueue
+
+    const initialStep = initialSteps[0] ?? null
+
+    const initialMetronome = {
+        ...defaultMetronome(),
+        ...(initialStep && {
+            bpm: Number(initialStep.bpm),
+            mode: initialStep.mode,
+            duration_seconds: initialStep.mode === 'timer'
+                ? Number(initialStep.duration_seconds ?? 60)
+                : 60,
+        }),
+    }
+
     return {
         // PRACTICE MODE
         practiceMode,
@@ -149,14 +166,12 @@ export function state(practiceContext = null) {
          * El reproductor existente puede seguir trabajando
          * con steps sin conocer todavía Playlist Mode.
          */
-        steps: usesLocalPersistence
-            ? defaultSteps()
-            : contextQueue,
+        steps: initialSteps,
 
         currentIndex: 0,
 
         // METRONOME
-        metronome: defaultMetronome(),
+        metronome: initialMetronome,
         isPlaying: false,
 
         // NAVIGATION
