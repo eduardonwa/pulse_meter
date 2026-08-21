@@ -21,6 +21,23 @@ function decodeBase64(value) {
     return new TextDecoder().decode(bytes)
 }
 
+export function dispatchPlaybackState(
+    element,
+    state,
+    playingState
+) {
+    const playing = state === playingState
+
+    window.dispatchEvent(
+        new CustomEvent('alphatab:playback-state', {
+            detail: {
+                element,
+                playing,
+            },
+        })
+    )
+}
+
 async function mountAlphaTab(element) {
     if (!element) return null
 
@@ -59,16 +76,10 @@ async function mountAlphaTab(element) {
     })
 
     api.playerStateChanged.on(args => {
-        const playing =
-            args.state === alphaTab.synth.PlayerState.Playing
-
-        window.dispatchEvent(
-            new CustomEvent('alphatab:playback-state', {
-                detail: {
-                    element,
-                    playing,
-                },
-            })
+        dispatchPlaybackState(
+            element,
+            args.state,
+            alphaTab.synth.PlayerState.Playing
         )
     })
 
