@@ -73,7 +73,7 @@ class SaveRoutineTemplateController extends Controller
         try {
             $routine = $creator->create(
                 $user,
-                $routineTemplate->id,
+                $routineTemplate,
                 $validated['name'],
                 $validated['steps'],
             );

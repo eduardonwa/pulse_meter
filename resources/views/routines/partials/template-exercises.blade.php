@@ -156,30 +156,55 @@
                             data-bpm="{{ $step->bpm }}">
                         </div>
 
-                        <div class="routine-player__exercise-audio-controls" x-data="{ looping: true, hearing: false }">
+                        <div class="routine-player__exercise-audio-controls"
+                            x-data="{
+                                looping: false,
+                                hearing: false
+                            }"
+
+                            @alphatab:playback-state.window="
+                                if ($event.detail.element === $refs.alphaTab) {
+                                    hearing = $event.detail.playing;
+                                }
+                            "
+                        >
                             <button class="badge badge--neutral" type="button"
                                 @click="
-                                    hearing = !hearing;
-
-                                    window.dispatchEvent(new CustomEvent('alphatab:play-pause', {
-                                        detail: { element: $refs.alphaTab }
-                                    }));
+                                    window.dispatchEvent(
+                                        new CustomEvent(
+                                            'alphatab:play-pause',
+                                            {
+                                                detail: {
+                                                    element: $refs.alphaTab
+                                                }
+                                            }
+                                        )
+                                    );
                                 "
                             >
-                                <span x-text="hearing ? 'Mute' : 'Listen'">Listen</span>
+                                <span x-text="hearing ? 'Mute' : 'Listen'">
+                                    Listen
+                                </span>
                             </button>
 
-                            <button class="badge badge--neutral" type="button"
-                                :aria-pressed="looping.toString()"
+                            <button class="badge badge--neutral" type="button" :aria-pressed="looping.toString()"
                                 @click="
                                     looping = !looping;
-
-                                    window.dispatchEvent(new CustomEvent('alphatab:toggle-loop', {
-                                        detail: { element: $refs.alphaTab }
-                                    }));
+                                    window.dispatchEvent(
+                                        new CustomEvent(
+                                            'alphatab:toggle-loop',
+                                            {
+                                                detail: {
+                                                    element: $refs.alphaTab
+                                                }
+                                            }
+                                        )
+                                    );
                                 "
                             >
-                                <span x-text="looping ? 'Enable loop' : 'Disable loop'">Loop on</span>
+                                <span x-text="looping ? 'Disable loop' : 'Enable loop'">
+                                    Enable loop
+                                </span>
                             </button>
                         </div>
                     </div>

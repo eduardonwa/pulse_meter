@@ -41,8 +41,13 @@ export function routineTemplateActions() {
         },
 
         async saveTemplateCopy() {
-            const url =
-                this.$root.dataset.saveTemplateCopyUrl
+            console.log('saveTemplateCopy fired')
+
+            const url = this.$el
+                .closest('.routine-player')
+                ?.dataset.saveTemplateCopyUrl
+            
+            console.log('saveTemplateCopyUrl:', url)
 
             if (!url) {
                 return
@@ -81,6 +86,8 @@ export function routineTemplateActions() {
                                     step.duration_seconds
                                 )
                                 : null,
+                        
+                        alpha_tex: step.alpha_tex ?? null,
                     })),
                 }),
             })

@@ -1,5 +1,21 @@
 <template x-for="(step, index) in steps" :key="index">
-    <li class="exercise-layout" :class="{ 'is-active': isPlaying && playbackSource === 'exercise' && currentIndex === index }">
+    <li class="exercise-layout" x-data="{ detailsOpen: false }"
+        :class="{
+            'is-active':
+                isPlaying
+                && playbackSource === 'exercise'
+                && currentIndex === index
+        }"
+
+        @routine:exercise-clear-active.window="
+            detailsOpen = false
+        "
+
+        @routine:exercise-active.window="
+            const isActive = $event.detail.index === index;
+            detailsOpen = isActive && !!step.alpha_tex;
+        "
+    >
         <div class="exercise-layout__bpm">
             <x-inputs.number-picker
                 class="exercise-row__bpm"
@@ -76,5 +92,103 @@
                 </button>
             </section>
         </div>
+
+        <template x-if="step.alpha_tex">
+            <div>
+                <button class="routine-player__exercise-details-toggle button" type="button" :aria-expanded="detailsOpen.toString()"
+                    @click="
+                        detailsOpen = !detailsOpen;
+
+                        if (detailsOpen) {
+                            $nextTick(() => {
+                                window.dispatchEvent(
+                                    new CustomEvent('alphatab:mount', {
+                                        detail: {
+                                            element: $refs.alphaTab
+                                        }
+                                    })
+                                );
+                            });
+                        } else {
+                            window.dispatchEvent(
+                                new Event('alphatab:stop')
+                            );
+                        }
+                    "
+                >
+                    <span
+                        x-text="
+                            detailsOpen
+                                ? 'Hide exercise'
+                                : 'View exercise'
+                        "
+                    >
+                        View exercise
+                    </span>
+                </button>
+
+                <div class="routine-player__exercise-details" x-show="detailsOpen" x-cloak>
+                    <div
+                        x-ref="alphaTab"
+                        data-alphatab
+                        :data-exercise-index="index"
+                        :data-alpha-tex="btoa(step.alpha_tex)"
+                        :data-bpm="step.bpm"
+                    ></div>
+
+                    <div class="routine-player__exercise-audio-controls"
+                        x-data="{
+                            looping: false,
+                            hearing: false
+                        }"
+
+                        @alphatab:playback-state.window="
+                            if ($event.detail.element === $refs.alphaTab) {
+                                hearing = $event.detail.playing;
+                            }
+                        "
+                    >
+                        <button class="badge badge--neutral" type="button"
+                            @click="
+                                window.dispatchEvent(
+                                    new CustomEvent(
+                                        'alphatab:play-pause',
+                                        {
+                                            detail: {
+                                                element: $refs.alphaTab
+                                            }
+                                        }
+                                    )
+                                );
+                            "
+                        >
+                            <span x-text="hearing ? 'Mute' : 'Listen'">
+                                Listen
+                            </span>
+                        </button>
+
+                        <button class="badge badge--neutral" type="button" :aria-pressed="looping.toString()"
+                            @click="
+                                looping = !looping;
+                                window.dispatchEvent(
+                                    new CustomEvent(
+                                        'alphatab:toggle-loop',
+                                        {
+                                            detail: {
+                                                element: $refs.alphaTab
+                                            }
+                                        }
+                                    )
+                                );
+                            "
+                        >
+                            <span x-text="looping ? 'Disable loop' : 'Enable loop'">
+                                Enable loop
+                            </span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </template>
     </li>
 </template>

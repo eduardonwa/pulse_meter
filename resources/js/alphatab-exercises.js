@@ -58,6 +58,20 @@ async function mountAlphaTab(element) {
         },
     })
 
+    api.playerStateChanged.on(args => {
+        const playing =
+            args.state === alphaTab.synth.PlayerState.Playing
+
+        window.dispatchEvent(
+            new CustomEvent('alphatab:playback-state', {
+                detail: {
+                    element,
+                    playing,
+                },
+            })
+        )
+    })
+
     const readyPromise = new Promise(resolve => {
         api.playerReady.on(() => {
             resolve()

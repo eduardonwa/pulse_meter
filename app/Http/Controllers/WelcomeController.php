@@ -189,7 +189,7 @@ class WelcomeController extends Controller
 
                             'duration_seconds' =>
                                 $step->duration_seconds,
-
+                            'alpha_tex' => $step->alpha_tex,
                             'position' => $step->position,
                             'origin' => $step->origin,
                         ])
@@ -259,6 +259,7 @@ class WelcomeController extends Controller
                         'bpm' => $step->bpm,
                         'mode' => $step->mode,
                         'duration_seconds' => $step->duration_seconds,
+                        'alpha_tex' => $step->alpha_tex,
                         'position' => $step->position,
                         'origin' => $step->origin,
                     ])

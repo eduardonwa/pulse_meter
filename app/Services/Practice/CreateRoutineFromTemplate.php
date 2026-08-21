@@ -3,6 +3,7 @@
 namespace App\Services\Practice;
 
 use App\Models\PracticeRoutine;
+use App\Models\RoutineTemplate;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 
@@ -10,12 +11,13 @@ class CreateRoutineFromTemplate
 {
     public function create(
         User $user,
-        int $routineTemplateId,
+        RoutineTemplate $routineTemplate,
         string $name,
         array $steps
     ): PracticeRoutine {
         return DB::transaction(function () use (
-            $routineTemplateId, $user,
+            $routineTemplate,
+            $user,
             $name,
             $steps,
         ) {
@@ -30,13 +32,19 @@ class CreateRoutineFromTemplate
             $routine = $lockedUser
                 ->practiceRoutines()
                 ->create([
-                    'routine_template_id' => $routineTemplateId,
+                    'routine_template_id' => $routineTemplate->id,
                     'name' => $name,
                     'position' => $lastPosition === null
                         ? 0
                         : $lastPosition + 1,
                     'is_default' => false,
                 ]);
+
+            $templateSteps = $routineTemplate
+                ->steps()
+                ->orderBy('position')
+                ->get()
+                ->values();
 
             $routine->steps()->createMany(
                 collect($steps)
@@ -50,6 +58,11 @@ class CreateRoutineFromTemplate
                             $step['mode'] === 'timer'
                                 ? (int) $step['duration_seconds']
                                 : null,
+
+                        'alpha_tex' =>
+                            $templateSteps
+                                ->get($position)
+                                ?->alpha_tex,
 
                         'position' => $position,
                         'origin' => 'custom',
