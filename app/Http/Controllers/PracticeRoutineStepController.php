@@ -14,7 +14,8 @@ class PracticeRoutineStepController extends Controller
         PracticeRoutine $practiceRoutine
     ): JsonResponse {
         abort_unless(
-            $practiceRoutine->user_id === $request->user()->id,
+            (int) $practiceRoutine->user_id
+                === (int) $request->user()->id,
             403
         );
 
@@ -78,8 +79,8 @@ class PracticeRoutineStepController extends Controller
         PracticeRoutineStep $practiceRoutineStep
     ): JsonResponse {
         abort_unless(
-            $practiceRoutineStep->routine?->user_id
-                === $request->user()->id,
+            (int) $practiceRoutineStep->routine?->user_id
+                === (int) $request->user()->id,
             403
         );
 
@@ -133,8 +134,8 @@ class PracticeRoutineStepController extends Controller
         PracticeRoutineStep $practiceRoutineStep
     ) {
         abort_unless(
-            $practiceRoutineStep->routine?->user_id
-                === $request->user()->id,
+            (int) $practiceRoutineStep->routine?->user_id
+                === (int) $request->user()->id,
             403
         );
 

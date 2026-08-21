@@ -25,6 +25,8 @@ export function routineTemplateActions() {
                     step.mode === 'timer'
                         ? Number(step.duration_seconds)
                         : null,
+                
+                alpha_tex: step.alpha_tex ?? null,
             }))
 
             localStorage.setItem(
@@ -33,7 +35,9 @@ export function routineTemplateActions() {
             )
 
             const url =
-                this.$root.dataset.useTemplateUrl
+                this.$el
+                    .closest('.routine-player')
+                    ?.dataset.useTemplateUrl
 
             if (url) {
                 window.location.href = url

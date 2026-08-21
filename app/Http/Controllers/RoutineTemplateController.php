@@ -135,6 +135,8 @@ class RoutineTemplateController extends Controller
                         $step->mode === 'timer'
                             ? $step->duration_seconds
                             : null,
+                    
+                    'alpha_tex' => $step->alpha_tex,
 
                     'position' => $step->position,
                     'origin' => 'preset',
