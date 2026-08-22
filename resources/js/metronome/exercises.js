@@ -638,7 +638,9 @@ export function exercises() {
                 })
             }
 
-            this.playFinishSound()
+            if (!this.hasAlphaTabPattern(completedStep)) {
+                this.playFinishSound()
+            }
 
             if (!this.autoAdvance) {
                 window.dispatchEvent(
@@ -797,6 +799,22 @@ export function exercises() {
                     }
                 )
             )
+        },
+
+        startRoutineOver() {
+            this.stop('restart')
+
+            this.currentIndex = 0
+            this.nextExerciseIndex = null
+            this.isWaitingForNextExercise = false
+
+            window.dispatchEvent(
+                new Event('routine:exercise-clear-active')
+            )
+
+            this.$nextTick(() => {
+                this.startExercise(0)
+            })
         },
     }
 }

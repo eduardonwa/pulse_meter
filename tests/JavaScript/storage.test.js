@@ -793,8 +793,14 @@ test(
 
                 assert.equal(
                     instance
+                        .localRoutineImportLimitReached,
+                    true
+                )
+
+                assert.equal(
+                    instance
                         .localRoutineImportError,
-                    'Your Trial has reached the maximum number of routines.'
+                    null
                 )
             }
         )
