@@ -38,6 +38,34 @@ export function exercises() {
                 : 'preset'
         },
 
+        hasAlphaTabPattern(step) {
+            return typeof step?.alpha_tex === 'string'
+                && step.alpha_tex.trim() !== ''
+        },
+
+        syncActiveExerciseBpm(step, index, bpm) {
+            const nextBpm = Number(bpm)
+
+            this.metronome.bpm = nextBpm
+
+            if (this.hasAlphaTabPattern(step)) {
+                this.stopMetronome()
+
+                window.dispatchEvent(
+                    new CustomEvent('alphatab:set-bpm', {
+                        detail: {
+                            index,
+                            bpm: nextBpm,
+                        },
+                    })
+                )
+
+                return
+            }
+
+            this.startMetronome(nextBpm)
+        },
+
         getStepFormPayload() {
             const duration =
             (Number(this.stepFormMinutes) * 60)
@@ -333,8 +361,11 @@ export function exercises() {
                     if (playbackConfigurationChanged) {
                         this.stop('exercise_changed')
                     } else if (changedFields.includes('bpm')) {
-                        this.metronome.bpm = payload.bpm
-                        this.startMetronome(payload.bpm)
+                        this.syncActiveExerciseBpm(
+                            updatedStep,
+                            this.stepFormIndex,
+                            payload.bpm
+                        )
                     }
                 }
 
@@ -437,6 +468,7 @@ export function exercises() {
                 bpm: step.bpm,
                 duration: configuredDuration,
                 exerciseIndex: index,
+                useAlphaTab: this.hasAlphaTabPattern(step),
             })
 
             window.dispatchEvent(new CustomEvent('routine:exercise-active', {
@@ -514,10 +546,10 @@ export function exercises() {
                 this.activeExerciseIndex === index
                 && this.isPlaying
             ) {
-                this.metronome.bpm = nextBpm
-
-                this.startMetronome(
-                    this.metronome.bpm
+                this.syncActiveExerciseBpm(
+                    step,
+                    index,
+                    nextBpm
                 )
             }
         },
@@ -606,7 +638,9 @@ export function exercises() {
                 })
             }
 
-            this.playFinishSound()
+            if (!this.hasAlphaTabPattern(completedStep)) {
+                this.playFinishSound()
+            }
 
             if (!this.autoAdvance) {
                 window.dispatchEvent(
@@ -765,6 +799,22 @@ export function exercises() {
                     }
                 )
             )
+        },
+
+        startRoutineOver() {
+            this.stop('restart')
+
+            this.currentIndex = 0
+            this.nextExerciseIndex = null
+            this.isWaitingForNextExercise = false
+
+            window.dispatchEvent(
+                new Event('routine:exercise-clear-active')
+            )
+
+            this.$nextTick(() => {
+                this.startExercise(0)
+            })
         },
     }
 }

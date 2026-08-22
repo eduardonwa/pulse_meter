@@ -109,6 +109,9 @@ class ImportLocalRoutineTest extends TestCase
                 'name' => 'My Exercises',
                 'position' => 0,
                 'is_default' => true,
+
+                'sync_source' =>
+                    PracticeRoutine::SYNC_SOURCE_FREE_LOCAL,
             ],
             [
                 [
@@ -283,8 +286,18 @@ class ImportLocalRoutineTest extends TestCase
             'plan' => 'free',
         ]);
 
-        // Aquí necesitas activar Trial de la misma manera
-        // que ya usan tus otros tests de Trial.
+        $user->trialEntitlement()->create([
+            'status' => 'active',
+            'granted_seconds' => 3600,
+            'used_seconds' => 0,
+            'started_at' => now(),
+            'expires_at' => now()->addDays(15),
+            'paused_at' => null,
+            'pause_reason' => null,
+            'active_session_id' => 'test-session',
+            'last_heartbeat_at' => now(),
+            'completed_at' => null,
+        ]);
 
         $this->createRoutine($user, [
             'name' => 'Routine 1',
