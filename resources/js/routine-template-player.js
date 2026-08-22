@@ -45,21 +45,17 @@ export function routineTemplateActions() {
         },
 
         async saveTemplateCopy() {
-            console.log('saveTemplateCopy fired')
+            const player =
+                this.$el.closest('.routine-player')
 
-            const url = this.$el
-                .closest('.routine-player')
-                ?.dataset.saveTemplateCopyUrl
-            
-            console.log('saveTemplateCopyUrl:', url)
+            const url =
+                player?.dataset.saveTemplateCopyUrl
 
             if (!url) {
                 return
             }
 
-            const title =
-                this.$root.dataset.templateTitle
-                ?? 'Routine'
+            const title = player?.dataset.templateTitle ?? 'Routine'
 
             const response = await fetch(url, {
                 method: 'POST',
@@ -86,9 +82,7 @@ export function routineTemplateActions() {
 
                         duration_seconds:
                             step.mode === 'timer'
-                                ? Number(
-                                    step.duration_seconds
-                                )
+                                ? Number(step.duration_seconds)
                                 : null,
                         
                         alpha_tex: step.alpha_tex ?? null,
@@ -109,8 +103,7 @@ export function routineTemplateActions() {
                 return
             }
 
-            window.location.href =
-                data.redirect_url
+            window.location.href = data.redirect_url
         },
     }
 }
