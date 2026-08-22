@@ -4,6 +4,7 @@ let activeApi = null
 const instances = new WeakMap()
 
 const readyPromises = new WeakMap()
+const renderedBpms = new WeakMap()
 
 async function getAlphaTab() {
     if (!alphaTabModule) {
@@ -75,6 +76,10 @@ async function mountAlphaTab(element) {
         },
     })
 
+    // alphaTab is the single audio clock for notated exercises.
+    // Its metronome stays aligned with the synthesized notes and cursor.
+    api.metronomeVolume = 1
+
     api.playerStateChanged.on(args => {
         dispatchPlaybackState(
             element,
@@ -97,6 +102,7 @@ async function mountAlphaTab(element) {
 
     instances.set(element, api)
     readyPromises.set(element, readyPromise)
+    renderedBpms.set(element, bpm)
 
     await readyPromise
 
@@ -161,4 +167,24 @@ window.addEventListener('alphatab:set-loop', event => {
     if (!activeApi) return
 
     activeApi.isLooping = Boolean(event.detail?.enabled)
+})
+
+window.addEventListener('alphatab:set-bpm', async event => {
+    const index = Number(event.detail?.index)
+    const bpm = Number(event.detail?.bpm)
+
+    if (!Number.isFinite(bpm) || bpm <= 0) return
+
+    const element = document.querySelector(
+        `[data-alphatab][data-exercise-index="${index}"]`
+    )
+
+    if (!element) return
+
+    const api = await mountAlphaTab(element)
+    const renderedBpm = renderedBpms.get(element)
+
+    if (!api || !renderedBpm) return
+
+    api.playbackSpeed = bpm / renderedBpm
 })

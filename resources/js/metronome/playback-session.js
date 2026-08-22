@@ -16,6 +16,7 @@ export function playbackSession() {
             bpm,
             duration = null,
             exerciseIndex = null,
+            useAlphaTab = false,
         }) {
             /*
             * Cierra cualquier sesión anterior antes
@@ -27,7 +28,9 @@ export function playbackSession() {
             
             const normalizedDuration = mode === 'timer' ? Number(duration ?? 60) : null
 
-            this.ensureAudioContext()
+            if (!useAlphaTab) {
+                this.ensureAudioContext()
+            }
 
             this.playbackSource = source
             this.activeExerciseIndex = exerciseIndex
@@ -45,7 +48,9 @@ export function playbackSession() {
 
             this.isPlaying = true
 
-            this.startMetronome(normalizedBpm)
+            if (!useAlphaTab) {
+                this.startMetronome(normalizedBpm)
+            }
 
             if (mode === 'timer' && normalizedDuration !== null) {
                 this.startTimer(normalizedDuration)
