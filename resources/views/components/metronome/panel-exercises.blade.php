@@ -29,9 +29,16 @@
         </header>
 
         <template x-if="practiceMode === 'routine'">
-            <ul>
-                <x-metronome.panel-exercises-compact />
-            </ul>
+            <div>
+                <x-metronome.pattern-loop-control
+                    x-show="steps.some(step => !!step.alpha_tex)"
+                    x-cloak
+                />
+
+                <ul>
+                    <x-metronome.panel-exercises-compact />
+                </ul>
+            </div>
         </template>
 
         <template x-if="practiceMode === 'playlist'">

@@ -154,28 +154,6 @@
                                 font-weight: normal;
                                 border: 1px solid $color-neutral-400;
                             }
-
-                            .bottom {
-                                display: flex;
-                                align-items: center;
-                                gap: $size-3;
-
-                                .button {
-                                    padding: 0;
-
-                                    &:hover { border: 1px solid transparent; }
-                                }
-
-                                .timer {
-                                    display: block;
-                                    margin-left: auto;
-                                    font-size: $font-size-300;
-
-                                    &.is-counting {
-                                        color: $color-neutral-200;
-                                    }
-                                }
-                            }
                         }
 
                         .play-exercise {
@@ -196,6 +174,56 @@
 
                                 &.is-active {
                                     background: $color-primary-400;
+                                }
+                            }
+                        }
+                    }
+
+                    .exercise-menu {
+                        display: flex;
+                        align-items: center;
+                        justify-content: space-between;
+                    }
+
+                    .exercise-actions {
+                        display: flex;
+                        justify-content: flex-end;
+                        position: relative;
+
+                        &__menu {
+                            position: absolute;
+                            z-index: 10;
+                            top: calc(100% + -10px);
+                            right: 0;
+                            
+                            display: flex;
+                            flex-direction: column;
+                            gap: $size-1;
+
+                            min-width: 144px;
+
+                            background-color: $color-neutral-000;
+                            border-radius: $border-radius-1;
+                            padding: $size-1;
+                            
+                            box-shadow: $box-shadow-2;
+
+                            .button {
+                                width: 100%;
+                                justify-content: flex-start;
+
+                                font-size: 14px;
+                                padding: $size-2;
+                                background-color: rgba(237, 243, 247, 0.753);
+
+                                color: $color-neutral-700;
+
+                                @include mq(large) {
+                                    background-color: transparent;
+
+                                    &:hover {
+                                        background-color: rgba(237, 243, 247, 0.753);
+                                    }
                                 }
                             }
                         }

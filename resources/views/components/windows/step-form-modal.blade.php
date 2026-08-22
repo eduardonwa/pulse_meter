@@ -1,4 +1,4 @@
-<dialog class="dialog-shell"
+<dialog class="dialog-shell dialog-shell--fit-content"
     x-ref="stepDialog"
     x-trap.noscroll="isStepFormOpen"
     @close="isStepFormOpen = false"

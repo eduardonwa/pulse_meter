@@ -71,6 +71,8 @@ select {
   gap: $size-2;
   padding: $size-4;
 
+  height: fit-content;
+
   .heading {
     .button {
       padding: 0;

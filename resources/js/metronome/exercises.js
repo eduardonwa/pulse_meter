@@ -751,5 +751,20 @@ export function exercises() {
             this.stepFormSeconds =
                 normalizedDuration % 60
         },
+
+        setPatternLoop(enabled) {
+            this.loopAllExercises = Boolean(enabled)
+
+            window.dispatchEvent(
+                new CustomEvent(
+                    'alphatab:set-loop',
+                    {
+                        detail: {
+                            enabled: this.loopAllExercises,
+                        },
+                    }
+                )
+            )
+        },
     }
 }

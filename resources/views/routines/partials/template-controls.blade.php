@@ -57,43 +57,7 @@
     
             {{-- PATTERN PLAYBACK --}}
             @if ($template->steps->contains(fn ($step) => filled($step->alpha_tex)))
-                <div class="loop-control">
-                    <span class="label">Loop patterns</span>
-    
-                    <div class="loop-control__toggle">
-                        <button
-                            type="button"
-                            class="option"
-                            :class="{ 'option--active': loopAllExercises }"
-                            :aria-pressed="loopAllExercises.toString()"
-                            @click="
-                                loopAllExercises = true;
-    
-                                window.dispatchEvent(new CustomEvent('alphatab:set-loop', {
-                                    detail: { enabled: true }
-                                }));
-                            "
-                        >
-                            On
-                        </button>
-    
-                        <button
-                            type="button"
-                            class="option"
-                            :class="{ 'option--active': !loopAllExercises }"
-                            :aria-pressed="(!loopAllExercises).toString()"
-                            @click="
-                                loopAllExercises = false;
-    
-                                window.dispatchEvent(new CustomEvent('alphatab:set-loop', {
-                                    detail: { enabled: false }
-                                }));
-                            "
-                        >
-                            Off
-                        </button>
-                    </div>
-                </div>
+                <x-metronome.pattern-loop-control />
             @endif
         </div>
     </div>
