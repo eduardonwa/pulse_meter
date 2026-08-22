@@ -2,8 +2,6 @@
 
 .home {
     background-color: $color-neutral-900;
-    
-    padding-inline: $size-4;
     padding-block: $size-6;
 
     display: flex;
@@ -22,10 +20,16 @@
         color: $color-neutral-400;
     }
 
+    &__accordion,
+    &__contact {
+        display: flex;
+        flex-direction: column;
+        gap: $size-4;
+    }
+
     &__contact-card {
         border: 1px solid;
         border-radius: $border-radius-1;
-        
         padding: $size-3;
 
         @include mq(medium) {
@@ -35,7 +39,7 @@
         }
 
         @include mq(large) {
-            border: 1px solid transparent;
+            border-color: transparent;
             padding-inline: 0;
         }
 
@@ -47,24 +51,18 @@
     &__contact-link {
         width: 100%;
         display: block;
-
         text-align: center;
-        
         font-size: 14px;
         text-decoration: none;
-
         background: $color-extra-400;
         color: $color-extra-50;
-        
         padding-block: $size-1;
         padding-inline: $size-3;
-
         border-radius: $border-radius-1;
-
         transition: color 150ms ease-in;
-        
+
         &:active {
-           transform: scale(0.96);
+            transform: scale(0.96);
         }
 
         &:hover {
@@ -74,5 +72,44 @@
         @include mq(medium) {
             width: fit-content;
         }
+    }
+}
+
+.accordion {
+    &__item {
+        border-block-end: 1px solid hsl(var(--neutral-50) / .5);
+        padding-block-end: $size-2;
+
+        @include mq(large) {
+            border-block-end: 1px solid transparent;
+        }
+    }
+
+    &__header {
+        margin: 0;
+
+        .button {
+            width: 100%;
+            justify-content: space-between;
+        }
+
+        span {
+            font-size: 24px;
+            color: $color-neutral-100;
+        }
+    }
+
+    &__panel {
+        padding-block: $size-3;
+    }
+
+    &__icon {
+        transition: transform 150ms ease;
+
+        color: $color-neutral-100;
+    }
+
+    .rotate-180 {
+        transform: rotate(180deg);
     }
 }
