@@ -112,6 +112,16 @@
                     }
                 }
 
+                .routine-player__controls {
+                    margin-inline: $size-2;
+                    
+                    .routine-player__controls-body {
+                        display: flex;
+                        align-items: flex-end;
+                        gap: $size-4
+                    }
+                }
+
                 .exercise-layout {
                     @include compact.styles;
                 }

@@ -30,10 +30,9 @@
 
         <template x-if="practiceMode === 'routine'">
             <div>
-                <x-metronome.pattern-loop-control
-                    x-show="steps.some(step => !!step.alpha_tex)"
-                    x-cloak
-                />
+                <x-metronome.controls-dropdown>
+                    <x-metronome.routine-playback-controls />
+                </x-metronome.controls-dropdown>
 
                 <ul>
                     <x-metronome.panel-exercises-compact />

@@ -37,12 +37,13 @@
             font-size: 15px;
             font-weight: 500;
             color: $color-neutral-950;
+            padding-block-end: $size-2;
         }
 
         .summary {
             --summary-lines: 4;
 
-            font-size: 14px;
+            font-size: 15px;
             line-height: 1.4;
 
             block-size: calc(var(--summary-lines) * 1lh);
