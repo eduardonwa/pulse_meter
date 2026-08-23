@@ -2,6 +2,7 @@ let alphaTabModule = null
 let activeApi = null
 
 const instances = new WeakMap()
+const mountPromises = new WeakMap()
 
 const readyPromises = new WeakMap()
 const renderedBpms = new WeakMap()
@@ -47,66 +48,76 @@ async function mountAlphaTab(element) {
         return instances.get(element)
     }
 
-    const encodedAlphaTex = element.dataset.alphaTex
-    const bpm = Number(element.dataset.bpm ?? 100)
+    if (mountPromises.has(element)) {
+        return await mountPromises.get(element)
+    }
 
-    if (!encodedAlphaTex) return null
+    const mountPromise = (async () => {
+        const encodedAlphaTex = element.dataset.alphaTex
+        const bpm = Number(element.dataset.bpm ?? 100)
 
-    const alphaTab = await getAlphaTab()
-    const pattern = decodeBase64(encodedAlphaTex)
+        if (!encodedAlphaTex) return null
 
-    const api = new alphaTab.AlphaTabApi(element, {
-        core: {
-            fontDirectory: '/font/',
-            useWorkers: false,
-        },
+        const alphaTab = await getAlphaTab()
+        const pattern = decodeBase64(encodedAlphaTex)
 
-        display: {
-            staveProfile: 'Tab',
-        },
+        const api = new alphaTab.AlphaTabApi(element, {
+            core: {
+                fontDirectory: '/font/',
+            },
 
-        player: {
-            playerMode: alphaTab.PlayerMode.EnabledSynthesizer,
-            soundFont: '/soundfont/sonivox.sf2',
-            outputMode: alphaTab.PlayerOutputMode.WebAudioScriptProcessor,
+            display: {
+                staveProfile: 'Tab',
+            },
 
-            enableUserInteraction: true,
-            enableCursor: true,
-            enableElementHighlighting: true,
-        },
-    })
+            player: {
+                playerMode: alphaTab.PlayerMode.EnabledSynthesizer,
+                soundFont: '/soundfont/sonivox.sf2',
 
-    // alphaTab is the single audio clock for notated exercises.
-    // Its metronome stays aligned with the synthesized notes and cursor.
-    api.metronomeVolume = 1
-
-    api.playerStateChanged.on(args => {
-        dispatchPlaybackState(
-            element,
-            args.state,
-            alphaTab.synth.PlayerState.Playing
-        )
-    })
-
-    const readyPromise = new Promise(resolve => {
-        api.playerReady.on(() => {
-            resolve()
+                enableUserInteraction: true,
+                enableCursor: true,
+                enableElementHighlighting: true,
+            },
         })
-    })
 
-    api.tex(`
-    \\tempo ${bpm}
+        api.metronomeVolume = 1
 
-    ${pattern}
-    `)
+        api.playerStateChanged.on(args => {
+            dispatchPlaybackState(
+                element,
+                args.state,
+                alphaTab.synth.PlayerState.Playing
+            )
+        })
 
-    instances.set(element, api)
-    readyPromises.set(element, readyPromise)
-    renderedBpms.set(element, bpm)
+        const readyPromise = new Promise(resolve => {
+            api.playerReady.on(() => {
+                resolve()
+            })
+        })
 
-    await readyPromise
+        api.tex(`
+\\tempo ${bpm}
 
-    return api
+${pattern}
+        `)
+
+        instances.set(element, api)
+        readyPromises.set(element, readyPromise)
+        renderedBpms.set(element, bpm)
+
+        await readyPromise
+
+        return api
+    })()
+
+    mountPromises.set(element, mountPromise)
+
+    try {
+        return await mountPromise
+    } finally {
+        mountPromises.delete(element)
+    }
 }
 
 window.addEventListener('alphatab:mount', async event => {
