@@ -123,7 +123,7 @@
                         </button>
 
                         <button class="badge badge--neutral" type="button" :aria-pressed="looping.toString()" @click="toggleLoop($refs.alphaTab)">
-                            <span x-text=" looping ? 'Disable loop' : 'Enable loo'">
+                            <span x-text=" looping ? 'Disable loop' : 'Enable loop'">
                                 Enable loop
                             </span>
                         </button>

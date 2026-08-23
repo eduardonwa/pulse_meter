@@ -199,3 +199,15 @@ window.addEventListener('alphatab:set-bpm', async event => {
 
     api.playbackSpeed = bpm / renderedBpm
 })
+
+window.addEventListener('alphatab:render', event => {
+    const element = event.detail?.element
+
+    if (!element) return
+
+    const api = instances.get(element)
+
+    if (!api) return
+
+    api.render()
+})

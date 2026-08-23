@@ -48,15 +48,18 @@ export function alphaTabExerciseControls() {
             if (this.detailsOpen) {
                 nextTick(() => {
                     window.dispatchEvent(
-                        new CustomEvent(
-                            'alphatab:mount',
-                            {
-                                detail: {
-                                    element,
-                                },
-                            }
-                        )
+                        new CustomEvent('alphatab:mount', {
+                            detail: { element },
+                        })
                     )
+
+                    requestAnimationFrame(() => {
+                        window.dispatchEvent(
+                            new CustomEvent('alphatab:render', {
+                                detail: { element },
+                            })
+                        )
+                    })
                 })
 
                 return
