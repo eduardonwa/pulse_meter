@@ -147,4 +147,81 @@
 
 .post {
     @include post.styles;
+
+    /* CUSTOM CTA BLOCK */
+    &--cta {
+        margin-block: $size-6 $size-3;
+
+        border-radius: $border-radius-3;
+        
+        box-shadow: 0 1rem 2rem hsl(var(--neutral-900) / 0.08);
+
+        padding: $size-4;
+
+        background: linear-gradient(
+            145deg,
+            hsl(var(--accent-400) / .4),
+            hsl(var(--accent-500)),
+        );
+
+        border: 1px solid color-mix(
+            in srgb,
+            $color-accent-500 35%,
+            transparent
+        );
+
+        ul {
+            margin-block: 0 $size-4;
+        }
+
+        h2 + p {
+            margin-block-start: 0;
+        }
+        
+        &__content {
+            color: $color-neutral-900;
+            font-size: 15px;
+        }
+
+        &__heading {
+            font-size: 24px !important;
+            font-weight: 600;
+
+            color: $color-neutral-900 !important;
+
+            padding-inline-start: $size-4;
+            padding-block-end: $size-2;
+        }
+
+        &__benefits {
+            margin: 0;
+            padding: 0;
+        }
+
+        .button {
+            width: 100%;
+            padding-block: $size-3;
+            font-weight: 500;
+            color: $color-neutral-000;
+            border: 2px solid transparent;
+            background-color: $color-neutral-900;
+
+            border-radius: $border-radius-2;
+
+            margin-block-start: $size-2;
+
+            @include mq(large) {
+                width: 377px;
+
+                display: flex;
+                align-items: center;
+
+                margin-inline: auto;
+            }
+
+            &:hover {
+                background-color: $color-neutral-800;
+            }
+        }
+    }
 }

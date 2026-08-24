@@ -8,8 +8,8 @@ return [
     'contact_link' => 'Contáctame',
 
     'cta' => [
-        'heading' => 'Suscríbete a Dorelog',
-        'button_label' => 'Suscríbete a Dorelog',
+        'heading' => 'Toma el control de tu práctica',
+        'button_label' => 'Comenzar',
         'benefits' => <<<'HTML'
             <ul>
                 <li>Crea rutinas con tus propios ejercicios.</li>

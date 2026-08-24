@@ -8,8 +8,8 @@ return [
     'contact_link' => 'Contact me.',
 
     'cta' => [
-        'heading' => 'Subscribe to Dorelog',
-        'button_label' => 'Subscribe to Dorelog',
+        'heading' => 'Take control of your practice',
+        'button_label' => 'Get started',
         'benefits' => <<<'HTML'
             <ul>
                 <li>Create routines with your own exercises.</li>
