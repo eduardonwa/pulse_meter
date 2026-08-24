@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Filament\Forms\Components\RichEditor\RichContentCustomBlocks\EnglishCallToActionBlock;
+use App\Filament\Forms\Components\RichEditor\RichContentCustomBlocks\SpanishCallToActionBlock;
 use App\Filament\Forms\Components\RichEditor\RichContentCustomBlocks\YouTubeBlock;
 use Filament\Forms\Components\RichEditor\RichContentRenderer;
 
@@ -19,6 +21,8 @@ class PostContentRenderer
         $html = RichContentRenderer::make($body)
             ->customBlocks([
                 YouTubeBlock::class,
+                SpanishCallToActionBlock::class,
+                EnglishCallToActionBlock::class,
             ])
             ->toHtml();
 

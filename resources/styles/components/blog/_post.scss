@@ -7,13 +7,24 @@
     
     display: grid;
     grid-template-columns: 1fr;
+    grid-template-areas:
+        "header"
+        "thumbnail"
+        "contents"
+        "body";
+
     gap: $size-6;
 
     @include mq(large) {
         grid-template-columns: 1fr 2fr;
+        grid-template-areas:
+            "header thumbnail"
+            "contents body";
     }
 
     &__header {
+        grid-area: header;
+
         align-self: stretch;
         
         padding-block-end: $size-4;
@@ -38,6 +49,8 @@
     }
 
     .thumbnail {
+        grid-area: thumbnail;
+
         display: block;
         width: 100%;
         height: auto;
@@ -49,6 +62,8 @@
     }
 
     .table-of-contents {
+        grid-area: contents;
+
         padding-block-end: $size-4;
         border-block-end: 2px solid hsl(var(--neutral-700) / .3);
 
@@ -69,6 +84,8 @@
     }
 
     &__body {
+        grid-area: body;
+
         font-size: $font-size-400;
         line-height: 1.7;
 

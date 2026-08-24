@@ -6,4 +6,17 @@ return [
 
     'subheader' => 'Ideas útiles, ejemplos prácticos y alguna que otra recomendación. Abierto a colaboraciones y patrocinios relevantes.',
     'contact_link' => 'Contáctame',
+
+    'cta' => [
+        'heading' => 'Suscríbete a Dorelog',
+        'button_label' => 'Suscríbete a Dorelog',
+        'benefits' => <<<'HTML'
+            <ul>
+                <li>Crea rutinas con tus propios ejercicios.</li>
+                <li>Practica ejercicios con tablaturas.</li>
+                <li>Usa el Pulse Editor para descubrir y trabajar patrones rítmicos.</li>
+                <li>Organiza hasta 20 ejercicios por rutina y combina varias rutinas en playlists.</li>
+            </ul>
+        HTML,
+    ],
 ];

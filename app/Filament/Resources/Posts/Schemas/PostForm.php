@@ -2,6 +2,9 @@
 
 namespace App\Filament\Resources\Posts\Schemas;
 
+use App\Filament\Forms\Components\RichEditor\RichContentCustomBlocks\CallToActionBlock;
+use App\Filament\Forms\Components\RichEditor\RichContentCustomBlocks\EnglishCallToActionBlock;
+use App\Filament\Forms\Components\RichEditor\RichContentCustomBlocks\SpanishCallToActionBlock;
 use App\Filament\Forms\Components\RichEditor\RichContentCustomBlocks\YouTubeBlock;
 use App\Models\PostTranslation;
 use Filament\Forms\Components\BaseFileUpload;
@@ -119,6 +122,14 @@ class PostForm
     }
 
     private static function translationFields(string $locale,bool $required = false): array {
+        $callToActionBlock = match ($locale) {
+            'es' => SpanishCallToActionBlock::class,
+            'en' => EnglishCallToActionBlock::class,
+            default => throw new \InvalidArgumentException(
+                "Unsupported locale: {$locale}"
+            ),
+        };
+        
         return [
             Hidden::make('locale')
                 ->default($locale),
@@ -142,6 +153,7 @@ class PostForm
                             ->json()
                             ->customBlocks([
                                 YouTubeBlock::class,
+                                $callToActionBlock,
                             ])
                             ->extraAttributes([
                                 'class' => 'post-body-editor',
