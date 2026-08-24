@@ -12,9 +12,15 @@
 
 .modal-panel {
     border: 0;
+
     width: 100%;
     max-width: 400px;
+    max-height: calc(100dvh - #{$size-8});
+    
+    overflow-y: auto;
+
     padding: $size-6;
+    
     border-radius: $border-radius-1;
     background: $color-neutral-50;
 
