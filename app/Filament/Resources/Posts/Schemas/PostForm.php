@@ -152,6 +152,9 @@ class PostForm
 
                         RichEditor::make('body')
                             ->json()
+                            ->fileAttachmentsDisk('public')
+                            ->fileAttachmentsDirectory("blog/posts/{$locale}")
+                            ->fileAttachmentsVisibility('public')
                             ->customBlocks([
                                 YouTubeBlock::class,
                                 SoundCloudBlock::class,

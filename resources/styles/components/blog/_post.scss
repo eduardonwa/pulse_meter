@@ -115,6 +115,11 @@
             margin-block-start: $size-2;
         }
 
+        sub {
+            font-size: 13px;
+            font-weight: 600;
+        }
+
         .youtube-embed {
             margin-block: $size-4;
 

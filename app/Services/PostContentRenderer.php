@@ -20,6 +20,8 @@ class PostContentRenderer
         );
 
         $html = RichContentRenderer::make($body)
+            ->fileAttachmentsDisk('public')
+            ->fileAttachmentsVisibility('public')
             ->customBlocks([
                 YouTubeBlock::class,
                 SpanishCallToActionBlock::class,
