@@ -1,5 +1,7 @@
 @if ($src)
-    <div class="post--soundcloud-embed">
+    <div
+        class="post--soundcloud-embed {{ $isPlaylist ? 'is-playlist' : 'is-track' }}"
+    >
         <iframe
             width="100%"
             scrolling="no"
