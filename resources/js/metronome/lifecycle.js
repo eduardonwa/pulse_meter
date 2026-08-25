@@ -62,6 +62,16 @@ export function lifecycle() {
                 return
             }
 
+            const isRoutinePage =
+                /^\/(?:[a-z]{2}(?:-[a-z]{2})?\/)?routines(?:\/|$)/i
+                    .test(window.location.pathname)
+
+            if (isRoutinePage) {
+                event.preventDefault()
+                event.stopPropagation()
+                return
+            }
+
             event.preventDefault()
 
             if (event.repeat) {

@@ -128,6 +128,8 @@
                             data-bpm="{{ $step->bpm }}">
                         </div>
 
+                        hola Dios
+
                         <div class="routine-player__exercise-audio-controls" @alphatab:playback-state.window="syncPlaybackState($event, $refs.alphaTab)">
                             <button class="badge badge--neutral" type="button" @click="playPause($refs.alphaTab)">
                                 <span x-text="hearing ? 'Mute' : 'Listen'">

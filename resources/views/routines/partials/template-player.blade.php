@@ -1,4 +1,4 @@
-<section class="routine-player__metronome"
+<section class="routine-player__metronome" data-disable-space-shortcut
     @if ($coverUrl)
         style="--routine-cover-image: url('{{ $coverUrl }}');"
     @endif
