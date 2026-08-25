@@ -100,6 +100,12 @@
                     
                     margin: $size-3;
                     margin-block: $size-8;
+
+                    span {
+                        overflow: hidden;
+                        white-space: nowrap;
+                        text-overflow: ellipsis;
+                    }
                     
                     .button[data-type="icon-text"] {
                         padding: $size-3;
@@ -126,9 +132,30 @@
                     @include compact.styles;
                 }
 
+                .footer-bar {
+                    margin-inline: $size-2;
+                    margin-block: $size-8;
+
+                    .button[data-type="icon-text"] {
+                        padding: $size-3;
+
+                        background: $color-primary-500;
+                        color: $color-primary-50;
+
+                        width: 100%;
+
+                        @include mq(large) {
+                            margin-inline: auto;
+
+                            width: fit-content;
+                        }
+                    }
+                }
+
                 .total-exercises {
                     margin: $size-4;
-                    padding-block: $size-4 $size-8;
+                    padding-block: 0 $size-8;
+                    
                     text-align: center;
                     font-size: $font-size-300;
                     color: $color-neutral-600;
