@@ -71,10 +71,12 @@ class SoundCloudBlock extends RichContentCustomBlock
                 $matches
             );
 
-            return html_entity_decode(
+            $src = html_entity_decode(
                 $matches[1] ?? '',
                 ENT_QUOTES | ENT_HTML5
             );
+
+            return static::disableAutoplay($src);
         }
 
         // URL normal de SoundCloud
@@ -91,5 +93,14 @@ class SoundCloudBlock extends RichContentCustomBlock
         }
 
         return '';
+    }
+
+    protected static function disableAutoplay(string $src): string
+    {
+        return preg_replace(
+            '/([?&])auto_play=(true|1)/i',
+            '$1auto_play=false',
+            $src
+        ) ?? $src;
     }
 }

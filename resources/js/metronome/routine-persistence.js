@@ -14,8 +14,6 @@ export function routinePersistence() {
                 return null
             }
 
-            console.log('Sending exercise payload:', payload)
-
             const response = await fetch(
                 this.$root.dataset.routineStepsStoreUrl,
                 {
