@@ -55,6 +55,7 @@ async function mountAlphaTab(element) {
     const mountPromise = (async () => {
         const encodedAlphaTex = element.dataset.alphaTex
         const bpm = Number(element.dataset.bpm ?? 100)
+        const isAdminPreview = element.dataset.adminPreview === 'true'
 
         if (!encodedAlphaTex) return null
 
@@ -74,9 +75,14 @@ async function mountAlphaTab(element) {
                 playerMode: alphaTab.PlayerMode.EnabledSynthesizer,
                 soundFont: '/soundfont/sonivox.sf2',
 
-                enableUserInteraction: true,
+                enableUserInteraction: !isAdminPreview,
                 enableCursor: true,
-                enableElementHighlighting: true,
+                enableAnimatedBeatCursor: true,
+                enableElementHighlighting: !isAdminPreview,
+
+                scrollMode: isAdminPreview
+                    ? alphaTab.ScrollMode.Off
+                    : alphaTab.ScrollMode.Continuous,
             },
         })
 
@@ -119,6 +125,49 @@ ${pattern}
         mountPromises.delete(element)
     }
 }
+
+function encodeBase64(value) {
+    const bytes = new TextEncoder().encode(value)
+
+    let binary = ''
+
+    bytes.forEach(byte => {
+        binary += String.fromCharCode(byte)
+    })
+
+    return btoa(binary)
+}
+
+window.addEventListener('alphatab:update', async event => {
+    const element = event.detail?.element
+    const alphaTex = String(
+        event.detail?.alphaTex ?? ''
+    ).trim()
+
+    const bpm = Number(event.detail?.bpm ?? 80)
+
+    if (!element || !alphaTex) return
+
+    element.dataset.alphaTex = encodeBase64(alphaTex)
+    element.dataset.bpm = String(bpm)
+
+    const existingApi = instances.get(element)
+
+    if (!existingApi) {
+        await mountAlphaTab(element)
+        return
+    }
+
+    existingApi.stop()
+
+    existingApi.tex(`
+\\tempo ${bpm}
+
+${alphaTex}
+    `)
+
+    renderedBpms.set(element, bpm)
+})
 
 window.addEventListener('alphatab:mount', async event => {
     await mountAlphaTab(event.detail?.element)

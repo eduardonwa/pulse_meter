@@ -85,7 +85,36 @@ nav.fi-tabs[aria-label='Post settings'] {
     scrollbar-color: var(--primary-500) transparent;
 }
 
-/* IMG WRAP */
-.img-wrapper {
-    
+/* ALPHA TEX */
+.alpha-tex-editor {
+    display: grid;
+    gap: 1rem;
+}
+
+.alpha-tex-editor textarea {
+    min-height: 30vh;
+    font-family: monospace;
+}
+
+.alpha-tex-editor__preview {
+    overflow: hidden;
+    border: 1px solid var(--gray-700);
+    border-radius: 0.75rem;
+    padding: 1rem;
+    background-color: #fafafa;
+}
+
+.alpha-tex-editor__controls {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 1rem;
+
+    background-color: #252525;
+    padding: .8rem;
+    border-radius: 1rem;
+}
+
+.at-cursor-beat {
+    background: #47c5ff;
 }

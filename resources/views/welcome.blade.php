@@ -30,17 +30,10 @@
 
             @if (! $user->hasPaidProAccess())
                 @if (! $trial)
-                    <form
-                        class="form-panel enable-trial"
-                        method="POST"
-                        action="{{ route('trial.activate') }}"
-                    >
+                    <form class="form-panel enable-trial" method="POST" action="{{ route('trial.activate') }}">
                         @csrf
 
-                        <button
-                            class="badge badge--trial-register"
-                            type="submit"
-                        >
+                        <button class="badge badge--trial-register" type="submit">
                             Enable Trial Mode
                         </button>
                     </form>

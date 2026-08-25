@@ -207,3 +207,13 @@ select {
     border-top: 1px solid hsl(var(--neutral-950) / .5);
   }
 }
+
+/* TRIAL */
+.enable-trial {
+  display: flex;
+  justify-content: center;
+  
+  .badge {
+    cursor: pointer;
+  }
+}

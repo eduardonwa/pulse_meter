@@ -9,6 +9,7 @@ export default defineConfig({
             input: [
                 'resources/styles/main.scss',
                 'resources/js/app.js',
+                'resources/js/filament/admin.js',
                 'resources/css/filament/admin/theme.css'
             ],
             refresh: true,

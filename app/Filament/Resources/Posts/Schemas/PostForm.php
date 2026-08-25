@@ -2,7 +2,6 @@
 
 namespace App\Filament\Resources\Posts\Schemas;
 
-use App\Filament\Forms\Components\RichEditor\RichContentCustomBlocks\CallToActionBlock;
 use App\Filament\Forms\Components\RichEditor\RichContentCustomBlocks\EnglishCallToActionBlock;
 use App\Filament\Forms\Components\RichEditor\RichContentCustomBlocks\SoundCloudBlock;
 use App\Filament\Forms\Components\RichEditor\RichContentCustomBlocks\SpanishCallToActionBlock;

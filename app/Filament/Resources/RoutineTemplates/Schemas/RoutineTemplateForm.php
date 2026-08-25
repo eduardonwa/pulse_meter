@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\RoutineTemplates\Schemas;
 
+use App\Filament\Forms\Components\AlphaTexEditor;
 use App\Models\RoutineTemplateTranslation;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Hidden;
@@ -121,10 +122,12 @@ class RoutineTemplateForm
                                     ? $state
                                     : null
                             ),
-                        Textarea::make('alpha_tex')
+                        AlphaTexEditor::make('alpha_tex')
                             ->label('AlphaTex pattern')
-                            ->rows(8)
-                            ->helperText('Optional alphaTab/alphaTex pattern for this exercise.')
+                            ->bpmField('bpm')
+                            ->helperText(
+                                'Optional AlphaTab/AlphaTex pattern for this exercise.'
+                            ),
                     ])
                     ->defaultItems(1)
                     ->reorderable()
