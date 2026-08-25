@@ -161,7 +161,7 @@
             </div>
         </section>
     @endguest
-    
+        
     @livewireScriptConfig
 </body>
 </html>

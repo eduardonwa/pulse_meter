@@ -27,7 +27,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <meta name="product-events-endpoint" content="{{ route('analytics.events.store') }}">
-    
+
     @if (request()->routeIs('login', 'register', 'password.*'))
         <meta name="robots" content="noindex, follow">
     @else

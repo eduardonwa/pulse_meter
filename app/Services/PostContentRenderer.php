@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Filament\Forms\Components\RichEditor\RichContentCustomBlocks\EnglishCallToActionBlock;
+use App\Filament\Forms\Components\RichEditor\RichContentCustomBlocks\SoundCloudBlock;
 use App\Filament\Forms\Components\RichEditor\RichContentCustomBlocks\SpanishCallToActionBlock;
 use App\Filament\Forms\Components\RichEditor\RichContentCustomBlocks\YouTubeBlock;
 use Filament\Forms\Components\RichEditor\RichContentRenderer;
@@ -23,6 +24,7 @@ class PostContentRenderer
                 YouTubeBlock::class,
                 SpanishCallToActionBlock::class,
                 EnglishCallToActionBlock::class,
+                SoundCloudBlock::class,
             ])
             ->toHtml();
 

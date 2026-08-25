@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Posts\Schemas;
 
 use App\Filament\Forms\Components\RichEditor\RichContentCustomBlocks\CallToActionBlock;
 use App\Filament\Forms\Components\RichEditor\RichContentCustomBlocks\EnglishCallToActionBlock;
+use App\Filament\Forms\Components\RichEditor\RichContentCustomBlocks\SoundCloudBlock;
 use App\Filament\Forms\Components\RichEditor\RichContentCustomBlocks\SpanishCallToActionBlock;
 use App\Filament\Forms\Components\RichEditor\RichContentCustomBlocks\YouTubeBlock;
 use App\Models\PostTranslation;
@@ -153,6 +154,7 @@ class PostForm
                             ->json()
                             ->customBlocks([
                                 YouTubeBlock::class,
+                                SoundCloudBlock::class,
                                 $callToActionBlock,
                             ])
                             ->extraAttributes([
