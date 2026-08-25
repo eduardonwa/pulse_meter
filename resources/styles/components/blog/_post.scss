@@ -115,6 +115,14 @@
             margin-block-start: $size-2;
         }
 
+        strong {
+            font-weight: 600;
+        }
+
+        em {
+            font-style: italic;
+        }
+
         sub {
             font-size: 13px;
             font-weight: 600;
