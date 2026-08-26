@@ -20,6 +20,8 @@ class RoutineTemplateController extends Controller
             ->where('locale', $locale)
             ->whereNotNull('published_at')
             ->where('published_at', '<=', now())
+            ->orderByDesc('published_at')
+            ->orderByDesc('id')
             ->get();
 
         $routineData = $routines->mapWithKeys(function ($routine) use ($locale) {
