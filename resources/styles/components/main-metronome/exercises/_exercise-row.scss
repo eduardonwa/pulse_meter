@@ -98,7 +98,8 @@
 
         &__details {
             margin-block-start: $size-2;
-
+            padding-inline-start: $size-2;
+            
             grid-area: details;
 
             .button {
@@ -175,6 +176,7 @@
 
             .exercise-row__main {
                 padding-inline: $size-3;
+                margin-block: auto;
             }
 
             .exercise-row__name {
