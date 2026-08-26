@@ -551,6 +551,16 @@ export function exercises() {
                     index,
                     nextBpm
                 )
+            } else if (this.hasAlphaTabPattern(step)) {
+                window.dispatchEvent(
+                    new CustomEvent('alphatab:set-bpm', {
+                        detail: {
+                            index,
+                            bpm: nextBpm,
+                            renderTempo: true,
+                        },
+                    })
+                )
             }
         },
 
