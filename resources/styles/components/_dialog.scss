@@ -120,6 +120,10 @@
     width: 21px;
   }
 
+  .set-default {
+    justify-self: flex-start;
+  }
+
   @include dialog-edit-delete-colors;
 }
 

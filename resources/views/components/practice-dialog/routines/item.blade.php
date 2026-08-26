@@ -51,14 +51,6 @@
                     @endif
                 >
                     <strong> {{ $routineOption['name'] }} </strong>
-
-                    <small>
-                        {{ $routineOption['steps_count'] }}
-                        {{ $routineOption['steps_count'] === 1 ? 'exercise' : 'exercises' }}
-                        @if ($routineOption['is_default'])
-                            · Default
-                        @endif
-                    </small>
                 </a>
             </div>
 
@@ -71,6 +63,17 @@
                 >
                     Manage
                 </button>
+
+                <label class="radio-field">
+                    <input type="radio" name="default-routine" value="{{ $routineOption['id'] }}"
+                        wire:click="setDefaultRoutine({{ $routineOption['id'] }})"
+                        wire:loading.attr="disabled"
+                        wire:target="setDefaultRoutine"
+                        @checked($routineOption['is_default'])
+                    >
+
+                    <span>Default</span>
+                </label>
 
                 <button class="button edit" type="button" data-type="icon"
                     aria-label="Rename {{ $routineOption['name'] }}"

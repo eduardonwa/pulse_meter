@@ -64,6 +64,24 @@ select {
   font-family: $form-placeholder-font-family;
 }
 
+.radio-field {
+    display: inline-flex;
+    align-items: center;
+    gap: $size-2;
+
+    font-size: 13px;
+    cursor: pointer;
+
+    input {
+        width: 16px;
+        height: 16px;
+        margin: 0;
+
+        accent-color: $color-primary-500;
+        cursor: pointer;
+    }
+}
+
 /* NEW EXERCISE */
 .new-exercise-form {
   display: flex;

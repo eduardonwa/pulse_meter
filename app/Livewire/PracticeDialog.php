@@ -347,6 +347,44 @@ class PracticeDialog extends Component
         $this->refreshRoutines();
     }
 
+    public function setDefaultRoutine(int $routineId): void
+    {
+        Gate::authorize('use-pro');
+
+        $user = Auth::user();
+
+        DB::transaction(function () use ($user, $routineId) {
+            $routines = $user->practiceRoutines()
+                ->lockForUpdate()
+                ->get();
+
+            $targetRoutine = $routines->first(
+                fn ($routine) => (int) $routine->id === $routineId
+            );
+
+            abort_if($targetRoutine === null, 404);
+
+            foreach ($routines as $routine) {
+                $shouldBeDefault =
+                    (int) $routine->id === $routineId;
+
+                if ((bool) $routine->is_default === $shouldBeDefault) {
+                    continue;
+                }
+
+                $routine->is_default = $shouldBeDefault;
+                $routine->save();
+            }
+        });
+
+        if ($this->routine) {
+            $this->routine['is_default'] =
+                (int) $this->routine['id'] === $routineId;
+        }
+
+        $this->refreshRoutines();
+    }
+
     public function manageExercises(int $routineId): void
     {
         Gate::authorize('use-pro');
