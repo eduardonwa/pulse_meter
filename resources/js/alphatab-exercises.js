@@ -241,10 +241,34 @@ window.addEventListener('alphatab:set-bpm', async event => {
 
     if (!element) return
 
-    const api = await mountAlphaTab(element)
+    element.dataset.bpm = String(bpm)
+
+    const api = instances.get(element)
+
+    // Keep closed exercises lazy. Their updated data-bpm will be
+    // used the next time AlphaTab is mounted.
+    if (!api) return
+
+    if (event.detail?.renderTempo) {
+        const encodedAlphaTex = element.dataset.alphaTex
+
+        if (!encodedAlphaTex) return
+
+        api.stop()
+        api.playbackSpeed = 1
+        api.tex(`
+\\tempo ${bpm}
+
+${decodeBase64(encodedAlphaTex)}
+        `)
+
+        renderedBpms.set(element, bpm)
+        return
+    }
+
     const renderedBpm = renderedBpms.get(element)
 
-    if (!api || !renderedBpm) return
+    if (!renderedBpm) return
 
     api.playbackSpeed = bpm / renderedBpm
 })
