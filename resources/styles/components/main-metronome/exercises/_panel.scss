@@ -1,0 +1,33 @@
+@use "../../../abstracts" as *;
+
+@mixin styles {
+    .exercises {
+        margin-block-start: $size-4;
+
+        &__header {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: $size-4;
+
+            margin: $size-3;
+            margin-block: $size-8;
+
+            span {
+                overflow: hidden;
+                white-space: nowrap;
+                text-overflow: ellipsis;
+            }
+
+            .button[data-type="icon-text"] {
+                padding: $size-3;
+                border: 1px solid hsl(var(--neutral-950) / 0.4);
+            }
+
+            @include mq(large) {
+                margin-inline-end: 0;
+                padding-inline-end: 0;
+            }
+        }
+    }
+}

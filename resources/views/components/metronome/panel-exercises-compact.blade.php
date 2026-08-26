@@ -1,5 +1,5 @@
 <template x-for="(step, index) in steps" :key="index">
-    <li class="exercise-layout" x-data="alphaTabExerciseControls()"
+    <li class="exercise-row exercise-row--editable" x-data="alphaTabExerciseControls()"
         :class="{
             'is-active':
                 isPlaying &&
@@ -10,11 +10,11 @@
         @routine:exercise-active.window="syncActiveExercise($event, index, !!step.alpha_tex)"
     >
         <!-- BPM -->
-        <div class="exercise-layout__bpm">
-            <span class="tag">bpm</span>
+        <div class="exercise-row__bpm">
+            <span class="exercise-row__bpm-label">bpm</span>
 
             <x-inputs.number-picker
-                class="exercise-row__bpm"
+                class="exercise-row__bpm-value"
                 options="bpmOptions"
                 model="step.bpm"
                 format="(value) => value"
@@ -27,10 +27,10 @@
         </div>
 
         <!-- EXERCISE INFO -->
-        <div class="exercise-layout__main">
-            <input class="exercise-layout__name" type="text" x-model="step.name" @click.stop @input="updateExerciseName(index, $event.target.value)">
-            <div class="exercise-layout__meta">
-                <span class="exercise-layout__timer" x-text="getStepTimeLabel(step, index)"
+        <div class="exercise-row__main">
+            <input class="exercise-row__name" type="text" x-model="step.name" @click.stop @input="updateExerciseName(index, $event.target.value)">
+            <div class="exercise-row__meta">
+                <span class="exercise-row__timer" x-text="getStepTimeLabel(step, index)"
                     :class="{'is-counting':
                             isPlaying &&
                             playbackSource === 'exercise' &&
@@ -67,7 +67,7 @@
         </div>
 
         <!-- PLAY -->
-        <div class="exercise-layout__play">
+        <div class="exercise-row__play">
             <button class="button" type="button" data-type="action-exercise"
                 :class="{
                     'is-active':
@@ -95,7 +95,7 @@
      
         <!-- TAB / EXERCISE DETAILS -->
         <template x-if="step.alpha_tex">
-            <div class="exercise-layout__details">
+            <div class="exercise-row__details">
                 <button class="button" data-type="icon-text" type="button"
                     :aria-expanded="detailsOpen.toString()"
                     @click="toggleDetails($refs.alphaTab, $nextTick)"
@@ -107,7 +107,7 @@
                     <x-heroicon-s-chevron-down />
                 </button>
 
-                <div class="routine-player__exercise-details" x-show="detailsOpen" x-cloak>
+                <div class="exercise-row__notation" x-show="detailsOpen" x-cloak>
                     <div x-ref="alphaTab"
                         data-alphatab
                         :data-exercise-index="index"
@@ -115,7 +115,7 @@
                         :data-bpm="step.bpm"
                     ></div>
 
-                    <div class="routine-player__exercise-audio-controls" @alphatab:playback-state.window="syncPlaybackState($event, $refs.alphaTab)">
+                    <div class="exercise-row__audio-controls" @alphatab:playback-state.window="syncPlaybackState($event, $refs.alphaTab)">
                         <button class="badge badge--neutral" type="button" @click="playPause($refs.alphaTab)">
                             <span x-text="hearing ? 'Mute' : 'Listen'">
                                 Listen

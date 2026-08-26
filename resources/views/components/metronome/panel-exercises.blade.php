@@ -5,8 +5,8 @@
 ])
 
 <div class="exercises" x-show="activeTab === 'exercises'" x-cloak>
-    <article class="exercises__list">
-        <header class="heading-bar">
+    <article class="exercises__content">
+        <header class="exercises__header">
             @if ($usesServerPersistence && $routines->isNotEmpty())
                 <button class="button" data-type="icon-text" type="button" @click="$dispatch('open-practice-dialog')">
                     <span x-text="practiceMode === 'playlist'
@@ -20,15 +20,29 @@
         </header>
 
         <template x-if="practiceMode === 'routine'">
-            <div>
+            <section class="routine">
                 <x-metronome.controls-dropdown>
                     <x-metronome.routine-playback-controls />
                 </x-metronome.controls-dropdown>
 
-                <ul>
+                <ul class="routine__exercises">
                     <x-metronome.panel-exercises-compact />
                 </ul>
-            </div>
+
+                <div class="routine__footer">
+                    <button class="button" data-type="icon-text" type="button" :disabled="steps.length >= maxSteps" @click="openAddStepModal()">
+                        <x-heroicon-o-plus-circle />
+                        Add Exercise
+                    </button>
+                </div>
+
+                <p class="routine__total">
+                    <span x-text="steps.length"></span>
+                    <span>/</span>
+                    <span x-text="maxSteps"></span>
+                    exercises
+                </p>
+            </section>
         </template>
 
         <template x-if="practiceMode === 'playlist'">
@@ -38,27 +52,7 @@
         </template>
 
         <x-windows.step-form-modal />
-
         <x-windows.advance-modal />
-
         <x-windows.practice-review-modal />
-
-        <div class="footer-bar">
-            <button class="add-exercise | button" data-type="icon-text" type="button"
-                x-show="canManageExercises"
-                :disabled="steps.length >= maxSteps"
-                @click="openAddStepModal()"
-            >
-                <x-heroicon-o-plus-circle />
-                Add Exercise
-            </button>
-        </div>
-
-        <p class="total-exercises" x-show="canManageExercises">
-            <span x-text="steps.length"></span>
-            <span>/</span>
-            <span x-text="maxSteps"></span>
-            exercises
-        </p>
     </article>
 </div>

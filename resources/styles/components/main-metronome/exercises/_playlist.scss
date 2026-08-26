@@ -1,0 +1,31 @@
+@use "../../../abstracts" as *;
+
+@mixin styles {
+    .playlist {
+        margin-block-end: $size-10;
+
+        &__empty {
+            margin: 1rem auto;
+
+            text-align: center;
+            color: hsl(var(--neutral-950) / 0.6);
+            font-size: 14px;
+        }
+    }
+
+    .routine-group {
+        margin-block-end: $size-6;
+
+        &__header {
+            padding-block: $size-4 $size-2;
+            padding-inline-start: $size-2;
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            font-size: 15px;
+            font-weight: 500;
+        }
+    }
+}
