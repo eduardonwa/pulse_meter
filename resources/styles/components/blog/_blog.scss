@@ -150,47 +150,34 @@
 
     /* CUSTOM BLOCKS */
     &--cta {
+        /* ESTILOS COMPARTIDOS */
+        position: relative;
+        overflow: hidden;
+
         margin-block: $size-6 $size-3;
-
-        border-radius: $border-radius-3;
-        
-        box-shadow: 0 1rem 2rem hsl(var(--neutral-900) / 0.08);
-
         padding: $size-4;
 
-        background: linear-gradient(
-            145deg,
-            hsl(var(--accent-400) / .4),
-            hsl(var(--accent-500)),
-        );
-
-        border: 1px solid color-mix(
-            in srgb,
-            $color-accent-500 35%,
-            transparent
-        );
-
-        ul {
-            margin-block: 0 $size-4;
-        }
+        border-radius: $border-radius-3;
+        box-shadow: 0 1rem 2rem hsl(var(--neutral-900) / 0.08);
 
         h2 + p {
             margin-block-start: 0;
         }
-        
+
         &__content {
             color: $color-neutral-900;
             font-size: 15px;
         }
 
         &__heading {
-            font-size: 24px !important;
-            font-weight: 600;
+            margin: 0;
+            padding-block-end: $size-2;
 
             color: $color-neutral-900 !important;
 
-            padding-inline-start: $size-4;
-            padding-block-end: $size-2;
+            font-size: 24px !important;
+            font-weight: 600;
+            text-align: center;
         }
 
         &__benefits {
@@ -198,29 +185,191 @@
             padding: 0;
         }
 
-        .button {
+        &__description {
+            margin-block: $size-2 $size-4;
+            text-align: center;
+        }
+
+        &__button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
             width: 100%;
-            padding-block: $size-3;
-            font-weight: 500;
-            color: $color-neutral-000;
-            border: 2px solid transparent;
-            background-color: $color-neutral-900;
-
-            border-radius: $border-radius-2;
-
             margin-block-start: $size-2;
+            padding-block: $size-3;
+
+            color: $color-neutral-000;
+            font-weight: 500;
+
+            border: 2px solid transparent;
+            border-radius: $border-radius-2;
+            background: $color-neutral-900;
+
+            &:hover {
+                background: $color-neutral-800;
+            }
 
             @include mq(large) {
                 width: 377px;
-
-                display: flex;
-                align-items: center;
-
                 margin-inline: auto;
             }
 
-            &:hover {
-                background-color: $color-neutral-800;
+            &[data-button-color="accent"] {
+                color: $color-neutral-900;
+                background: $color-accent-400;
+
+                &:hover {
+                    background: $color-accent-500;
+                }
+            }
+
+            &[data-button-color="secondary"] {
+                color: $color-neutral-900;
+
+                background: linear-gradient(
+                    145deg,
+                    hsl(var(--secondary-400) / .4),
+                    hsl(var(--secondary-500))
+                );
+
+                &:hover {
+                    background: linear-gradient(
+                        145deg,
+                        hsl(var(--secondary-400) / .6),
+                        hsl(var(--secondary-600))
+                    );
+                }
+            }
+
+            &[data-button-color="red"] {
+                background: hsl(0 75% 40%);
+
+                &:hover {
+                    background: hsl(0 75% 32%);
+                }
+            }
+
+            &[data-button-color="yellow"] {
+                color: $color-neutral-900;
+                background: hsl(48 75% 60%);
+
+                &:hover {
+                    background: hsl(48 75% 50%);
+                }
+            }
+
+            &[data-button-color="blue"] {
+                background: hsl(216 75% 40%);
+
+                &:hover {
+                    background: hsl(216 75% 32%);
+                }
+            }
+
+            &[data-button-color="green"] {
+                color: $color-neutral-900;
+                background: hsl(96 75% 60%);
+
+                &:hover {
+                    background: hsl(96 75% 50%);
+                }
+            }
+        }
+
+        /* CTA SUSCRIPCION */
+        &--subscription {
+            background: linear-gradient(
+                145deg,
+                hsl(var(--accent-400) / .4),
+                hsl(var(--accent-500))
+            );
+
+            border: 1px solid color-mix(
+                in srgb,
+                $color-accent-500 35%,
+                transparent
+            );
+
+            .post--cta__heading {
+                padding-inline-start: $size-4;
+            }
+
+            .post--cta__benefits ul {
+                margin-block: 0 $size-4;
+            }
+        }
+
+        /* CTA RECURSO */
+        &--resource {
+            border-radius: 0;
+            padding-block: $size-6;
+
+            background: $color-neutral-000;
+            border-inline: 1px solid hsl(var(--neutral-900) / .12);
+
+            &::before,
+            &::after {
+                content: "";
+
+                position: absolute;
+                inset-inline: 0;
+
+                height: 4px;
+
+                background: linear-gradient(
+                    90deg,
+                    hsl(var(--secondary-400) / .4),
+                    hsl(var(--secondary-500))
+                );
+            }
+
+            &::before { inset-block-start: 0; }
+            &::after { inset-block-end: 0; }
+
+            .post--cta__heading { padding: 0; }
+
+            .post--cta__stats {
+                display: grid;
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+
+                overflow: hidden;
+                margin-inline: -$size-5;
+                list-style: none;
+                
+                border: 1px solid hsl(var(--neutral-900) / .18);
+                
+                li {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    
+                    min-width: 0;
+                    padding: $size-2;
+
+                    font-size: 12px;
+                    font-weight: 600;
+                    text-align: center;
+                    
+                    text-transform: uppercase;
+
+                    color: $color-neutral-700;
+                    background: $color-neutral-000;
+
+                    &:not(:last-child) {
+                        border-inline-end: 1px solid hsl(var(--neutral-900) / .18);
+                    }
+                }
+            }
+
+            .post--cta__button {
+                &[data-button-color="secondary"] {
+                    background: linear-gradient(
+                        145deg,
+                        hsl(var(--secondary-400) / .4),
+                        hsl(var(--secondary-500))
+                    );
+                }
             }
         }
     }
