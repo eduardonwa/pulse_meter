@@ -35,7 +35,9 @@
             </div>
         @endif
 
-        <a class="button post--cta__button post--cta__button--{{ $buttonColor }}" href="{{ $button_url }}">
+        <a class="button post--cta__button post--cta__button--{{ $buttonColor }}"
+            href="{{ $buttonUrl }}"
+        >
             {{ $button_label }}
         </a>
     </div>

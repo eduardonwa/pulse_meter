@@ -3,7 +3,7 @@
 namespace App\Filament\Forms\Components\RichEditor\RichContentCustomBlocks;
 
 use Filament\Actions\Action;
-use Filament\Forms\Components\FileUpload;
+use App\Models\RoutineTemplateTranslation;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\RichEditor\RichContentCustomBlock;
 use Filament\Forms\Components\Select;
@@ -71,6 +71,43 @@ abstract class CallToActionBlock extends RichContentCustomBlock
                         );
                     })
                     ->required(),
+
+                Select::make('resource_type')
+                    ->label('Destino del recurso')
+                    ->options([
+                        'custom' => 'URL personalizada',
+                        'routine' => 'Rutina',
+                    ])
+                    ->default('custom')
+                    ->live()
+                    ->visible(
+                        fn (Get $get): bool => $get('type') === 'resource'
+                    )
+                    ->required(
+                        fn (Get $get): bool => $get('type') === 'resource'
+                    ),
+
+                Select::make('routine_template_id')
+                    ->label('Rutina')
+                    ->options(
+                        fn (): array => RoutineTemplateTranslation::query()
+                            ->where('locale', static::getLocale())
+                            ->published()
+                            ->orderBy('title')
+                            ->pluck('title', 'routine_template_id')
+                            ->all()
+                    )
+                    ->searchable()
+                    ->visible(
+                        fn (Get $get): bool =>
+                            $get('type') === 'resource'
+                            && $get('resource_type') === 'routine'
+                    )
+                    ->required(
+                        fn (Get $get): bool =>
+                            $get('type') === 'resource'
+                            && $get('resource_type') === 'routine'
+                    ),
 
                 TextInput::make('heading')
                     ->label('Título')
@@ -150,7 +187,16 @@ abstract class CallToActionBlock extends RichContentCustomBlock
                 TextInput::make('button_url')
                     ->label('URL del botón')
                     ->default('/register')
-                    ->required(),
+                    ->visible(
+                        fn (Get $get): bool =>
+                            $get('type') !== 'resource'
+                            || ($get('resource_type') ?? 'custom') === 'custom'
+                    )
+                    ->required(
+                        fn (Get $get): bool =>
+                            $get('type') !== 'resource'
+                            || ($get('resource_type') ?? 'custom') === 'custom'
+                    ),
 
                 Select::make('button_color')
                     ->label('Color del botón')
@@ -172,7 +218,7 @@ abstract class CallToActionBlock extends RichContentCustomBlock
     {
         return view('filament.forms.components.rich-editor.rich-content-custom-blocks.call-to-action.index', [
             ...$config,
-            'coverImageUrl' => static::getCoverImageUrl($config),
+            'buttonUrl' => static::resolveButtonUrl($config),
             'isPreview' => true,
         ])->render();
     }
@@ -181,17 +227,41 @@ abstract class CallToActionBlock extends RichContentCustomBlock
     {
         return view('filament.forms.components.rich-editor.rich-content-custom-blocks.call-to-action.index', [
             ...$config,
-            'coverImageUrl' => static::getCoverImageUrl($config),
+            'buttonUrl' => static::resolveButtonUrl($config),
             'isPreview' => false,
         ])->render();
     }
 
-    private static function getCoverImageUrl(array $config): ?string
+    private static function resolveButtonUrl(array $config): string
     {
-        $path = $config['cover_image'] ?? null;
+        $isRoutine = ($config['type'] ?? null) === 'resource'
+            && ($config['resource_type'] ?? null) === 'routine';
 
-        return filled($path)
-            ? Storage::disk('public')->url($path)
-            : null;
+        if (! $isRoutine) {
+            return $config['button_url'] ?? '#';
+        }
+
+        $routineTemplateId = $config['routine_template_id'] ?? null;
+
+        if (blank($routineTemplateId)) {
+            return '#';
+        }
+
+        $locale = static::getLocale();
+
+        $translation = RoutineTemplateTranslation::query()
+            ->where('routine_template_id', $routineTemplateId)
+            ->where('locale', $locale)
+            ->published()
+            ->first();
+
+        if (! $translation) {
+            return '#';
+        }
+
+        return route('routines.show', [
+            'locale' => $locale,
+            'slug' => $translation->slug,
+        ], absolute: false);
     }
 }
