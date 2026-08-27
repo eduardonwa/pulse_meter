@@ -63,20 +63,14 @@ abstract class CallToActionBlock extends RichContentCustomBlock
                             'button_url',
                             $state === 'subscription' ? '/register' : '/routines',
                         );
+                        $set(
+                            'button_color',
+                            $state === 'subscription'
+                                ? 'dark'
+                                : 'secondary',
+                        );
                     })
                     ->required(),
-
-                TextInput::make('eyebrow')
-                    ->label('Etiqueta')
-                    ->default(
-                        fn (): string => static::translate('resource.eyebrow')
-                    )
-                    ->visible(
-                        fn (Get $get): bool => $get('type') === 'resource'
-                    )
-                    ->required(
-                        fn (Get $get): bool => $get('type') === 'resource'
-                    ),
 
                 TextInput::make('heading')
                     ->label('Título')
@@ -144,29 +138,6 @@ abstract class CallToActionBlock extends RichContentCustomBlock
                         fn (Get $get): bool => $get('type') === 'resource'
                     ),
 
-                FileUpload::make('cover_image')
-                    ->label('Portada')
-                    ->image()
-                    ->disk('public')
-                    ->directory('blog/cta/' . static::getLocale())
-                    ->visibility('public')
-                    ->imageEditor()
-                    ->imageEditorAspectRatioOptions(['4:5'])
-                    ->visible(
-                        fn (Get $get): bool => $get('type') === 'resource'
-                    ),
-
-                TextInput::make('cover_alt')
-                    ->label('Texto alternativo de la portada')
-                    ->visible(
-                        fn (Get $get): bool => $get('type') === 'resource'
-                            && filled($get('cover_image'))
-                    )
-                    ->required(
-                        fn (Get $get): bool => $get('type') === 'resource'
-                            && filled($get('cover_image'))
-                    ),
-
                 TextInput::make('button_label')
                     ->label('Texto del botón')
                     ->default(
@@ -186,6 +157,7 @@ abstract class CallToActionBlock extends RichContentCustomBlock
                     ->options([
                         'dark' => 'Oscuro',
                         'accent' => 'Acento',
+                        'secondary' => 'Secondary degradado',
                         'red' => 'Rojo',
                         'yellow' => 'Amarillo',
                         'blue' => 'Azul',
@@ -193,17 +165,6 @@ abstract class CallToActionBlock extends RichContentCustomBlock
                     ])
                     ->default('dark')
                     ->required(),
-
-                TextInput::make('supporting_text')
-                    ->label('Nota de apoyo')
-                    ->default(
-                        fn (): string => static::translate(
-                            'resource.supporting_text'
-                        )
-                    )
-                    ->visible(
-                        fn (Get $get): bool => $get('type') === 'resource'
-                    ),
             ]);
     }
 

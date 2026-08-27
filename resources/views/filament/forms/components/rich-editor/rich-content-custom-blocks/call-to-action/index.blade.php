@@ -9,26 +9,12 @@
 @endphp
 
 <aside
-    class="post--cta"
-    data-cta-type="{{ $type }}"
-    data-has-media="{{ $coverImageUrl ? 'true' : 'false' }}"
+    @class([
+        'post--cta',
+        "post--cta--{$type}",
+    ])
 >
-    @if ($type === 'resource' && $coverImageUrl)
-        <div class="post--cta__media">
-            <img
-                class="post--cta__cover"
-                src="{{ $coverImageUrl }}"
-                alt="{{ $cover_alt ?? '' }}"
-                loading="lazy"
-            >
-        </div>
-    @endif
-
     <div class="post--cta__content">
-        @if ($type === 'resource' && filled($eyebrow ?? null))
-            <p class="post--cta__eyebrow">{{ $eyebrow }}</p>
-        @endif
-
         <h2 class="post--cta__heading">
             {{ $heading }}
         </h2>
@@ -49,18 +35,8 @@
             </div>
         @endif
 
-        <a
-            class="button post--cta__button"
-            data-button-color="{{ $buttonColor }}"
-            href="{{ $button_url }}"
-        >
+        <a class="button post--cta__button post--cta__button--{{ $buttonColor }}" href="{{ $button_url }}">
             {{ $button_label }}
         </a>
-
-        @if ($type === 'resource' && filled($supporting_text ?? null))
-            <p class="post--cta__supporting-text">
-                {{ $supporting_text }}
-            </p>
-        @endif
     </div>
 </aside>
