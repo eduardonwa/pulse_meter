@@ -5,7 +5,6 @@ namespace App\Filament\Resources\RoutineTemplates\Tables;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
-use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
@@ -15,29 +14,38 @@ class RoutineTemplatesTable
     {
         return $table
             ->columns([
-                TextColumn::make('user.name')
-                    ->searchable(),
-                ImageColumn::make('cover_image'),
+                TextColumn::make('englishTranslation.title')
+                    ->label('Routine name')
+                    ->placeholder('No English title')
+                    ->searchable()
+                    ->sortable(),
+
+                TextColumn::make('translations.locale')
+                    ->label('Languages')
+                    ->badge()
+                    ->formatStateUsing(
+                        fn (string $state): string => strtoupper($state)
+                    ),
+
                 TextColumn::make('type')
-                    ->searchable(),
+                    ->badge()
+                    ->formatStateUsing(
+                        fn (string $state): string => match ($state) {
+                            'weekly_challenge' => 'Weekly challenge',
+                            default => 'Routine',
+                        }
+                    )
+                    ->sortable(),
+
                 TextColumn::make('instrument')
-                    ->searchable(),
+                    ->badge()
+                    ->formatStateUsing(fn (string $state): string => ucfirst($state))
+                    ->sortable(),
+
                 TextColumn::make('difficulty')
-                    ->searchable(),
-                TextColumn::make('challenge_days')
-                    ->numeric()
+                    ->badge()
+                    ->formatStateUsing(fn (string $state): string => ucfirst($state))
                     ->sortable(),
-                TextColumn::make('recommended_sessions')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 //
