@@ -23,6 +23,47 @@ function decodeBase64(value) {
     return new TextDecoder().decode(bytes)
 }
 
+function escapeDirectiveString(value) {
+    return String(value)
+        .replaceAll('\\', '\\\\')
+        .replaceAll('"', '\\"')
+}
+
+function applyMetadata(alphaTex, metadata) {
+    let pattern = String(alphaTex)
+        .replace(/\\tempo\s+\d+(?:\.\d+)?/gi, '')
+
+    const directives = []
+
+    if (Object.hasOwn(metadata, 'title')) {
+        pattern = pattern.replace(/^\s*\\title\b[^\r\n]*(?:\r?\n|$)/gmi, '')
+
+        if (metadata.title) {
+            directives.push(`\\title "${escapeDirectiveString(metadata.title)}"`)
+        }
+    }
+
+    if (Object.hasOwn(metadata, 'track')) {
+        pattern = pattern.replace(/^\s*\\track\b[^\r\n]*(?:\r?\n|$)/gmi, '')
+
+        if (metadata.track) {
+            directives.push(`\\track "${escapeDirectiveString(metadata.track)}"`)
+        }
+    }
+
+    if (Object.hasOwn(metadata, 'instrument')) {
+        pattern = pattern.replace(/^\s*\\instrument\b[^\r\n]*(?:\r?\n|$)/gmi, '')
+
+        if (Number.isInteger(metadata.instrument) && metadata.instrument >= 0) {
+            directives.push(`\\instrument ${metadata.instrument}`)
+        }
+    }
+
+    directives.push(`\\tempo ${metadata.bpm}`)
+
+    return `${directives.join('\n')}\n\n${pattern.trim()}`
+}
+
 export function dispatchPlaybackState(
     element,
     state,
@@ -102,11 +143,7 @@ async function mountAlphaTab(element) {
             })
         })
 
-        api.tex(`
-\\tempo ${bpm}
-
-${pattern}
-        `)
+        api.tex(applyMetadata(pattern, { bpm }))
 
         instances.set(element, api)
         readyPromises.set(element, readyPromise)
@@ -145,10 +182,18 @@ window.addEventListener('alphatab:update', async event => {
     ).trim()
 
     const bpm = Number(event.detail?.bpm ?? 80)
+    const metadata = {
+        bpm,
+        title: String(event.detail?.title ?? '').trim(),
+        track: String(event.detail?.track ?? '').trim(),
+        instrument: Number(event.detail?.instrument ?? 25),
+    }
 
     if (!element || !alphaTex) return
 
-    element.dataset.alphaTex = encodeBase64(alphaTex)
+    const renderedAlphaTex = applyMetadata(alphaTex, metadata)
+
+    element.dataset.alphaTex = encodeBase64(renderedAlphaTex)
     element.dataset.bpm = String(bpm)
 
     const existingApi = instances.get(element)
@@ -160,11 +205,8 @@ window.addEventListener('alphatab:update', async event => {
 
     existingApi.stop()
 
-    existingApi.tex(`
-\\tempo ${bpm}
-
-${alphaTex}
-    `)
+    existingApi.playbackSpeed = 1
+    existingApi.tex(renderedAlphaTex)
 
     renderedBpms.set(element, bpm)
 })
@@ -256,11 +298,7 @@ window.addEventListener('alphatab:set-bpm', async event => {
 
         api.stop()
         api.playbackSpeed = 1
-        api.tex(`
-\\tempo ${bpm}
-
-${decodeBase64(encodedAlphaTex)}
-        `)
+        api.tex(applyMetadata(decodeBase64(encodedAlphaTex), { bpm }))
 
         renderedBpms.set(element, bpm)
         return

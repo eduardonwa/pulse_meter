@@ -91,9 +91,17 @@ nav.fi-tabs[aria-label='Post settings'] {
     gap: 1rem;
 }
 
-.alpha-tex-editor textarea {
+.alpha-tex-editor__textarea {
     min-height: 30vh;
     font-family: monospace;
+    border: 1px solid transparent;
+    border-radius: .5rem;
+    padding: .3rem;
+}
+
+.alpha-tex-editor__textarea:focus {
+    border: 1px solid var(--primary-400);
+    outline: 0;
 }
 
 .alpha-tex-editor__preview {
@@ -117,4 +125,38 @@ nav.fi-tabs[aria-label='Post settings'] {
 
 .at-cursor-beat {
     background: #47c5ff;
+}
+
+/* TABS */
+.routine-content-tabs .fi-tabs {
+    margin-inline: 0;
+    padding: 0;
+    background: transparent;
+    box-shadow: none;
+    border-radius: 0;
+}
+
+.published-toggle {
+    width: 100%;
+}
+
+.published-toggle .fi-fo-field-label-ctn {
+    justify-content: flex-end;
+}
+
+.published-toggle .fi-fo-field-label {
+    flex-direction: row-reverse;
+}
+
+/* STEPS REPEATER (ejercicios alphaTab) */
+.exercise-language-tabs .fi-tabs {
+    margin-inline: 0;
+    padding: 0;
+    border-radius: 0.5rem;
+    box-shadow: none;
+    background: transparent;
+}
+
+.exercise-language-tabs .fi-sc-tabs-tab.fi-active {
+    margin-top: 0.75rem;
 }
