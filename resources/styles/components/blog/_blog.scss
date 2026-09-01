@@ -213,6 +213,7 @@
             @include mq(large) {
                 width: 377px;
                 margin-inline: auto;
+                margin-block-start: $size-6;
             }
 
             &[data-button-color="accent"] {
