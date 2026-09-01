@@ -5,20 +5,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
     <title>{{ $title }}</title>
+    
+    @php
+        $currentUrl = url()->current();
+    @endphp
+
     <meta name="description" content="{{ $description }}">
 
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://dorelog.com/">
+    <meta property="og:url" content="{{ $currentUrl }}">
     <meta property="og:title" content="{{ $title }}">
     <meta property="og:description" content="{{ $description }}">
-    <meta property="og:image" content="https://dorelog.com/og-image.png">
+    <meta property="og:image" content="{{ url('/og-image.png') }}">
 
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:url" content="https://dorelog.com/">
+    <meta name="twitter:url" content="{{ $currentUrl }}">
     <meta name="twitter:title" content="{{ $title }}">
     <meta name="twitter:description" content="{{ $description }}">
-    <meta name="twitter:image" content="https://dorelog.com/og-image.png">
-
+    <meta name="twitter:image" content="{{ url('/og-image.png') }}">
+    
+    <link rel="canonical" href="{{ $currentUrl }}">
+    
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
