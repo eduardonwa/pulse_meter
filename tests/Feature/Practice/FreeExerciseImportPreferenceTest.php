@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Practice;
 
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -11,7 +12,7 @@ class FreeExerciseImportPreferenceTest extends TestCase
 
     public function test_it_disables_the_prompt_for_the_account(): void
     {
-        $user = $this->createUser([
+        $user = User::factory()->create([
             'plan' => 'pro',
         ]);
 
@@ -38,7 +39,7 @@ class FreeExerciseImportPreferenceTest extends TestCase
 
     public function test_it_enables_the_prompt_for_the_account(): void
     {
-        $user = $this->createUser([
+        $user = User::factory()->create([
             'plan' => 'pro',
             'ask_before_importing_free_exercises' => false,
         ]);
