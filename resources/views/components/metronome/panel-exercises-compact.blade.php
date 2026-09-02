@@ -30,11 +30,13 @@
         <div class="exercise-row__main">
             <input class="exercise-row__name" type="text" x-model="step.name" @click.stop @input="updateExerciseName(index, $event.target.value)">
             <div class="exercise-row__meta">
-                <span class="exercise-row__time-signature"
-                    x-text="
-                        `${step.time_signature_numerator ?? 4}/${step.time_signature_denominator ?? 4}`
-                    "
-                ></span>
+                <template x-if="!step.alpha_tex">
+                    <span class="exercise-row__time-signature"
+                        x-text="
+                            `${step.time_signature_numerator ?? 4}/${step.time_signature_denominator ?? 4}`
+                        "
+                    ></span>
+                </template>
 
                 <span class="exercise-row__duration" x-text="getStepTimeLabel(step, index)"
                     :class="{'is-counting':
