@@ -47,10 +47,13 @@
                                 : startExercise({{ $loop->index }})
                         "
                     @elseif ($step->alpha_tex)
-                        @click="detailsOpen = true;
+                        @click="
                             hearing
                                 ? stopPlayback()
-                                : playPause($refs.alphaTab)
+                                : previewTemplateExercise(
+                                    {{ $loop->index }},
+                                    $refs.alphaTab
+                                )
                         "
                     @else
                         disabled
