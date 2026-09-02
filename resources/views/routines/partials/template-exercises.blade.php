@@ -39,8 +39,19 @@
                 <button class="routine-player__exercise-trigger" type="button"
                     :class="{'routine-player__exercise-trigger--active': activeExerciseIndex === {{ $loop->index }}}"
                     :aria-pressed="(activeExerciseIndex === {{ $loop->index }}).toString()"
+
                     @if (in_array($viewerType, ['trial', 'pro', 'lifetime'], true))
-                        @click="startExercise({{ $loop->index }})"
+                        @click="
+                            activeExerciseIndex === {{ $loop->index }} && isPlaying
+                                ? stop('manual')
+                                : startExercise({{ $loop->index }})
+                        "
+                    @elseif ($step->alpha_tex)
+                        @click="detailsOpen = true;
+                            hearing
+                                ? stopPlayback()
+                                : playPause($refs.alphaTab)
+                        "
                     @else
                         disabled
                     @endif
@@ -82,7 +93,7 @@
                     </span>
 
                     @if (in_array($viewerType, ['trial', 'pro', 'lifetime'], true))
-                        <x-heroicon-o-pause
+                        <x-heroicon-o-stop
                             class="routine-player__exercise-icon"
                             width="18"
                             height="18"
@@ -105,18 +116,33 @@
                             "
                         />
                     @else
+                        <x-heroicon-o-stop
+                            class="routine-player__exercise-icon"
+                            width="18"
+                            height="18"
+                            aria-hidden="true"
+                            x-show="hearing"
+                            x-cloak
+                        />
+
                         <x-heroicon-o-play
                             class="routine-player__exercise-icon"
                             width="18"
                             height="18"
                             aria-hidden="true"
+                            x-show="!hearing"
                         />
-
                     @endif
                 </button>
 
                 @if ($step->alpha_tex)
-                    <button class="routine-player__exercise-details-toggle button" type="button" :aria-expanded="detailsOpen.toString()" @click="toggleDetails($refs.alphaTab, $nextTick)">
+                    <button class="routine-player__exercise-details-toggle button" type="button" :aria-expanded="detailsOpen.toString()"
+                        @click="toggleDetails(
+                            $refs.alphaTab,
+                            $nextTick,
+                            {{ in_array($viewerType, ['trial', 'pro', 'lifetime'], true) ? 'false' : 'true' }}
+                        )"
+                    >
                         <span x-text="detailsOpen ? 'Hide exercise' : 'View exercise'">View exercise</span>
                     </button>
 
@@ -129,10 +155,37 @@
                         </div>
 
                         <div class="routine-player__exercise-audio-controls" @alphatab:playback-state.window="syncPlaybackState($event, $refs.alphaTab)">
-                            <button class="badge badge--neutral" type="button" @click="playPause($refs.alphaTab)">
-                                <span x-text="hearing ? 'Mute' : 'Listen'">
-                                    Listen
-                                </span>
+                            <button class="badge badge--neutral" type="button"
+
+                                @if (in_array($viewerType, ['trial', 'pro', 'lifetime'], true))
+                                    @click="
+                                        activeExerciseIndex === {{ $loop->index }} && isPlaying
+                                            ? stop('manual')
+                                            : startExercise({{ $loop->index }})
+                                    "
+                                @else
+                                    @click="
+                                        hearing
+                                            ? stopPlayback()
+                                            : playPause($refs.alphaTab)
+                                    "
+                                @endif
+                            >
+                                @if (in_array($viewerType, ['trial', 'pro', 'lifetime'], true))
+                                    <span
+                                        x-text="
+                                            activeExerciseIndex === {{ $loop->index }} && isPlaying
+                                                ? 'Stop'
+                                                : 'Listen'
+                                        "
+                                    >
+                                        Listen
+                                    </span>
+                                @else
+                                    <span x-text="hearing ? 'Stop' : 'Listen'">
+                                        Listen
+                                    </span>
+                                @endif
                             </button>
 
                             <button class="badge badge--neutral" type="button" :aria-pressed="looping.toString()" @click="toggleLoop($refs.alphaTab)">

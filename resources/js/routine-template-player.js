@@ -105,5 +105,28 @@ export function routineTemplateActions() {
 
             window.location.href = data.redirect_url
         },
+
+        previewTemplateExercise(index, element) {
+            if (!element) return
+
+            this.currentIndex = index
+            this.activeExerciseIndex = index
+
+            window.dispatchEvent(
+                new CustomEvent('routine:exercise-active', {
+                    detail: { index },
+                })
+            )
+
+            this.$nextTick(() => {
+                requestAnimationFrame(() => {
+                    window.dispatchEvent(
+                        new CustomEvent('alphatab:play-pause', {
+                            detail: { element },
+                        })
+                    )
+                })
+            })
+        }
     }
 }

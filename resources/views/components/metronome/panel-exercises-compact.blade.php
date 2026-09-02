@@ -81,7 +81,7 @@
                         : startExercise(index)
                 "
             >
-                <x-heroicon-o-pause
+                <x-heroicon-o-stop
                     class="pause-icon"
                     x-show="activeExerciseIndex === index && isPlaying"
                 />
@@ -116,8 +116,14 @@
                     ></div>
 
                     <div class="exercise-row__audio-controls" @alphatab:playback-state.window="syncPlaybackState($event, $refs.alphaTab)">
-                        <button class="badge badge--neutral" type="button" @click="playPause($refs.alphaTab)">
-                            <span x-text="hearing ? 'Mute' : 'Listen'">
+                        <button class="badge badge--neutral" type="button"
+                            @click="
+                                hearing
+                                    ? stopPlayback()
+                                    : playPause($refs.alphaTab)
+                            "
+                        >
+                            <span x-text="hearing ? 'Stop' : 'Listen'">
                                 Listen
                             </span>
                         </button>

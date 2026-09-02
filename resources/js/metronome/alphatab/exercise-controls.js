@@ -27,6 +27,12 @@ export function alphaTabExerciseControls() {
             )
         },
 
+        stopPlayback() {
+            window.dispatchEvent(
+                new Event('alphatab:stop')
+            )
+        },
+
         toggleLoop(element) {
             this.looping = !this.looping
 
@@ -42,7 +48,7 @@ export function alphaTabExerciseControls() {
             )
         },
 
-        toggleDetails(element, nextTick) {
+        toggleDetails(element, nextTick, stopOnClose = true) {
             this.detailsOpen = !this.detailsOpen
 
             if (this.detailsOpen) {
@@ -65,9 +71,11 @@ export function alphaTabExerciseControls() {
                 return
             }
 
-            window.dispatchEvent(
-                new Event('alphatab:stop')
-            )
+            if (stopOnClose) {
+                window.dispatchEvent(
+                    new Event('alphatab:stop')
+                )
+            }
         },
 
         clearActiveExercise() {
