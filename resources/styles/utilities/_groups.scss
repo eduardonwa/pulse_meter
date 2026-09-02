@@ -26,6 +26,13 @@
     &__body {
         display: flex;
 
+        &--stacked {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: $size-2;
+        }
+
         .button[data-type="icon-text"] {
             background: #e9e9ed;
             padding: $size-2;

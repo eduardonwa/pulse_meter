@@ -7,19 +7,14 @@
             </p>
         </div>
 
-        <div class="group__body">
+        <div class="group__body group__body--stacked">
             <label class="auto-advance-field">
                 <input type="checkbox" x-model="autoAdvance">
                 <span>Auto-advance to next exercise</span>
             </label>
 
-            <label
-                class="free-exercise-import-field"
-                x-show="usesServerPersistence"
-                x-cloak
-            >
-                <input
-                    type="checkbox"
+            <label class="free-exercise-import-field" x-show="usesServerPersistence" x-cloak>
+                <input type="checkbox"
                     :checked="askBeforeImportingFreeExercises"
                     :disabled="localRoutineImportPreferenceBusy"
                     @change="

@@ -43,7 +43,7 @@
             >
 
             <span>
-                Don't ask again about Free exercises on this account
+                Don't ask again on this account
             </span>
         </label>
 
