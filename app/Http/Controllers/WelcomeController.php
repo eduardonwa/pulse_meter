@@ -313,6 +313,15 @@ class WelcomeController extends Controller
         $practiceContext = [
             'mode' => $practiceMode,
 
+            'preferences' => [
+                'ask_before_importing_free_exercises' =>
+                    (bool) (
+                        $user
+                            ?->ask_before_importing_free_exercises
+                        ?? true
+                    ),
+            ],
+
             'persistence' => $usesServerPersistence
                 ? 'server'
                 : 'local',

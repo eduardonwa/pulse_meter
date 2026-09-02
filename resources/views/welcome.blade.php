@@ -76,6 +76,7 @@
         @if ($usesServerPersistence && $user)
             data-local-routine-import-url="{{ route('practice-routines.import-local') }}"
             data-local-routine-import-marker-key="pulse_meter_routine_import_user_{{ $user->id }}"
+            data-free-exercise-import-preference-url="{{ route('practice-settings.free-exercise-import-prompt') }}"
         @endif
         
         @keydown.window="handleKeydown($event)"

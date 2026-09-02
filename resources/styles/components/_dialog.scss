@@ -609,7 +609,7 @@
 
 /* LOCAL EXERCISES IMPORT  */
 .local-exercises-dialog {
-  height: min(32dvh, 28rem);
+  height: min(36dvh, 28rem);
 
   @include mq(medium) {
     height: min(28dvh, 15rem);
@@ -625,11 +625,26 @@
   &__content {
     font-size: 15px;
     text-align: center;
-    padding-block-start: $size-3;
+    padding-block: 0;
+    padding-inline: $size-10;
 
     .exercises-found {
       font-weight: 600;
       color: $color-neutral-800;
+    }
+
+    .local-exercises-dialog__preference {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: $size-2;
+
+      cursor: pointer;
+
+      input {
+        height: 16px;
+        width: 16px;
+      }
     }
 
     p + p {

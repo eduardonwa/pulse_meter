@@ -79,11 +79,16 @@ export function storage() {
         getLocalRoutineImportConfig() {
             const importUrl = this.$root?.dataset?.localRoutineImportUrl
             const markerKey = this.$root?.dataset?.localRoutineImportMarkerKey
+            const preferenceUrl =
+                this.$root
+                    ?.dataset
+                    ?.freeExerciseImportPreferenceUrl
 
             if (
                 !this.usesServerPersistence
                 || !importUrl
                 || !markerKey
+                || !preferenceUrl
             ) {
                 return null
             }
@@ -91,7 +96,103 @@ export function storage() {
             return {
                 importUrl,
                 markerKey,
+                preferenceUrl,
             }
+        },
+
+        async persistFreeExerciseImportPreference(
+            enabled
+        ) {
+            const config =
+                this.getLocalRoutineImportConfig()
+
+            if (
+                !config
+                || this.localRoutineImportPreferenceBusy
+            ) {
+                return false
+            }
+
+            this.localRoutineImportPreferenceBusy = true
+
+            try {
+                const response = await fetch(
+                    config.preferenceUrl,
+                    {
+                        method: 'PATCH',
+                        credentials: 'same-origin',
+
+                        headers: {
+                            'Content-Type':
+                                'application/json',
+
+                            Accept:
+                                'application/json',
+
+                            'X-CSRF-TOKEN': document
+                                .querySelector(
+                                    'meta[name="csrf-token"]'
+                                )
+                                ?.content ?? '',
+                        },
+
+                        body: JSON.stringify({
+                            enabled:
+                                Boolean(enabled),
+                        }),
+                    }
+                )
+
+                if (!response.ok) {
+                    return false
+                }
+
+                this.askBeforeImportingFreeExercises =
+                    Boolean(enabled)
+
+                return true
+            } catch (error) {
+                console.error(
+                    'Could not update the Free exercise import preference.',
+                    error
+                )
+
+                return false
+            } finally {
+                this.localRoutineImportPreferenceBusy =
+                    false
+            }
+        },
+
+        async setFreeExerciseImportPromptPreference(
+            enabled
+        ) {
+            const previousValue =
+                this.askBeforeImportingFreeExercises
+
+            const wasSaved =
+                await this
+                    .persistFreeExerciseImportPreference(
+                        enabled
+                    )
+
+            if (!wasSaved) {
+                this.askBeforeImportingFreeExercises =
+                    previousValue
+
+                this.showToast?.(
+                    'The setting could not be saved.',
+                    'error'
+                )
+
+                return false
+            }
+
+            if (!enabled) {
+                this.closeLocalRoutineImport()
+            }
+
+            return true
         },
 
         normalizeLocalRoutineImportSteps(
@@ -257,6 +358,13 @@ export function storage() {
         prepareLocalRoutineImport() {
             this.localRoutineImportError = null
 
+            if (!this.askBeforeImportingFreeExercises) {
+                this.pendingLocalRoutineImport = null
+                this.isLocalRoutineImportOpen = false
+
+                return null
+            }
+
             const pending = this.getPendingLocalRoutineImport()
 
             if (!pending) {
@@ -268,6 +376,7 @@ export function storage() {
 
             this.pendingLocalRoutineImport = pending
             this.isLocalRoutineImportOpen = true
+            this.localRoutineImportDontAskAgain = false
 
             return pending
         },
@@ -276,6 +385,7 @@ export function storage() {
             this.isLocalRoutineImportOpen = false
             this.pendingLocalRoutineImport = null
             this.localRoutineImportError = null
+            this.localRoutineImportDontAskAgain = false
         },
 
         async resolveLocalRoutineImport(
@@ -318,6 +428,23 @@ export function storage() {
                     result === 'imported'
                     || result === 'kept'
                 ) {
+                    if (
+                        this.localRoutineImportDontAskAgain
+                    ) {
+                        const preferenceSaved =
+                            await this
+                                .persistFreeExerciseImportPreference(
+                                    false
+                                )
+
+                        if (!preferenceSaved) {
+                            this.showToast?.(
+                                'Your exercises were processed, but the prompt setting could not be saved.',
+                                'error'
+                            )
+                        }
+                    }
+
                     this.closeLocalRoutineImport()
 
                     return result
