@@ -9,10 +9,12 @@ use Illuminate\Support\Facades\DB;
 
 class LocalRoutineImportController extends Controller
 {
-    public function __invoke(Request $request): JsonResponse {
+    public function __invoke(Request $request): JsonResponse
+    {
         $user = $request->user();
 
-        $durationLimit = $user->exerciseDurationLimit();
+        $durationLimit =
+            $user->exerciseDurationLimit();
 
         $validated = $request->validate([
             'steps' => [
@@ -46,14 +48,30 @@ class LocalRoutineImportController extends Controller
                 'min:1',
                 "max:{$durationLimit}",
             ],
+
+            'steps.*.time_signature_numerator' => [
+                'sometimes',
+                'integer',
+                'in:2,3,4',
+            ],
+
+            'steps.*.time_signature_denominator' => [
+                'sometimes',
+                'integer',
+                'in:4',
+            ],
         ]);
 
         $routine = DB::transaction(
-            function () use ($user, $validated ): ?PracticeRoutine {
+            function () use (
+                $user,
+                $validated
+            ): ?PracticeRoutine {
                 /*
-                * Bloquear al usuario serializa las sincronizaciones
-                * incluso cuando todavía no tiene ninguna rutina.
-                */
+                 * Bloquear al usuario serializa las
+                 * sincronizaciones incluso cuando todavía
+                 * no tiene ninguna rutina.
+                 */
                 $lockedUser = $user
                     ->newQuery()
                     ->whereKey($user->id)
@@ -68,96 +86,151 @@ class LocalRoutineImportController extends Controller
                     ->get();
 
                 /*
-                * Si ya existe una rutina vinculada con Free,
-                * siempre actualizamos únicamente esa.
-                */
-                $freeLocalRoutine = $routines->first(
-                    fn (PracticeRoutine $routine): bool =>
-                        $routine->sync_source
-                        === PracticeRoutine::SYNC_SOURCE_FREE_LOCAL
-                );
+                 * Si ya existe una rutina vinculada con Free,
+                 * siempre actualizamos únicamente esa.
+                 */
+                $freeLocalRoutine =
+                    $routines->first(
+                        fn (
+                            PracticeRoutine $routine
+                        ): bool =>
+                            $routine->sync_source
+                            === PracticeRoutine::SYNC_SOURCE_FREE_LOCAL
+                    );
 
                 /*
-                * Si no existe, esta es la primera importación:
-                * creamos una rutina nueva y dejamos intactas
-                * las rutinas normales del servidor.
-                */
+                 * Si no existe, esta es la primera
+                 * importación: creamos una rutina nueva y
+                 * dejamos intactas las rutinas normales.
+                 */
                 if (! $freeLocalRoutine) {
                     /*
-                    * La primera importación necesita crear
-                    * una rutina adicional.
-                    *
-                    * Si Trial ya alcanzó su límite,
-                    * no modificamos ninguna rutina existente.
-                    */
-                    $routineLimit = $lockedUser->routineLimit();
+                     * La primera importación necesita crear
+                     * una rutina adicional.
+                     *
+                     * Si Trial ya alcanzó su límite, no
+                     * modificamos ninguna rutina existente.
+                     */
+                    $routineLimit =
+                        $lockedUser->routineLimit();
 
                     if (
                         $routineLimit !== null
-                        && $routines->count() >= $routineLimit
+                        && $routines->count()
+                            >= $routineLimit
                     ) {
                         return null;
                     }
 
-                    $freeLocalRoutine = $lockedUser
-                        ->practiceRoutines()
-                        ->create([
-                            'name' => 'Free Exercises',
+                    $freeLocalRoutine =
+                        $lockedUser
+                            ->practiceRoutines()
+                            ->create([
+                                'name' =>
+                                    'Free Exercises',
 
-                            'position' =>
-                                ((int) ($routines->max('position') ?? -1)) + 1,
+                                'position' =>
+                                    (
+                                        (int) (
+                                            $routines
+                                                ->max('position')
+                                            ?? -1
+                                        )
+                                    ) + 1,
 
-                            'is_default' =>
-                                $routines->isEmpty(),
+                                'is_default' =>
+                                    $routines->isEmpty(),
 
-                            'sync_source' =>
-                                PracticeRoutine::SYNC_SOURCE_FREE_LOCAL,
-                        ]);
+                                'sync_source' =>
+                                    PracticeRoutine::SYNC_SOURCE_FREE_LOCAL,
+                            ]);
                 }
 
                 /*
-                * La elección de conservar los ejercicios Free
-                * reemplaza solamente el contenido de free_local.
-                */
-                $freeLocalRoutine->steps()->delete();
+                 * La elección de conservar los ejercicios
+                 * Free reemplaza solamente el contenido de
+                 * free_local.
+                 */
+                $freeLocalRoutine
+                    ->steps()
+                    ->delete();
 
-                $stepsToCreate = collect($validated['steps'])
-                    ->values()
-                    ->map(
-                        function (array $step,int $position): array {
-                            $mode = $step['mode'];
+                $stepsToCreate =
+                    collect($validated['steps'])
+                        ->values()
+                        ->map(
+                            function (
+                                array $step,
+                                int $position
+                            ): array {
+                                $mode =
+                                    $step['mode'];
 
-                            return [
-                                'name' =>
-                                    trim($step['name']),
+                                return [
+                                    'name' =>
+                                        trim(
+                                            $step['name']
+                                        ),
 
-                                'bpm' =>
-                                    (int) $step['bpm'],
+                                    'bpm' =>
+                                        (int) $step['bpm'],
 
-                                'mode' =>
-                                    $mode,
+                                    /*
+                                     * Las rutinas Free
+                                     * antiguas no contienen
+                                     * compás. En ese caso
+                                     * usamos 4/4.
+                                     */
+                                    'time_signature_numerator' =>
+                                        (int) (
+                                            $step[
+                                                'time_signature_numerator'
+                                            ]
+                                            ?? 4
+                                        ),
 
-                                'duration_seconds' =>
-                                    $mode === 'timer'
-                                        ? (int) $step['duration_seconds']
-                                        : null,
+                                    'time_signature_denominator' =>
+                                        (int) (
+                                            $step[
+                                                'time_signature_denominator'
+                                            ]
+                                            ?? 4
+                                        ),
 
-                                'position' =>
-                                    $position,
+                                    'mode' =>
+                                        $mode,
 
-                                'origin' =>
-                                    'custom',
-                            ];
-                        }
-                    )
-                    ->all();
+                                    'duration_seconds' =>
+                                        $mode === 'timer'
+                                            ? (int) $step[
+                                                'duration_seconds'
+                                            ]
+                                            : null,
 
-                $freeLocalRoutine->steps()->createMany($stepsToCreate);
+                                    'position' =>
+                                        $position,
+
+                                    'origin' =>
+                                        'custom',
+                                ];
+                            }
+                        )
+                        ->all();
+
+                $freeLocalRoutine
+                    ->steps()
+                    ->createMany(
+                        $stepsToCreate
+                    );
 
                 $freeLocalRoutine->load([
-                    'steps' => fn ($query) => $query
-                        ->orderBy('position')
-                        ->orderBy('id'),
+                    'steps' =>
+                        fn ($query) =>
+                            $query
+                                ->orderBy(
+                                    'position'
+                                )
+                                ->orderBy('id'),
                 ]);
 
                 return $freeLocalRoutine;
@@ -166,17 +239,24 @@ class LocalRoutineImportController extends Controller
 
         if ($routine === null) {
             return response()->json([
-                'status' => 'not_imported',
-                'reason' => 'trial_routine_limit',
+                'status' =>
+                    'not_imported',
+
+                'reason' =>
+                    'trial_routine_limit',
             ], 409);
         }
 
         return response()->json([
-            'status' => 'imported',
+            'status' =>
+                'imported',
 
             'routine' => [
-                'id' => $routine->id,
-                'name' => $routine->name,
+                'id' =>
+                    $routine->id,
+
+                'name' =>
+                    $routine->name,
 
                 'position' =>
                     (int) $routine->position,
@@ -187,28 +267,47 @@ class LocalRoutineImportController extends Controller
                 'sync_source' =>
                     $routine->sync_source,
 
-                'steps' => $routine->steps
-                    ->map(fn ($step) => [
-                        'id' => $step->id,
+                'steps' =>
+                    $routine->steps
+                        ->map(
+                            fn ($step) => [
+                                'id' =>
+                                    $step->id,
 
-                        'practice_routine_id' =>
-                            $step->practice_routine_id,
+                                'practice_routine_id' =>
+                                    $step
+                                        ->practice_routine_id,
 
-                        'name' => $step->name,
-                        'bpm' => $step->bpm,
-                        'mode' => $step->mode,
+                                'name' =>
+                                    $step->name,
 
-                        'duration_seconds' =>
-                            $step->duration_seconds,
+                                'bpm' =>
+                                    $step->bpm,
 
-                        'position' =>
-                            $step->position,
+                                'time_signature_numerator' =>
+                                    $step
+                                        ->time_signature_numerator,
 
-                        'origin' =>
-                            $step->origin,
-                    ])
-                    ->values()
-                    ->all(),
+                                'time_signature_denominator' =>
+                                    $step
+                                        ->time_signature_denominator,
+
+                                'mode' =>
+                                    $step->mode,
+
+                                'duration_seconds' =>
+                                    $step
+                                        ->duration_seconds,
+
+                                'position' =>
+                                    $step->position,
+
+                                'origin' =>
+                                    $step->origin,
+                            ]
+                        )
+                        ->values()
+                        ->all(),
             ],
         ]);
     }

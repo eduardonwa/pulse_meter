@@ -50,6 +50,30 @@
                     <option value="classic">Classic</option>
                 </select>
             </label>
+
+            <label class="exercise-time-signature-wrapper"
+                x-show="
+                    stepFormMode === 'create'
+                    || !hasAlphaTabPattern(
+                        steps[stepFormIndex]
+                    )
+                "
+                x-cloak
+            >
+                <p class="exercise-form-label">
+                    Time signature
+                </p>
+
+                <select
+                    x-model.number="
+                        stepForm.time_signature_numerator
+                    "
+                >
+                    <option value="2">2/4</option>
+                    <option value="3">3/4</option>
+                    <option value="4">4/4</option>
+                </select>
+            </label>
         </div>
 
         <div class="form-group" x-show="stepForm.mode === 'timer'">

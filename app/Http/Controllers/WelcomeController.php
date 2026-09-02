@@ -257,6 +257,11 @@ class WelcomeController extends Controller
                         'practice_routine_id' => $step->practice_routine_id,
                         'name' => $step->name,
                         'bpm' => $step->bpm,
+                        'time_signature_numerator' =>
+                            $step->time_signature_numerator,
+
+                        'time_signature_denominator' =>
+                            $step->time_signature_denominator,
                         'mode' => $step->mode,
                         'duration_seconds' => $step->duration_seconds,
                         'alpha_tex' => $step->alpha_tex,

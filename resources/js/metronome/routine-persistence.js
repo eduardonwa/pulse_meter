@@ -133,6 +133,18 @@ export function routinePersistence() {
                             currentStep.mode === 'timer'
                                 ? Number(currentStep.duration_seconds)
                                 : null,
+
+                        time_signature_numerator:
+                            Number(
+                                currentStep.time_signature_numerator
+                                ?? 4
+                            ),
+
+                        time_signature_denominator:
+                            Number(
+                                currentStep.time_signature_denominator
+                                ?? 4
+                            ),
                     }
 
                     await this.updateRoutineStep(

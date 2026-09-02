@@ -62,7 +62,28 @@
         &__meta {
             display: flex;
             align-items: center;
-            justify-content: space-between;
+            justify-content: flex-start;
+            gap: $size-3;
+        }
+
+        &__time-signature {
+            padding: 2px $size-2;
+
+            border: 1px solid $color-neutral-500;
+            border-radius: $border-radius-1;
+
+            background: hsl(var(--neutral-200) / .4);
+            color: $color-neutral-900;
+
+            font-size: 12px;
+            font-weight: 500;
+            line-height: 1.4;
+        }
+
+        &__duration {
+            font-size: 14px;
+            font-weight: 500;
+            white-space: nowrap;
         }
 
         &__play {
@@ -116,6 +137,8 @@
         }
 
         .exercise-actions {
+            margin-inline-start: auto;
+            
             display: flex;
             justify-content: flex-end;
             position: relative;

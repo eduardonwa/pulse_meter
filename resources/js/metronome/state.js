@@ -8,18 +8,24 @@ export function defaultSteps() {
             bpm: 100,
             mode: 'timer',
             duration_seconds: 5,
+            time_signature_numerator: 4,
+            time_signature_denominator: 4,
         },
         {
             name: 'Legato',
             bpm: 80,
             mode: 'timer',
             duration_seconds: 5,
+            time_signature_numerator: 4,
+            time_signature_denominator: 4,
         },
         {
             name: 'Sweep Picking',
             bpm: 90,
             mode: 'timer',
             duration_seconds: 60,
+            time_signature_numerator: 4,
+            time_signature_denominator: 4,
         },
     ]
 }
@@ -29,6 +35,8 @@ export function defaultMetronome() {
         bpm: 100,
         mode: 'timer',
         duration_seconds: 60,
+        time_signature_numerator: 4,
+        time_signature_denominator: 4,
     }
 }
 
@@ -129,6 +137,17 @@ export function state(practiceContext = null) {
             duration_seconds: initialStep.mode === 'timer'
                 ? Number(initialStep.duration_seconds ?? 60)
                 : 60,
+            time_signature_numerator:
+                Number(
+                    initialStep.time_signature_numerator
+                    ?? 4
+                ),
+
+            time_signature_denominator:
+                Number(
+                    initialStep.time_signature_denominator
+                    ?? 4
+                ),
         }),
     }
 

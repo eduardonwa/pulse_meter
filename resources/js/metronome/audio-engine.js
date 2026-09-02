@@ -369,7 +369,7 @@ export function audioEngine() {
                 }
             }
 
-            return this.defaultPlaybackPulse
+            return this.getStandardPlaybackPulse()
         },
 
         // PLAYBACK CONTROLS
@@ -392,6 +392,55 @@ export function audioEngine() {
                 .getPlaybackPulse()
                 .timeSignature
                 .numerator
+        },
+
+        getStandardPlaybackPulse() {
+            const allowedNumerators = [2, 3, 4]
+
+            const requestedNumerator =
+                Number(
+                    this.metronome
+                        .time_signature_numerator
+                )
+
+            const numerator =
+                allowedNumerators.includes(
+                    requestedNumerator
+                )
+                    ? requestedNumerator
+                    : 4
+
+            const denominator =
+                Number(
+                    this.metronome
+                        .time_signature_denominator
+                    ?? 4
+                ) === 4
+                    ? 4
+                    : 4
+
+            return {
+                timeSignature: {
+                    numerator,
+                    denominator,
+                },
+
+                subdivision: 1,
+                grouping: [numerator],
+
+                pattern: Array.from(
+                    { length: numerator },
+                    (_, index) => ({
+                        sound:
+                            index === 0
+                                ? 'accent'
+                                : 'click',
+
+                        groupStart:
+                            index === 0,
+                    })
+                ),
+            }
         },
 
         // FINISH SOUND

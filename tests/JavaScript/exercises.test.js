@@ -29,6 +29,8 @@ function createEditingSession() {
                 id: 1,
                 name: 'Exercise 1',
                 bpm: 100,
+                time_signature_numerator: 4,
+                time_signature_denominator: 4,
                 mode: 'timer',
                 duration_seconds: 60,
                 origin: 'custom',
@@ -41,6 +43,8 @@ function createEditingSession() {
         stepForm: {
             name: 'Exercise 1',
             bpm: 100,
+            time_signature_numerator: 4,
+            time_signature_denominator: 4,
             mode: 'timer',
             duration_seconds: 60,
         },
@@ -51,6 +55,8 @@ function createEditingSession() {
         stepFormInitial: {
             name: 'Exercise 1',
             bpm: 100,
+            time_signature_numerator: 4,
+            time_signature_denominator: 4,
             mode: 'timer',
             duration_seconds: 60,
         },
@@ -180,4 +186,25 @@ test('changing BPM rerenders an already mounted idle AlphaTab exercise', () => {
         renderTempo: true,
     })
     assert.equal(session.steps[0].bpm, 90)
+})
+
+test('exercise payload includes its time signature', () => {
+    const { session } =
+        createEditingSession()
+
+    session.stepForm.time_signature_numerator = 3
+    session.stepForm.time_signature_denominator = 4
+
+    const payload =
+        session.getStepFormPayload()
+
+    assert.equal(
+        payload.time_signature_numerator,
+        3
+    )
+
+    assert.equal(
+        payload.time_signature_denominator,
+        4
+    )
 })

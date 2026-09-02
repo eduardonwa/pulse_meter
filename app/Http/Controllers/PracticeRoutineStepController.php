@@ -56,7 +56,22 @@ class PracticeRoutineStepController extends Controller
                 'min:1',
                 "max:{$durationLimit}",
             ],
+
+            'time_signature_numerator' => [
+                'sometimes',
+                'integer',
+                'in:2,3,4',
+            ],
+
+            'time_signature_denominator' => [
+                'sometimes',
+                'integer',
+                'in:4',
+            ],
         ]);
+
+        $validated['time_signature_numerator'] ??= 4;
+        $validated['time_signature_denominator'] ??= 4;
 
         if ($validated['mode'] === 'classic') {
             $validated['duration_seconds'] = null;
@@ -111,6 +126,18 @@ class PracticeRoutineStepController extends Controller
                 'integer',
                 'min:1',
                 "max:{$durationLimit}",
+            ],
+
+            'time_signature_numerator' => [
+                'sometimes',
+                'integer',
+                'in:2,3,4',
+            ],
+
+            'time_signature_denominator' => [
+                'sometimes',
+                'integer',
+                'in:4',
             ],
         ]);
 

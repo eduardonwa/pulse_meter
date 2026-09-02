@@ -132,12 +132,16 @@ function normalizedVersionA() {
             bpm: 145,
             mode: 'timer',
             duration_seconds: 90,
+            time_signature_numerator: 4,
+            time_signature_denominator: 4,
         },
         {
             name: 'ONLY FREE',
             bpm: 120,
             mode: 'classic',
             duration_seconds: null,
+            time_signature_numerator: 4,
+            time_signature_denominator: 4,
         },
     ]
 }

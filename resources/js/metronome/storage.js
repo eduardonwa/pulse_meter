@@ -40,10 +40,25 @@ export function storage() {
                 const parsedSteps = JSON.parse(saved)
 
                 const normalizedSteps = Array.isArray(parsedSteps)
-                    ? parsedSteps.map(step => ({
-                        ...step,
-                        mode: normalizeMode(step.mode),
-                    })) : []
+                        ? parsedSteps.map(step => ({
+                            ...step,
+
+                            mode: normalizeMode(step.mode),
+                            
+                            time_signature_numerator:
+                                    [2, 3, 4].includes(
+                                        Number(
+                                            step.time_signature_numerator
+                                        )
+                                    )
+                                        ? Number(
+                                            step.time_signature_numerator
+                                        )
+                                        : 4,
+
+                                time_signature_denominator: 4,
+                        }))
+                        : []
 
                 this.steps = normalizedSteps.length
                     ? normalizedSteps
@@ -111,6 +126,19 @@ export function storage() {
                                     step.duration_seconds
                                 )
                                 : null,
+
+                        time_signature_numerator:
+                            [2, 3, 4].includes(
+                                Number(
+                                    step.time_signature_numerator
+                                )
+                            )
+                                ? Number(
+                                    step.time_signature_numerator
+                                )
+                                : 4,
+
+                        time_signature_denominator: 4,
                     }
                 })
 

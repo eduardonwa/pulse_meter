@@ -11,6 +11,8 @@ class PracticeRoutineStep extends Model
     {
         return [
             'bpm' => 'integer',
+            'time_signature_numerator' => 'integer',
+            'time_signature_denominator' => 'integer',
             'duration_seconds' => 'integer',
             'position' => 'integer',
         ];

@@ -13,6 +13,8 @@ export function exercises() {
             bpm: 100,
             mode: 'timer',
             duration_seconds: 60,
+            time_signature_numerator: 4,
+            time_signature_denominator: 4,
         },
 
         stepFormMinutes: 1,
@@ -74,11 +76,21 @@ export function exercises() {
             return {
                 name: this.stepForm.name,
                 bpm: Number(this.stepForm.bpm),
+
+                time_signature_numerator:
+                    Number(
+                        this.stepForm.time_signature_numerator
+                        ?? 4
+                    ),
+
+                time_signature_denominator: 4,
+
                 mode: this.stepForm.mode,
+
                 duration_seconds:
                     this.stepForm.mode === 'timer'
                         ? duration
-                        : null
+                        : null,
             }
         },
 
@@ -90,6 +102,8 @@ export function exercises() {
             return [
                 'name',
                 'bpm',
+                'time_signature_numerator',
+                'time_signature_denominator',
                 'mode',
                 'duration_seconds',
             ].filter(field => {
@@ -153,6 +167,8 @@ export function exercises() {
                 bpm: this.metronome.bpm,
                 mode: 'timer',
                 duration_seconds: 60,
+                time_signature_numerator: 4,
+                time_signature_denominator: 4,
             }
 
             this.stepFormMinutes = 1
@@ -187,6 +203,17 @@ export function exercises() {
             this.stepForm = {
                 name: step.name,
                 bpm: Number(step.bpm),
+                time_signature_numerator:
+                    Number(
+                        step.time_signature_numerator
+                        ?? 4
+                    ),
+
+                time_signature_denominator:
+                    Number(
+                        step.time_signature_denominator
+                        ?? 4
+                    ),                    
                 mode: step.mode,
                 duration_seconds: Number(
                     step.duration_seconds ?? 60
@@ -357,6 +384,12 @@ export function exercises() {
                     const playbackConfigurationChanged =
                         changedFields.includes('mode')
                         || changedFields.includes('duration_seconds')
+                        || changedFields.includes(
+                                'time_signature_numerator'
+                            )
+                        || changedFields.includes(
+                            'time_signature_denominator'
+                        )
 
                     if (playbackConfigurationChanged) {
                         this.stop('exercise_changed')
@@ -458,6 +491,18 @@ export function exercises() {
             */
             this.currentIndex = index
             this.activeTab = 'exercises'
+
+            this.metronome.time_signature_numerator =
+                Number(
+                    step.time_signature_numerator
+                    ?? 4
+                )
+
+            this.metronome.time_signature_denominator =
+                Number(
+                    step.time_signature_denominator
+                    ?? 4
+                )
 
             /*
             * Inicio compartido de cualquier reproducción.
