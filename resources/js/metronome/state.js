@@ -129,6 +129,12 @@ export function state(practiceContext = null) {
 
     const initialStep = initialSteps[0] ?? null
 
+    const askBeforeImportingFreeExercises =
+        practiceContext
+            ?.preferences
+            ?.ask_before_importing_free_exercises
+        !== false
+
     const initialMetronome = {
         ...defaultMetronome(),
         ...(initialStep && {
@@ -192,6 +198,11 @@ export function state(practiceContext = null) {
         // METRONOME
         metronome: initialMetronome,
         isPlaying: false,
+
+        // FREE EXERCISE IMPORT PREFERENCE
+        askBeforeImportingFreeExercises,
+        localRoutineImportDontAskAgain: false,
+        localRoutineImportPreferenceBusy: false,
 
         // NAVIGATION
         activeTab: 'exercises',

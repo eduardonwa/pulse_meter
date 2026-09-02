@@ -12,6 +12,32 @@
                 <input type="checkbox" x-model="autoAdvance">
                 <span>Auto-advance to next exercise</span>
             </label>
+
+            <label
+                class="free-exercise-import-field"
+                x-show="usesServerPersistence"
+                x-cloak
+            >
+                <input
+                    type="checkbox"
+                    :checked="askBeforeImportingFreeExercises"
+                    :disabled="localRoutineImportPreferenceBusy"
+                    @change="
+                        setFreeExerciseImportPromptPreference(
+                            $event.target.checked
+                        ).then(saved => {
+                            if (!saved) {
+                                $event.target.checked =
+                                    askBeforeImportingFreeExercises
+                            }
+                        })
+                    "
+                >
+
+                <span>
+                    Ask before importing Free exercises after signing in
+                </span>
+            </label>
         </div>
     </div>
 

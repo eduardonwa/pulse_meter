@@ -5,6 +5,7 @@ use App\Http\Controllers\Billing\BillingPortalController;
 use App\Http\Controllers\Billing\LifetimeProCheckoutController;
 use App\Http\Controllers\Billing\MonthlyProCheckoutController;
 use App\Http\Controllers\BillingPageController;
+use App\Http\Controllers\FreeExerciseImportPreferenceController;
 use App\Http\Controllers\LocalRoutineImportController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\PracticeRoutineController;
@@ -92,6 +93,11 @@ Route::post(
 
 // ROUTINES
 Route::middleware(['auth', 'can:use-pro'])->group(function () {
+    Route::patch(
+        '/practice-settings/free-exercise-import-prompt',
+        FreeExerciseImportPreferenceController::class
+    )->name('practice-settings.free-exercise-import-prompt');
+
     // ROUTINES
     Route::post(
         '/practice-routines/import-local',

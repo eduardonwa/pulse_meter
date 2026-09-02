@@ -98,8 +98,15 @@ function createStorageInstance() {
 
             localRoutineImportMarkerKey:
                 'pulse_meter_routine_import_user_10',
+
+            freeExerciseImportPreferenceUrl:
+                '/practice-settings/free-exercise-import-prompt',
         },
     }
+
+    instance.askBeforeImportingFreeExercises = true
+    instance.localRoutineImportDontAskAgain = false
+    instance.localRoutineImportPreferenceBusy = false
 
     return instance
 }
@@ -587,6 +594,119 @@ test(
 )
 
 test(
+    'does not open the import prompt when the account preference is disabled',
+    async () => {
+        const browserStorage =
+            createMemoryStorage({
+                pulse_meter_routine:
+                    JSON.stringify(
+                        localStepsVersionA()
+                    ),
+            })
+
+        await withBrowserGlobals(
+            {
+                localStorage:
+                    browserStorage,
+
+                fetch: async () => {
+                    throw new Error(
+                        'Fetch should not be called.'
+                    )
+                },
+            },
+            async () => {
+                const instance =
+                    createStorageInstance()
+
+                instance.askBeforeImportingFreeExercises =
+                    false
+
+                assert.equal(
+                    instance.prepareLocalRoutineImport(),
+                    null
+                )
+
+                assert.equal(
+                    instance.isLocalRoutineImportOpen,
+                    false
+                )
+            }
+        )
+    }
+)
+
+test(
+    'saves do not ask again only after keeping the server version',
+    async () => {
+        const browserStorage =
+            createMemoryStorage({
+                pulse_meter_routine:
+                    JSON.stringify(
+                        localStepsVersionA()
+                    ),
+            })
+
+        let preferenceRequest = null
+
+        await withBrowserGlobals(
+            {
+                localStorage:
+                    browserStorage,
+
+                fetch: async (url, options) => {
+                    preferenceRequest = {
+                        url,
+                        method: options.method,
+                        body: JSON.parse(options.body),
+                    }
+
+                    return {
+                        ok: true,
+
+                        async json() {
+                            return {}
+                        },
+                    }
+                },
+            },
+            async () => {
+                const instance =
+                    createStorageInstance()
+
+                instance.prepareLocalRoutineImport()
+                instance.localRoutineImportDontAskAgain =
+                    true
+
+                const result =
+                    await instance
+                        .resolveLocalRoutineImport(
+                            'keep_server'
+                        )
+
+                assert.equal(result, 'kept')
+
+                assert.deepEqual(
+                    preferenceRequest,
+                    {
+                        url: '/practice-settings/free-exercise-import-prompt',
+                        method: 'PATCH',
+                        body: {
+                            enabled: false,
+                        },
+                    }
+                )
+
+                assert.equal(
+                    instance.askBeforeImportingFreeExercises,
+                    false
+                )
+            }
+        )
+    }
+)
+
+test(
     'closes the prompt after keeping the server exercises',
     async () => {
         const browserStorage =
@@ -741,7 +861,11 @@ test(
                     ),
             })
 
+        let fetchCalls = 0
+
         const fetchMock = async () => {
+            fetchCalls++
+
             return {
                 ok: false,
                 status: 409,
@@ -772,6 +896,9 @@ test(
 
                 instance
                     .prepareLocalRoutineImport()
+
+                instance.localRoutineImportDontAskAgain =
+                    true
 
                 const result =
                     await instance
@@ -805,6 +932,13 @@ test(
                     instance
                         .localRoutineImportError,
                     null
+                )
+
+                assert.equal(fetchCalls, 1)
+
+                assert.equal(
+                    instance.askBeforeImportingFreeExercises,
+                    true
                 )
             }
         )

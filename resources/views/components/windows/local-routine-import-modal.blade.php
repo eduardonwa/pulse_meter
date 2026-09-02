@@ -35,6 +35,18 @@
             Other routines and playlists won't change.
         </p>
 
+        <label class="local-exercises-dialog__preference">
+            <input
+                type="checkbox"
+                x-model="localRoutineImportDontAskAgain"
+                :disabled="isLocalRoutineImportBusy"
+            >
+
+            <span>
+                Don't ask again about Free exercises on this account
+            </span>
+        </label>
+
         <div x-show="localRoutineImportLimitReached" x-cloak>
             <p>
                 Your Trial already has the maximum of 3 routines.
@@ -76,7 +88,7 @@
             "
         >
             <span x-show="!isLocalRoutineImportBusy">
-                Start from scratch
+                Keep server version
             </span>
 
             <span x-show="isLocalRoutineImportBusy" x-cloak>
