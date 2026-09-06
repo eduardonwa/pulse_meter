@@ -52,7 +52,8 @@ class LocalRoutineImportController extends Controller
             'steps.*.time_signature_numerator' => [
                 'sometimes',
                 'integer',
-                'in:2,3,4',
+                'min:2',
+                'max:16',
             ],
 
             'steps.*.time_signature_denominator' => [

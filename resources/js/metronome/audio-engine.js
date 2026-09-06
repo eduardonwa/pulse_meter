@@ -395,8 +395,6 @@ export function audioEngine() {
         },
 
         getStandardPlaybackPulse() {
-            const allowedNumerators = [2, 3, 4]
-
             const requestedNumerator =
                 Number(
                     this.metronome
@@ -404,20 +402,13 @@ export function audioEngine() {
                 )
 
             const numerator =
-                allowedNumerators.includes(
-                    requestedNumerator
-                )
+                Number.isInteger(requestedNumerator)
+                && requestedNumerator >= 2
+                && requestedNumerator <= 16
                     ? requestedNumerator
                     : 4
 
-            const denominator =
-                Number(
-                    this.metronome
-                        .time_signature_denominator
-                    ?? 4
-                ) === 4
-                    ? 4
-                    : 4
+            const denominator = 4
 
             return {
                 timeSignature: {

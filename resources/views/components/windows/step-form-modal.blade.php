@@ -64,14 +64,12 @@
                     Time signature
                 </p>
 
-                <select
-                    x-model.number="
-                        stepForm.time_signature_numerator
-                    "
-                >
-                    <option value="2">2/4</option>
-                    <option value="3">3/4</option>
-                    <option value="4">4/4</option>
+                <select x-model.number="stepForm.time_signature_numerator">
+                    @foreach (range(2, 16) as $numerator)
+                        <option value="{{ $numerator }}">
+                            {{ $numerator }}/4
+                        </option>
+                    @endforeach
                 </select>
             </label>
         </div>
