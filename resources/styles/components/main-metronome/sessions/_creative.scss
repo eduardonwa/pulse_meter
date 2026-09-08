@@ -5,6 +5,25 @@
         width: 100%;
     }
 
+    .creative-mode-selector {
+        display: flex;
+        flex-wrap: wrap;
+        gap: $size-3;
+        margin-block-end: $size-4;
+
+        .button.is-selected {
+            color: $color-neutral-50;
+            background: $color-neutral-950;
+            border-color: $color-neutral-950;
+        }
+    }
+
+    .creative-randomizer {
+        padding: $size-4;
+        border: 1px solid hsl(var(--neutral-950) / .2);
+        border-radius: $border-radius-2;
+    }
+
     .time-signature {
         --border: 1px solid hsl(var(--neutral-950) / .2);
         
