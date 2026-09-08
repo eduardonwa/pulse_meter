@@ -84,6 +84,7 @@ export function creativeSession() {
 
         randomizerResult: null,
         randomizerEditorTool: null,
+        randomizerPlaybackMode: 'click',
 
         randomizerPulse: {
             timeSignature: {
@@ -108,6 +109,19 @@ export function creativeSession() {
             this.creativeMode = mode
             this.currentBeat = 1
             this.currentSubdivision = 0
+
+            if (
+                mode === 'pulse-editor'
+                && typeof this.$nextTick === 'function'
+            ) {
+                this.$nextTick(() => {
+                    requestAnimationFrame(() => {
+                        window.dispatchEvent(
+                            new Event('picker:sync')
+                        )
+                    })
+                })
+            }
 
             return true
         },
@@ -201,11 +215,17 @@ export function creativeSession() {
                 return false
             }
 
-            return this.setPatternBeat(
+            const applied = this.setPatternBeat(
                 beat,
                 this.randomizerEditorTool,
                 this.randomizerPulse.pattern
             )
+
+            if (applied) {
+                this.cancelToolTether()
+            }
+
+            return applied
         },
 
         applyRandomizerToolToSubdivision(
@@ -216,12 +236,19 @@ export function creativeSession() {
                 return false
             }
 
-            return this.setPatternSubdivision(
+            const applied =
+                this.setPatternSubdivision(
                 beat,
                 subdivisionIndex,
                 this.randomizerEditorTool,
                 this.randomizerPulse.pattern
             )
+
+            if (applied) {
+                this.cancelToolTether()
+            }
+
+            return applied
         },
 
         getRandomizerResultLabel() {

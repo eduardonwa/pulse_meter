@@ -55,7 +55,11 @@
                 <button
                     class="button"
                     type="button"
-                    @click="randomizerEditorTool = 'accent'"
+                    data-tether-trigger
+                    @click="
+                        randomizerEditorTool = 'accent';
+                        startToolTether($event);
+                    "
                     :class="{ 'is-selected': randomizerEditorTool === 'accent' }"
                 >
                     Accent
@@ -64,7 +68,11 @@
                 <button
                     class="button"
                     type="button"
-                    @click="randomizerEditorTool = 'click'"
+                    data-tether-trigger
+                    @click="
+                        randomizerEditorTool = 'click';
+                        startToolTether($event);
+                    "
                     :class="{ 'is-selected': randomizerEditorTool === 'click' }"
                 >
                     Click
@@ -73,7 +81,11 @@
                 <button
                     class="button"
                     type="button"
-                    @click="randomizerEditorTool = 'rest'"
+                    data-tether-trigger
+                    @click="
+                        randomizerEditorTool = 'rest';
+                        startToolTether($event);
+                    "
                     :class="{ 'is-selected': randomizerEditorTool === 'rest' }"
                 >
                     Rest
@@ -107,8 +119,8 @@
                 class="button"
                 data-type="outline"
                 type="button"
-                @click="creativePlaybackMode = 'click'"
-                :class="{ 'is-selected': creativePlaybackMode === 'click' }"
+                @click="randomizerPlaybackMode = 'click'"
+                :class="{ 'is-selected': randomizerPlaybackMode === 'click' }"
             >
                 Click
             </button>
@@ -117,8 +129,8 @@
                 class="button"
                 data-type="outline"
                 type="button"
-                @click="creativePlaybackMode = 'pulse'"
-                :class="{ 'is-selected': creativePlaybackMode === 'pulse' }"
+                @click="randomizerPlaybackMode = 'pulse'"
+                :class="{ 'is-selected': randomizerPlaybackMode === 'pulse' }"
             >
                 Pulse
             </button>

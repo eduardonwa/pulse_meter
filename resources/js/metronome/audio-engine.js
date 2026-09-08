@@ -189,7 +189,7 @@ export function audioEngine() {
             */
             if (
                 this.metronome.mode === 'creative'
-                && this.creativePlaybackMode === 'pulse'
+                && this.getCreativePlaybackMode() === 'pulse'
             ) {
                 if (!patternBeat.groupStart) {
                     return
@@ -234,7 +234,7 @@ export function audioEngine() {
             // los tonos de agrupación.
             if (
                 this.metronome.mode === 'creative'
-                && this.creativePlaybackMode === 'pulse'
+                && this.getCreativePlaybackMode() === 'pulse'
             ) {
                 return
             }
@@ -405,6 +405,16 @@ export function audioEngine() {
             }
 
             return this.getStandardPlaybackPulse()
+        },
+
+        getCreativePlaybackMode() {
+            if (this.creativeMode === 'randomizer') {
+                return this.randomizerPlaybackMode
+                    ?? 'click'
+            }
+
+            return this.creativePlaybackMode
+                ?? 'click'
         },
 
         // PLAYBACK CONTROLS

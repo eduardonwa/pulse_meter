@@ -11,6 +11,10 @@ test('creative session starts without a selected tool', () => {
     const session = creativeSession()
 
     assert.equal(session.creativeMode, null)
+    assert.equal(
+        session.randomizerPlaybackMode,
+        'click'
+    )
 })
 
 test('creative session selects supported tools', () => {
@@ -223,11 +227,16 @@ test('randomizer edits beat and subdivision sounds', () => {
         ]
 
     session.randomizerEditorTool = 'rest'
+    session.cancelToolTether = () => {
+        session.randomizerEditorTool = null
+    }
 
     assert.equal(
         session.applyRandomizerTool(1),
         true
     )
+
+    session.randomizerEditorTool = 'rest'
 
     assert.equal(
         session.applyRandomizerToolToSubdivision(

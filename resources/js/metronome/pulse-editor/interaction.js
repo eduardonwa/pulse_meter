@@ -126,6 +126,15 @@ export function interaction() {
         cancelToolTether() {
             this.toolTether.active = false
             this.editorTool = null
+
+            if (
+                Object.hasOwn(
+                    this,
+                    'randomizerEditorTool'
+                )
+            ) {
+                this.randomizerEditorTool = null
+            }
         },
 
         // PATTERN DIALOG

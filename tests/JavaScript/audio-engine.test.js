@@ -313,6 +313,30 @@ test(
 )
 
 test(
+    'creative tools keep separate playback modes',
+    () => {
+        const engine = audioEngine()
+
+        engine.creativePlaybackMode = 'click'
+        engine.randomizerPlaybackMode = 'pulse'
+
+        engine.creativeMode = 'randomizer'
+
+        assert.equal(
+            engine.getCreativePlaybackMode(),
+            'pulse'
+        )
+
+        engine.creativeMode = 'pulse-editor'
+
+        assert.equal(
+            engine.getCreativePlaybackMode(),
+            'click'
+        )
+    }
+)
+
+test(
     'sixteenth-note subdivisions run at one quarter of the beat interval',
     () => {
         const engine = audioEngine()
