@@ -21,7 +21,11 @@ export function pattern() {
         },
 
         // BEAT EDITING
-        setPatternBeat(beat, type) {
+        setPatternBeat(
+            beat,
+            type,
+            pattern = this.pattern
+        ) {
             const allowedTypes = [
                 'accent',
                 'click',
@@ -34,12 +38,12 @@ export function pattern() {
 
             if (
                 beat < 1
-                || beat > this.timeSignature.numerator
+                || beat > pattern.length
             ) {
                 return false
             }
 
-            const patternBeat = this.pattern[beat - 1]
+            const patternBeat = pattern[beat - 1]
 
             if (!patternBeat) {
                 return false
@@ -47,12 +51,19 @@ export function pattern() {
 
             patternBeat.sound = type
 
-            this.syncPulseDirty()
+            if (pattern === this.pattern) {
+                this.syncPulseDirty()
+            }
 
             return true
         },
 
-        setPatternSubdivision(beat, subdivisionIndex, type) {
+        setPatternSubdivision(
+            beat,
+            subdivisionIndex,
+            type,
+            pattern = this.pattern
+        ) {
             const allowedTypes = [
                 'accent',
                 'click',
@@ -63,7 +74,7 @@ export function pattern() {
                 return false
             }
 
-            const patternBeat = this.pattern[beat - 1]
+            const patternBeat = pattern[beat - 1]
 
             if (!patternBeat) {
                 return false
@@ -78,7 +89,9 @@ export function pattern() {
 
             subdivision.sound = type
 
-            this.syncPulseDirty()
+            if (pattern === this.pattern) {
+                this.syncPulseDirty()
+            }
 
             return true
         },
@@ -126,12 +139,14 @@ export function pattern() {
         },
 
         // SUBDIVISIONS
-        getSubdivisionLabels() {
-            if (this.subdivision === 2) {
+        getSubdivisionLabels(
+            subdivision = this.subdivision
+        ) {
+            if (subdivision === 2) {
                 return ['&']
             }
 
-            if (this.subdivision === 4) {
+            if (subdivision === 4) {
                 return ['e', '&', 'a']
             }
 
@@ -147,16 +162,33 @@ export function pattern() {
 
             this.subdivision = subdivision
 
-            const labels = this.getSubdivisionLabels()
+            this.applySubdivisionToPattern(
+                this.pattern,
+                subdivision
+            )
 
-            this.pattern.forEach(beat => {
+            this.syncPulseDirty()
+
+            return true
+        },
+
+        applySubdivisionToPattern(
+            pattern,
+            subdivision
+        ) {
+            if (![1, 2, 4].includes(subdivision)) {
+                return false
+            }
+
+            const labels =
+                this.getSubdivisionLabels(subdivision)
+
+            pattern.forEach(beat => {
                 beat.subdivisions = labels.map(label => ({
                     label,
                     sound: 'click',
                 }))
             })
-
-            this.syncPulseDirty()
 
             return true
         },

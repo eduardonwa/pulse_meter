@@ -83,6 +83,7 @@ export function creativeSession() {
         creativeMode: null,
 
         randomizerResult: null,
+        randomizerEditorTool: null,
 
         randomizerPulse: {
             timeSignature: {
@@ -147,6 +148,7 @@ export function creativeSession() {
             }
 
             this.randomizerResult = result
+            this.randomizerEditorTool = null
 
             this.randomizerPulse = {
                 timeSignature: {
@@ -170,6 +172,56 @@ export function creativeSession() {
             }
 
             return result
+        },
+
+        setRandomizerSubdivision(value) {
+            const subdivision = Number(value)
+
+            if (
+                !this.applySubdivisionToPattern(
+                    this.randomizerPulse.pattern,
+                    subdivision
+                )
+            ) {
+                return false
+            }
+
+            this.randomizerPulse.subdivision =
+                subdivision
+
+            if (this.isPlaying) {
+                this.restartMetronome()
+            }
+
+            return true
+        },
+
+        applyRandomizerTool(beat) {
+            if (!this.randomizerEditorTool) {
+                return false
+            }
+
+            return this.setPatternBeat(
+                beat,
+                this.randomizerEditorTool,
+                this.randomizerPulse.pattern
+            )
+        },
+
+        applyRandomizerToolToSubdivision(
+            beat,
+            subdivisionIndex
+        ) {
+            if (!this.randomizerEditorTool) {
+                return false
+            }
+
+            return this.setPatternSubdivision(
+                beat,
+                subdivisionIndex,
+                this.randomizerEditorTool,
+                this.randomizerPulse.pattern
+            )
         },
 
         getRandomizerResultLabel() {

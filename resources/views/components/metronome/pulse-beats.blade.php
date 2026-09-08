@@ -1,6 +1,7 @@
 @props([
     'groups',
-    'interactive' => false,
+    'beatAction' => null,
+    'subdivisionAction' => null,
 ])
 
 <div {{ $attributes->class(['time-signature__beats']) }}>
@@ -25,11 +26,11 @@
                         <button
                             class="beat-mark"
                             type="button"
-                            @if (! $interactive)
+                            @if (! $beatAction)
                                 aria-disabled="true"
                             @endif
-                            @if ($interactive)
-                                @click="applyEditorTool(item.beat)"
+                            @if ($beatAction)
+                                @click="{{ $beatAction }}"
                             @endif
                             :class="{
                                 'is-group-start': item.groupStart,
@@ -61,14 +62,11 @@
                             <button
                                 class="subdivision-mark"
                                 type="button"
-                                @if (! $interactive)
+                                @if (! $subdivisionAction)
                                     aria-disabled="true"
                                 @endif
-                                @if ($interactive)
-                                    @click="applyEditorToolToSubdivision(
-                                        item.beat,
-                                        subdivisionIndex
-                                    )"
+                                @if ($subdivisionAction)
+                                    @click="{{ $subdivisionAction }}"
                                 @endif
                                 :class="{
                                     'is-active': currentBeat === item.beat && currentSubdivision === subdivisionIndex + 1,

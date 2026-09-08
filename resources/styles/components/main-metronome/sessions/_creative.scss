@@ -33,13 +33,15 @@
         }
 
         &__controls,
-        &__playback {
+        &__playback,
+        &__tools {
             display: flex;
             flex-wrap: wrap;
             gap: $size-3;
         }
 
-        &__playback {
+        &__playback,
+        &__tools {
             .button.is-selected {
                 color: $color-neutral-50;
                 background: $color-neutral-950;
@@ -50,6 +52,22 @@
         &__beats {
             padding: 0;
             border-block-end: 0;
+        }
+
+        &__editing {
+            display: grid;
+            gap: $size-4;
+
+            @include mq(medium) {
+                grid-template-columns:
+                    repeat(2, minmax(0, 1fr));
+            }
+
+            .heading {
+                padding-block-end: $size-3;
+                font-size: 14px;
+                color: hsl(var(--neutral-950) / .6);
+            }
         }
     }
 

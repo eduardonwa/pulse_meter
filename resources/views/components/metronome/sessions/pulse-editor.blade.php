@@ -65,7 +65,8 @@
         
         <x-metronome.pulse-beats
             groups="getPatternGroups()"
-            :interactive="true"
+            beat-action="applyEditorTool(item.beat)"
+            subdivision-action="applyEditorToolToSubdivision(item.beat, subdivisionIndex)"
         />
         
         <div class="time-signature__rhythm-tools">

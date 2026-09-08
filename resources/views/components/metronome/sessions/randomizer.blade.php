@@ -15,9 +15,72 @@
     <x-metronome.pulse-beats
         class="creative-randomizer__beats"
         groups="getPatternGroups(randomizerPulse.pattern)"
+        beat-action="applyRandomizerTool(item.beat)"
+        subdivision-action="applyRandomizerToolToSubdivision(item.beat, subdivisionIndex)"
         x-show="randomizerResult"
         x-cloak
     />
+
+    <div
+        class="creative-randomizer__editing"
+        x-show="randomizerResult"
+        x-cloak
+    >
+        <div>
+            <h3 class="heading">Subdivision</h3>
+
+            <label>
+                <select
+                    class="subdivision-selector"
+                    x-model.number="randomizerPulse.subdivision"
+                    @change="setRandomizerSubdivision($event.target.value)"
+                >
+                    <template
+                        x-for="option in subdivisionOptions"
+                        :key="option.value"
+                    >
+                        <option
+                            :value="option.value"
+                            x-text="option.label"
+                        ></option>
+                    </template>
+                </select>
+            </label>
+        </div>
+
+        <div>
+            <h3 class="heading">Cue</h3>
+
+            <div class="creative-randomizer__tools">
+                <button
+                    class="button"
+                    type="button"
+                    @click="randomizerEditorTool = 'accent'"
+                    :class="{ 'is-selected': randomizerEditorTool === 'accent' }"
+                >
+                    Accent
+                </button>
+
+                <button
+                    class="button"
+                    type="button"
+                    @click="randomizerEditorTool = 'click'"
+                    :class="{ 'is-selected': randomizerEditorTool === 'click' }"
+                >
+                    Click
+                </button>
+
+                <button
+                    class="button"
+                    type="button"
+                    @click="randomizerEditorTool = 'rest'"
+                    :class="{ 'is-selected': randomizerEditorTool === 'rest' }"
+                >
+                    Rest
+                </button>
+            </div>
+        </div>
+    </div>
 
     <div class="creative-randomizer__controls">
         <button

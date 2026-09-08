@@ -126,3 +126,127 @@ test('randomizer restarts active playback with the new result', () => {
 
     assert.equal(session.restartCount, 1)
 })
+
+test('randomizer adds subdivisions without changing its meter', () => {
+    const session = creativeSession()
+
+    session.metronome = {
+        bpm: 100,
+    }
+
+    session.applySubdivisionToPattern = (
+        pattern,
+        subdivision
+    ) => {
+        const labels =
+            subdivision === 2
+                ? ['&']
+                : []
+
+        pattern.forEach(beat => {
+            beat.subdivisions = labels.map(label => ({
+                label,
+                sound: 'click',
+            }))
+        })
+
+        return [1, 2, 4].includes(subdivision)
+    }
+
+    session.generateRandomIdea(() => 0)
+
+    const originalMeter = {
+        ...session.randomizerPulse.timeSignature,
+    }
+
+    assert.equal(
+        session.setRandomizerSubdivision(2),
+        true
+    )
+
+    assert.deepEqual(
+        session.randomizerPulse.timeSignature,
+        originalMeter
+    )
+
+    assert.deepEqual(
+        session.randomizerPulse
+            .pattern[0]
+            .subdivisions,
+        [
+            {
+                label: '&',
+                sound: 'click',
+            },
+        ]
+    )
+})
+
+test('randomizer edits beat and subdivision sounds', () => {
+    const session = creativeSession()
+
+    session.metronome = {
+        bpm: 100,
+    }
+
+    session.setPatternBeat = (
+        beat,
+        sound,
+        pattern
+    ) => {
+        pattern[beat - 1].sound = sound
+        return true
+    }
+
+    session.setPatternSubdivision = (
+        beat,
+        subdivisionIndex,
+        sound,
+        pattern
+    ) => {
+        pattern[beat - 1]
+            .subdivisions[subdivisionIndex]
+            .sound = sound
+
+        return true
+    }
+
+    session.generateRandomIdea(() => 0)
+
+    session.randomizerPulse
+        .pattern[0]
+        .subdivisions = [
+            {
+                label: '&',
+                sound: 'click',
+            },
+        ]
+
+    session.randomizerEditorTool = 'rest'
+
+    assert.equal(
+        session.applyRandomizerTool(1),
+        true
+    )
+
+    assert.equal(
+        session.applyRandomizerToolToSubdivision(
+            1,
+            0
+        ),
+        true
+    )
+
+    assert.equal(
+        session.randomizerPulse.pattern[0].sound,
+        'rest'
+    )
+
+    assert.equal(
+        session.randomizerPulse
+            .pattern[0]
+            .subdivisions[0]
+            .sound,
+        'rest'
+    )
+})
