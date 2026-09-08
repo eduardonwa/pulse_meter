@@ -12,6 +12,13 @@
         Generate a starting point for a creative session.
     </p>
 
+    <x-metronome.pulse-beats
+        class="creative-randomizer__beats"
+        groups="getPatternGroups(randomizerPulse.pattern)"
+        x-show="randomizerResult"
+        x-cloak
+    />
+
     <div class="creative-randomizer__controls">
         <button
             class="button"

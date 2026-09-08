@@ -99,11 +99,11 @@ export function pattern() {
         },
 
         // PATTERN GROUPING
-        getPatternGroups() {
+        getPatternGroups(pattern = this.pattern) {
             const groups = []
             let currentGroup = []
 
-            this.pattern.forEach((item, index) => {
+            pattern.forEach((item, index) => {
                 if (
                     item.groupStart
                     && currentGroup.length

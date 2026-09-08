@@ -46,6 +46,11 @@
                 border-color: $color-neutral-950;
             }
         }
+
+        &__beats {
+            padding: 0;
+            border-block-end: 0;
+        }
     }
 
     .time-signature {

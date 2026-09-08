@@ -160,3 +160,36 @@ test(
         )
     }
 )
+
+
+test(
+    'pattern groups can be derived from another pulse',
+    () => {
+        const editor = createEditor()
+
+        const groups = editor.getPatternGroups([
+            {
+                sound: 'accent',
+                groupStart: true,
+            },
+            {
+                sound: 'click',
+                groupStart: false,
+            },
+            {
+                sound: 'accent',
+                groupStart: true,
+            },
+        ])
+
+        assert.deepEqual(
+            groups.map(group => {
+                return group.map(item => item.beat)
+            }),
+            [
+                [1, 2],
+                [3],
+            ]
+        )
+    }
+)
