@@ -108,7 +108,11 @@ export function interaction() {
         },
 
         handleToolTetherClick(event) {
-            if (!this.editorTool) {
+            const hasActiveTool =
+                this.editorTool
+                || this.randomizerEditorTool
+
+            if (!hasActiveTool) {
                 return
             }
 
