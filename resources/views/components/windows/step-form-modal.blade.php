@@ -51,14 +51,8 @@
                 </select>
             </label>
 
-            <label class="exercise-time-signature-wrapper"
-                x-show="
-                    stepFormMode === 'create'
-                    || !hasAlphaTabPattern(
-                        steps[stepFormIndex]
-                    )
-                "
-                x-cloak
+            <label class="exercise-time-signature-wrapper" x-cloak
+                x-show=" stepFormMode === 'create' || !hasAlphaTabPattern(steps[stepFormIndex])"
             >
                 <p class="exercise-form-label">
                     Time signature
