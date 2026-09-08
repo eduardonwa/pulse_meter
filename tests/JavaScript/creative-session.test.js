@@ -283,3 +283,85 @@ test('randomizer edits beat and subdivision sounds', () => {
         'rest'
     )
 })
+
+test('randomizer edits group starts without changing meter', () => {
+    const session = creativeSession()
+
+    session.metronome = {
+        bpm: 100,
+    }
+
+    session.generateRandomIdea(() => 0)
+
+    session.getGroupingFromPattern = (
+        pattern,
+        numerator
+    ) => {
+        const starts = pattern
+            .map((beat, index) => {
+                return beat.groupStart
+                    ? index + 1
+                    : null
+            })
+            .filter(Boolean)
+
+        return starts.map((start, index) => {
+            return (
+                starts[index + 1]
+                ?? numerator + 1
+            ) - start
+        })
+    }
+
+    session.setGroupStart = (
+        beat,
+        isGroupStart,
+        pulse
+    ) => {
+        pulse.pattern[beat - 1].groupStart =
+            isGroupStart
+
+        if (isGroupStart) {
+            pulse.pattern[beat - 1].sound =
+                'accent'
+        }
+
+        pulse.grouping =
+            session.getGroupingFromPattern(
+                pulse.pattern,
+                pulse.timeSignature.numerator
+            )
+
+        return true
+    }
+
+    session.cancelToolTether = () => {
+        session.randomizerEditorTool = null
+    }
+
+    const originalMeter = {
+        ...session.randomizerPulse.timeSignature,
+    }
+
+    session.randomizerEditorTool = 'groupStart'
+
+    assert.equal(
+        session.applyRandomizerTool(2),
+        true
+    )
+
+    assert.deepEqual(
+        session.randomizerPulse.grouping,
+        [1, 1]
+    )
+
+    assert.equal(
+        session.randomizerPulse.pattern[1].sound,
+        'accent'
+    )
+
+    assert.deepEqual(
+        session.randomizerPulse.timeSignature,
+        originalMeter
+    )
+})

@@ -22,6 +22,18 @@
     />
 
     <div
+        class="creative-randomizer__grouping"
+        x-show="randomizerResult"
+        x-cloak
+    >
+        <h3 class="heading">Grouping</h3>
+
+        <p
+            x-text="randomizerPulse.grouping.join(' + ')"
+        ></p>
+    </div>
+
+    <div
         class="creative-randomizer__editing"
         x-show="randomizerResult"
         x-cloak
@@ -91,6 +103,23 @@
                     Rest
                 </button>
             </div>
+        </div>
+
+        <div>
+            <h3 class="heading">Structure</h3>
+
+            <button
+                class="button"
+                type="button"
+                data-tether-trigger
+                @click="
+                    randomizerEditorTool = 'groupStart';
+                    startToolTether($event);
+                "
+                :class="{ 'is-selected': randomizerEditorTool === 'groupStart' }"
+            >
+                Group start
+            </button>
         </div>
     </div>
 

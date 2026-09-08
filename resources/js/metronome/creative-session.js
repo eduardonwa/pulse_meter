@@ -278,6 +278,29 @@ export function creativeSession() {
                 return false
             }
 
+            if (
+                this.randomizerEditorTool
+                === 'groupStart'
+            ) {
+                const patternBeat =
+                    this.randomizerPulse
+                        .pattern[beat - 1]
+
+                if (!patternBeat) {
+                    return false
+                }
+
+                const applied = this.setGroupStart(
+                    beat,
+                    !patternBeat.groupStart,
+                    this.randomizerPulse
+                )
+
+                this.cancelToolTether()
+
+                return applied
+            }
+
             const applied = this.setPatternBeat(
                 beat,
                 this.randomizerEditorTool,

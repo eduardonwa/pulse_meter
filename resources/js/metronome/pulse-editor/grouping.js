@@ -27,15 +27,19 @@ export function grouping() {
                 - this.getGroupingTotal(grouping)
         },
 
-        getGroupingFromPattern() {
+        getGroupingFromPattern(
+            pattern = this.pattern,
+            numerator =
+                this.timeSignature.numerator
+        ) {
             const groupStarts = []
 
             for (
                 let beat = 1;
-                beat <= this.timeSignature.numerator;
+                beat <= numerator;
                 beat++
             ) {
-                if (this.pattern[beat - 1]?.groupStart) {
+                if (pattern[beat - 1]?.groupStart) {
                     groupStarts.push(beat)
                 }
             }
@@ -47,7 +51,7 @@ export function grouping() {
 
                 const nextStart =
                     groupStarts[i + 1]
-                    ?? this.timeSignature.numerator + 1
+                    ?? numerator + 1
 
                 grouping.push(nextStart - start)
             }
@@ -74,10 +78,22 @@ export function grouping() {
             return true
         },
 
-        setGroupStart(beat, isGroupStart) {
+        setGroupStart(
+            beat,
+            isGroupStart,
+            pulse = null
+        ) {
+            const pattern =
+                pulse?.pattern
+                ?? this.pattern
+
+            const numerator =
+                pulse?.timeSignature?.numerator
+                ?? this.timeSignature.numerator
+
             if (
                 beat < 1
-                || beat > this.timeSignature.numerator
+                || beat > numerator
             ) {
                 return false
             }
@@ -87,7 +103,7 @@ export function grouping() {
                 return false
             }
 
-            const patternBeat = this.pattern[beat - 1]
+            const patternBeat = pattern[beat - 1]
 
             if (!patternBeat) {
                 return false
@@ -104,9 +120,18 @@ export function grouping() {
                 patternBeat.groupStart = isGroupStart
             }
 
-            this.grouping = this.getGroupingFromPattern()
+            const grouping =
+                this.getGroupingFromPattern(
+                    pattern,
+                    numerator
+                )
 
-            this.syncPulseDirty()
+            if (pulse) {
+                pulse.grouping = grouping
+            } else {
+                this.grouping = grouping
+                this.syncPulseDirty()
+            }
 
             return true
         },

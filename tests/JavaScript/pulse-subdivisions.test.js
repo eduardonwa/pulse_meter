@@ -193,3 +193,51 @@ test(
         )
     }
 )
+
+
+test(
+    'external pulse derives grouping from group starts',
+    () => {
+        const editor = createEditor()
+
+        const pulse = {
+            timeSignature: {
+                numerator: 4,
+                denominator: 4,
+            },
+
+            grouping: [4],
+
+            pattern:
+                editor.buildPatternFromGrouping([4]),
+        }
+
+        assert.equal(
+            editor.setGroupStart(
+                3,
+                true,
+                pulse
+            ),
+            true
+        )
+
+        assert.deepEqual(
+            pulse.grouping,
+            [2, 2]
+        )
+
+        assert.equal(
+            pulse.pattern[2].sound,
+            'accent'
+        )
+
+        assert.equal(
+            editor.setGroupStart(
+                1,
+                false,
+                pulse
+            ),
+            false
+        )
+    }
+)
