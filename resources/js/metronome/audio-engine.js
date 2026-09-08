@@ -201,7 +201,10 @@ export function audioEngine() {
 
                 this.playPulseTone({
                     groupSize:
-                        this.getGroupSizeForBeat(beat),
+                        this.getPlaybackGroupSizeForBeat(
+                            beat,
+                            playbackPulse
+                        ),
 
                     isDownbeat:
                         this.pulseDownbeatEnabled
@@ -257,6 +260,31 @@ export function audioEngine() {
             this.tick(
                 subdivisionItem.sound === 'accent'
             )
+        },
+
+        getPlaybackGroupSizeForBeat(
+            beat,
+            playbackPulse = this.getPlaybackPulse()
+        ) {
+            let groupIndex = -1
+
+            for (let i = 0; i < beat; i++) {
+                if (
+                    playbackPulse
+                        .pattern[i]
+                        ?.groupStart
+                ) {
+                    groupIndex++
+                }
+            }
+
+            if (groupIndex < 0) {
+                return 0
+            }
+
+            return playbackPulse
+                .grouping[groupIndex]
+                ?? 0
         },
 
         // PULSE PLAYBACK
@@ -361,6 +389,13 @@ export function audioEngine() {
 
         getPlaybackPulse() {
             if (this.metronome.mode === 'creative') {
+                if (
+                    this.creativeMode === 'randomizer'
+                    && this.randomizerPulse
+                ) {
+                    return this.randomizerPulse
+                }
+
                 return {
                     timeSignature: this.timeSignature,
                     subdivision: this.subdivision,

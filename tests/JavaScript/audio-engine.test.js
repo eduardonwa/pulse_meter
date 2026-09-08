@@ -243,6 +243,76 @@ test(
 )
 
 test(
+    'randomizer uses its own pulse during creative playback',
+    () => {
+        const engine = audioEngine()
+
+        engine.metronome = {
+            mode: 'creative',
+            bpm: 120,
+        }
+
+        engine.creativeMode = 'randomizer'
+
+        engine.randomizerPulse = {
+            timeSignature: {
+                numerator: 9,
+                denominator: 8,
+            },
+
+            subdivision: 1,
+            grouping: [3, 3, 3],
+            pattern: [],
+        }
+
+        engine.timeSignature = {
+            numerator: 4,
+            denominator: 4,
+        }
+
+        engine.subdivision = 1
+        engine.grouping = [4]
+        engine.pattern = []
+
+        assert.equal(
+            engine
+                .getPlaybackPulse()
+                .timeSignature
+                .numerator,
+
+            9
+        )
+
+        engine.randomizerPulse.pattern = [
+            {
+                sound: 'accent',
+                groupStart: true,
+            },
+            {
+                sound: 'click',
+                groupStart: false,
+            },
+            {
+                sound: 'click',
+                groupStart: false,
+            },
+            {
+                sound: 'accent',
+                groupStart: true,
+            },
+        ]
+
+        assert.equal(
+            engine.getPlaybackGroupSizeForBeat(
+                4,
+                engine.randomizerPulse
+            ),
+            3
+        )
+    }
+)
+
+test(
     'sixteenth-note subdivisions run at one quarter of the beat interval',
     () => {
         const engine = audioEngine()
