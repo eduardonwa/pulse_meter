@@ -3,7 +3,7 @@ const CREATIVE_MODES = [
     'randomizer',
 ]
 
-export const RANDOMIZER_KEYS = [
+export const RANDOMIZER_ROOTS = [
     'C',
     'Db',
     'D',
@@ -16,6 +16,59 @@ export const RANDOMIZER_KEYS = [
     'A',
     'Bb',
     'B',
+]
+
+export const RANDOMIZER_SCALES = [
+    {
+        id: 'ionian',
+        label: 'major (Ionian)',
+        intervals: [1, 2, 3, 4, 5, 6, 7],
+    },
+    {
+        id: 'dorian',
+        label: 'Dorian',
+        intervals: [1, 2, 'b3', 4, 5, 6, 'b7'],
+    },
+    {
+        id: 'phrygian',
+        label: 'Phrygian',
+        intervals: [1, 'b2', 'b3', 4, 5, 'b6', 'b7'],
+    },
+    {
+        id: 'lydian',
+        label: 'Lydian',
+        intervals: [1, 2, 3, '#4', 5, 6, 7],
+    },
+    {
+        id: 'mixolydian',
+        label: 'Mixolydian',
+        intervals: [1, 2, 3, 4, 5, 6, 'b7'],
+    },
+    {
+        id: 'aeolian',
+        label: 'minor (Aeolian)',
+        intervals: [1, 2, 'b3', 4, 5, 'b6', 'b7'],
+    },
+    {
+        id: 'locrian',
+        label: 'Locrian',
+        intervals: [1, 'b2', 'b3', 4, 'b5', 'b6', 'b7'],
+    },
+    {
+        id: 'harmonic-minor',
+        label: 'harmonic minor',
+        intervals: [1, 2, 'b3', 4, 5, 'b6', 7],
+    },
+    {
+        id: 'melodic-minor',
+        label: 'melodic minor',
+        intervals: [1, 2, 'b3', 4, 5, 6, 7],
+    },
+    {
+        id: 'melodic-major',
+        label: 'melodic major',
+        intervals: [1, 2, 3, 4, 5, 'b6', 'b7'],
+    },
 ]
 
 export const RANDOMIZER_METERS = [
@@ -148,12 +201,22 @@ export function creativeSession() {
                     random
                 )
 
+            const root =
+                this.getRandomItem(
+                    RANDOMIZER_ROOTS,
+                    random
+                )
+
+            const scale =
+                this.getRandomItem(
+                    RANDOMIZER_SCALES,
+                    random
+                )
+
             const result = {
                 bpm: this.getRandomBpm(random),
-                key: this.getRandomItem(
-                    RANDOMIZER_KEYS,
-                    random
-                ),
+                root,
+                scale: scale.id,
 
                 timeSignature: {
                     numerator: meter.numerator,
@@ -258,13 +321,20 @@ export function creativeSession() {
 
             const {
                 bpm,
-                key,
+                root,
+                scale,
                 timeSignature,
             } = this.randomizerResult
 
+            const scaleLabel =
+                RANDOMIZER_SCALES.find(
+                    item => item.id === scale
+                )?.label
+                ?? scale
+
             return [
                 `${bpm} BPM`,
-                key,
+                `${root} ${scaleLabel}`,
                 `${timeSignature.numerator}/${timeSignature.denominator}`,
             ].join(' · ')
         },

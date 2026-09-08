@@ -3,8 +3,9 @@ import assert from 'node:assert/strict'
 
 import {
     creativeSession,
-    RANDOMIZER_KEYS,
     RANDOMIZER_METERS,
+    RANDOMIZER_ROOTS,
+    RANDOMIZER_SCALES,
 } from '../../resources/js/metronome/creative-session.js'
 
 test('creative session starts without a selected tool', () => {
@@ -55,7 +56,8 @@ test('randomizer generates its minimum creative brief', () => {
 
     assert.deepEqual(result, {
         bpm: 60,
-        key: RANDOMIZER_KEYS[0],
+        root: RANDOMIZER_ROOTS[0],
+        scale: RANDOMIZER_SCALES[0].id,
         timeSignature: {
             numerator:
                 RANDOMIZER_METERS[0].numerator,
@@ -68,8 +70,29 @@ test('randomizer generates its minimum creative brief', () => {
     assert.equal(session.metronome.bpm, 60)
     assert.equal(
         session.getRandomizerResultLabel(),
-        '60 BPM · C · 2/4'
+        '60 BPM · C major (Ionian) · 2/4'
     )
+})
+
+test('randomizer includes melodic major', () => {
+    const melodicMajor =
+        RANDOMIZER_SCALES.find(
+            scale => scale.id === 'melodic-major'
+        )
+
+    assert.deepEqual(melodicMajor, {
+        id: 'melodic-major',
+        label: 'melodic major',
+        intervals: [
+            1,
+            2,
+            3,
+            4,
+            5,
+            'b6',
+            'b7',
+        ],
+    })
 })
 
 test('randomizer derives accents from default grouping', () => {
@@ -81,8 +104,9 @@ test('randomizer derives accents from default grouping', () => {
 
     const randomValues = [
         0.76,
-        0.5,
         0.4,
+        0,
+        0.5,
     ]
 
     session.generateRandomIdea(
