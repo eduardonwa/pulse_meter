@@ -17,6 +17,7 @@ export function lifecycle() {
 
             if (this.usesServerPersistence) {
                 await this.loadPulsePatterns?.()
+                await this.loadRandomizedSessions?.()
             }
 
             await this.restorePulseSource()

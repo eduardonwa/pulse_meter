@@ -4,6 +4,7 @@ import { lifecycle } from './lifecycle'
 import { storage } from './storage'
 import { audioEngine } from './audio-engine'
 import { creativeSession } from './creative-session'
+import { randomizerPersistence } from './randomizer-persistence'
 import { pulseEditor } from './pulse-editor/index.js'
 import { timerDuration } from './timer-duration'
 import { exercises } from './exercises'
@@ -29,6 +30,7 @@ window.routinePlayer = function (
         routineTemplateActions(),
         audioEngine(),
         creativeSession(),
+        randomizerPersistence(),
         pulseEditor(pulsePresets),
         playbackSession(),
         timerDuration(),

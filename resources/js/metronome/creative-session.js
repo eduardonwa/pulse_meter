@@ -226,6 +226,11 @@ export function creativeSession() {
 
             this.randomizerResult = result
             this.randomizerEditorTool = null
+            this.randomizerSessionName = ''
+            this.randomizerDraft = {
+                origin: 'generated',
+                sourceId: null,
+            }
 
             this.randomizerPulse = {
                 timeSignature: {
@@ -343,11 +348,15 @@ export function creativeSession() {
             }
 
             const {
-                bpm,
                 root,
                 scale,
                 timeSignature,
             } = this.randomizerResult
+
+            const bpm = Number(
+                this.metronome?.bpm
+                ?? this.randomizerResult.bpm
+            )
 
             const scaleLabel =
                 RANDOMIZER_SCALES.find(

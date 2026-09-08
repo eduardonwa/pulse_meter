@@ -164,5 +164,45 @@
                 Pulse
             </button>
         </div>
+
+        <div class="creative-randomizer__persistence">
+            <button
+                class="button"
+                data-type="primary"
+                type="button"
+                x-show="randomizerResult"
+                x-cloak
+                @click="saveRandomizedSession()"
+            >
+                Save
+            </button>
+
+            <button
+                class="button"
+                data-type="outline"
+                type="button"
+                x-show="
+                    randomizerResult
+                    && randomizerDraft.origin === 'saved'
+                "
+                x-cloak
+                @click="saveRandomizedSessionAs()"
+            >
+                Save as copy
+            </button>
+
+            <button
+                class="button"
+                data-type="outline"
+                type="button"
+                @click="openRandomizerSessionsDialog()"
+            >
+                Saved sessions
+                <span
+                    x-show="randomizerSavedSessions.length"
+                    x-text="`(${randomizerSavedSessions.length})`"
+                ></span>
+            </button>
+        </div>
     </div>
 </div>

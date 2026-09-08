@@ -7,6 +7,7 @@ use App\Models\Post;
 use App\Models\PracticePlaylist;
 use App\Models\PracticeRoutine;
 use App\Models\PulsePreset;
+use App\Models\RandomizedSession;
 use App\Models\TrialEntitlement;
 use App\Services\TrialMode\TrialAccess;
 use Filament\Models\Contracts\FilamentUser;
@@ -60,6 +61,11 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
     public function pulsePresets(): HasMany
     {
         return $this->hasMany(PulsePreset::class);
+    }
+
+    public function randomizedSessions(): HasMany
+    {
+        return $this->hasMany(RandomizedSession::class);
     }
 
     public function practiceRoutines()

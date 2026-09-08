@@ -120,6 +120,25 @@
                 'pulse-presets.destroy',
                 ['pulsePreset' => '__ID__']
             ) }}"
+
+            {{-- RANDOMIZED SESSIONS --}}
+            data-randomized-sessions-store-url="{{ route(
+                'randomized-sessions.store'
+            ) }}"
+
+            data-randomized-sessions-index-url="{{ route(
+                'randomized-sessions.index'
+            ) }}"
+
+            data-randomized-sessions-update-url="{{ route(
+                'randomized-sessions.update',
+                ['randomizedSession' => '__ID__']
+            ) }}"
+
+            data-randomized-sessions-destroy-url="{{ route(
+                'randomized-sessions.destroy',
+                ['randomizedSession' => '__ID__']
+            ) }}"
         @endif
 
         x-on:show-toast.window="
@@ -167,6 +186,10 @@
         <x-windows.pattern-modal />
 
         <x-windows.pattern-delete />
+
+        @if ($usesServerPersistence)
+            <x-windows.randomizer-sessions />
+        @endif
         
         @if ($usesServerPersistence)
             <x-windows.local-routine-import-modal />

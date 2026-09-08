@@ -34,7 +34,8 @@
 
         &__controls,
         &__playback,
-        &__tools {
+        &__tools,
+        &__persistence {
             display: flex;
             flex-wrap: wrap;
             gap: $size-3;

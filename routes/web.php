@@ -12,6 +12,7 @@ use App\Http\Controllers\PracticeRoutineController;
 use App\Http\Controllers\PracticeRoutineStepController;
 use App\Http\Controllers\ProductEventController;
 use App\Http\Controllers\PulsePresetController;
+use App\Http\Controllers\RandomizedSessionController;
 use App\Http\Controllers\RoutineTemplateController;
 use App\Http\Controllers\SaveRoutineTemplateController;
 use App\Http\Controllers\SitemapController;
@@ -157,6 +158,23 @@ Route::middleware(['auth', 'can:use-pro'])->group(function () {
     Route::delete('/pulse-presets/{pulsePreset}',
         [PulsePresetController::class, 'destroy'])
     ->name('pulse-presets.destroy');
+
+    // RANDOMIZED CREATIVE SESSIONS
+    Route::get('/randomized-sessions',
+        [RandomizedSessionController::class, 'index'])
+    ->name('randomized-sessions.index');
+
+    Route::post('/randomized-sessions',
+        [RandomizedSessionController::class, 'store'])
+    ->name('randomized-sessions.store');
+
+    Route::patch('/randomized-sessions/{randomizedSession}',
+        [RandomizedSessionController::class, 'update'])
+    ->name('randomized-sessions.update');
+
+    Route::delete('/randomized-sessions/{randomizedSession}',
+        [RandomizedSessionController::class, 'destroy'])
+    ->name('randomized-sessions.destroy');
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {
