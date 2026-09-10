@@ -7,6 +7,7 @@ use App\Filament\Forms\Components\RichEditor\RichContentCustomBlocks\SoundCloudB
 use App\Filament\Forms\Components\RichEditor\RichContentCustomBlocks\SpanishCallToActionBlock;
 use App\Filament\Forms\Components\RichEditor\RichContentCustomBlocks\YouTubeBlock;
 use Filament\Forms\Components\RichEditor\RichContentRenderer;
+use Illuminate\Support\Facades\Storage;
 
 class PostContentRenderer
 {
@@ -29,6 +30,8 @@ class PostContentRenderer
                 SoundCloudBlock::class,
             ])
             ->toHtml();
+
+        $html = $this->addImageDimensions($html);
 
         $html = $this->addHeadingIds(
             html: $html,
@@ -131,6 +134,71 @@ class PostContentRenderer
                     $matches[1],
                     $heading['id'],
                     $attributes,
+                );
+            },
+            $html,
+        );
+    }
+
+    private function addImageDimensions(string $html): string
+    {
+        return preg_replace_callback(
+            '/<img\b[^>]*>/i',
+            function (array $matches): string {
+                $tag = $matches[0];
+
+                // No reemplazar dimensiones existentes.
+                if (
+                    preg_match('/\swidth=(["\']).*?\1/i', $tag) &&
+                    preg_match('/\sheight=(["\']).*?\1/i', $tag)
+                ) {
+                    return $tag;
+                }
+
+                if (
+                    ! preg_match(
+                        '/\sdata-id=(["\'])(.*?)\1/i',
+                        $tag,
+                        $dataId,
+                    )
+                ) {
+                    return $tag;
+                }
+
+                $path = html_entity_decode(
+                    $dataId[2],
+                    ENT_QUOTES | ENT_HTML5,
+                );
+
+                $disk = Storage::disk('public');
+
+                if (! $disk->exists($path)) {
+                    return $tag;
+                }
+
+                $dimensions = @getimagesize($disk->path($path));
+
+                if ($dimensions === false) {
+                    return $tag;
+                }
+
+                [$width, $height] = $dimensions;
+
+                // Elimina una dimensión suelta antes de añadir ambas.
+                $tag = preg_replace(
+                    '/\s(?:width|height)=(["\']).*?\1/i',
+                    '',
+                    $tag,
+                );
+
+                return preg_replace(
+                    '/>$/',
+                    sprintf(
+                        ' width="%d" height="%d">',
+                        $width,
+                        $height,
+                    ),
+                    $tag,
                 );
             },
             $html,

@@ -1,11 +1,7 @@
-function getHashTarget(hash = window.location.hash) {
-    if (!hash) return null
+function getHashTarget(hash) {
+    if (!hash) return
 
-    try {
-        return document.querySelector(hash)
-    } catch {
-        return null
-    }
+    return document.querySelector(hash)
 }
 
 function alignHash(hash, behavior = 'auto') {
@@ -20,7 +16,9 @@ window.addEventListener('load', () => {
 })
 
 document.addEventListener('click', event => {
-    const link = event.target.closest('.table-of-contents a[href^="#"]')
+    const link = event.target.closest(
+        '.table-of-contents a[href^="#"]'
+    )
 
     if (!link) return
 
