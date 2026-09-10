@@ -139,6 +139,12 @@
             font-weight: 600;
         }
 
+        img {
+            display: block;
+            max-width: 100%;
+            height: auto;
+        }
+
         .youtube-embed {
             margin-block: $size-4;
 
