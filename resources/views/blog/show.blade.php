@@ -1,4 +1,7 @@
-<x-layouts.dorelog>
+<x-layouts.dorelog
+    :title="$post->meta_title ?: $post->title . ' | Dorelog'"
+    :description="$post->meta_description ?: $post->excerpt"
+>
     <div class="container | breadcrumbs" data-type="blog-post" aria-label="Breadcrumb">
         <x-ui.breadcrumb :post="$post" />
     </div>
