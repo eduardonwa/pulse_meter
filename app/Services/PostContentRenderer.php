@@ -111,12 +111,16 @@ class PostContentRenderer
 
         return preg_replace_callback(
             '/<h([23])([^>]*)>/i',
-            function (array $matches) use (
-                &$position,
-                $headings,
-            ): string {
-                $heading = $headings[$position] ?? null;
 
+            function (array $matches) use (&$position, $headings): string {
+                $attributes = $matches[2] ?? '';
+
+                // Ignorar headings pertenecientes a los CTA.
+                if (str_contains($attributes, 'post--cta__')) {
+                    return $matches[0];
+                }
+
+                $heading = $headings[$position] ?? null;
                 $position++;
 
                 if ($heading === null) {
@@ -126,7 +130,7 @@ class PostContentRenderer
                 $attributes = preg_replace(
                     '/\s+id=(["\']).*?\1/i',
                     '',
-                    $matches[2] ?? '',
+                    $attributes,
                 );
 
                 return sprintf(

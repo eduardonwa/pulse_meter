@@ -11,8 +11,6 @@ import './metronome'
 import './trial-mode'
 import './alphatab-exercises'
 
-import './blog-post'
-
 window.Alpine = Alpine
 
 void initializeProductAnalytics()
