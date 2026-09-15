@@ -209,6 +209,8 @@
         }
 
         &.is-active {
+            background-color: $color-primary-200;
+
             .pause-icon {
                 color: $color-primary-50;
                 stroke-width: 2px;
