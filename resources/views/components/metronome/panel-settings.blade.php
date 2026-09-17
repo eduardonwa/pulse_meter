@@ -61,22 +61,40 @@
     <div class="setting-option group">
         <div class="group__header">
             <h2 class="group__title">Sessions</h2>
+
             <p class="group__hint">
-                Manage saved practice history on this device
+                Configure your session defaults and saved history
             </p>
         </div>
 
-        <div class="group__body">
-            <button
-                type="button"
-                class="button"
-                data-type="icon-text"
-                @click="clearAllRecentSessions()"
-            >
-                <x-heroicon-o-backspace />
-                
-                Clear session history
-            </button>
+        <div class="group__body group__body--stacked">
+            <label class="group__body--stacked">
+                <span>Default session type</span>
+
+                <select x-model="defaultSessionMode" @change="changeDefaultSessionMode($event.target.value)">
+                    <option value="classic">Classic</option>
+
+                    @can('use-pro')
+                        <option value="creative">Creative</option>
+                    @endcan
+
+                    <option value="timer">Timer</option>
+                </select>
+            </label>
+
+            <label class="group__body--stacked">
+                <span>History</span>
+                <button
+                    type="button"
+                    class="button"
+                    data-type="icon-text"
+                    @click="clearAllRecentSessions()"
+                >
+                    <x-heroicon-o-backspace />
+    
+                    Clear session
+                </button>
+            </label>
         </div>
     </div>
 

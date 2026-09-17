@@ -1,5 +1,9 @@
 /* APP DEFAULTS */
 /* ESTE ARCHIVO CONTIENE SOLAMENTE ESTADO TRANSVERSAL DE LA APP */
+import {
+    DEFAULT_SESSION_MODE,
+    getDefaultSessionMode,
+} from './session-preferences.js'
 
 export function defaultSteps() {
     return [
@@ -30,10 +34,12 @@ export function defaultSteps() {
     ]
 }
 
-export function defaultMetronome() {
+export function defaultMetronome(
+    mode = DEFAULT_SESSION_MODE
+) {
     return {
         bpm: 100,
-        mode: 'timer',
+        mode,
         duration_seconds: 60,
         time_signature_numerator: 4,
         time_signature_denominator: 4,
@@ -135,14 +141,17 @@ export function state(practiceContext = null) {
             ?.ask_before_importing_free_exercises
         !== false
 
+    const defaultSessionMode =
+        getDefaultSessionMode()
+
     const initialMetronome = {
-        ...defaultMetronome(),
+        ...defaultMetronome(
+            defaultSessionMode
+        ),
+
         ...(initialStep && {
             bpm: Number(initialStep.bpm),
-            mode: initialStep.mode,
-            duration_seconds: initialStep.mode === 'timer'
-                ? Number(initialStep.duration_seconds ?? 60)
-                : 60,
+
             time_signature_numerator:
                 Number(
                     initialStep.time_signature_numerator
@@ -196,6 +205,7 @@ export function state(practiceContext = null) {
         currentIndex: 0,
 
         // METRONOME
+        defaultSessionMode,
         metronome: initialMetronome,
         isPlaying: false,
 
