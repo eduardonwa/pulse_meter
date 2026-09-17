@@ -17,6 +17,7 @@ import { routinePersistence } from './routine-persistence.js'
 import { playbackSession } from './playback-session.js'
 import { routineTemplateActions } from '../routine-template-player.js'
 import { alphaTabExerciseControls } from './alphatab/index.js'
+import { sessionPreferences } from './session-preferences.js'
 
 window.routinePlayer = function (
     practiceContext = null,
@@ -24,6 +25,7 @@ window.routinePlayer = function (
 ) {
     return compose(
         state(practiceContext),
+        sessionPreferences(),
         lifecycle(),
         storage(),
         routinePersistence(),

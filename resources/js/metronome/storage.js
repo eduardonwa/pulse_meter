@@ -5,6 +5,11 @@ import {
     MAX_BPM
 } from './state.js'
 
+import {
+    DEFAULT_SESSION_MODE,
+    DEFAULT_SESSION_MODE_STORAGE_KEY,
+} from './session-preferences.js'
+
 // DATA MIGRATION
 function normalizeMode(mode) {
     return mode === 'manual'
@@ -593,9 +598,15 @@ export function storage() {
 
             localStorage.removeItem(this.storageKey)
             localStorage.removeItem(this.recentSessionsStorageKey)
+            localStorage.removeItem(DEFAULT_SESSION_MODE_STORAGE_KEY)
 
             this.steps = defaultSteps()
-            this.metronome = defaultMetronome()
+            this.defaultSessionMode = DEFAULT_SESSION_MODE
+
+            this.metronome =
+                defaultMetronome(
+                    DEFAULT_SESSION_MODE
+                )
 
             this.recentSessions = {
                 classic: [],
