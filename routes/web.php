@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ArticleSearchController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Billing\BillingPortalController;
 use App\Http\Controllers\Billing\LifetimeProCheckoutController;
@@ -17,6 +18,7 @@ use App\Http\Controllers\RoutineTemplateController;
 use App\Http\Controllers\SaveRoutineTemplateController;
 use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\TrialController;
+use App\Http\Controllers\ContentQuestionController;
 use App\Http\Controllers\WelcomeController;
 use Illuminate\Support\Facades\Route;
 
@@ -45,6 +47,14 @@ Route::prefix('{locale}')
 
         Route::get('/blog/{slug}', [PostController::class, 'show'])
             ->name('blog.show');
+
+        Route::post('/blog/search', ArticleSearchController::class)
+            ->middleware('throttle:article-search')
+            ->name('blog.search');
+
+        Route::post('/blog/questions', ContentQuestionController::class)
+            ->middleware('throttle:content-questions')
+            ->name('blog.questions.store');
 
         Route::get('/routines', [
             RoutineTemplateController::class,

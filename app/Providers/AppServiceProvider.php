@@ -46,6 +46,20 @@ class AppServiceProvider extends ServiceProvider
             }
         );
 
+        RateLimiter::for(
+            'article-search',
+            fn (Request $request) => Limit::perMinute(20)
+                ->by($request->ip()),
+        );
+
+        RateLimiter::for(
+            'content-questions',
+            fn (Request $request) => Limit::perHour(5)
+                ->by(
+                    $request->ip().'|'.(string) $request->string('email'),
+                ),
+        );
+
         Gate::define(
             'use-pro',
             fn (User $user): bool => $user->hasProAccess(),

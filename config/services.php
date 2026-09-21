@@ -2,6 +2,20 @@
 
 return [
 
+    'typesafe' => [
+        'key' => env('TYPESAFE_API_KEY'),
+        'url' => env('TYPESAFE_API_URL', 'https://api.typesafe.ai'),
+        'model' => env('TYPESAFE_MODEL', 'jev-latest'),
+        'search_min_probability' => (float) env(
+            'TYPESAFE_SEARCH_MIN_PROBABILITY',
+            0.60,
+        ),
+        'search_min_confidence' => (float) env(
+            'TYPESAFE_SEARCH_MIN_CONFIDENCE',
+            0.25,
+        ),
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Third Party Services
