@@ -1,6 +1,5 @@
-<dialog
-    class="dialog-shell | pattern dialog"
-    data-variant="pattern-dialog"
+<dialog class="dialog-shell | randomizer-sessions-dialog"
+    data-variant="randomizer-sessions"
     x-ref="randomizerSessionsDialog"
     x-trap.noscroll="isRandomizerSessionsDialogOpen"
     @close="isRandomizerSessionsDialogOpen = false"
@@ -23,24 +22,13 @@
         </header>
 
         <div class="pattern-dialog__list">
-            <p
-                x-show="!randomizerSavedSessions.length"
-                x-cloak
-            >
+            <p x-show="!randomizerSavedSessions.length" x-cloak>
                 No saved sessions yet.
             </p>
 
-            <template
-                x-for="savedSession in randomizerSavedSessions"
-                :key="savedSession.id"
-            >
+            <template x-for="savedSession in randomizerSavedSessions" :key="savedSession.id">
                 <div class="pattern-dialog__user-presets">
-                    <template
-                        x-if="
-                            randomizerPendingRenameId
-                            !== savedSession.id
-                        "
-                    >
+                    <template x-if="randomizerPendingRenameId !== savedSession.id">
                         <div class="normal-state">
                             <button
                                 class="button"
@@ -87,12 +75,7 @@
                         </div>
                     </template>
 
-                    <template
-                        x-if="
-                            randomizerPendingRenameId
-                            === savedSession.id
-                        "
-                    >
+                    <template x-if="randomizerPendingRenameId === savedSession.id">
                         <form
                             class="pattern-dialog__rename"
                             @submit.prevent="renameRandomizedSession()"

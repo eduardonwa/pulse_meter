@@ -5,7 +5,7 @@
 ])
 
 <div {{ $attributes->class(['time-signature__beats']) }}>
-    <h2 class="heading">Beats</h2>
+    <h2 class="heading" style="font-size: 14px;">Beats</h2>
 
     <div class="beat-groups">
         <template

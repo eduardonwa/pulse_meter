@@ -6,10 +6,63 @@
     }
 
     .creative-mode-selector {
-        display: flex;
-        flex-wrap: wrap;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: 89px;
         gap: $size-3;
         margin-block-end: $size-4;
+        
+        @include mq(medium) {
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 50px));
+            grid-template-rows: 50px;
+        }
+
+        .button {
+            position: relative;
+            overflow: hidden;
+            isolation: isolate;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            font-weight: 600;
+            font-size: $font-size-500;
+
+            transition:
+                opacity 180ms ease,
+                transform 180ms ease;
+            
+            svg {
+                position: absolute;
+                right: -10px;
+                bottom: -14px;
+                z-index: -1;
+
+                width: 72px;
+                height: 72px;
+
+                opacity: 0.12;
+                transform: rotate(-10deg);
+
+                pointer-events: none;
+
+                transition:
+                    opacity 180ms ease,
+                    transform 180ms ease;
+            }
+
+            &:hover {
+                background-color: $color-neutral-900;
+                color: $color-neutral-50;
+
+                svg {
+                    opacity: 0.52;
+                    transform: rotate(-4deg) scale(1.05);
+                    fill: $color-primary-300;
+                }
+            }
+        }
 
         .button.is-selected {
             color: $color-neutral-50;
@@ -19,24 +72,78 @@
     }
 
     .creative-randomizer {
-        padding: $size-4;
-        border: 1px solid hsl(var(--neutral-950) / .2);
-        border-radius: $border-radius-2;
+        --border: 1px solid hsl(var(--neutral-950) / 0.2);
 
         display: flex;
         flex-direction: column;
         gap: $size-4;
 
+        &__result,
+        &__workspace {
+            border: var(--border);
+            border-radius: $border-radius-2;
+        }
+
         &__result {
-            font-size: $font-size-500;
+            padding: $size-4;
+
+            text-align: center;
+            font-size: $font-size-600;
             font-weight: 700;
+
+            background-color: $color-primary-900;
+            color: $color-primary-100;
+
+            border: 1px solid transparent;
+        }
+
+        &__result-label {
+            display: block;
+
+            font-size: 14px;
+            font-weight: normal;
+        }
+
+        &__workspace {
+            overflow: hidden;
+        }
+
+        &__beats,
+        &__editing,
+        &__playback {
+            padding: $size-4;
+        }
+
+        &__editing {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: $size-4;
+
+            border-block: var(--border);
+            
+            @include mq(medium) {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+        }
+
+        &__cue {
+            grid-column: 1 / -1;
+            
+            @include mq(medium) {
+                grid-column: auto;
+            }
+        }
+
+        &__tools {
+            display: flex;
+            flex-wrap: wrap;
+            gap: $size-2;
         }
 
         &__controls,
-        &__playback,
-        &__tools,
         &__persistence {
             display: flex;
+            justify-content: center;
             flex-wrap: wrap;
             gap: $size-3;
         }
@@ -50,32 +157,15 @@
             }
         }
 
-        &__beats {
-            padding: 0;
-            border-block-end: 0;
-        }
-
-        &__editing {
-            display: grid;
-            gap: $size-4;
-
-            @include mq(medium) {
-                grid-template-columns:
-                    repeat(3, minmax(0, 1fr));
-            }
-
+        // HEADINGS
+        &__grouping,
+        &__editing,
+        &__playback {
             .heading {
                 padding-block-end: $size-3;
-                font-size: 14px;
-                color: hsl(var(--neutral-950) / .6);
-            }
-        }
 
-        &__grouping {
-            .heading {
-                padding-block-end: $size-3;
                 font-size: 14px;
-                color: hsl(var(--neutral-950) / .6);
+                color: hsl(var(--neutral-950) / 0.6);
             }
         }
     }
@@ -87,7 +177,7 @@
         border-radius: $border-radius-2;
 
         display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-columns: max-content max-content minmax(0, 1fr);
         grid-template-areas: 
             "pattern     pattern     pattern"
             "meter       meter       current-meter"
@@ -97,6 +187,8 @@
             "actions     actions     actions";
 
         @include mq(medium) {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+
             grid-template-areas: 
                 "pattern     pattern        pattern"
                 "meter       current-meter  grouping"
@@ -257,6 +349,10 @@
                     opacity: .5;
                     transform: scale(.95);
                 }
+            }
+
+            &.creative-randomizer__beats {
+                border-block: 0;
             }
         }
 

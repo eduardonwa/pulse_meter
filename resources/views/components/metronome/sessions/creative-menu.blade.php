@@ -7,6 +7,7 @@
         :class="{ 'is-selected': creativeMode === 'pulse-editor' }"
         :aria-pressed="creativeMode === 'pulse-editor'"
     >
+        <x-heroicon-c-signal />
         Pulse Editor
     </button>
 
@@ -18,6 +19,7 @@
         :class="{ 'is-selected': creativeMode === 'randomizer' }"
         :aria-pressed="creativeMode === 'randomizer'"
     >
+        <x-heroicon-c-question-mark-circle />
         Randomizer
     </button>
 </nav>
