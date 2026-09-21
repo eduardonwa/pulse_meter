@@ -52,7 +52,7 @@
                     transform 180ms ease;
             }
 
-            &:hover {
+            &:not(:disabled):hover {
                 background-color: $color-neutral-900;
                 color: $color-neutral-50;
 
@@ -60,6 +60,22 @@
                     opacity: 0.52;
                     transform: rotate(-4deg) scale(1.05);
                     fill: $color-primary-300;
+                }
+            }
+
+            &:disabled {
+                cursor: default;
+            }
+
+            &.is-selected {
+                color: $color-neutral-50;
+                background-color: $color-neutral-950;
+                border-color: $color-neutral-950;
+
+                svg {
+                    fill: $color-primary-300;
+                    opacity: 0.52;
+                    transform: rotate(-4deg) scale(1.05);
                 }
             }
         }

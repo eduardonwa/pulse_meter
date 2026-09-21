@@ -44,6 +44,27 @@ test('creative session rejects unsupported tools', () => {
     assert.equal(session.creativeMode, null)
 })
 
+test('creative session ignores its already selected mode', () => {
+    const session = creativeSession()
+    let stopped = false
+
+    session.selectCreativeMode('pulse-editor')
+    session.currentBeat = 3
+    session.currentSubdivision = 2
+    session.isPlaying = true
+    session.stop = () => {
+        stopped = true
+    }
+
+    assert.equal(
+        session.selectCreativeMode('pulse-editor'),
+        false
+    )
+    assert.equal(session.currentBeat, 3)
+    assert.equal(session.currentSubdivision, 2)
+    assert.equal(stopped, false)
+})
+
 test('randomizer generates its minimum creative brief', () => {
     const session = creativeSession()
 

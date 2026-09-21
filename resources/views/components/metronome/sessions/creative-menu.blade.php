@@ -6,6 +6,7 @@
         @click="selectCreativeMode('pulse-editor')"
         :class="{ 'is-selected': creativeMode === 'pulse-editor' }"
         :aria-pressed="creativeMode === 'pulse-editor'"
+        :disabled="creativeMode === 'pulse-editor'"
     >
         <x-heroicon-c-signal />
         Pulse Editor
@@ -18,6 +19,7 @@
         @click="selectCreativeMode('randomizer')"
         :class="{ 'is-selected': creativeMode === 'randomizer' }"
         :aria-pressed="creativeMode === 'randomizer'"
+        :disabled="creativeMode === 'randomizer'"
     >
         <x-heroicon-c-question-mark-circle />
         Randomizer
