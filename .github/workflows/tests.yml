@@ -30,9 +30,6 @@ jobs:
           php artisan key:generate
           touch database/database.sqlite
 
-      - name: Run PHP tests
-        run: php artisan test
-
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -47,3 +44,6 @@ jobs:
 
       - name: Build production assets
         run: npm run build
+
+      - name: Run PHP tests
+        run: php artisan test
