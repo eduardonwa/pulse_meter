@@ -155,6 +155,10 @@ export function creativeSession() {
                 return false
             }
 
+            if (this.creativeMode === mode) {
+                return false
+            }
+
             if (this.isPlaying) {
                 this.stop('creative_mode_changed')
             }
