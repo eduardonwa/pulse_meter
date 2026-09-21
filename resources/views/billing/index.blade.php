@@ -145,7 +145,7 @@
                             </p>
 
                             <p class="billing-plan__comparison">
-                                One year of Monthly Pro:
+                                12 months of Monthly Pro:
                                 <s>$60 USD</s>
                             </p>
 
