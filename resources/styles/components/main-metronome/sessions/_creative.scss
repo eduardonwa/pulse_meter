@@ -66,6 +66,18 @@
             &:disabled {
                 cursor: default;
             }
+
+            &.is-selected {
+                color: $color-neutral-50;
+                background-color: $color-neutral-950;
+                border-color: $color-neutral-950;
+
+                svg {
+                    fill: $color-primary-300;
+                    opacity: 0.52;
+                    transform: rotate(-4deg) scale(1.05);
+                }
+            }
         }
 
         .button.is-selected {
