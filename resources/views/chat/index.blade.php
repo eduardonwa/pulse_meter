@@ -40,27 +40,38 @@
 
                         <template x-if="message.type === 'result'">
                             <div>
-                                <p
-                                    x-text="message.resource.type === 'routine'
-                                        ? strings.routine_intro
-                                        : strings.result_intro"
-                                ></p>
+                                <template x-if="message.resource.type === 'answer'">
+                                    <p
+                                        class="content-chat__saved-answer"
+                                        x-text="message.resource.answer"
+                                    ></p>
+                                </template>
 
-                                <a
-                                    class="content-chat__result"
-                                    :href="message.resource.url"
-                                >
-                                    <strong x-text="message.resource.title"></strong>
-                                    <span x-text="message.resource.excerpt"></span>
-                                    <span class="content-chat__result-link">
-                                        <span
+                                <template x-if="message.resource.type !== 'answer'">
+                                    <div>
+                                        <p
                                             x-text="message.resource.type === 'routine'
-                                                ? strings.open_routine
-                                                : strings.read_article"
-                                        ></span>
-                                        <span aria-hidden="true">→</span>
-                                    </span>
-                                </a>
+                                                ? strings.routine_intro
+                                                : strings.result_intro"
+                                        ></p>
+
+                                        <a
+                                            class="content-chat__result"
+                                            :href="message.resource.url"
+                                        >
+                                            <strong x-text="message.resource.title"></strong>
+                                            <span x-text="message.resource.excerpt"></span>
+                                            <span class="content-chat__result-link">
+                                                <span
+                                                    x-text="message.resource.type === 'routine'
+                                                        ? strings.open_routine
+                                                        : strings.read_article"
+                                                ></span>
+                                                <span aria-hidden="true">→</span>
+                                            </span>
+                                        </a>
+                                    </div>
+                                </template>
                             </div>
                         </template>
                     </div>

@@ -133,6 +133,10 @@
         font-weight: 700;
     }
 
+    &__saved-answer {
+        white-space: pre-line;
+    }
+
     &__composer {
         position: absolute;
         z-index: 2;

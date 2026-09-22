@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Blog;
 
+use App\Models\KnowledgeAnswer;
 use App\Models\Post;
 use App\Models\PostTranslation;
 use App\Models\RoutineTemplate;
@@ -165,6 +166,82 @@ class ArticleSearchTest extends TestCase
             $request->data(),
             "questions.best_resource.criteria.routine_{$routine->id}.title",
         ) === $routine->title);
+    }
+
+    public function test_jev_can_return_a_published_saved_answer(): void
+    {
+        config()->set('services.typesafe.key', 'test-key');
+        config()->set('services.typesafe.search_min_probability', 0.45);
+        config()->set('services.typesafe.search_min_confidence', 0.15);
+
+        $answer = KnowledgeAnswer::query()->create([
+            'locale' => 'es',
+            'question' => '¿Cómo empiezo a practicar hybrid picking?',
+            'answer' => 'Empieza alternando una nota con púa y otra con el dedo medio.',
+            'published_at' => now(),
+        ]);
+
+        Http::fake([
+            'api.typesafe.ai/*' => Http::response([
+                'answers' => [
+                    'question_language' => [
+                        'type' => 'choice',
+                        'choice' => 'es',
+                    ],
+                    'best_resource' => [
+                        'type' => 'choice',
+                        'choice' => "answer_{$answer->id}",
+                        'confidence' => 0.91,
+                        'probabilities' => [
+                            "answer_{$answer->id}" => 0.94,
+                            'no_match' => 0.06,
+                        ],
+                    ],
+                ],
+            ]),
+        ]);
+
+        $this->postJson(route('chat.search'), [
+            'query' => '¿Qué ejercicio hago para comenzar con hybrid picking?',
+            'locale' => 'es',
+        ])
+            ->assertOk()
+            ->assertExactJson([
+                'matched' => true,
+                'locale' => 'es',
+                'resource' => [
+                    'type' => 'answer',
+                    'answer' => $answer->answer,
+                ],
+            ]);
+
+        Http::assertSent(fn ($request): bool => data_get(
+            $request->data(),
+            "questions.best_resource.criteria.answer_{$answer->id}.question",
+        ) === $answer->question);
+    }
+
+    public function test_unpublished_saved_answers_are_not_searchable_or_sent_to_jev(): void
+    {
+        config()->set('services.typesafe.key', 'test-key');
+
+        $answer = KnowledgeAnswer::query()->create([
+            'locale' => 'es',
+            'question' => '¿Cómo empiezo a practicar hybrid picking?',
+            'answer' => 'Esta respuesta todavía es un borrador.',
+            'published_at' => null,
+        ]);
+
+        Http::fake();
+
+        $this->postJson(route('chat.search'), [
+            'query' => '¿Cómo practico hybrid picking?',
+            'locale' => 'es',
+        ])
+            ->assertOk()
+            ->assertJsonPath('matched', false);
+
+        Http::assertNothingSent();
     }
 
     public function test_jev_returns_the_translation_matching_the_question_language(): void

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\KnowledgeAnswer;
 use App\Models\PostTranslation;
 use App\Models\RoutineTemplateTranslation;
 use App\Services\ArticleSearchService;
@@ -34,10 +35,18 @@ class ArticleSearchController extends Controller
             ->limit(100)
             ->get();
 
+        $answers = KnowledgeAnswer::query()
+            ->whereIn('locale', ['es', 'en'])
+            ->published()
+            ->latest('published_at')
+            ->limit(100)
+            ->get();
+
         $result = $search->search(
             $validated['query'],
             $articles,
             $routines,
+            $answers,
             $validated['locale'],
         );
         $resource = $result['resource'];
@@ -47,6 +56,17 @@ class ArticleSearchController extends Controller
             return response()->json([
                 'matched' => false,
                 'locale' => $locale,
+            ]);
+        }
+
+        if ($result['type'] === 'answer') {
+            return response()->json([
+                'matched' => true,
+                'locale' => $locale,
+                'resource' => [
+                    'type' => 'answer',
+                    'answer' => $resource->answer,
+                ],
             ]);
         }
 

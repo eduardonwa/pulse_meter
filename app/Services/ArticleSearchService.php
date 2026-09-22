@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\KnowledgeAnswer;
 use App\Models\PostTranslation;
 use App\Models\RoutineTemplateTranslation;
 use Illuminate\Database\Eloquent\Collection;
@@ -16,15 +17,17 @@ class ArticleSearchService
     /**
      * @param  Collection<int, PostTranslation>  $articles
      * @param  Collection<int, RoutineTemplateTranslation>  $routines
+     * @param  Collection<int, KnowledgeAnswer>  $answers
      * @return array{resource: Model|null, type: string|null, locale: string|null, provider: string, probability: float|null, confidence: float|null}
      */
     public function search(
         string $query,
         Collection $articles,
         Collection $routines,
+        Collection $answers,
         string $preferredLocale,
     ): array {
-        if ($articles->isEmpty() && $routines->isEmpty()) {
+        if ($articles->isEmpty() && $routines->isEmpty() && $answers->isEmpty()) {
             return $this->result(
                 locale: $preferredLocale,
                 provider: 'none',
@@ -36,6 +39,7 @@ class ArticleSearchService
                 $query,
                 $articles,
                 $routines,
+                $answers,
                 $preferredLocale,
             );
         }
@@ -45,6 +49,7 @@ class ArticleSearchService
                 $query,
                 $articles,
                 $routines,
+                $answers,
                 $preferredLocale,
             );
         } catch (Throwable $exception) {
@@ -56,6 +61,7 @@ class ArticleSearchService
                 $query,
                 $articles,
                 $routines,
+                $answers,
                 $preferredLocale,
             );
         }
@@ -64,12 +70,14 @@ class ArticleSearchService
     /**
      * @param  Collection<int, PostTranslation>  $articles
      * @param  Collection<int, RoutineTemplateTranslation>  $routines
+     * @param  Collection<int, KnowledgeAnswer>  $answers
      * @return array{resource: Model|null, type: string|null, locale: string|null, provider: string, probability: float|null, confidence: float|null}
      */
     private function searchWithJev(
         string $query,
         Collection $articles,
         Collection $routines,
+        Collection $answers,
         string $preferredLocale,
     ): array {
         $articleCriteria = $articles
@@ -114,11 +122,23 @@ class ArticleSearchService
                 ],
             ]);
 
+        $answerCriteria = $answers
+            ->toBase()
+            ->mapWithKeys(fn (KnowledgeAnswer $answer): array => [
+                "answer_{$answer->getKey()}" => [
+                    'type' => 'direct saved answer',
+                    'language' => $answer->locale,
+                    'question' => $answer->question,
+                    'answer' => Str::limit($answer->answer, 1_500),
+                ],
+            ]);
+
         $criteria = $articleCriteria
             ->merge($routineCriteria)
+            ->merge($answerCriteria)
             ->put(
                 'no_match',
-                'None of the articles or routines provides useful guidance for the reader’s underlying goal.',
+                'None of the articles, routines, or saved answers provides useful guidance for the reader’s underlying goal.',
             )
             ->all();
 
@@ -132,7 +152,7 @@ class ArticleSearchService
             ->post('/v1/systemone', [
                 'state' => [
                     'reader_question' => $query,
-                    'instruction' => 'Choose the article or interactive routine that would most usefully address the reader’s underlying goal, even when the question is phrased differently. Prefer a matching routine when the reader asks for a practice plan, exercises, a duration, or a concrete session. Prefer an article when the reader asks for an explanation or concept. Choose no_match only when none provides relevant guidance.',
+                    'instruction' => 'Choose the saved answer, article, or interactive routine that would most usefully address the reader’s underlying goal, even when the question is phrased differently. Prefer a saved answer when it directly answers the question. Prefer a matching routine when the reader asks for a practice plan, exercises, a duration, or a concrete session. Prefer an article when the reader asks for a broader explanation or concept. Choose no_match only when none provides relevant guidance.',
                 ],
                 'model' => config('services.typesafe.model', 'jev-latest'),
                 'questions' => [
@@ -147,7 +167,7 @@ class ArticleSearchService
                     ],
                     'best_resource' => [
                         'type' => 'choice',
-                        'instructions' => 'Which article or routine would be most useful for this reader? Prefer a resource written in the same language as the question when equivalent translations exist.',
+                        'instructions' => 'Which saved answer, article, or routine would be most useful for this reader? Prefer a resource written in the same language as the question when equivalent translations exist.',
                         'criteria' => $criteria,
                     ],
                 ],
@@ -200,6 +220,7 @@ class ArticleSearchService
         $resource = match ($type) {
             'article' => $articles->firstWhere('id', $resourceId),
             'routine' => $routines->firstWhere('id', $resourceId),
+            'answer' => $answers->firstWhere('id', $resourceId),
             default => null,
         };
 
@@ -210,6 +231,7 @@ class ArticleSearchService
                 $locale,
                 $articles,
                 $routines,
+                $answers,
             );
         }
 
@@ -226,12 +248,14 @@ class ArticleSearchService
     /**
      * @param  Collection<int, PostTranslation>  $articles
      * @param  Collection<int, RoutineTemplateTranslation>  $routines
+     * @param  Collection<int, KnowledgeAnswer>  $answers
      * @return array{resource: Model|null, type: string|null, locale: string|null, provider: string, probability: float|null, confidence: float|null}
      */
     private function lexicalSearch(
         string $query,
         Collection $articles,
         Collection $routines,
+        Collection $answers,
         string $preferredLocale,
     ): array {
         $tokens = $this->tokens($query);
@@ -268,6 +292,13 @@ class ArticleSearchService
                         $step->notes_en,
                     ])))
                     ->implode(' '),
+            ]))
+            ->concat($answers->map(fn (KnowledgeAnswer $answer): array => [
+                'resource' => $answer,
+                'type' => 'answer',
+                'title' => (string) $answer->question,
+                'summary' => (string) $answer->answer,
+                'body' => '',
             ]));
 
         $ranked = $candidates
@@ -327,6 +358,7 @@ class ArticleSearchService
     /**
      * @param  Collection<int, PostTranslation>  $articles
      * @param  Collection<int, RoutineTemplateTranslation>  $routines
+     * @param  Collection<int, KnowledgeAnswer>  $answers
      */
     private function translationForLocale(
         Model $resource,
@@ -334,6 +366,7 @@ class ArticleSearchService
         string $locale,
         Collection $articles,
         Collection $routines,
+        Collection $answers,
     ): Model {
         return match ($type) {
             'article' => $articles->first(
@@ -346,6 +379,11 @@ class ArticleSearchService
                     $routine->routine_template_id
                         === $resource->routine_template_id
                     && $routine->locale === $locale,
+            ) ?? $resource,
+            'answer' => $answers->first(
+                fn (KnowledgeAnswer $answer): bool =>
+                    $answer->id === $resource->id
+                    && $answer->locale === $locale,
             ) ?? $resource,
             default => $resource,
         };

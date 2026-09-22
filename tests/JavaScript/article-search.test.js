@@ -63,6 +63,31 @@ test('chat adds the best result to the conversation', async () => {
     assert.equal(state.loading, false)
 })
 
+test('chat adds a saved answer directly to the conversation', async () => {
+    const state = articleSearch(
+        config('es'),
+        async () => ({
+            matched: true,
+            locale: 'es',
+            resource: {
+                type: 'answer',
+                answer: 'Alterna una nota con púa y otra con el dedo medio.',
+            },
+        }),
+    )
+
+    state.query = '¿Cómo practico hybrid picking?'
+    await state.search()
+
+    assert.equal(state.messages[1].type, 'result')
+    assert.equal(state.messages[1].resource.type, 'answer')
+    assert.equal(
+        state.messages[1].resource.answer,
+        'Alterna una nota con púa y otra con el dedo medio.',
+    )
+    assert.equal(state.unansweredQuestion, '')
+})
+
 test('chat switches its conversation language to the detected language', async () => {
     const state = articleSearch(
         config('es'),
