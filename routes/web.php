@@ -6,6 +6,7 @@ use App\Http\Controllers\Billing\BillingPortalController;
 use App\Http\Controllers\Billing\LifetimeProCheckoutController;
 use App\Http\Controllers\Billing\MonthlyProCheckoutController;
 use App\Http\Controllers\BillingPageController;
+use App\Http\Controllers\ChatController;
 use App\Http\Controllers\FreeExerciseImportPreferenceController;
 use App\Http\Controllers\LocalRoutineImportController;
 use App\Http\Controllers\PostController;
@@ -31,6 +32,17 @@ Route::get('/auth/google', [LoginController::class, 'redirectToProvider'])
 Route::get('/sitemap.xml', [SitemapController::class, 'index'])
     ->name('sitemap');
 
+Route::get('/chat', ChatController::class)
+    ->name('chat.index');
+
+Route::post('/chat/search', ArticleSearchController::class)
+    ->middleware('throttle:article-search')
+    ->name('chat.search');
+
+Route::post('/chat/questions', ContentQuestionController::class)
+    ->middleware('throttle:content-questions')
+    ->name('chat.questions.store');
+
 Route::get('/auth/google/callback', [LoginController::class, 'handleProviderCallback'])
     ->name('auth.google.callback');
 
@@ -47,14 +59,6 @@ Route::prefix('{locale}')
 
         Route::get('/blog/{slug}', [PostController::class, 'show'])
             ->name('blog.show');
-
-        Route::post('/blog/search', ArticleSearchController::class)
-            ->middleware('throttle:article-search')
-            ->name('blog.search');
-
-        Route::post('/blog/questions', ContentQuestionController::class)
-            ->middleware('throttle:content-questions')
-            ->name('blog.questions.store');
 
         Route::get('/routines', [
             RoutineTemplateController::class,

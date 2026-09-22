@@ -6,7 +6,7 @@
 @php($user = auth()->user())
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ app()->getLocale() }}">
     
 <x-head
     :title="$title"

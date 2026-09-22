@@ -3,6 +3,10 @@
     'display-none--until-desktop',
 ]) }}>
     <div class="links">
+        <a class="button" href="{{ route('chat.index') }}">
+            Chat
+        </a>
+
         <a class="button" href="{{ route('routines.index', ['locale' => app()->getLocale()]) }}">
             Routines
         </a>

@@ -14,9 +14,10 @@ class ContentQuestionTest extends TestCase
     public function test_a_reader_can_request_a_personal_answer(): void
     {
         Mail::fake();
-        config()->set('mail.content_questions_address', 'hello@dorelog.com');
+        config()->set('mail.support_address', 'support@dorelog.com');
 
-        $this->postJson(route('blog.questions.store', ['locale' => 'es']), [
+        $this->postJson(route('chat.questions.store'), [
+            'locale' => 'es',
             'question' => '¿Cómo puedo practicar gallops sin tensarme?',
             'name' => 'Ana',
             'email' => 'ana@example.com',
@@ -38,7 +39,7 @@ class ContentQuestionTest extends TestCase
             function (NewContentQuestion $mail): bool {
                 $replyTo = $mail->envelope()->replyTo[0];
 
-                return $mail->hasTo('hello@dorelog.com')
+                return $mail->hasTo('support@dorelog.com')
                     && $replyTo->address === 'ana@example.com'
                     && $replyTo->name === 'Ana';
             },
@@ -49,9 +50,9 @@ class ContentQuestionTest extends TestCase
     {
         Mail::fake();
 
-        $this->postJson(route('blog.questions.store', ['locale' => 'en']), [])
+        $this->postJson(route('chat.questions.store'), [])
             ->assertUnprocessable()
-            ->assertJsonValidationErrors(['question', 'email']);
+            ->assertJsonValidationErrors(['locale', 'question', 'email']);
 
         $this->assertDatabaseCount('content_questions', 0);
         Mail::assertNothingSent();
@@ -61,7 +62,8 @@ class ContentQuestionTest extends TestCase
     {
         Mail::fake();
 
-        $this->postJson(route('blog.questions.store', ['locale' => 'en']), [
+        $this->postJson(route('chat.questions.store'), [
+            'locale' => 'en',
             'question' => 'A plausible question from a bot',
             'email' => 'bot@example.com',
             'website' => 'https://spam.example.com',

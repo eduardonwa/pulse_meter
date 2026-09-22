@@ -3,7 +3,9 @@
 namespace App\Services;
 
 use App\Models\PostTranslation;
+use App\Models\RoutineTemplateTranslation;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -13,40 +15,68 @@ class ArticleSearchService
 {
     /**
      * @param  Collection<int, PostTranslation>  $articles
-     * @return array{article: PostTranslation|null, provider: string, probability: float|null, confidence: float|null}
+     * @param  Collection<int, RoutineTemplateTranslation>  $routines
+     * @return array{resource: Model|null, type: string|null, locale: string|null, provider: string, probability: float|null, confidence: float|null}
      */
-    public function search(string $query, Collection $articles): array
-    {
-        if ($articles->isEmpty()) {
-            return $this->result(provider: 'none');
+    public function search(
+        string $query,
+        Collection $articles,
+        Collection $routines,
+        string $preferredLocale,
+    ): array {
+        if ($articles->isEmpty() && $routines->isEmpty()) {
+            return $this->result(
+                locale: $preferredLocale,
+                provider: 'none',
+            );
         }
 
         if (blank(config('services.typesafe.key'))) {
-            return $this->lexicalSearch($query, $articles);
+            return $this->lexicalSearch(
+                $query,
+                $articles,
+                $routines,
+                $preferredLocale,
+            );
         }
 
         try {
-            return $this->searchWithJev($query, $articles);
+            return $this->searchWithJev(
+                $query,
+                $articles,
+                $routines,
+                $preferredLocale,
+            );
         } catch (Throwable $exception) {
-            Log::warning('Jev article search failed; using lexical fallback.', [
+            Log::warning('Jev content search failed; using lexical fallback.', [
                 'error' => $exception->getMessage(),
             ]);
 
-            return $this->lexicalSearch($query, $articles);
+            return $this->lexicalSearch(
+                $query,
+                $articles,
+                $routines,
+                $preferredLocale,
+            );
         }
     }
 
     /**
      * @param  Collection<int, PostTranslation>  $articles
-     * @return array{article: PostTranslation|null, provider: string, probability: float|null, confidence: float|null}
+     * @param  Collection<int, RoutineTemplateTranslation>  $routines
+     * @return array{resource: Model|null, type: string|null, locale: string|null, provider: string, probability: float|null, confidence: float|null}
      */
     private function searchWithJev(
         string $query,
         Collection $articles,
+        Collection $routines,
+        string $preferredLocale,
     ): array {
-        $criteria = $articles
+        $articleCriteria = $articles
+            ->toBase()
             ->mapWithKeys(fn (PostTranslation $article): array => [
                 "article_{$article->getKey()}" => [
+                    'language' => $article->locale,
                     'title' => $article->title,
                     'summary' => $article->excerpt,
                     'content' => Str::limit(
@@ -54,10 +84,41 @@ class ArticleSearchService
                         1_500,
                     ),
                 ],
-            ])
+            ]);
+
+        $routineCriteria = $routines
+            ->toBase()
+            ->mapWithKeys(fn (RoutineTemplateTranslation $routine): array => [
+                "routine_{$routine->getKey()}" => [
+                    'type' => 'interactive practice routine',
+                    'language' => $routine->locale,
+                    'title' => $routine->title,
+                    'summary' => $routine->summary,
+                    'purpose' => $routine->purpose,
+                    'instructions' => $routine->instructions,
+                    'instrument' => $routine->routineTemplate->instrument,
+                    'difficulty' => $routine->routineTemplate->difficulty,
+                    'exercises' => $routine->routineTemplate->steps
+                        ->map(fn ($step): array => [
+                            'name' => $routine->locale === 'en'
+                                ? ($step->name_en ?: $step->name_es)
+                                : $step->name_es,
+                            'notes' => $routine->locale === 'en'
+                                ? ($step->notes_en ?: $step->notes_es)
+                                : $step->notes_es,
+                            'bpm' => $step->bpm,
+                            'duration_seconds' => $step->duration_seconds,
+                        ])
+                        ->values()
+                        ->all(),
+                ],
+            ]);
+
+        $criteria = $articleCriteria
+            ->merge($routineCriteria)
             ->put(
                 'no_match',
-                'None of the articles directly and substantially answers the question.',
+                'None of the articles or routines provides useful guidance for the reader’s underlying goal.',
             )
             ->all();
 
@@ -71,13 +132,22 @@ class ArticleSearchService
             ->post('/v1/systemone', [
                 'state' => [
                     'reader_question' => $query,
-                    'instruction' => 'Find an article that answers the question, not merely one that shares a broad topic.',
+                    'instruction' => 'Choose the article or interactive routine that would most usefully address the reader’s underlying goal, even when the question is phrased differently. Prefer a matching routine when the reader asks for a practice plan, exercises, a duration, or a concrete session. Prefer an article when the reader asks for an explanation or concept. Choose no_match only when none provides relevant guidance.',
                 ],
                 'model' => config('services.typesafe.model', 'jev-latest'),
                 'questions' => [
-                    'best_article' => [
+                    'question_language' => [
                         'type' => 'choice',
-                        'instructions' => 'Which article directly and substantially answers the reader question?',
+                        'instructions' => 'Which language is the reader primarily using?',
+                        'criteria' => [
+                            'es' => 'Spanish, including questions that use English names for music techniques.',
+                            'en' => 'English, including questions that use Spanish names for music techniques.',
+                            'other' => 'Another language or not enough information to decide.',
+                        ],
+                    ],
+                    'best_resource' => [
+                        'type' => 'choice',
+                        'instructions' => 'Which article or routine would be most useful for this reader? Prefer a resource written in the same language as the question when equivalent translations exist.',
                         'criteria' => $criteria,
                     ],
                 ],
@@ -85,20 +155,28 @@ class ArticleSearchService
             ->throw()
             ->json();
 
-        $choice = data_get($response, 'answers.best_article.choice');
+        $choice = data_get($response, 'answers.best_resource.choice');
+        $detectedLocale = data_get(
+            $response,
+            'answers.question_language.choice',
+        );
+        $locale = in_array($detectedLocale, ['es', 'en'], true)
+            ? $detectedLocale
+            : $preferredLocale;
         $confidence = (float) data_get(
             $response,
-            'answers.best_article.confidence',
+            'answers.best_resource.confidence',
             0,
         );
         $probability = (float) data_get(
             $response,
-            "answers.best_article.probabilities.{$choice}",
+            "answers.best_resource.probabilities.{$choice}",
             0,
         );
 
         if (! is_string($choice) || $choice === 'no_match') {
             return $this->result(
+                locale: $locale,
                 provider: 'jev',
                 probability: $probability,
                 confidence: $confidence,
@@ -110,17 +188,35 @@ class ArticleSearchService
             || $confidence < config('services.typesafe.search_min_confidence')
         ) {
             return $this->result(
+                locale: $locale,
                 provider: 'jev',
                 probability: $probability,
                 confidence: $confidence,
             );
         }
 
-        $articleId = Str::after($choice, 'article_');
-        $article = $articles->firstWhere('id', (int) $articleId);
+        $type = Str::before($choice, '_');
+        $resourceId = (int) Str::after($choice, '_');
+        $resource = match ($type) {
+            'article' => $articles->firstWhere('id', $resourceId),
+            'routine' => $routines->firstWhere('id', $resourceId),
+            default => null,
+        };
+
+        if ($resource) {
+            $resource = $this->translationForLocale(
+                $resource,
+                $type,
+                $locale,
+                $articles,
+                $routines,
+            );
+        }
 
         return $this->result(
-            article: $article,
+            resource: $resource,
+            type: $resource ? $type : null,
+            locale: $resource?->locale ?? $locale,
             provider: 'jev',
             probability: $probability,
             confidence: $confidence,
@@ -129,23 +225,56 @@ class ArticleSearchService
 
     /**
      * @param  Collection<int, PostTranslation>  $articles
-     * @return array{article: PostTranslation|null, provider: string, probability: float|null, confidence: float|null}
+     * @param  Collection<int, RoutineTemplateTranslation>  $routines
+     * @return array{resource: Model|null, type: string|null, locale: string|null, provider: string, probability: float|null, confidence: float|null}
      */
     private function lexicalSearch(
         string $query,
         Collection $articles,
+        Collection $routines,
+        string $preferredLocale,
     ): array {
         $tokens = $this->tokens($query);
 
         if ($tokens === []) {
-            return $this->result(provider: 'lexical');
+            return $this->result(
+                locale: $preferredLocale,
+                provider: 'lexical',
+            );
         }
 
-        $ranked = $articles
-            ->map(function (PostTranslation $article) use ($tokens): array {
-                $title = $this->normalize((string) $article->title);
-                $excerpt = $this->normalize((string) $article->excerpt);
-                $body = $this->normalize($this->bodyText($article->body));
+        $candidates = $articles
+            ->map(fn (PostTranslation $article): array => [
+                'resource' => $article,
+                'type' => 'article',
+                'title' => (string) $article->title,
+                'summary' => (string) $article->excerpt,
+                'body' => $this->bodyText($article->body),
+            ])
+            ->concat($routines->map(fn (RoutineTemplateTranslation $routine): array => [
+                'resource' => $routine,
+                'type' => 'routine',
+                'title' => (string) $routine->title,
+                'summary' => implode(' ', array_filter([
+                    $routine->summary,
+                    $routine->purpose,
+                    $routine->instructions,
+                ])),
+                'body' => $routine->routineTemplate->steps
+                    ->map(fn ($step): string => implode(' ', array_filter([
+                        $step->name_es,
+                        $step->name_en,
+                        $step->notes_es,
+                        $step->notes_en,
+                    ])))
+                    ->implode(' '),
+            ]));
+
+        $ranked = $candidates
+            ->map(function (array $candidate) use ($tokens): array {
+                $title = $this->normalize($candidate['title']);
+                $excerpt = $this->normalize($candidate['summary']);
+                $body = $this->normalize($candidate['body']);
 
                 $matches = 0;
                 $score = 0;
@@ -171,7 +300,7 @@ class ArticleSearchService
                     $matches += (int) $matched;
                 }
 
-                return compact('article', 'matches', 'score');
+                return [...$candidate, ...compact('matches', 'score')];
             })
             ->sortByDesc('score')
             ->first();
@@ -181,13 +310,45 @@ class ArticleSearchService
             || $ranked['score'] < 4
             || $ranked['matches'] / count($tokens) < 0.5
         ) {
-            return $this->result(provider: 'lexical');
+            return $this->result(
+                locale: $preferredLocale,
+                provider: 'lexical',
+            );
         }
 
         return $this->result(
-            article: $ranked['article'],
+            resource: $ranked['resource'],
+            type: $ranked['type'],
+            locale: $ranked['resource']->locale,
             provider: 'lexical',
         );
+    }
+
+    /**
+     * @param  Collection<int, PostTranslation>  $articles
+     * @param  Collection<int, RoutineTemplateTranslation>  $routines
+     */
+    private function translationForLocale(
+        Model $resource,
+        string $type,
+        string $locale,
+        Collection $articles,
+        Collection $routines,
+    ): Model {
+        return match ($type) {
+            'article' => $articles->first(
+                fn (PostTranslation $article): bool =>
+                    $article->post_id === $resource->post_id
+                    && $article->locale === $locale,
+            ) ?? $resource,
+            'routine' => $routines->first(
+                fn (RoutineTemplateTranslation $routine): bool =>
+                    $routine->routine_template_id
+                        === $resource->routine_template_id
+                    && $routine->locale === $locale,
+            ) ?? $resource,
+            default => $resource,
+        };
     }
 
     /** @return list<string> */
@@ -234,16 +395,20 @@ class ArticleSearchService
     }
 
     /**
-     * @return array{article: PostTranslation|null, provider: string, probability: float|null, confidence: float|null}
+     * @return array{resource: Model|null, type: string|null, locale: string|null, provider: string, probability: float|null, confidence: float|null}
      */
     private function result(
-        ?PostTranslation $article = null,
+        ?Model $resource = null,
+        ?string $type = null,
+        ?string $locale = null,
         string $provider = 'none',
         ?float $probability = null,
         ?float $confidence = null,
     ): array {
         return compact(
-            'article',
+            'resource',
+            'type',
+            'locale',
             'provider',
             'probability',
             'confidence',

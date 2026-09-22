@@ -29,6 +29,7 @@ export function articleSearch(config, requestClient = postJson) {
         loading: false,
         messages: [],
         unansweredQuestion: '',
+        unansweredLocale: config.locale,
         requestLoading: false,
         requestSent: false,
         requestError: '',
@@ -38,6 +39,29 @@ export function articleSearch(config, requestClient = postJson) {
             website: '',
         },
         ...config,
+
+        conversationLocale: config.locale,
+
+        get strings() {
+            return this.translations?.[this.conversationLocale]
+                ?? config.strings
+                ?? {}
+        },
+
+        scrollToLatest() {
+            if (typeof this.$nextTick !== 'function') {
+                return
+            }
+
+            this.$nextTick(() => {
+                const conversation = this.$refs?.conversation
+
+                conversation?.scrollTo({
+                    top: conversation.scrollHeight,
+                    behavior: 'smooth',
+                })
+            })
+        },
 
         async search() {
             const question = this.query.trim()
@@ -51,6 +75,7 @@ export function articleSearch(config, requestClient = postJson) {
                 type: 'text',
                 text: question,
             })
+            this.scrollToLatest()
 
             this.query = ''
             this.loading = true
@@ -61,14 +86,20 @@ export function articleSearch(config, requestClient = postJson) {
             try {
                 const response = await requestClient(this.searchUrl, {
                     query: question,
+                    locale: this.conversationLocale,
                 })
+
+                this.unansweredLocale = response.locale
+                    ?? this.conversationLocale
+                this.conversationLocale = this.unansweredLocale
 
                 if (response.matched) {
                     this.messages.push({
                         author: 'assistant',
                         type: 'result',
-                        article: response.article,
+                        resource: response.resource,
                     })
+                    this.scrollToLatest()
 
                     return
                 }
@@ -79,12 +110,14 @@ export function articleSearch(config, requestClient = postJson) {
                     text: this.strings.empty,
                 })
                 this.unansweredQuestion = question
+                this.scrollToLatest()
             } catch (error) {
                 this.messages.push({
                     author: 'assistant',
                     type: 'text',
                     text: this.strings.error,
                 })
+                this.scrollToLatest()
             } finally {
                 this.loading = false
             }
@@ -105,6 +138,7 @@ export function articleSearch(config, requestClient = postJson) {
             try {
                 await requestClient(this.questionUrl, {
                     question: this.unansweredQuestion,
+                    locale: this.unansweredLocale,
                     ...this.request,
                 })
 

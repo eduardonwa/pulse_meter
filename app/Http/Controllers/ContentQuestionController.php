@@ -12,9 +12,10 @@ use Throwable;
 
 class ContentQuestionController extends Controller
 {
-    public function __invoke(Request $request, string $locale): JsonResponse
+    public function __invoke(Request $request): JsonResponse
     {
         $validated = $request->validate([
+            'locale' => ['required', 'string', 'in:es,en'],
             'question' => ['required', 'string', 'min:3', 'max:1000'],
             'name' => ['nullable', 'string', 'max:100'],
             'email' => ['required', 'email:rfc', 'max:255'],
@@ -22,13 +23,13 @@ class ContentQuestionController extends Controller
         ]);
 
         $question = ContentQuestion::query()->create([
-            'locale' => $locale,
+            'locale' => $validated['locale'],
             'question' => $validated['question'],
             'name' => $validated['name'] ?? null,
             'email' => $validated['email'],
         ]);
 
-        $recipient = config('mail.content_questions_address')
+        $recipient = config('mail.support_address')
             ?: config('mail.from.address');
 
         try {

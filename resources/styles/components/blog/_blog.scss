@@ -86,6 +86,26 @@
         }
     }
 
+    &__chat-link {
+        display: inline-flex;
+        align-items: center;
+        gap: $size-2;
+
+        margin-block: $size-6 $size-2;
+        padding: $size-3 $size-4;
+
+        color: $color-neutral-000;
+        font-weight: 700;
+        text-decoration: none;
+
+        background: $color-neutral-900;
+
+        svg {
+            width: 1.25rem;
+            height: 1.25rem;
+        }
+    }
+
     &__pattern {
         position: absolute;
         z-index: 0;
@@ -142,207 +162,6 @@
                 skewY(45deg)
                 translate(.25em, 12em);
         }
-    }
-}
-
-.article-search {
-    margin-block: $size-7 $size-8;
-    padding: $size-4;
-
-    border: 1px solid hsl(var(--neutral-900) / .2);
-    border-radius: $border-radius-2;
-    background:
-        linear-gradient(
-            145deg,
-            hsl(var(--secondary-400) / .14),
-            hsl(var(--accent-400) / .16)
-        ),
-        $color-neutral-000;
-
-    @include mq(large) {
-        padding: $size-6;
-    }
-
-    &__intro {
-        max-width: 42rem;
-
-        > * {
-            margin-block: 0;
-        }
-
-        > * + * {
-            margin-block-start: $size-2;
-        }
-    }
-
-    &__eyebrow {
-        color: $color-neutral-600;
-        font-size: 12px;
-        font-weight: 700;
-        letter-spacing: .08em;
-        text-transform: uppercase;
-    }
-
-    &__conversation {
-        display: flex;
-        flex-direction: column;
-        gap: $size-3;
-
-        margin-block: $size-5 $size-3;
-    }
-
-    &__message {
-        width: fit-content;
-        max-width: min(90%, 38rem);
-        padding: $size-3 $size-4;
-
-        border-radius: $border-radius-2;
-        background: $color-neutral-000;
-        box-shadow: 0 .35rem 1rem hsl(var(--neutral-900) / .06);
-
-        &[data-author="user"] {
-            align-self: flex-end;
-            color: $color-neutral-000;
-            background: $color-neutral-900;
-        }
-
-        p {
-            margin: 0;
-        }
-    }
-
-    &__result {
-        display: flex;
-        flex-direction: column;
-        gap: $size-2;
-
-        margin-block-start: $size-3;
-        padding: $size-4;
-
-        color: $color-neutral-900;
-        text-decoration: none;
-
-        border: 1px solid hsl(var(--neutral-900) / .15);
-        border-radius: $border-radius-1;
-        background: #fd5;
-
-        &:hover {
-            color: $color-neutral-900;
-            border-color: hsl(var(--neutral-900) / .45);
-        }
-    }
-
-    &__result-link {
-        display: inline-flex;
-        gap: $size-2;
-        align-items: center;
-
-        font-weight: 700;
-    }
-
-    &__ask {
-        display: grid;
-        gap: $size-3;
-
-        textarea {
-            width: 100%;
-            min-height: 7rem;
-            padding: $size-3;
-            resize: vertical;
-
-            color: $color-neutral-900;
-            font: inherit;
-
-            border: 1px solid hsl(var(--neutral-900) / .28);
-            border-radius: $border-radius-1;
-            background: $color-neutral-000;
-
-            &:focus-visible {
-                outline: 3px solid hsl(var(--accent-500) / .45);
-                outline-offset: 2px;
-            }
-        }
-    }
-
-    &__submit {
-        justify-self: start;
-        padding: $size-3 $size-4;
-
-        color: $color-neutral-000;
-        font-weight: 700;
-
-        border: 0;
-        border-radius: $border-radius-1;
-        background: $color-neutral-900;
-
-        &:disabled {
-            cursor: not-allowed;
-            opacity: .55;
-        }
-    }
-
-    &__request {
-        display: grid;
-        gap: $size-4;
-
-        margin-block-start: $size-5;
-        padding-block-start: $size-5;
-        border-top: 1px solid hsl(var(--neutral-900) / .18);
-
-        label {
-            display: grid;
-            gap: $size-2;
-            font-weight: 600;
-        }
-
-        input {
-            width: 100%;
-            padding: $size-3;
-
-            color: $color-neutral-900;
-            font: inherit;
-
-            border: 1px solid hsl(var(--neutral-900) / .28);
-            border-radius: $border-radius-1;
-            background: $color-neutral-000;
-        }
-    }
-
-    &__privacy,
-    &__error,
-    &__success {
-        font-size: 13px;
-    }
-
-    &__privacy {
-        color: $color-neutral-600;
-    }
-
-    &__error {
-        color: hsl(0 70% 38%);
-    }
-
-    &__success {
-        margin-block-start: $size-5;
-        padding: $size-4;
-
-        border: 1px solid hsl(135 45% 38% / .35);
-        border-radius: $border-radius-1;
-        background: hsl(135 60% 92%);
-
-        p {
-            margin: 0;
-        }
-    }
-
-    &__honeypot {
-        position: absolute;
-        overflow: hidden;
-        width: 1px;
-        height: 1px;
-        clip: rect(0 0 0 0);
-        clip-path: inset(50%);
-        white-space: nowrap;
     }
 }
 

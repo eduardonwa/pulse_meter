@@ -7,27 +7,7 @@ return [
     'subheader' => 'Ideas útiles, ejemplos prácticos y alguna que otra recomendación. Abierto a colaboraciones y patrocinios relevantes.',
     'contact_link' => 'Contáctame',
 
-    'search' => [
-        'eyebrow' => 'Pregunta al blog',
-        'heading' => '¿Qué quieres mejorar hoy?',
-        'description' => 'Escribe tu pregunta como tú la harías. Buscaré el artículo que mejor pueda ayudarte.',
-        'placeholder' => 'Por ejemplo: ¿cómo dejo de tensarme cuando aumento el BPM?',
-        'submit' => 'Buscar respuesta',
-        'loading' => 'Buscando entre los artículos…',
-        'result_intro' => 'Este artículo es el que mejor responde tu pregunta:',
-        'read_article' => 'Leer artículo',
-        'empty' => 'Todavía no tengo una respuesta publicada para esta pregunta.',
-        'request_intro' => 'Si quieres, envíamela. La leeré personalmente y te responderé por email.',
-        'request_heading' => 'Envíame tu pregunta',
-        'name' => 'Tu nombre (opcional)',
-        'email' => 'Tu email',
-        'privacy' => 'Usaré tu email únicamente para responder esta pregunta.',
-        'request_submit' => 'Enviar pregunta',
-        'request_sending' => 'Enviando…',
-        'request_success' => 'Listo. Recibí tu pregunta y te escribiré personalmente por email.',
-        'error' => 'No pude completar la búsqueda. Inténtalo otra vez en un momento.',
-        'request_error' => 'No pude enviar tu pregunta. Revisa los datos e inténtalo otra vez.',
-    ],
+    'chat_cta' => 'Pregúntale a Dorelog',
 
     'cta' => [
         'subscription' => [
