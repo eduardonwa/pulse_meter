@@ -7,6 +7,10 @@
     </url>
 
     <url>
+        <loc>{{ route('chat.index') }}</loc>
+    </url>
+
+    <url>
         <loc>{{ url('/en/blog') }}</loc>
     </url>
 

@@ -2,8 +2,10 @@
     <section class="container | posts" data-type="blog-post">
         <div class="flow">
             <div class="lang" x-data="{ dropdownOpen: false }">
-
-                <button type="button" class="button" data-type="icon-text"
+                <button
+                    type="button"
+                    class="button"
+                    data-type="icon-text"
                     @click="dropdownOpen = ! dropdownOpen"
                     @keydown.escape.window="dropdownOpen = false"
                     @click.outside="dropdownOpen = false"
@@ -18,7 +20,7 @@
                     <a class="option" href="{{ route('blog.index', ['locale' => 'en']) }}">
                         English
                     </a>
-    
+
                     <a class="option" href="{{ route('blog.index', ['locale' => 'es']) }}">
                         Español
                     </a>
@@ -30,14 +32,22 @@
                 {{ __('blog.subheader') }} <a href="">{{ __('blog.contact_link') }}</a>
             </div>
         </div>
-        
+
+        <a
+            class="button posts__chat-link"
+            href="{{ route('chat.index') }}"
+        >
+            <x-heroicon-o-chat-bubble-left-right aria-hidden="true" />
+            <span>{{ __('blog.chat_cta') }}</span>
+        </a>
+
         @foreach ($posts as $post)
             <a class="posts__item" href="{{ route('blog.show', [
                 'locale' => app()->getLocale(),
                 'slug' => $post->slug,
             ]) }}">
                 <span class="posts__pattern" aria-hidden="true"></span>
-                
+
                 <h2 class="heading-3">{{ $post->title }}</h2>
 
                 <p>{{ $post->excerpt }}</p>

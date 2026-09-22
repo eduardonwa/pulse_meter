@@ -1,0 +1,27 @@
+<?php
+
+return [
+    'meta_title' => 'Pregunta sobre práctica musical | Dorelog',
+    'meta_description' => 'Describe lo que quieres mejorar y encuentra un artículo o una rutina de práctica de Dorelog.',
+    'eyebrow' => 'Dorelog Chat',
+    'heading' => '¿Qué quieres mejorar hoy?',
+    'description' => 'Pregunta en tu idioma y con tus propias palabras. Buscaré entre los artículos y las rutinas publicadas.',
+    'placeholder' => 'Escribe tu pregunta…',
+    'submit' => 'Enviar',
+    'loading' => 'Buscando…',
+    'result_intro' => 'Encontré este artículo para ti:',
+    'routine_intro' => 'Encontré esta rutina para ti:',
+    'read_article' => 'Leer artículo',
+    'open_routine' => 'Abrir rutina',
+    'empty' => 'Todavía no tengo una respuesta publicada para esta pregunta.',
+    'request_intro' => 'Si quieres, envíamela. La leeré personalmente y te responderé por email.',
+    'request_heading' => 'Solicitar una respuesta',
+    'name' => 'Tu nombre (opcional)',
+    'email' => 'Tu email',
+    'privacy' => 'Usaré tu email únicamente para responder esta pregunta.',
+    'request_submit' => 'Enviar solicitud',
+    'request_sending' => 'Enviando…',
+    'request_success' => 'Listo. Recibí tu pregunta y te escribiré personalmente por email.',
+    'error' => 'No pude completar la búsqueda. Inténtalo otra vez en un momento.',
+    'request_error' => 'No pude enviar tu pregunta. Revisa los datos e inténtalo otra vez.',
+];

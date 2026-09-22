@@ -1,0 +1,27 @@
+<?php
+
+return [
+    'meta_title' => 'Ask about music practice | Dorelog',
+    'meta_description' => 'Describe what you want to improve and find a Dorelog article or practice routine.',
+    'eyebrow' => 'Dorelog Chat',
+    'heading' => 'What do you want to improve today?',
+    'description' => 'Ask in your own language and in your own words. I will search the published articles and routines.',
+    'placeholder' => 'Write your question…',
+    'submit' => 'Send',
+    'loading' => 'Searching…',
+    'result_intro' => 'I found this article for you:',
+    'routine_intro' => 'I found this routine for you:',
+    'read_article' => 'Read article',
+    'open_routine' => 'Open routine',
+    'empty' => 'I do not have a published answer to this question yet.',
+    'request_intro' => 'You can send it to me. I will read it personally and reply by email.',
+    'request_heading' => 'Request an answer',
+    'name' => 'Your name (optional)',
+    'email' => 'Your email',
+    'privacy' => 'I will only use your email to answer this question.',
+    'request_submit' => 'Send request',
+    'request_sending' => 'Sending…',
+    'request_success' => 'Got it. I received your question and will personally reply by email.',
+    'error' => 'I could not complete the search. Please try again in a moment.',
+    'request_error' => 'I could not send your question. Check the details and try again.',
+];

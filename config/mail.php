@@ -116,4 +116,9 @@ return [
     ],
 
     'support_address' => env('SUPPORT_EMAIL'),
+
+    'content_questions_address' => env(
+        'CONTENT_QUESTIONS_EMAIL',
+        env('SUPPORT_EMAIL'),
+    ),
 ];

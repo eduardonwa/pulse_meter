@@ -86,6 +86,26 @@
         }
     }
 
+    &__chat-link {
+        display: inline-flex;
+        align-items: center;
+        gap: $size-2;
+
+        margin-block: $size-6 $size-2;
+        padding: $size-3 $size-4;
+
+        color: $color-neutral-000;
+        font-weight: 700;
+        text-decoration: none;
+
+        background: $color-neutral-900;
+
+        svg {
+            width: 1.25rem;
+            height: 1.25rem;
+        }
+    }
+
     &__pattern {
         position: absolute;
         z-index: 0;

@@ -7,6 +7,8 @@ return [
     'subheader' => 'Useful ideas, practical examples, and the occasional recommendation. Open to relevant partnerships and sponsorships.',
     'contact_link' => 'Contact me.',
 
+    'chat_cta' => 'Ask Dorelog',
+
     'cta' => [
         'subscription' => [
             'heading' => 'Take control of your practice',

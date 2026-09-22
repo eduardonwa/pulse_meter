@@ -145,12 +145,12 @@
                             </p>
 
                             <p class="billing-plan__comparison">
-                                One year of Monthly Pro:
-                                <s>$72 USD</s>
+                                12 months of Monthly Pro:
+                                <s>$60 USD</s>
                             </p>
 
                             <p class="billing-plan__savings">
-                                Save $32, then never pay again.
+                                Save $20, then never pay again.
                             </p>
                         </div>
                     @endif
