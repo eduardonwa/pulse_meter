@@ -33,11 +33,8 @@
             </div>
         </div>
 
-        <a
-            class="button posts__chat-link"
-            href="{{ route('chat.index') }}"
-        >
-            <x-heroicon-o-chat-bubble-left-right aria-hidden="true" />
+        <a class="button posts__chat-link" href="{{ route('chat.index') }}">
+            <x-heroicon-o-chat-bubble-left-right aria-hidden="true" width="20" height="20" />
             <span>{{ __('blog.chat_cta') }}</span>
         </a>
 

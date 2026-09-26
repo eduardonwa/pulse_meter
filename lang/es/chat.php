@@ -5,7 +5,7 @@ return [
     'meta_description' => 'Describe lo que quieres mejorar y encuentra un artículo o una rutina de práctica de Dorelog.',
     'eyebrow' => 'Dorelog Chat',
     'heading' => '¿Qué quieres mejorar hoy?',
-    'description' => 'Pregunta en tu idioma y con tus propias palabras. Buscaré entre los artículos y las rutinas publicadas.',
+    'description' => 'Pregunta con tus propias palabras y encuentra artículos o rutinas que te ayuden. Aquí buscas contenido, no conversas con un chatbot.',
     'placeholder' => 'Escribe tu pregunta…',
     'submit' => 'Enviar',
     'loading' => 'Buscando…',
