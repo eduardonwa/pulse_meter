@@ -97,6 +97,8 @@
     }
 
     &__body {
+        min-width: 0;
+        
         grid-area: body;
 
         font-size: $font-size-400;
@@ -106,7 +108,11 @@
             margin-block-start: .3rem;
         }
 
-        h2 { font-size: $font-size-700; }
+        h2 {
+            font-size: $font-size-700;
+            line-height: 1.4;
+        }
+
         h3 { font-size: $font-size-600; }
 
         h2,
@@ -123,7 +129,7 @@
 
         p + h2 {
             margin-block-start: $size-2;
-            margin-block-end: $size-4;
+            margin-block-end: $size-2;
         }
 
         strong {
@@ -143,6 +149,67 @@
             display: block;
             max-width: 100%;
             height: auto;
+        }
+
+        table {
+            display: block;
+            width: 100%;
+            max-width: 100%;
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            overscroll-behavior-inline: contain;
+            border: 1px solid #444;
+            border-radius: 0.5rem;
+            color: white;
+            -webkit-overflow-scrolling: touch;
+
+            scrollbar-width: thin;
+
+            &::-webkit-scrollbar {
+                height: 6px; // alto de la barra horizontal
+                width: 6px;
+            }
+
+            &::-webkit-scrollbar-thumb {
+                background: #777;
+                border-radius: 999px;
+            }
+        }
+
+        tbody {
+            display: table;
+            width: 100%;
+            min-width: max-content;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 0.65rem 0.75rem;
+            border: 1px solid #444;
+            text-align: left;
+            vertical-align: middle;
+            white-space: nowrap;
+        }
+
+        th {
+            font-weight: 700;
+            background: #242424;
+        }
+
+        tr:nth-child(even) td {
+            background: #1d1d1d;
+        }
+
+        tr:nth-child(odd) td {
+            background: #272727;
+        }
+
+        @include mq(medium) {
+            th,
+            td {
+                padding: 0.75rem 0.9rem;
+            }
         }
 
         .youtube-embed {
