@@ -22,18 +22,9 @@
                 <p x-text="strings.description"></p>
             </header>
 
-            <div
-                class="content-chat__conversation"
-                x-ref="conversation"
-                role="log"
-                aria-live="polite"
-                aria-relevant="additions"
-            >
+            <div class="content-chat__conversation" x-ref="conversation" role="log" aria-live="polite" aria-relevant="additions">
                 <template x-for="(message, index) in messages" :key="index">
-                    <div
-                        class="content-chat__message"
-                        :data-author="message.author"
-                    >
+                    <div class="content-chat__message" :data-author="message.author">
                         <template x-if="message.type === 'text'">
                             <p x-text="message.text"></p>
                         </template>
@@ -41,10 +32,7 @@
                         <template x-if="message.type === 'result'">
                             <div>
                                 <template x-if="message.resource.type === 'answer'">
-                                    <p
-                                        class="content-chat__saved-answer"
-                                        x-text="message.resource.answer"
-                                    ></p>
+                                    <p class="content-chat__saved-answer" x-text="message.resource.answer"></p>
                                 </template>
 
                                 <template x-if="message.resource.type !== 'answer'">
@@ -55,10 +43,7 @@
                                                 : strings.result_intro"
                                         ></p>
 
-                                        <a
-                                            class="content-chat__result"
-                                            :href="message.resource.url"
-                                        >
+                                        <a class="content-chat__result" :href="message.resource.url">
                                             <strong x-text="message.resource.title"></strong>
                                             <span x-text="message.resource.excerpt"></span>
                                             <span class="content-chat__result-link">
@@ -77,21 +62,11 @@
                     </div>
                 </template>
 
-                <div
-                    class="content-chat__message"
-                    data-author="assistant"
-                    x-show="loading"
-                    x-cloak
-                >
+                <div class="content-chat__message"data-author="assistant"x-show="loading" x-cloak>
                     <p x-text="strings.loading"></p>
                 </div>
 
-                <form
-                    class="content-chat__request"
-                    x-show="unansweredQuestion && ! requestSent"
-                    x-cloak
-                    @submit.prevent="submitQuestion"
-                >
+                <form class="content-chat__request" x-show="unansweredQuestion && ! requestSent" x-cloak @submit.prevent="submitQuestion">
                     <div>
                         <h2 class="heading-3" x-text="strings.request_heading"></h2>
                         <p x-text="strings.request_intro"></p>
@@ -152,12 +127,7 @@
                     </button>
                 </form>
 
-                <div
-                    class="content-chat__success"
-                    x-show="requestSent"
-                    x-cloak
-                    role="status"
-                >
+                <div class="content-chat__success" x-show="requestSent" x-cloak role="status">
                     <p x-text="strings.request_success"></p>
                 </div>
             </div>
@@ -165,8 +135,7 @@
             <form class="content-chat__composer" @submit.prevent="search">
                 <label class="sr-only" for="content-chat-query" x-text="strings.heading"></label>
 
-                <textarea
-                    id="content-chat-query"
+                <textarea id="content-chat-query"
                     x-ref="query"
                     x-model="query"
                     :disabled="loading"
@@ -177,11 +146,7 @@
                     @keydown.enter.exact.prevent="search"
                 ></textarea>
 
-                <button
-                    class="button content-chat__send"
-                    type="submit"
-                    :disabled="loading || query.trim().length < 3"
-                >
+                <button class="button content-chat__send" type="submit" :disabled="loading || query.trim().length < 3">
                     <x-heroicon-o-paper-airplane aria-hidden="true" />
                     <span class="sr-only" x-text="strings.submit"></span>
                 </button>
