@@ -107,12 +107,6 @@ select {
     }
   }
 
-  .form-group {
-    display: grid;
-    gap: $size-4;
-    margin-block-start: $size-3;
-  }
-
   .exercise-form-label {
     font-weight: 400;
     font-size: 14px;
@@ -120,9 +114,9 @@ select {
 
   .exercise-name-wrapper {
     margin-block: $size-4 $size-3;
-    display: block;
-
-    .exercise-form-label { padding-block-end: $size-2; }
+    display: flex;
+    align-items: center;
+    gap: $size-4;
 
     .name {
       padding: $size-2;
@@ -133,44 +127,88 @@ select {
     }
   }
 
-  .exercise-bpm-wrapper,
-  .exercise-type-wrapper,
-  .exercise-length-wrapper {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+  // COLUMNS
+  .form-group {
+    display: grid;
     gap: $size-4;
+
+    &.fields {
+      display: grid;
+      grid-template-areas:
+        "bpm"
+        "settings";
+      gap: $size-4;
+    }
   }
 
-  .exercise-length-wrapper {
-    margin-block-end: $size-4;
-    
-    .length-inputs {
+  // BPM
+  .exercise-bpm-wrapper {
+    padding-block-end: $size-4;
+    border-block-end: 1px solid hsl(var(--neutral-950) / .2);
+    display: flex;
+    align-items: center;
+    gap: $size-4;
+
+    .exercise-row__bpm {
+      width: 100%;
       display: flex;
+      flex-direction: row;
       align-items: center;
-      gap: $size-2;
-
-      .colon {
-        font-weight: normal;
-        text-align: center;
-        margin-block-end: $size-6;
-      }
+      justify-content: space-around;
+      border-inline-end: 1px solid transparent;
     }
+  }
 
-    .minutes,
-    .seconds {
-      justify-self: end;
-      
+  .exercise-settings {
+    padding-block-start: $size-4;
+    grid-area: settings;
+
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+
+    .exercise-type-wrapper,
+    .exercise-time-signature-wrapper {
       display: flex;
       flex-direction: column;
-      align-items: center;
-      font-size: $font-size-400;
-
-      .picker-option { font-size: $font-size-400; }
+      gap: $size-4;
       
-      .unit {
-        margin-inline-start: $size-1;
-        font-weight: normal;
+      width: fit-content;
+    }
+
+    // TIMER DURATION
+    .exercise-length-wrapper {
+      display: flex;
+      justify-content: space-between;
+      flex-direction: column;
+      gap: $size-4;
+      
+      .length-inputs {
+        display: flex;
+        align-items: center;
+        gap: $size-2;
+  
+        .colon {
+          font-weight: normal;
+          text-align: center;
+          margin-block-end: $size-6;
+        }
+      }
+  
+      .minutes,
+      .seconds {
+        justify-self: end;
+        
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        font-size: $font-size-400;
+  
+        .picker-option { font-size: $font-size-400; }
+        
+        .unit {
+          margin-inline-start: $size-1;
+          font-weight: normal;
+        }
       }
     }
   }
@@ -179,7 +217,7 @@ select {
     display: flex;
     align-items: center;
     justify-content: space-evenly;
-    padding-block-start: $size-4;
+    padding-block-start: $size-8;
     width: 100%;
   }
 }

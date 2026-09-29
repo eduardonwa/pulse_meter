@@ -42,84 +42,84 @@
                     hint="Scroll to change BPM"
                 />
             </label>
+
+            <div class="exercise-settings-wrapper">
+                <label class="exercise-form-label">
+                    Settings
+                </label>
+
+                <div class="exercise-settings">
+                    <label class="exercise-type-wrapper">
+                        <p class="exercise-form-label">Type</p>
+                        <select x-model="stepForm.mode">
+                            <option value="timer">Timer</option>
+                            <option value="classic">Classic</option>
+                        </select>
+                    </label>
     
-            <label class="exercise-type-wrapper">
-                <p class="exercise-form-label">Type</p>
-                <select x-model="stepForm.mode">
-                    <option value="timer">Timer</option>
-                    <option value="classic">Classic</option>
-                </select>
-            </label>
-
-            <label class="exercise-time-signature-wrapper" x-cloak
-                x-show=" stepFormMode === 'create' || !hasAlphaTabPattern(steps[stepFormIndex])"
-            >
-                <p class="exercise-form-label">
-                    Time signature
-                </p>
-
-                <select x-model.number="stepForm.time_signature_numerator">
-                    @foreach (range(2, 16) as $numerator)
-                        <option value="{{ $numerator }}">
-                            {{ $numerator }}/4
-                        </option>
-                    @endforeach
-                </select>
-            </label>
-        </div>
-
-        <div class="form-group" x-show="stepForm.mode === 'timer'">
-            <label class="exercise-length-wrapper">
-                <p class="exercise-form-label">Length</p>
-
-                <article class="length-inputs">
-                    <div class="minutes">
-                        <x-inputs.number-picker
-                            options="stepFormMinutesOptions"
-                            model="stepFormMinutes"
-                            after-change="
-                                normalizeStepFormDuration();
-                                $dispatch('picker:sync');
-                            "
-                        />
-                        <span class="unit">m</span>
+                    <div class="form-group" x-show="stepForm.mode === 'timer'">
+                        <label class="exercise-length-wrapper">
+                            <p class="exercise-form-label">Length</p>
+    
+                            <article class="length-inputs">
+                                <div class="minutes">
+                                    <x-inputs.number-picker
+                                        options="stepFormMinutesOptions"
+                                        model="stepFormMinutes"
+                                        after-change="
+                                            normalizeStepFormDuration();
+                                            $dispatch('picker:sync');
+                                        "
+                                    />
+                                    <span class="unit">m</span>
+                                </div>
+                                
+                                <span class="colon">:</span>
+                                
+                                <div class="seconds">
+                                    <x-inputs.number-picker
+                                        options="stepFormSecondsOptions"
+                                        model="stepFormSeconds"
+                                        format="(value) => String(value).padStart(2, '0')"
+                                        after-change="
+                                            normalizeStepFormDuration();
+                                            $dispatch('picker:sync');
+                                        "
+                                    />
+                                    <span class="unit">s</span>
+                                </div>
+                            </article>
+                        </label>
                     </div>
-                    
-                    <span class="colon">:</span>
-                    
-                    <div class="seconds">
-                        <x-inputs.number-picker
-                            options="stepFormSecondsOptions"
-                            model="stepFormSeconds"
-                            format="(value) => String(value).padStart(2, '0')"
-                            after-change="
-                                normalizeStepFormDuration();
-                                $dispatch('picker:sync');
-                            "
-                        />
-                        <span class="unit">s</span>
-                    </div>
-                </article>
-            </label>
+    
+                    <label class="exercise-time-signature-wrapper" x-cloak x-show=" stepFormMode === 'create' || !hasAlphaTabPattern(steps[stepFormIndex])">
+                        <p class="exercise-form-label">
+                            Time signature
+                        </p>
+    
+                        <select x-model.number="stepForm.time_signature_numerator">
+                            @foreach (range(2, 16) as $numerator)
+                                <option value="{{ $numerator }}">
+                                    {{ $numerator }}/4
+                                </option>
+                            @endforeach
+                        </select>
+                    </label>
+                </div>
+            </div>
         </div>
 
         <div class="form-actions">
-            <button
-                type="button"
-                class="button"
-                data-type="outline"
+            <button class="button" data-type="primary" type="submit"
+                x-text="stepFormMode === 'edit' ? 'Save changes' : 'Save'"
+            ></button>
+
+            <button class="button" data-type="outline" type="button"
                 @click="closeStepFormModal()"
                 @cancel.prevent="closeStepFormModal()"
             >
                 Cancel
             </button>
-
-            <button
-                type="submit"
-                class="button"
-                data-type="primary"
-                x-text="stepFormMode === 'edit' ? 'Save changes' : 'Save'"
-            ></button>
         </div>
     </form>
 </dialog>
