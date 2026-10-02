@@ -12,6 +12,8 @@
         </div>
     </template>
 
+    <x-scale-reference-card />
+
     <p style="font-size: 15px; text-align: center; margin-block-start: 1rem;" x-show="!randomizerResult">
         Generate a starting point for a creative session.
     </p>
