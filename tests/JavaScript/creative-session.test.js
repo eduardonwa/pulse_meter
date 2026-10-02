@@ -113,6 +113,7 @@ test('randomizer includes melodic major', () => {
             'b6',
             'b7',
         ],
+        description: 'A major scale with a lowered 6th and 7th.',
     })
 })
 
