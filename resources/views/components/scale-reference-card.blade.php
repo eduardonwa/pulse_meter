@@ -80,9 +80,8 @@
             width: 100%;
             margin-block: 1rem;
             padding: 1rem;
-            border: 1px solid #cfcfcf;
+            border: 1px solid hsl(var(--neutral-950) / 0.2);
             border-radius: .6rem;
-            background: #fff;
             color: #1b1b1b;
         }
 
