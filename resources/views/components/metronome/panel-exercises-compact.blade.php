@@ -105,12 +105,12 @@
         <!-- Touch-first routine card. Desktop keeps the existing compact row. -->
         <div class="mobile-exercise" :class="{ 'mobile-exercise--open': mobileExpandedIndex === index }">
             <button type="button" class="mobile-exercise__summary"
-                :aria-expanded="mobileExpandedIndex === index.toString()"
+                :aria-expanded="(mobileExpandedIndex === index).toString()"
                 @click="mobileExpandedIndex = mobileExpandedIndex === index ? null : index">
                 <span class="mobile-exercise__heading">
                     <small x-text="`EXERCISE ${String(index + 1).padStart(2, '0')}`"></small>
                     <strong x-text="step.name"></strong>
-                    <span class="mobile-exercise__short" x-show="!mobileExpandedIndex === index"
+                    <span class="mobile-exercise__short" x-show="mobileExpandedIndex !== index"
                         x-text="`${step.bpm} BPM · ${getStepTimeLabel(step, index)} · ${step.time_signature_numerator ?? 4}/${step.time_signature_denominator ?? 4}`"></span>
                 </span>
                 <span class="mobile-exercise__chevron" aria-hidden="true" x-text="mobileExpandedIndex === index ? '⌃' : '⌄'"></span>
