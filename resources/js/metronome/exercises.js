@@ -38,6 +38,34 @@ export function exercises() {
 
         // MOBILE EXERCISE ACTIONS
         exerciseActionBusy: false,
+        deletedExerciseUndo: null,
+        deletedExerciseUndoTimer: null,
+
+        clearDeletedExerciseUndo() {
+            clearTimeout(this.deletedExerciseUndoTimer);
+            this.deletedExerciseUndoTimer = null;
+            this.deletedExerciseUndo = null;
+        },
+
+        async undoDeletedExercise() {
+            const pending = this.deletedExerciseUndo;
+            if (!pending || this.exerciseActionBusy) return;
+            this.exerciseActionBusy = true;
+            try {
+                let restored = pending.step;
+                if (this.usesServerPersistence) {
+                    restored = await this.restoreDeletedRoutineStep(pending.token);
+                    if (!restored) return;
+                }
+                const index = Math.min(pending.index, this.steps.length);
+                this.steps.splice(index, 0, restored);
+                if (!this.usesServerPersistence) this.saveToLocalStorage();
+                if (this.mobileExpandedIndex >= index) this.mobileExpandedIndex++;
+                this.clearDeletedExerciseUndo();
+            } finally {
+                this.exerciseActionBusy = false;
+            }
+        },
         mobileExerciseKeyCounter: 0,
 
         mobileExerciseKey(step) {
@@ -174,19 +202,19 @@ export function exercises() {
                 return false;
             }
 
+            let deletion = null;
             if (this.usesServerPersistence) {
-                if (!step.id) {
-                    return false;
-                }
-
-                const wasDeleted = await this.destroyRoutineStep(step.id);
-
-                if (!wasDeleted) {
-                    return false;
-                }
+                if (!step.id) return false;
+                deletion = await this.destroyRoutineStep(step.id);
+                if (!deletion?.undo_token) return false;
             }
 
+            this.clearDeletedExerciseUndo();
             this.steps.splice(index, 1);
+            this.deletedExerciseUndo = { step: { ...step }, index, token: deletion?.undo_token ?? null };
+            this.deletedExerciseUndoTimer = setTimeout(() => this.clearDeletedExerciseUndo(), 8000);
+            if (this.mobileExpandedIndex === index) this.mobileExpandedIndex = Math.min(index, this.steps.length - 1);
+            else if (this.mobileExpandedIndex > index) this.mobileExpandedIndex--;
 
             if (index < this.currentIndex) {
                 this.currentIndex -= 1;
