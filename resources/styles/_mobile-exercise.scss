@@ -1,0 +1,50 @@
+/* Mobile exercise cards use Dorelog's existing palette tokens. */
+.mobile-exercise { display: none; }
+@media (max-width: 767px) {
+  .routine__exercises { display: flex; flex-direction: column; gap: 12px; }
+  .routine__exercises > .exercise-row {
+    display: block; margin: 0; padding: 14px; border-radius: 18px;
+    background: hsl(var(--neutral-100)); border: 1px solid hsl(var(--neutral-400) / .4);
+    box-shadow: none;
+  }
+  .routine__exercises > .exercise-row > .exercise-row__bpm,
+  .routine__exercises > .exercise-row > .exercise-row__main,
+  .routine__exercises > .exercise-row > .exercise-row__play { display: none; }
+  .mobile-exercise { display: block; }
+  .mobile-exercise__summary { width: 100%; background: none; border: 0; padding: 0; display: flex;
+    align-items: center; justify-content: space-between; gap: 12px; text-align: left; color: hsl(var(--neutral-900)); }
+  .mobile-exercise__heading { display: grid; gap: 5px; min-width: 0; }
+  .mobile-exercise__heading small, .mobile-exercise__stats small { font-size: 11px; color: hsl(var(--neutral-600)); }
+  .mobile-exercise__heading strong { font-size: clamp(17px, 5vw, 22px); overflow-wrap: anywhere; }
+  .mobile-exercise__short { color: hsl(var(--neutral-600)); font-size: 13px; }
+  .mobile-exercise__chevron { font-size: 23px; flex: none; }
+  .mobile-exercise__expanded { margin-top: 16px; }
+  .mobile-exercise__stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+  .mobile-exercise__stats > div { display: grid; justify-items: center; gap: 5px; }
+  .mobile-exercise__stats strong { font-size: clamp(15px, 4.5vw, 21px); }
+  .mobile-exercise__tempo { display: flex; gap: 10px; justify-content: center; align-items: center; padding-block: 12px; color: hsl(var(--neutral-600)); font-size: 13px; }
+  .mobile-exercise__tempo button, .mobile-exercise__actions button { min-height: 46px; border-radius: 12px;
+    border: 1px solid hsl(var(--neutral-500) / .5); background: hsl(var(--neutral-000)); color: hsl(var(--neutral-900)); }
+  .mobile-exercise__tempo button { min-width: 46px; font-size: 24px; }
+  .mobile-exercise__actions { display: flex; gap: 8px; }
+  .mobile-exercise__actions button { display: inline-flex; align-items: center; justify-content: center; width: 48px; flex: none; padding: 9px; }
+  .mobile-exercise__actions button svg { width: 23px; height: 23px; }
+  .mobile-exercise__actions .mobile-exercise__practice { flex: 1; width: auto;
+    background: hsl(var(--primary-500)); color: hsl(var(--neutral-000)); border-color: hsl(var(--primary-500)); font-weight: 700; }
+  .mobile-exercise-sheet { position: fixed; z-index: 2000; inset: 0; display: grid; align-items: end; }
+  .mobile-exercise-sheet__backdrop { position: absolute; inset: 0; background: rgba(0,0,0,.52); }
+  .mobile-exercise-sheet__panel { position: relative; background: hsl(var(--neutral-100)); color: hsl(var(--neutral-900));
+    padding: 12px 18px max(20px, env(safe-area-inset-bottom)); border-radius: 22px 22px 0 0;
+    box-shadow: 0 -10px 30px rgba(0,0,0,.18); }
+  .mobile-exercise-sheet__handle { width: 40px; height: 4px; background: hsl(var(--neutral-400)); border-radius: 99px; margin: 0 auto 18px; }
+  .mobile-exercise-sheet__title { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+  .mobile-exercise-sheet__title div { display: grid; gap: 4px; }
+  .mobile-exercise-sheet__title small { color: hsl(var(--neutral-600)); }
+  .mobile-exercise-sheet__title button { border: 0; background: transparent; font-size: 30px; min-width: 44px; min-height: 44px; }
+  .mobile-exercise-sheet__list { display: grid; gap: 10px; }
+  .mobile-exercise-sheet__list > button, .mobile-exercise-sheet__directions button { text-align: left; padding: 14px;
+    min-height: 50px; background: hsl(var(--neutral-200)); border: 0; border-radius: 12px; color: inherit; }
+  .mobile-exercise-sheet__list button:disabled { opacity: .4; }
+  .mobile-exercise-sheet__list .mobile-exercise-sheet__danger { color: #b91c1c; }
+  .mobile-exercise-sheet__directions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+}
