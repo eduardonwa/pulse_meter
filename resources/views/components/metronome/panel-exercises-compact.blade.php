@@ -156,7 +156,7 @@
                                     @click="mobileOptionsOpen = false; duplicateMobileExercise(index)">Duplicate</button>
                                 <button type="button" :disabled="exerciseActionBusy || isPlaying || isWaitingForNextExercise" @click="mobileMoving = true">Move</button>
                                 <button type="button" class="mobile-exercise-sheet__danger" :disabled="steps.length <= 1"
-                                    @click="mobileOptionsOpen = false; openDeleteStepModal(index)">Delete</button>
+                                    @click="mobileOptionsOpen = false; mobileMoving = false; $nextTick(() => requestAnimationFrame(() => openDeleteStepModal(index)))">Delete</button>
                             </div>
                         </template>
                         <template x-if="mobileMoving">
