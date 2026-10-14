@@ -160,8 +160,14 @@ export function routinePersistence() {
 
         async performRoutineStepAction(id, action, method, body = null) {
             if (!this.canPersistRoutineSteps()) return null;
-            const urlTemplate = this.$root.dataset[action === 'move' ? 'routineStepMoveUrl' : 'routineStepDuplicateUrl'];
-            if (!urlTemplate) return null;
+            const dataKey = action === 'move' ? 'routineStepMoveUrl' : 'routineStepDuplicateUrl';
+            const playerRoot = this.$root.closest('[data-routine-step-move-url]');
+            const urlTemplate = playerRoot?.dataset[dataKey];
+            if (!urlTemplate) {
+                console.error('Routine exercise action URL was not found:', action);
+                this.showToast?.('Could not ' + action + ' exercise', 'error');
+                return null;
+            }
             try {
                 const response = await fetch(urlTemplate.replace('__ID__', id), {
                     method,
