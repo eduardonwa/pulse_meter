@@ -156,6 +156,12 @@ Route::middleware(['auth', 'can:use-pro'])->group(function () {
     )->name('practice-routine-steps.destroy');
 
 
+    Route::patch('/practice-routine-steps/{practiceRoutineStep}/move',
+        [PracticeRoutineStepController::class, 'move'])->name('practice-routine-steps.move');
+
+    Route::post('/practice-routine-steps/{practiceRoutineStep}/duplicate',
+        [PracticeRoutineStepController::class, 'duplicate'])->name('practice-routine-steps.duplicate');
+
     // PULSE PATTERNS
     Route::post('/pulse-presets',
         [PulsePresetController::class, 'store'])
