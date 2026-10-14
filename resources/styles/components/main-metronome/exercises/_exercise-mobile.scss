@@ -1,0 +1,38 @@
+/* Mobile exercise structure: add visual styles here. */
+.mobile-exercise {
+    display: none;
+}
+
+@media (max-width: 767px) {
+    .routine__exercises > .exercise-row {
+        display: block;
+    }
+
+    .routine__exercises > .exercise-row > .exercise-row__bpm,
+    .routine__exercises > .exercise-row > .exercise-row__main,
+    .routine__exercises > .exercise-row > .exercise-row__play {
+        display: none;
+    }
+
+    .mobile-exercise {
+        display: block;
+    }
+}
+
+/* The sheet is teleported to <body>; it needs a viewport layer. */
+.mobile-exercise-sheet {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    display: grid;
+    align-items: end;
+}
+
+.mobile-exercise-sheet__backdrop {
+    position: absolute;
+    inset: 0;
+}
+
+.mobile-exercise-sheet__panel {
+    position: relative;
+}
