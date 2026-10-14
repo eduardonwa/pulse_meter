@@ -511,6 +511,9 @@ export function exercises() {
 
             if (!step) { return }
 
+            // Keep the mobile card in sync with manual and automatic playback.
+            this.mobileExpandedIndex = index
+
             const configuredDuration = step.mode === 'timer' ? Number(step.duration_seconds ?? 60) : null
 
             /*
@@ -751,6 +754,9 @@ export function exercises() {
             )
 
             this.stop('completed')
+
+            // Show the upcoming exercise while waiting for Continue.
+            this.mobileExpandedIndex = nextIndex
 
             this.nextExerciseIndex = nextIndex
             this.isWaitingForNextExercise = true
