@@ -7,6 +7,8 @@ use App\Models\PracticeRoutineStep;
 use App\Services\ExerciseActionsService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Str;
 
 class PracticeRoutineStepController extends Controller
 {
@@ -184,8 +186,28 @@ class PracticeRoutineStepController extends Controller
             403
         );
 
-        app(ExerciseActionsService::class)->delete($practiceRoutineStep->routine, $practiceRoutineStep->id);
+        $snapshot = app(ExerciseActionsService::class)->delete($practiceRoutineStep->routine, $practiceRoutineStep->id);
+        $token = Str::random(48);
+        Cache::put('exercise-undo:' . $token, [
+            'user_id' => $request->user()->id,
+            'routine_id' => $practiceRoutineStep->practice_routine_id,
+            'snapshot' => $snapshot,
+        ], now()->addSeconds(20));
 
-        return response()->noContent();
+        return response()->json(['undo_token' => $token]);
     }
+    public function restoreDeleted(Request $request, ExerciseActionsService $actions): JsonResponse
+    {
+        $data = $request->validate(['undo_token' => ['required', 'string', 'size:48']]);
+        $key = 'exercise-undo:' . $data['undo_token'];
+        $saved = Cache::get($key);
+        abort_if(! $saved, 410, 'Undo expired');
+        abort_unless((int) $saved['user_id'] === (int) $request->user()->id, 403);
+
+        $routine = $request->user()->practiceRoutines()->findOrFail($saved['routine_id']);
+        $restored = $actions->restore($routine, $saved['snapshot'], $request->user()->exerciseLimit());
+        Cache::forget($key);
+        return response()->json($restored, 201);
+    }
+
 }
