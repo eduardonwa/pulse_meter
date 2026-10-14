@@ -62,7 +62,7 @@ export function exercises() {
         },
 
         async moveMobileExercise(index, direction) {
-            if (this.exerciseActionBusy || this.isPlaying || this.isWaitingForNextExercise || this.activeExerciseIndex !== null) return;
+            if (this.exerciseActionBusy || this.isPlaying || this.isWaitingForNextExercise) return;
             const target = index + direction;
             if (target < 0 || target >= this.steps.length) return;
             const step = this.steps[index];
