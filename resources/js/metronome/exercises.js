@@ -37,43 +37,49 @@ export function exercises() {
         practiceFeelingConfirmation: "",
 
         // MOBILE EXERCISE ACTIONS
+        exerciseActionBusy: false,
+
         async duplicateMobileExercise(index) {
-            if (this.steps.length >= this.maxSteps) return;
-
+            if (this.exerciseActionBusy || this.isPlaying || this.isWaitingForNextExercise || this.steps.length >= this.maxSteps) return;
             const source = this.steps[index];
-
             if (!source) return;
 
-            const payload = {
-                name: source.name + " (copy)",
-                bpm: Number(source.bpm),
-                mode: source.mode,
-                duration_seconds: source.duration_seconds,
-                time_signature_numerator: source.time_signature_numerator ?? 4,
-                time_signature_denominator:
-                    source.time_signature_denominator ?? 4,
-            };
-
-            const copy = this.usesServerPersistence
-                ? await this.storeRoutineStep(payload)
-                : { ...source, ...payload, id: undefined, origin: "custom" };
-
-            if (!copy) return;
-
-            if (this.usesServerPersistence) this.steps.push(copy);
-            else {
+            this.exerciseActionBusy = true;
+            try {
+                let copy;
+                if (this.usesServerPersistence) {
+                    copy = await this.performRoutineStepAction(source.id, 'duplicate', 'POST');
+                } else {
+                    copy = { ...source, name: source.name + ' (copy)', id: undefined, origin: 'custom' };
+                }
+                if (!copy) return;
                 this.steps.splice(index + 1, 0, copy);
-                this.saveToLocalStorage();
+                if (!this.usesServerPersistence) this.saveToLocalStorage();
+                if (this.mobileExpandedIndex > index) this.mobileExpandedIndex++;
+            } finally {
+                this.exerciseActionBusy = false;
             }
         },
 
-        moveMobileExercise(index, direction) {
-            if (this.usesServerPersistence) return;
+        async moveMobileExercise(index, direction) {
+            if (this.exerciseActionBusy || this.isPlaying || this.isWaitingForNextExercise || this.activeExerciseIndex !== null) return;
             const target = index + direction;
             if (target < 0 || target >= this.steps.length) return;
-            const [step] = this.steps.splice(index, 1);
-            this.steps.splice(target, 0, step);
-            this.saveToLocalStorage();
+            const step = this.steps[index];
+            this.exerciseActionBusy = true;
+            try {
+                if (this.usesServerPersistence) {
+                    const result = await this.performRoutineStepAction(step.id, 'move', 'PATCH', { direction: direction < 0 ? 'up' : 'down' });
+                    if (!result) return;
+                }
+                this.steps.splice(index, 1);
+                this.steps.splice(target, 0, step);
+                if (!this.usesServerPersistence) this.saveToLocalStorage();
+                if (this.mobileExpandedIndex === index) this.mobileExpandedIndex = target;
+                else if (this.mobileExpandedIndex === target) this.mobileExpandedIndex = index;
+            } finally {
+                this.exerciseActionBusy = false;
+            }
         },
 
         getExerciseOrigin(step) {
