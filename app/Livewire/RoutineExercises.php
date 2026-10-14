@@ -3,9 +3,9 @@
 namespace App\Livewire;
 
 use App\Models\PracticeRoutineStep;
+use App\Services\ExerciseActionsService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
@@ -82,50 +82,7 @@ class RoutineExercises extends Component
             ->whereKey($this->routineId)
             ->firstOrFail();
 
-        DB::transaction(function () use (
-            $routine,
-            $exerciseId,
-            $direction
-        ): void {
-            $exercises = $routine->steps()
-                ->orderBy('position')
-                ->orderBy('id')
-                ->lockForUpdate()
-                ->get();
-
-            $currentIndex = $exercises->search(
-                fn (PracticeRoutineStep $exercise) =>
-                    (int) $exercise->id === $exerciseId
-            );
-
-            abort_if($currentIndex === false, 404);
-
-            $targetIndex = $direction === 'up'
-                ? $currentIndex - 1
-                : $currentIndex + 1;
-
-            /*
-            * Si el ejercicio ya está en el extremo,
-            * no hay nada que mover.
-            */
-            if (! $exercises->has($targetIndex)) {
-                return;
-            }
-
-            $currentExercise = $exercises[$currentIndex];
-            $targetExercise = $exercises[$targetIndex];
-
-            $currentPosition = $currentExercise->position;
-
-            $currentExercise->position =
-                $targetExercise->position;
-
-            $targetExercise->position =
-                $currentPosition;
-
-            $currentExercise->save();
-            $targetExercise->save();
-        });
+        app(ExerciseActionsService::class)->move($routine, $exerciseId, $direction);
 
         $this->refreshExercises();
 
@@ -145,66 +102,7 @@ class RoutineExercises extends Component
             ->whereKey($this->routineId)
             ->firstOrFail();
 
-        DB::transaction(function () use (
-            $routine,
-            $exerciseId
-        ): void {
-            $exercises = $routine->steps()
-                ->orderBy('position')
-                ->orderBy('id')
-                ->lockForUpdate()
-                ->get();
-
-            $limit = Auth::user()->exerciseLimit();
-
-            abort_if(
-                $exercises->count() >= $limit,
-                422,
-                "This routine can contain up to {$limit} exercises."
-            );
-
-            $original = $exercises->first(
-                fn (PracticeRoutineStep $exercise) =>
-                    (int) $exercise->id === $exerciseId
-            );
-
-            abort_if($original === null, 404);
-
-            $copyPosition = $original->position + 1;
-
-            /*
-            * Abrimos una posición justo después
-            * del ejercicio original.
-            */
-            $routine->steps()
-                ->where('position', '>=', $copyPosition)
-                ->increment('position');
-
-            /*
-            * replicate() crea una copia sin guardar
-            * del modelo original.
-            */
-            $copy = $original->replicate([
-                'practice_routine_id',
-                'position',
-                'created_at',
-                'updated_at',
-            ]);
-
-            $copy->name = mb_substr(
-                trim($original->name) . ' copy',
-                0,
-                80
-            );
-
-            $copy->position = $copyPosition;
-
-            /*
-            * La relación asigna practice_routine_id
-            * a la misma rutina.
-            */
-            $routine->steps()->save($copy);
-        });
+        app(ExerciseActionsService::class)->duplicate($routine, $exerciseId, Auth::user()->exerciseLimit());
 
         $this->refreshExercises();
 
@@ -224,37 +122,7 @@ class RoutineExercises extends Component
             ->whereKey($this->routineId)
             ->firstOrFail();
 
-        DB::transaction(function () use (
-            $routine,
-            $exerciseId
-        ): void {
-            $exercises = $routine->steps()
-                ->orderBy('position')
-                ->orderBy('id')
-                ->lockForUpdate()
-                ->get();
-
-            abort_if(
-                $exercises->count() <= 1,
-                422,
-                'A routine must contain at least one exercise.'
-            );
-
-            $exercise = $exercises->first(
-                fn (PracticeRoutineStep $item) =>
-                    (int) $item->id === $exerciseId
-            );
-
-            abort_if($exercise === null, 404);
-
-            $deletedPosition = $exercise->position;
-
-            $exercise->delete();
-
-            $routine->steps()
-                ->where('position', '>', $deletedPosition)
-                ->decrement('position');
-        });
+        app(ExerciseActionsService::class)->delete($routine, $exerciseId);
 
         $this->refreshExercises();
 
