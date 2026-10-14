@@ -1,5 +1,31 @@
 export function exercises() {
     return {
+
+        async duplicateMobileExercise(index) {
+            if (this.steps.length >= this.maxSteps) return
+            const source = this.steps[index]
+            if (!source) return
+            const payload = {
+                name: source.name + ' (copy)', bpm: Number(source.bpm),
+                mode: source.mode, duration_seconds: source.duration_seconds,
+                time_signature_numerator: source.time_signature_numerator ?? 4,
+                time_signature_denominator: source.time_signature_denominator ?? 4,
+            }
+            const copy = this.usesServerPersistence
+                ? await this.storeRoutineStep(payload)
+                : { ...source, ...payload, id: undefined, origin: 'custom' }
+            if (!copy) return
+            if (this.usesServerPersistence) this.steps.push(copy)
+            else { this.steps.splice(index + 1, 0, copy); this.saveToLocalStorage() }
+        },
+        moveMobileExercise(index, direction) {
+            if (this.usesServerPersistence) return
+            const target = index + direction
+            if (target < 0 || target >= this.steps.length) return
+            const [step] = this.steps.splice(index, 1)
+            this.steps.splice(target, 0, step)
+            this.saveToLocalStorage()
+        },
         // EXERCISE STATE
         activeExerciseIndex: null,
 
