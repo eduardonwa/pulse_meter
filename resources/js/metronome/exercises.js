@@ -38,6 +38,14 @@ export function exercises() {
 
         // MOBILE EXERCISE ACTIONS
         exerciseActionBusy: false,
+        mobileExerciseKeyCounter: 0,
+
+        mobileExerciseKey(step) {
+            if (!step._mobileExerciseKey) {
+                step._mobileExerciseKey = `local-${++this.mobileExerciseKeyCounter}`;
+            }
+            return step._mobileExerciseKey;
+        },
 
         async duplicateMobileExercise(index) {
             if (this.exerciseActionBusy || this.isPlaying || this.isWaitingForNextExercise || this.steps.length >= this.maxSteps) return;
