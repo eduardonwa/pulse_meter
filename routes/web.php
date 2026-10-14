@@ -162,6 +162,9 @@ Route::middleware(['auth', 'can:use-pro'])->group(function () {
     Route::post('/practice-routine-steps/{practiceRoutineStep}/duplicate',
         [PracticeRoutineStepController::class, 'duplicate'])->name('practice-routine-steps.duplicate');
 
+    Route::post('/practice-routine-steps/undo-delete',
+        [PracticeRoutineStepController::class, 'restoreDeleted'])->name('practice-routine-steps.undo-delete');
+
     // PULSE PATTERNS
     Route::post('/pulse-presets',
         [PulsePresetController::class, 'store'])
