@@ -158,6 +158,29 @@ export function routinePersistence() {
                 }, delay)
         },
 
+        async performRoutineStepAction(id, action, method, body = null) {
+            if (!this.canPersistRoutineSteps()) return null;
+            const urlTemplate = this.$root.dataset[action === 'move' ? 'routineStepMoveUrl' : 'routineStepDuplicateUrl'];
+            if (!urlTemplate) return null;
+            try {
+                const response = await fetch(urlTemplate.replace('__ID__', id), {
+                    method,
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    },
+                    ...(body ? { body: JSON.stringify(body) } : {}),
+                });
+                if (!response.ok) throw new Error(await response.text());
+                return await response.json();
+            } catch (error) {
+                console.error('Could not ' + action + ' exercise.', error);
+                this.showToast?.('Could not ' + action + ' exercise', 'error');
+                return null;
+            }
+        },
+
         async destroyRoutineStep(id) {
             if (!this.canPersistRoutineSteps()) {
                 return null
