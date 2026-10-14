@@ -26,6 +26,8 @@ export function exercises() {
             this.steps.splice(target, 0, step)
             this.saveToLocalStorage()
         },
+        mobileExpandedIndex: 0,
+
         // EXERCISE STATE
         activeExerciseIndex: null,
 
