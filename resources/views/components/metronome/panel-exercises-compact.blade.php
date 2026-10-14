@@ -1,5 +1,5 @@
 <template x-for="(step, index) in steps" :key="index">
-    <li class="exercise-row exercise-row--editable" x-data="{ ...alphaTabExerciseControls(), mobileExpanded: index === 0, mobileOptionsOpen: false, mobileMoving: false }"
+    <li class="exercise-row exercise-row--editable" x-data="{ ...alphaTabExerciseControls(), mobileOptionsOpen: false, mobileMoving: false }"
         :class="{
             'is-active':
                 isPlaying &&
@@ -103,19 +103,19 @@
      
 
         <!-- Touch-first routine card. Desktop keeps the existing compact row. -->
-        <div class="mobile-exercise" :class="{ 'mobile-exercise--open': mobileExpanded }">
+        <div class="mobile-exercise" :class="{ 'mobile-exercise--open': mobileExpandedIndex === index }">
             <button type="button" class="mobile-exercise__summary"
-                :aria-expanded="mobileExpanded.toString()"
-                @click="mobileExpanded = !mobileExpanded">
+                :aria-expanded="mobileExpandedIndex === index.toString()"
+                @click="mobileExpandedIndex = mobileExpandedIndex === index ? null : index">
                 <span class="mobile-exercise__heading">
                     <small x-text="`EXERCISE ${String(index + 1).padStart(2, '0')}`"></small>
                     <strong x-text="step.name"></strong>
-                    <span class="mobile-exercise__short" x-show="!mobileExpanded"
+                    <span class="mobile-exercise__short" x-show="!mobileExpandedIndex === index"
                         x-text="`${step.bpm} BPM · ${getStepTimeLabel(step, index)} · ${step.time_signature_numerator ?? 4}/${step.time_signature_denominator ?? 4}`"></span>
                 </span>
-                <span class="mobile-exercise__chevron" aria-hidden="true" x-text="mobileExpanded ? '⌃' : '⌄'"></span>
+                <span class="mobile-exercise__chevron" aria-hidden="true" x-text="mobileExpandedIndex === index ? '⌃' : '⌄'"></span>
             </button>
-            <div class="mobile-exercise__expanded" x-show="mobileExpanded" x-cloak>
+            <div class="mobile-exercise__expanded" x-show="mobileExpandedIndex === index" x-cloak>
                 <div class="mobile-exercise__stats">
                     <div><small>BPM</small><strong x-text="step.bpm"></strong></div>
                     <div><small>LENGTH</small><strong x-text="getStepTimeLabel(step, index)"></strong></div>
@@ -135,13 +135,13 @@
                         <x-heroicon-o-pencil-square />
                     </button>
                     <button type="button" aria-label="Exercise options" :aria-expanded="mobileOptionsOpen.toString()"
-                        @click.stop="mobileOptionsOpen = true">
+                        @click.stop="mobileOptionsOpen = true; mobileMoving = false">
                         <x-heroicon-o-ellipsis-horizontal />
                     </button>
                 </div>
             </div>
             <template x-teleport="body">
-                <div class="mobile-exercise-sheet" x-show="mobileOptionsOpen" x-cloak
+                <div class="mobile-exercise-sheet" x-show="mobileOptionsOpen" x-cloak x-trap.noscroll="mobileOptionsOpen"
                     @keydown.escape.window="mobileOptionsOpen = false; mobileMoving = false">
                     <div class="mobile-exercise-sheet__backdrop" @click="mobileOptionsOpen = false; mobileMoving = false"></div>
                     <div class="mobile-exercise-sheet__panel" role="dialog" aria-modal="true" aria-label="Exercise options">
