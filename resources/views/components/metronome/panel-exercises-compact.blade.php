@@ -152,7 +152,7 @@
                         </div>
                         <template x-if="!mobileMoving">
                             <div class="mobile-exercise-sheet__list">
-                                <button type="button" :disabled="steps.length >= maxSteps"
+                                <button type="button" :disabled="steps.length >= maxSteps || exerciseActionBusy || isPlaying || isWaitingForNextExercise"
                                     @click="mobileOptionsOpen = false; duplicateMobileExercise(index)">Duplicate</button>
                                 <button type="button" @click="mobileMoving = true">Move</button>
                                 <button type="button" class="mobile-exercise-sheet__danger" :disabled="steps.length <= 1"
@@ -163,12 +163,12 @@
                             <div class="mobile-exercise-sheet__list">
                                 <p x-text="`Position ${index + 1} of ${steps.length}`"></p>
                                 <div class="mobile-exercise-sheet__directions">
-                                    <button type="button" :disabled="index === 0 || usesServerPersistence"
+                                    <button type="button" :disabled="index === 0 || exerciseActionBusy || isPlaying || isWaitingForNextExercise || activeExerciseIndex !== null"
                                         @click="moveMobileExercise(index, -1)">Move up</button>
-                                    <button type="button" :disabled="index === steps.length - 1 || usesServerPersistence"
+                                    <button type="button" :disabled="index === steps.length - 1 || exerciseActionBusy || isPlaying || isWaitingForNextExercise || activeExerciseIndex !== null"
                                         @click="moveMobileExercise(index, 1)">Move down</button>
                                 </div>
-                                <small x-show="usesServerPersistence">Moving synced exercises is not available in this preview.</small>
+                                
                                 <button type="button" @click="mobileOptionsOpen = false; mobileMoving = false">Done</button>
                             </div>
                         </template>
