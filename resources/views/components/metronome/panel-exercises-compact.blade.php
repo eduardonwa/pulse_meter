@@ -140,7 +140,7 @@
                 </div>
             </div>
             <template x-teleport="body">
-                <div class="mobile-exercise-sheet" x-show="mobileOptionsOpen" x-cloak x-trap.noscroll="mobileOptionsOpen"
+                <div class="mobile-exercise-sheet" x-show="mobileOptionsOpen" x-cloak
                     @keydown.escape.window="mobileOptionsOpen = false; mobileMoving = false">
                     <div class="mobile-exercise-sheet__backdrop" @click="mobileOptionsOpen = false; mobileMoving = false"></div>
                     <div class="mobile-exercise-sheet__panel" role="dialog" aria-modal="true" aria-label="Exercise options">
