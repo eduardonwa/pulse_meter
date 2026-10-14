@@ -1,3 +1,4 @@
+@use "mobile-exercise";
 @use "base";
 @use "components";
 @use "layout";
@@ -9,4 +10,3 @@
     initial-value: #f00;
     inherits: true;
 }
-@use "mobile-exercise";
