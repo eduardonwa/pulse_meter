@@ -50,9 +50,9 @@ class ExerciseActionsService
         });
     }
 
-    public function delete(PracticeRoutine $routine, int $exerciseId): void
+    public function delete(PracticeRoutine $routine, int $exerciseId): array
     {
-        DB::transaction(function () use ($routine, $exerciseId): void {
+        return DB::transaction(function () use ($routine, $exerciseId): array {
             $steps = $routine->steps()->lockForUpdate()->get();
             abort_if($steps->count() <= 1, 422, 'A routine must contain at least one exercise.');
 
@@ -60,8 +60,28 @@ class ExerciseActionsService
             abort_if(! $step, 404);
 
             $position = $step->position;
+            $snapshot = $step->getAttributes();
             $step->delete();
             $routine->steps()->where('position', '>', $position)->decrement('position');
+            return $snapshot;
         });
     }
+    public function restore(PracticeRoutine $routine, array $snapshot, int $limit): PracticeRoutineStep
+    {
+        return DB::transaction(function () use ($routine, $snapshot, $limit): PracticeRoutineStep {
+            $steps = $routine->steps()->lockForUpdate()->get();
+            abort_if($steps->count() >= $limit, 422, 'Exercise limit reached');
+            $position = max(1, min((int) $snapshot['position'], $steps->count() + 1));
+            $routine->steps()->where('position', '>=', $position)->increment('position');
+
+            unset($snapshot['id'], $snapshot['created_at'], $snapshot['updated_at']);
+            $restored = new PracticeRoutineStep;
+            $restored->setRawAttributes($snapshot);
+            $restored->practice_routine_id = $routine->id;
+            $restored->position = $position;
+            $restored->save();
+            return $restored->refresh();
+        });
+    }
+
 }
