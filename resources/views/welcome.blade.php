@@ -102,6 +102,7 @@
         @endif
 
         @if ($usesServerPersistence)
+            data-routine-step-undo-url="{{ route('practice-routine-steps.undo-delete') }}"
             data-routine-step-move-url="{{ route('practice-routine-steps.move', ['practiceRoutineStep' => '__ID__']) }}"
             data-routine-step-duplicate-url="{{ route('practice-routine-steps.duplicate', ['practiceRoutineStep' => '__ID__']) }}"
 
