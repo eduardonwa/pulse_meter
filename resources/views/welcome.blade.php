@@ -102,6 +102,9 @@
         @endif
 
         @if ($usesServerPersistence)
+            data-routine-step-move-url="{{ route('practice-routine-steps.move', ['practiceRoutineStep' => '__ID__']) }}"
+            data-routine-step-duplicate-url="{{ route('practice-routine-steps.duplicate', ['practiceRoutineStep' => '__ID__']) }}"
+
             {{-- PULSE PRESETS --}}
             data-pulse-presets-store-url="{{ route(
                 'pulse-presets.store'
