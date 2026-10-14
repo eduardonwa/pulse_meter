@@ -246,7 +246,29 @@ export function routinePersistence() {
                 return false
             }
 
-            return true
+            return await response.json()
+        },
+
+        async restoreDeletedRoutineStep(token) {
+            const url = this.$root.closest('[data-routine-step-undo-url]')?.dataset.routineStepUndoUrl
+            if (!url) return null
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    },
+                    body: JSON.stringify({ undo_token: token }),
+                })
+                if (!response.ok) throw new Error(await response.text())
+                return await response.json()
+            } catch (error) {
+                console.error('Could not restore exercise.', error)
+                this.showToast?.('Could not restore exercise', 'error')
+                return null
+            }
         },
     }
 }
