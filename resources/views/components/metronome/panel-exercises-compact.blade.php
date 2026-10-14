@@ -101,7 +101,6 @@
             </button>
         </div>
      
-
         <!-- Touch-first routine card. Desktop keeps the existing compact row. -->
         <div class="mobile-exercise" :class="{ 'mobile-exercise--open': mobileExpandedIndex === index }">
             <button type="button" class="mobile-exercise__summary"
@@ -177,6 +176,7 @@
                 </div>
             </template>
         </div>
+
         <!-- TAB / EXERCISE DETAILS -->
         <template x-if="step.alpha_tex">
             <div class="exercise-row__details">
