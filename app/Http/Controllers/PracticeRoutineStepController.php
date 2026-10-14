@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\PracticeRoutine;
 use App\Models\PracticeRoutineStep;
+use App\Services\ExerciseActionsService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -158,6 +159,21 @@ class PracticeRoutineStepController extends Controller
         return response()->json($practiceRoutineStep);
     }
 
+    public function move(Request $request, PracticeRoutineStep $practiceRoutineStep, ExerciseActionsService $actions): JsonResponse
+    {
+        abort_unless((int) $practiceRoutineStep->routine?->user_id === (int) $request->user()->id, 403);
+        $data = $request->validate(['direction' => ['required', 'in:up,down']]);
+        $actions->move($practiceRoutineStep->routine, $practiceRoutineStep->id, $data['direction']);
+        return response()->json(['ok' => true]);
+    }
+
+    public function duplicate(Request $request, PracticeRoutineStep $practiceRoutineStep, ExerciseActionsService $actions): JsonResponse
+    {
+        abort_unless((int) $practiceRoutineStep->routine?->user_id === (int) $request->user()->id, 403);
+        $copy = $actions->duplicate($practiceRoutineStep->routine, $practiceRoutineStep->id, $request->user()->exerciseLimit());
+        return response()->json($copy, 201);
+    }
+
     public function destroy(
         Request $request,
         PracticeRoutineStep $practiceRoutineStep
@@ -168,18 +184,7 @@ class PracticeRoutineStepController extends Controller
             403
         );
 
-        if (
-            $practiceRoutineStep
-                ->routine
-                ->steps()
-                ->count() <= 1
-        ) {
-            return response()->json([
-                'message' => 'A routine must have at least one exercise.',
-            ], 422);
-        }
-
-        $practiceRoutineStep->delete($practiceRoutineStep->id);
+        app(ExerciseActionsService::class)->delete($practiceRoutineStep->routine, $practiceRoutineStep->id);
 
         return response()->noContent();
     }
