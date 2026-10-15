@@ -5,7 +5,7 @@ export function recentSessions() {
 
         recentSessions: {
             classic: [],
-            timer: [],
+            drill: [],
         },
         
         // PERSISTENCE
@@ -21,6 +21,7 @@ export function recentSessions() {
             try {
                 const parsed = JSON.parse(saved)
                 const hadManual = Array.isArray(parsed.manual)
+                const hadTimer = Array.isArray(parsed.timer)
 
                 if (hadManual) {
                     parsed.classic = parsed.manual.map(session => ({
@@ -36,13 +37,13 @@ export function recentSessions() {
                     timer: parsed.timer ?? [],
                 }
 
-                if (hadManual) {
+                if (hadManual || hadTimer) {
                     this.saveRecentSessions()
                 }
             } catch {
                 this.recentSessions = {
                     classic: [],
-                    timer: [],
+                    drill: [],
                 }
             }
         },
@@ -80,7 +81,7 @@ export function recentSessions() {
                 type,
                 bpm: this.metronome.bpm,
                 duration_seconds:
-                    type === 'timer'
+                    type === 'drill'
                         ? this.metronome.duration_seconds
                         : null,
                 created_at: Date.now(),
@@ -117,12 +118,12 @@ export function recentSessions() {
         clearAllRecentSessions() {
             this.openConfirmModal({
                 title: 'Clear all recent sessions?',
-                message: 'This will delete all Classic and Timer recent sessions.',
+                message: 'This will delete all Classic and Drill recent sessions.',
                 confirmLabel: 'Clear all',
                 action: () => {
                     this.recentSessions = {
                         classic: [],
-                        timer: [],
+                        drill: [],
                     }
 
                     this.saveRecentSessions()
@@ -146,7 +147,7 @@ export function recentSessions() {
             this.metronome.mode = session.type
             this.metronome.bpm = session.bpm
 
-            if (session.type === 'timer') {
+            if (session.type === 'drill') {
                 this.metronome.duration_seconds = session.duration_seconds
             }
         }
