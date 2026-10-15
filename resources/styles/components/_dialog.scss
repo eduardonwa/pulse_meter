@@ -167,14 +167,17 @@
   box-sizing: border-box;
   border: 0;
 
-  width: 100%;
+  width: calc(100% - #{$size-4 * 1});
   max-width: 400px;
+
   height: min(80dvh, 42rem);
   max-height: calc(100dvh - 2rem);
   
   margin: 0 auto;
+
   top: 50%;
   transform: translateY(-50%);
+
   border-radius: 0.5rem;
   
   &[open] {

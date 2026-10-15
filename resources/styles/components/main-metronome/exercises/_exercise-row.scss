@@ -3,6 +3,8 @@
 @mixin styles {
     // MOBILE: ocultar elementos del diseño desktop
     .exercise-row {
+        list-style: none;
+        
         &__bpm,
         &__main,
         &__play {
