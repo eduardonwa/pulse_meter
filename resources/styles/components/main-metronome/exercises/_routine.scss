@@ -24,6 +24,11 @@
                 border: 1px solid $color-neutral-300;
                 color: $color-neutral-700;
                 font-size: $font-size-400;
+
+                svg {
+                    width: 24px;
+                    height: 24px;
+                }
     
                 @include mq(large) {
                     width: fit-content;
