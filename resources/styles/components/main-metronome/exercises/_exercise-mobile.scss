@@ -6,6 +6,8 @@
 
     position: relative;
 
+    color: $color-neutral-900;
+
     &__summary {
         width: 100%;
 
@@ -36,7 +38,7 @@
         display: flex;
         flex-direction: column;
         align-items: flex-start;
-
+        color: $color-neutral-900;
         width: 100%;
 
         .name {
@@ -86,9 +88,6 @@
 
         border-block-end: 1px solid;
 
-        small {
-        }
-
         .button[data-type="icon"] {
             border: 1px solid hsl(var(--neutral-900) / 0.6);
 
@@ -96,7 +95,7 @@
             height: 30px;
 
             padding: $size-1;
-
+            color: $color-neutral-900;
             border-radius: 50%;
         }
 
@@ -143,9 +142,7 @@
         align-items: center;
         justify-items: center;
 
-        button {
-            width: 100%;
-        }
+        button { width: 100%; }
 
         .button[data-type="icon"] {
             border: 1px solid hsl(var(--neutral-900) / 0.6);
@@ -154,6 +151,7 @@
             height: 34px;
 
             border-radius: 50%;
+            color: $color-neutral-900;
         }
     }
 }
