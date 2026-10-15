@@ -130,7 +130,7 @@ export function routinePersistence() {
                         mode: currentStep.mode,
 
                         duration_seconds:
-                            currentStep.mode === 'timer'
+                            currentStep.mode === 'drill'
                                 ? Number(currentStep.duration_seconds)
                                 : null,
 
