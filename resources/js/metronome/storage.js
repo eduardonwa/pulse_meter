@@ -14,7 +14,9 @@ import {
 function normalizeMode(mode) {
     return mode === 'manual'
         ? 'classic'
-        : mode
+        : mode === 'drill'
+            ? 'drill'
+            : mode
 }
 
 export function storage() {
@@ -72,7 +74,7 @@ export function storage() {
                 // Guarda nuevamente los datos ya migrados.
                 if (
                     Array.isArray(parsedSteps)
-                    && parsedSteps.some(step => step.mode === 'manual')
+                    && parsedSteps.some(step => ['manual', 'timer'].includes(step.mode))
                 ) {
                     this.saveToLocalStorage()
                 }
@@ -227,7 +229,7 @@ export function storage() {
                         mode,
 
                         duration_seconds:
-                            mode === 'timer'
+                            mode === 'drill'
                                 ? Number(
                                     step.duration_seconds
                                 )
@@ -267,7 +269,7 @@ export function storage() {
 
                     if (
                         ![
-                            'timer',
+                            'drill',
                             'classic',
                         ].includes(step.mode)
                     ) {
@@ -275,7 +277,7 @@ export function storage() {
                     }
 
                     if (
-                        step.mode === 'timer'
+                        step.mode === 'drill'
                         && (
                             !Number.isInteger(
                                 step.duration_seconds
@@ -610,7 +612,7 @@ export function storage() {
 
             this.recentSessions = {
                 classic: [],
-                timer: [],
+                drill: [],
             }
 
             this.currentIndex = 0
