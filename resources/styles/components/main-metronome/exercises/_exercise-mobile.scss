@@ -16,7 +16,7 @@
         align-items: center;
 
         background-color: rgba(232, 239, 245, 0.78);
-        border: 1px solid hsl(var(--neutral-800) / .2);
+        border: 1px solid hsl(var(--neutral-800) / 0.2);
         border-radius: $border-radius-2;
     }
 
@@ -39,7 +39,9 @@
 
         width: 100%;
 
-        .name { font-size: $font-size-300; }
+        .name {
+            font-size: $font-size-300;
+        }
     }
 
     &--open {
@@ -55,7 +57,7 @@
         }
 
         .mobile-exercise__expanded {
-            border: 1px solid hsl(var(--neutral-800) / .2);
+            border: 1px solid hsl(var(--neutral-800) / 0.2);
 
             border-radius: $border-radius-2;
 
@@ -71,7 +73,7 @@
         padding-block: 0;
 
         background-color: rgba(232, 239, 245, 0.78);
-        border: 1px solid hsl(var(--neutral-800) / .5);
+        border: 1px solid hsl(var(--neutral-800) / 0.5);
     }
 
     &__tempo {
@@ -88,7 +90,7 @@
         }
 
         .button[data-type="icon"] {
-            border: 1px solid hsl(var(--neutral-900) / .6);
+            border: 1px solid hsl(var(--neutral-900) / 0.6);
 
             width: 30px;
             height: 30px;
@@ -113,15 +115,14 @@
         }
     }
 
-
     &__stats {
         padding-block: $size-4;
 
         display: flex;
         justify-content: space-between;
-        
+
         border-block-end: 1px solid;
-                
+
         div {
             display: flex;
             flex-direction: column;
@@ -142,10 +143,12 @@
         align-items: center;
         justify-items: center;
 
-        button { width: 100%; }
+        button {
+            width: 100%;
+        }
 
         .button[data-type="icon"] {
-            border: 1px solid hsl(var(--neutral-900) / .6);
+            border: 1px solid hsl(var(--neutral-900) / 0.6);
 
             width: 34px;
             height: 34px;
