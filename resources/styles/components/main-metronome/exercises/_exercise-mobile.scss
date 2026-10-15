@@ -32,6 +32,8 @@
 
         flex-shrink: 0;
         transition: transform 200ms ease;
+
+        color: $color-neutral-900;
     }
 
     &__heading {
