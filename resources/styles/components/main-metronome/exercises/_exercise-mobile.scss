@@ -1,0 +1,304 @@
+@use "../../../abstracts" as *;
+
+.mobile-exercise {
+    width: 100%;
+    padding: $size-3;
+
+    position: relative;
+
+    &__summary {
+        width: 100%;
+
+        padding: $size-4;
+
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        background-color: rgba(232, 239, 245, 0.78);
+        border: 1px solid hsl(var(--neutral-800) / 0.2);
+        border-radius: $border-radius-2;
+    }
+
+    &__chevron {
+        position: absolute;
+        right: 24px;
+        top: 24px;
+
+        width: 20px;
+        height: 20px;
+
+        flex-shrink: 0;
+        transition: transform 200ms ease;
+    }
+
+    &__heading {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+
+        width: 100%;
+
+        .name {
+            font-size: $font-size-300;
+        }
+    }
+
+    &--open {
+        .mobile-exercise__summary {
+            padding-block: $size-3;
+            border-block-end: 1px solid transparent;
+            border-end-start-radius: 0;
+            border-end-end-radius: 0;
+        }
+
+        .mobile-exercise__chevron {
+            transform: rotate(180deg);
+        }
+
+        .mobile-exercise__expanded {
+            border: 1px solid hsl(var(--neutral-800) / 0.2);
+
+            border-radius: $border-radius-2;
+
+            border-top-left-radius: 0;
+            border-top-right-radius: 0;
+
+            border-block-start: 1px solid transparent;
+        }
+    }
+
+    &__expanded {
+        padding: $size-4;
+        padding-block: 0;
+
+        background-color: rgba(232, 239, 245, 0.78);
+        border: 1px solid hsl(var(--neutral-800) / 0.5);
+    }
+
+    &__tempo {
+        padding-block: $size-4;
+
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        align-items: center;
+
+        border-block-end: 1px solid;
+
+        small {
+        }
+
+        .button[data-type="icon"] {
+            border: 1px solid hsl(var(--neutral-900) / 0.6);
+
+            width: 30px;
+            height: 30px;
+
+            padding: $size-1;
+
+            border-radius: 50%;
+        }
+
+        &-controls {
+            display: grid;
+            grid-template-columns: 89px 80px 89px;
+            align-items: center;
+            justify-items: center;
+            gap: $size-2;
+
+            .tempo {
+                font-size: $font-size-600;
+                font-weight: 500;
+                text-align: center;
+            }
+        }
+    }
+
+    &__stats {
+        padding-block: $size-4;
+
+        display: flex;
+        justify-content: space-between;
+
+        border-block-end: 1px solid;
+
+        div {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+
+            strong {
+                font-weight: 600;
+            }
+        }
+    }
+
+    &__actions {
+        padding-block: $size-4;
+
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 48px 48px;
+        gap: $size-2;
+        align-items: center;
+        justify-items: center;
+
+        button {
+            width: 100%;
+        }
+
+        .button[data-type="icon"] {
+            border: 1px solid hsl(var(--neutral-900) / 0.6);
+
+            width: 34px;
+            height: 34px;
+
+            border-radius: 50%;
+        }
+    }
+}
+
+/* BOTTOM SHEET */
+.mobile-exercise-sheet {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+
+    display: grid;
+    align-items: end;
+
+    &__backdrop {
+        position: absolute;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.52);
+    }
+
+    &__panel {
+        position: relative;
+
+        background: hsl(var(--neutral-100));
+        color: hsl(var(--neutral-900));
+
+        padding: 12px 18px max(20px, env(safe-area-inset-bottom));
+
+        border-radius: 22px 22px 0 0;
+        box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.18);
+    }
+
+    &__handle {
+        width: 40px;
+        height: 4px;
+        margin: 0 auto 18px;
+
+        background: hsl(var(--neutral-400));
+        border-radius: 99px;
+    }
+
+    &__title {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        margin-bottom: 18px;
+
+        div {
+            display: grid;
+            gap: 4px;
+        }
+
+        small {
+            color: hsl(var(--neutral-600));
+        }
+
+        button {
+            border: 0;
+            background: transparent;
+            font-size: 30px;
+
+            min-width: 44px;
+            min-height: 44px;
+        }
+    }
+
+    &__list {
+        display: grid;
+        gap: 10px;
+
+        > button,
+        .mobile-exercise-sheet__directions button {
+            text-align: left;
+            padding: 14px;
+            min-height: 50px;
+
+            background: hsl(var(--neutral-200));
+            border: 0;
+            border-radius: 12px;
+            color: inherit;
+        }
+
+        button:disabled {
+            opacity: 0.4;
+        }
+
+        .mobile-exercise-sheet__danger {
+            color: #b91c1c;
+        }
+    }
+
+    &__directions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+}
+
+/* UNDO TOAST */
+.exercise-undo {
+    position: fixed;
+    bottom: max(24px, env(safe-area-inset-bottom));
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1900;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: $size-4;
+
+    width: max-content;
+    max-width: calc(100vw - 32px);
+    padding: $size-3 $size-4;
+
+    background: $color-neutral-900;
+    color: $color-neutral-100;
+
+    border-radius: 12px;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.2);
+
+    font-size: 14px;
+
+    button {
+        border: 0;
+        background: transparent;
+        color: hsl(var(--primary-300));
+
+        font: inherit;
+        font-weight: 700;
+        cursor: pointer;
+
+        &:hover {
+            text-decoration: underline;
+        }
+
+        &:disabled {
+            opacity: 0.5;
+            cursor: wait;
+        }
+    }
+}
+
+@include mq(medium) {
+    .mobile-exercise {
+        display: none;
+    }
+}

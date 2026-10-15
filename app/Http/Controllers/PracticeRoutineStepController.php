@@ -4,8 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\PracticeRoutine;
 use App\Models\PracticeRoutineStep;
+use App\Services\ExerciseActionsService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Str;
 
 class PracticeRoutineStepController extends Controller
 {
@@ -158,6 +161,21 @@ class PracticeRoutineStepController extends Controller
         return response()->json($practiceRoutineStep);
     }
 
+    public function move(Request $request, PracticeRoutineStep $practiceRoutineStep, ExerciseActionsService $actions): JsonResponse
+    {
+        abort_unless((int) $practiceRoutineStep->routine?->user_id === (int) $request->user()->id, 403);
+        $data = $request->validate(['direction' => ['required', 'in:up,down']]);
+        $actions->move($practiceRoutineStep->routine, $practiceRoutineStep->id, $data['direction']);
+        return response()->json(['ok' => true]);
+    }
+
+    public function duplicate(Request $request, PracticeRoutineStep $practiceRoutineStep, ExerciseActionsService $actions): JsonResponse
+    {
+        abort_unless((int) $practiceRoutineStep->routine?->user_id === (int) $request->user()->id, 403);
+        $copy = $actions->duplicate($practiceRoutineStep->routine, $practiceRoutineStep->id, $request->user()->exerciseLimit());
+        return response()->json($copy, 201);
+    }
+
     public function destroy(
         Request $request,
         PracticeRoutineStep $practiceRoutineStep
@@ -168,19 +186,28 @@ class PracticeRoutineStepController extends Controller
             403
         );
 
-        if (
-            $practiceRoutineStep
-                ->routine
-                ->steps()
-                ->count() <= 1
-        ) {
-            return response()->json([
-                'message' => 'A routine must have at least one exercise.',
-            ], 422);
-        }
+        $snapshot = app(ExerciseActionsService::class)->delete($practiceRoutineStep->routine, $practiceRoutineStep->id);
+        $token = Str::random(48);
+        Cache::put('exercise-undo:' . $token, [
+            'user_id' => $request->user()->id,
+            'routine_id' => $practiceRoutineStep->practice_routine_id,
+            'snapshot' => $snapshot,
+        ], now()->addSeconds(20));
 
-        $practiceRoutineStep->delete($practiceRoutineStep->id);
-
-        return response()->noContent();
+        return response()->json(['undo_token' => $token]);
     }
+    public function restoreDeleted(Request $request, ExerciseActionsService $actions): JsonResponse
+    {
+        $data = $request->validate(['undo_token' => ['required', 'string', 'size:48']]);
+        $key = 'exercise-undo:' . $data['undo_token'];
+        $saved = Cache::get($key);
+        abort_if(! $saved, 410, 'Undo expired');
+        abort_unless((int) $saved['user_id'] === (int) $request->user()->id, 403);
+
+        $routine = $request->user()->practiceRoutines()->findOrFail($saved['routine_id']);
+        $restored = $actions->restore($routine, $saved['snapshot'], $request->user()->exerciseLimit());
+        Cache::forget($key);
+        return response()->json($restored, 201);
+    }
+
 }

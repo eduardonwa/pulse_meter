@@ -158,6 +158,35 @@ export function routinePersistence() {
                 }, delay)
         },
 
+        async performRoutineStepAction(id, action, method, body = null) {
+            if (!this.canPersistRoutineSteps()) return null;
+            const dataKey = action === 'move' ? 'routineStepMoveUrl' : 'routineStepDuplicateUrl';
+            const playerRoot = this.$root.closest('[data-routine-step-move-url]');
+            const urlTemplate = playerRoot?.dataset[dataKey];
+            if (!urlTemplate) {
+                console.error('Routine exercise action URL was not found:', action);
+                this.showToast?.('Could not ' + action + ' exercise', 'error');
+                return null;
+            }
+            try {
+                const response = await fetch(urlTemplate.replace('__ID__', id), {
+                    method,
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    },
+                    ...(body ? { body: JSON.stringify(body) } : {}),
+                });
+                if (!response.ok) throw new Error(await response.text());
+                return await response.json();
+            } catch (error) {
+                console.error('Could not ' + action + ' exercise.', error);
+                this.showToast?.('Could not ' + action + ' exercise', 'error');
+                return null;
+            }
+        },
+
         async destroyRoutineStep(id) {
             if (!this.canPersistRoutineSteps()) {
                 return null
@@ -217,7 +246,29 @@ export function routinePersistence() {
                 return false
             }
 
-            return true
+            return await response.json()
+        },
+
+        async restoreDeletedRoutineStep(token) {
+            const url = this.$root.closest('[data-routine-step-undo-url]')?.dataset.routineStepUndoUrl
+            if (!url) return null
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    },
+                    body: JSON.stringify({ undo_token: token }),
+                })
+                if (!response.ok) throw new Error(await response.text())
+                return await response.json()
+            } catch (error) {
+                console.error('Could not restore exercise.', error)
+                this.showToast?.('Could not restore exercise', 'error')
+                return null
+            }
         },
     }
 }

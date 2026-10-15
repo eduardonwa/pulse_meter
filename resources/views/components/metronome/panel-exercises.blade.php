@@ -29,6 +29,11 @@
                     <x-metronome.panel-exercises-compact />
                 </ul>
 
+                <div class="exercise-undo" x-show="deletedExerciseUndo !== null" x-cloak role="status" aria-live="polite">
+                    <span>Exercise deleted</span>
+                    <button type="button" @click="undoDeletedExercise()" :disabled="exerciseActionBusy">Undo</button>
+                </div>
+
                 <div class="routine__footer">
                     <button class="button" data-type="icon-text" type="button" :disabled="steps.length >= maxSteps" @click="openAddStepModal()">
                         <x-heroicon-o-plus-circle />

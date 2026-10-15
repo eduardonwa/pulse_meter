@@ -1,7 +1,7 @@
 <div
     class="modal-shell"
     x-show="confirmModal.isOpen"
-    x-trap.noscroll="confirmModal.isOpen"
+    x-trap="confirmModal.isOpen"
     x-transition
     @click.self="closeConfirmModal()"
     x-cloak
