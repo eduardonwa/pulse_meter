@@ -14,7 +14,7 @@ import {
 function normalizeMode(mode) {
     return mode === 'manual'
         ? 'classic'
-        : mode === 'drill'
+        : mode === 'timer'
             ? 'drill'
             : mode
 }
