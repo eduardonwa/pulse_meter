@@ -327,7 +327,26 @@ export function storage() {
             * Esta versión ya fue importada o rechazada
             * explícitamente por el usuario.
             */
-            if (handledSignature === signature) { return null }
+            let matchesLegacySignature = false
+            if (handledSignature && handledSignature !== signature) {
+                try {
+                    const previousSteps = JSON.parse(handledSignature)
+                    matchesLegacySignature = Array.isArray(previousSteps)
+                        && JSON.stringify(previousSteps.map(step => ({
+                            ...step,
+                            mode: normalizeMode(step.mode),
+                        }))) === signature
+                } catch {
+                    // Ignore signatures that are not serialized routine steps.
+                }
+            }
+
+            if (handledSignature === signature || matchesLegacySignature) {
+                if (matchesLegacySignature) {
+                    localStorage.setItem(config.markerKey, signature)
+                }
+                return null
+            }
 
             return {
                 type: handledSignature === null
