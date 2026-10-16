@@ -39,7 +39,7 @@ ALPHATEX;
             ->create([
                 'name' => 'Alternate Picking',
                 'bpm' => 160,
-                'mode' => 'timer',
+                'mode' => 'drill',
                 'duration_seconds' => 60,
                 'position' => 0,
                 'origin' => 'custom',
@@ -80,7 +80,7 @@ ALPHATEX;
                 [
                     'name' => 'Updated Exercise',
                     'bpm' => 180,
-                    'mode' => 'timer',
+                    'mode' => 'drill',
                     'duration_seconds' => 90,
 
                     // Intento de modificar el pattern.
