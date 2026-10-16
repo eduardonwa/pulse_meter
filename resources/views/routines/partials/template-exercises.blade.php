@@ -159,36 +159,13 @@
 
                         <div class="routine-player__exercise-audio-controls" @alphatab:playback-state.window="syncPlaybackState($event, $refs.alphaTab)">
                             <button class="badge badge--neutral" type="button"
-
-                                @if (in_array($viewerType, ['trial', 'pro', 'lifetime'], true))
-                                    @click="
-                                        activeExerciseIndex === {{ $loop->index }} && isPlaying
-                                            ? stop('manual')
-                                            : startExercise({{ $loop->index }})
-                                    "
-                                @else
-                                    @click="
-                                        hearing
-                                            ? stopPlayback()
-                                            : playPause($refs.alphaTab)
-                                    "
-                                @endif
+                                @click="
+                                    hearing
+                                        ? stopPlayback()
+                                        : playPause($refs.alphaTab)
+                                "
                             >
-                                @if (in_array($viewerType, ['trial', 'pro', 'lifetime'], true))
-                                    <span
-                                        x-text="
-                                            activeExerciseIndex === {{ $loop->index }} && isPlaying
-                                                ? 'Stop'
-                                                : 'Listen'
-                                        "
-                                    >
-                                        Listen
-                                    </span>
-                                @else
-                                    <span x-text="hearing ? 'Stop' : 'Listen'">
-                                        Listen
-                                    </span>
-                                @endif
+                                <span x-text="hearing ? 'Stop' : 'Listen'">Listen</span>
                             </button>
 
                             <button class="badge badge--neutral" type="button" :aria-pressed="looping.toString()" @click="toggleLoop($refs.alphaTab)">
