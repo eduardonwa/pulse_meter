@@ -85,3 +85,30 @@ test('Preview always requests one-shot playback', async () => {
         global.window = previousWindow
     }
 })
+
+test('stopping preview also stops an active routine session', async () => {
+    const { alphaTabExerciseControls } = await import('../../resources/js/metronome/alphatab/exercise-controls.js')
+    const controls = alphaTabExerciseControls()
+    const previousWindow = global.window
+    global.window = new EventTarget()
+    const reasons = []
+    let alphaTabStopCount = 0
+
+    try {
+        Object.assign(controls, {
+            isPlaying: true,
+            playbackSource: 'exercise',
+            stop(reason) { reasons.push(reason) },
+        })
+        window.addEventListener('alphatab:stop', () => alphaTabStopCount++)
+        controls.stopPlayback()
+        assert.deepEqual(reasons, ['manual'])
+        assert.equal(alphaTabStopCount, 0)
+
+        controls.isPlaying = false
+        controls.stopPlayback()
+        assert.equal(alphaTabStopCount, 1)
+    } finally {
+        global.window = previousWindow
+    }
+})
