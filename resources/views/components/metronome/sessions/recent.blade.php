@@ -11,7 +11,7 @@
             >
                 <span x-text="`${session.bpm} BPM`"></span>
 
-                <template x-if="session.type === 'timer'">
+                <template x-if="session.type === 'drill'">
                     <span class="duration-label"
                         x-text="`${Math.floor(session.duration_seconds / 60)}:${String(session.duration_seconds % 60).padStart(2, '0')}`"
                     ></span>
