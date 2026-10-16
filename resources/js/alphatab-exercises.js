@@ -225,6 +225,8 @@ window.addEventListener('alphatab:play-pause', async event => {
     }
 
     activeApi = api
+    // Preview playback has its own loop preference, independent of routine playback.
+    api.isLooping = Boolean(event.detail?.loop)
     api.playPause()
 })
 
@@ -262,7 +264,7 @@ window.addEventListener('alphatab:toggle-loop', async event => {
 
     if (!api) return
 
-    api.isLooping = !api.isLooping
+    api.isLooping = Boolean(event.detail?.enabled)
 })
 
 window.addEventListener('alphatab:set-loop', event => {
