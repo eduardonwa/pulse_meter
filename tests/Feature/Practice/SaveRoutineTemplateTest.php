@@ -72,7 +72,7 @@ class SaveRoutineTemplateTest extends TestCase
                     '2 NPS alternate picking',
 
                 'bpm' => 90,
-                'mode' => 'timer',
+                'mode' => 'drill',
                 'duration_seconds' => 300,
                 'position' => 0,
             ]
@@ -211,7 +211,7 @@ class SaveRoutineTemplateTest extends TestCase
                         '2 NPS alternate picking',
 
                     'bpm' => 90,
-                    'mode' => 'timer',
+                    'mode' => 'drill',
                     'duration_seconds' => 300,
                 ],
 
