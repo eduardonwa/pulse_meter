@@ -14,6 +14,10 @@ export function alphaTabExerciseControls() {
         },
 
         playPause(element) {
+            if (this.isPlaying && this.playbackSource === 'exercise') {
+                this.stop('manual')
+            }
+
             window.dispatchEvent(
                 new CustomEvent(
                     'alphatab:play-pause',
@@ -28,6 +32,11 @@ export function alphaTabExerciseControls() {
         },
 
         stopPlayback() {
+            if (this.isPlaying && this.playbackSource === 'exercise') {
+                this.stop('manual')
+                return
+            }
+
             window.dispatchEvent(
                 new Event('alphatab:stop')
             )
