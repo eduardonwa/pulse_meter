@@ -2,13 +2,23 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Schema\Blueprint;
 
 return new class extends Migration
 {
     public function up(): void
     {
         if (DB::getDriverName() === 'sqlite') {
+            Schema::table('practice_routine_steps', function (Blueprint $table) {
+                $table->enum('mode', ['timer', 'classic', 'drill'])->default('timer')->change();
+            });
+
             DB::table('practice_routine_steps')->where('mode', 'timer')->update(['mode' => 'drill']);
+
+            Schema::table('practice_routine_steps', function (Blueprint $table) {
+                $table->enum('mode', ['classic', 'drill'])->default('drill')->change();
+            });
             return;
         }
 
@@ -26,7 +36,15 @@ return new class extends Migration
     public function down(): void
     {
         if (DB::getDriverName() === 'sqlite') {
+            Schema::table('practice_routine_steps', function (Blueprint $table) {
+                $table->enum('mode', ['classic', 'drill', 'timer'])->default('drill')->change();
+            });
+
             DB::table('practice_routine_steps')->where('mode', 'drill')->update(['mode' => 'timer']);
+
+            Schema::table('practice_routine_steps', function (Blueprint $table) {
+                $table->enum('mode', ['timer', 'classic'])->default('timer')->change();
+            });
             return;
         }
 
