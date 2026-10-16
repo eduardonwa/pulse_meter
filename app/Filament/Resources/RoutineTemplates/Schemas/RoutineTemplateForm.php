@@ -133,7 +133,7 @@ class RoutineTemplateForm
                             ->default(120),
 
                         Hidden::make('mode')
-                            ->default('timer'),
+                            ->default('drill'),
 
                         Hidden::make('duration_seconds'),
 
@@ -176,10 +176,10 @@ class RoutineTemplateForm
                                                             ->required(),
                                                         Select::make('mode')
                                                             ->options([
-                                                                'timer' => 'Timer',
+                                                                'drill' => 'Drill',
                                                                 'classic' => 'Classic',
                                                             ])
-                                                            ->default('timer')
+                                                            ->default('drill')
                                                             ->required()
                                                             ->live()
                                                             ->afterStateUpdated(function(
@@ -195,13 +195,13 @@ class RoutineTemplateForm
                                                             ->minValue(1)
                                                             ->maxValue(300)
                                                             ->required(
-                                                                fn (Get $get): bool => $get('mode') === 'timer'
+                                                                fn (Get $get): bool => $get('mode') === 'drill'
                                                             )
                                                             ->visible(
-                                                                fn (Get $get): bool => $get('mode') === 'timer'
+                                                                fn (Get $get): bool => $get('mode') === 'drill'
                                                             )
                                                             ->dehydrateStateUsing(
-                                                                fn ($state, Get $get) => $get('mode') === 'timer'
+                                                                fn ($state, Get $get) => $get('mode') === 'drill'
                                                                     ? $state
                                                                     : null
                                                             ),
@@ -273,7 +273,7 @@ class RoutineTemplateForm
                                         ) ?? 25
                                     ),
                                     'bpm' => $item['bpm'] ?? 120,
-                                    'mode' => $item['mode'] ?? 'timer',
+                                    'mode' => ($item['mode'] ?? 'drill') === 'timer' ? 'drill' : ($item['mode'] ?? 'drill'),
                                     'duration_seconds' => $item['duration_seconds'] ?? null,
                                 ];
                             })
