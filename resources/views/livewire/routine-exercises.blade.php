@@ -53,7 +53,7 @@
                             · {{ ucfirst($exercise['mode']) }}
 
                             @if (
-                                $exercise['mode'] === 'timer'
+                                $exercise['mode'] === 'drill'
                                 && $exercise['duration_seconds']
                             )
                                 · {{ gmdate(
