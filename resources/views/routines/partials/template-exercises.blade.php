@@ -165,14 +165,9 @@
                                         : playPause($refs.alphaTab)
                                 "
                             >
-                                <span x-text="hearing ? 'Stop' : 'Listen'">Listen</span>
+                                <span x-text="hearing ? 'Stop' : 'Preview'">Preview</span>
                             </button>
 
-                            <button class="badge badge--neutral" type="button" :aria-pressed="looping.toString()" @click="toggleLoop($refs.alphaTab)">
-                                <span x-text="looping ? 'Disable loop' : 'Enable loop'">
-                                    Enable loop
-                                </span>
-                            </button>
                         </div>
                     </div>
                 @endif
