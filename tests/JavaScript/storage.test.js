@@ -137,7 +137,7 @@ function normalizedVersionA() {
         {
             name: 'LOCAL TEST',
             bpm: 145,
-            mode: 'timer',
+            mode: 'drill',
             duration_seconds: 90,
             time_signature_numerator: 4,
             time_signature_denominator: 4,
