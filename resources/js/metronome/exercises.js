@@ -69,9 +69,32 @@ export function exercises() {
         mobileExerciseKeyCounter: 0,
 
         mobileExerciseKey(step) {
-            if (!step._mobileExerciseKey) {
-                step._mobileExerciseKey = `local-${++this.mobileExerciseKeyCounter}`;
+            const currentKey = step._mobileExerciseKey;
+            const currentIndex = this.steps.indexOf(step);
+
+            // Old local routines and duplicated steps can contain repeated
+            // keys. Keep the first occurrence and re-key later duplicates.
+            const hasEarlierOwner = currentKey && this.steps.some(
+                (other, index) =>
+                    index < currentIndex &&
+                    other._mobileExerciseKey === currentKey
+            );
+
+            if (!currentKey || hasEarlierOwner) {
+                let nextKey;
+
+                do {
+                    nextKey = `local-${++this.mobileExerciseKeyCounter}`;
+                } while (
+                    this.steps.some(other =>
+                        other !== step &&
+                        other._mobileExerciseKey === nextKey
+                    )
+                );
+
+                step._mobileExerciseKey = nextKey;
             }
+
             return step._mobileExerciseKey;
         },
 
