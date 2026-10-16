@@ -225,14 +225,13 @@ window.addEventListener('alphatab:play-pause', async event => {
     }
 
     activeApi = api
-    // Preview playback has its own loop preference, independent of routine playback.
-    api.isLooping = Boolean(event.detail?.loop)
+    // Preview is always a single listen, regardless of exercise mode.
+    api.isLooping = false
     api.playPause()
 })
 
 window.addEventListener('alphatab:start-exercise', async event => {
     const index = Number(event.detail?.index)
-    const shouldLoop = Boolean(event.detail?.loop)
 
     const element = document.querySelector(
         `[data-alphatab][data-exercise-index="${index}"]`
@@ -249,7 +248,8 @@ window.addEventListener('alphatab:start-exercise', async event => {
     }
 
     activeApi = api
-    api.isLooping = shouldLoop
+    // Routine playback repeats until the session stops (Drill timer or Classic stop).
+    api.isLooping = true
 
     api.play()
 })
@@ -265,12 +265,6 @@ window.addEventListener('alphatab:toggle-loop', async event => {
     if (!api) return
 
     api.isLooping = Boolean(event.detail?.enabled)
-})
-
-window.addEventListener('alphatab:set-loop', event => {
-    if (!activeApi) return
-
-    activeApi.isLooping = Boolean(event.detail?.enabled)
 })
 
 window.addEventListener('alphatab:set-bpm', async event => {

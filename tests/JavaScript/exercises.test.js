@@ -208,3 +208,47 @@ test('exercise payload includes its time signature', () => {
         4
     )
 })
+test('Drill and Classic always start looping AlphaTab independently of preferences', () => {
+    const previousWindow = global.window
+    const previousAnimationFrame = global.requestAnimationFrame
+    global.window = new EventTarget()
+    global.requestAnimationFrame = callback => callback()
+
+    const received = []
+    window.addEventListener('alphatab:start-exercise', event => received.push(event.detail))
+
+    try {
+        for (const mode of ['drill', 'classic']) {
+            const session = exercises()
+            const step = {
+                id: 1,
+                name: 'Pattern',
+                bpm: 120,
+                mode,
+                duration_seconds: 30,
+                alpha_tex: '3.3 5.3',
+            }
+            let started = null
+            Object.assign(session, {
+                steps: [step],
+                metronome: {},
+                $nextTick(callback) { callback() },
+                hasAlphaTabPattern() { return true },
+                startPlaybackSession(options) { started = options },
+                beginPlaybackTracking() {},
+                getExerciseOrigin() { return 'custom' },
+            })
+
+            session.startExercise(0)
+
+            assert.deepEqual(received.at(-1), { index: 0 })
+            assert.equal(started.mode, mode)
+            assert.equal(started.useAlphaTab, true)
+            assert.equal(started.duration, mode === 'drill' ? 30 : null)
+            assert.equal('loopAllExercises' in session, false)
+        }
+    } finally {
+        global.window = previousWindow
+        global.requestAnimationFrame = previousAnimationFrame
+    }
+})

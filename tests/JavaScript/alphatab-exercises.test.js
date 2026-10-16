@@ -78,8 +78,8 @@ test('Preview always requests one-shot playback', async () => {
         controls.playPause(element)
         controls.playPause(element)
         assert.deepEqual(received, [
-            { element, loop: false },
-            { element, loop: false },
+            { element },
+            { element },
         ])
     } finally {
         global.window = previousWindow

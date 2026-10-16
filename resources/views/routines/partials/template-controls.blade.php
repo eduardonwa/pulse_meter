@@ -27,14 +27,6 @@
         </header>
 
         <div id="routine-playback-controls" class="routine-player__controls-body" x-show="controlsExposed" x-cloak>
-            <div class="control-settings">
-                @if ($template->steps->contains(
-                    fn ($step) => filled($step->alpha_tex)
-                ))
-                    <x-metronome.pattern-loop-control />
-                @endif
-            </div>
-
             <div class="control-actions">
                 {{-- SAVE / OWNERSHIP --}}
                 @if ($viewerHasTemplate)

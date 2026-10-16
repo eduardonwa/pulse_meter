@@ -24,7 +24,6 @@ export function alphaTabExerciseControls() {
                     {
                         detail: {
                             element,
-                            loop: false,
                         },
                     }
                 )

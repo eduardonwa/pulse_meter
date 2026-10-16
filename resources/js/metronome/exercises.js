@@ -27,7 +27,6 @@ export function exercises() {
 
         // PLAYBACK FLOW
         autoAdvance: true,
-        loopAllExercises: true,
         isWaitingForNextExercise: false,
         nextExerciseIndex: null,
 
@@ -599,7 +598,6 @@ export function exercises() {
                         new CustomEvent("alphatab:start-exercise", {
                             detail: {
                                 index,
-                                loop: this.loopAllExercises,
                             },
                         }),
                     );
@@ -888,18 +886,6 @@ export function exercises() {
             this.stepFormMinutes = Math.floor(normalizedDuration / 60);
 
             this.stepFormSeconds = normalizedDuration % 60;
-        },
-
-        setPatternLoop(enabled) {
-            this.loopAllExercises = Boolean(enabled);
-
-            window.dispatchEvent(
-                new CustomEvent("alphatab:set-loop", {
-                    detail: {
-                        enabled: this.loopAllExercises,
-                    },
-                }),
-            );
         },
 
         startRoutineOver() {
