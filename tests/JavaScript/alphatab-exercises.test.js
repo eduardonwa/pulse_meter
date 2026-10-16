@@ -65,24 +65,23 @@ test('dispatches playing false when alphaTab is not playing', () => {
     })
 })
 
-test('preview loop preference is explicit in exercise controls', async () => {
+test('Preview always requests one-shot playback', async () => {
     const { alphaTabExerciseControls } = await import('../../resources/js/metronome/alphatab/exercise-controls.js')
     const controls = alphaTabExerciseControls()
-    // Isolate control events from the real AlphaTab listeners registered above.
     const previousWindow = global.window
     global.window = new EventTarget()
-    const element = {}
-    const playDetails = []
-    let loopDetail = null
-    const onPlay = event => playDetails.push(event.detail)
-    window.addEventListener('alphatab:play-pause', onPlay)
-    controls.playPause(element)
-    assert.deepEqual(playDetails[0], { element, loop: false })
-    window.addEventListener('alphatab:toggle-loop', event => { loopDetail = event.detail }, { once: true })
-    controls.toggleLoop(element)
-    assert.deepEqual(loopDetail, { element, enabled: true })
-    controls.playPause(element)
-    assert.deepEqual(playDetails[1], { element, loop: true })
-    window.removeEventListener('alphatab:play-pause', onPlay)
-    global.window = previousWindow
+
+    try {
+        const element = {}
+        const received = []
+        window.addEventListener('alphatab:play-pause', event => received.push(event.detail))
+        controls.playPause(element)
+        controls.playPause(element)
+        assert.deepEqual(received, [
+            { element, loop: false },
+            { element, loop: false },
+        ])
+    } finally {
+        global.window = previousWindow
+    }
 })
