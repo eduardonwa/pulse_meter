@@ -13,7 +13,7 @@ export function exercises() {
         stepForm: {
             name: "",
             bpm: 100,
-            mode: "timer",
+            mode: "drill",
             duration_seconds: 60,
             time_signature_numerator: 4,
             time_signature_denominator: 4,
@@ -69,9 +69,32 @@ export function exercises() {
         mobileExerciseKeyCounter: 0,
 
         mobileExerciseKey(step) {
-            if (!step._mobileExerciseKey) {
-                step._mobileExerciseKey = `local-${++this.mobileExerciseKeyCounter}`;
+            const currentKey = step._mobileExerciseKey;
+            const currentIndex = this.steps.indexOf(step);
+
+            // Old local routines and duplicated steps can contain repeated
+            // keys. Keep the first occurrence and re-key later duplicates.
+            const hasEarlierOwner = currentKey && this.steps.some(
+                (other, index) =>
+                    index < currentIndex &&
+                    other._mobileExerciseKey === currentKey
+            );
+
+            if (!currentKey || hasEarlierOwner) {
+                let nextKey;
+
+                do {
+                    nextKey = `local-${++this.mobileExerciseKeyCounter}`;
+                } while (
+                    this.steps.some(other =>
+                        other !== step &&
+                        other._mobileExerciseKey === nextKey
+                    )
+                );
+
+                step._mobileExerciseKey = nextKey;
             }
+
             return step._mobileExerciseKey;
         },
 
@@ -170,7 +193,7 @@ export function exercises() {
                 mode: this.stepForm.mode,
 
                 duration_seconds:
-                    this.stepForm.mode === "timer" ? duration : null,
+                    this.stepForm.mode === "drill" ? duration : null,
             };
         },
 
@@ -242,7 +265,7 @@ export function exercises() {
             this.stepForm = {
                 name: `Exercise ${this.steps.length + 1}`,
                 bpm: this.metronome.bpm,
-                mode: "timer",
+                mode: "drill",
                 duration_seconds: 60,
                 time_signature_numerator: 4,
                 time_signature_denominator: 4,
@@ -534,7 +557,7 @@ export function exercises() {
             // Keep the mobile card in sync with manual and automatic playback.
             this.mobileExpandedIndex = index
 
-            const configuredDuration = step.mode === 'timer' ? Number(step.duration_seconds ?? 60) : null
+            const configuredDuration = step.mode === 'drill' ? Number(step.duration_seconds ?? 60) : null
 
             /*
              * Esto pertenece al contexto del ejercicio,
@@ -726,7 +749,7 @@ export function exercises() {
                     exercise_mode: completedStep.mode,
                     bpm: Number(completedStep.bpm),
                     duration_seconds:
-                        completedStep.mode === "timer"
+                        completedStep.mode === "drill"
                             ? Number(completedStep.duration_seconds ?? 60)
                             : null,
                     auto_advance: Boolean(this.autoAdvance),

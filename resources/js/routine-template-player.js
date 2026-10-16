@@ -19,10 +19,10 @@ export function routineTemplateActions() {
             const localSteps = this.steps.map(step => ({
                 name: step.name,
                 bpm: Number(step.bpm),
-                mode: step.mode,
+                mode: step.mode === 'timer' ? 'drill' : step.mode,
 
                 duration_seconds:
-                    step.mode === 'timer'
+                    ['timer', 'drill'].includes(step.mode)
                         ? Number(step.duration_seconds)
                         : null,
                 
@@ -78,10 +78,10 @@ export function routineTemplateActions() {
                     steps: this.steps.map(step => ({
                         name: step.name,
                         bpm: Number(step.bpm),
-                        mode: step.mode,
+                        mode: step.mode === 'timer' ? 'drill' : step.mode,
 
                         duration_seconds:
-                            step.mode === 'timer'
+                            ['timer', 'drill'].includes(step.mode)
                                 ? Number(step.duration_seconds)
                                 : null,
                         

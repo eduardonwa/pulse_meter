@@ -137,7 +137,7 @@ function normalizedVersionA() {
         {
             name: 'LOCAL TEST',
             bpm: 145,
-            mode: 'timer',
+            mode: 'drill',
             duration_seconds: 90,
             time_signature_numerator: 4,
             time_signature_denominator: 4,
@@ -249,6 +249,29 @@ test(
         )
     }
 )
+
+test('recognizes an already-handled legacy Timer import signature', async () => {
+    const legacySteps = normalizedVersionA().map(step => ({
+        ...step,
+        mode: step.mode === 'drill' ? 'timer' : step.mode,
+    }))
+    const browserStorage = createMemoryStorage({
+        pulse_meter_routine: JSON.stringify(localStepsVersionA()),
+        pulse_meter_routine_import_user_10: JSON.stringify(legacySteps),
+    })
+
+    await withBrowserGlobals({
+        localStorage: browserStorage,
+        fetch: async () => { throw new Error('Fetch should not be called.') },
+    }, async () => {
+        const instance = createStorageInstance()
+        assert.equal(instance.getPendingLocalRoutineImport(), null)
+        assert.equal(
+            browserStorage.getItem('pulse_meter_routine_import_user_10'),
+            JSON.stringify(normalizedVersionA())
+        )
+    })
+})
 
 test(
     'offers local exercises again after Free changes',

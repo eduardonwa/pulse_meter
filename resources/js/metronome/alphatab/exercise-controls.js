@@ -1,7 +1,6 @@
 export function alphaTabExerciseControls() {
     return {
         detailsOpen: false,
-        looping: false,
         hearing: false,
 
         syncPlaybackState(event, element) {
@@ -15,12 +14,17 @@ export function alphaTabExerciseControls() {
         },
 
         playPause(element) {
+            if (this.isPlaying && this.playbackSource === 'exercise') {
+                this.stop('manual')
+            }
+
             window.dispatchEvent(
                 new CustomEvent(
                     'alphatab:play-pause',
                     {
                         detail: {
                             element,
+                            loop: false,
                         },
                     }
                 )
@@ -28,23 +32,13 @@ export function alphaTabExerciseControls() {
         },
 
         stopPlayback() {
+            if (this.isPlaying && this.playbackSource === 'exercise') {
+                this.stop('manual')
+                return
+            }
+
             window.dispatchEvent(
                 new Event('alphatab:stop')
-            )
-        },
-
-        toggleLoop(element) {
-            this.looping = !this.looping
-
-            window.dispatchEvent(
-                new CustomEvent(
-                    'alphatab:toggle-loop',
-                    {
-                        detail: {
-                            element,
-                        },
-                    }
-                )
             )
         },
 

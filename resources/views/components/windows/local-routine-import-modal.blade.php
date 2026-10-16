@@ -21,8 +21,8 @@
 
     <div class="dialog-shell__content local-exercises-dialog__content">
         <p x-show="pendingLocalRoutineImport?.type === 'first_import'">
-            We found exercises you created earlier in Free Mode.
-            Would you like to keep them or start from scratch?
+            We found exercises you created before signing in.
+            Would you like to bring them into your account or start fresh?
         </p>
 
         <p x-show="pendingLocalRoutineImport?.type === 'update'">
@@ -78,26 +78,6 @@
     <footer class="local-exercises-dialog__actions">
         <button
             class="button"
-            data-type="secondary"
-            type="button"
-            :disabled="isLocalRoutineImportBusy"
-            @click="
-                resolveLocalRoutineImport(
-                    'keep_server'
-                )
-            "
-        >
-            <span x-show="!isLocalRoutineImportBusy">
-                Keep server version
-            </span>
-
-            <span x-show="isLocalRoutineImportBusy" x-cloak>
-                Processing...
-            </span>
-        </button>
-
-        <button
-            class="button"
             data-type="primary"
             type="button"
             :disabled="isLocalRoutineImportBusy"
@@ -120,6 +100,18 @@
                             : 'Update from Free'
                 "
             ></span>
+        </button>
+
+        <button class="button" data-type="outline" type="button" :disabled="isLocalRoutineImportBusy"
+            @click="resolveLocalRoutineImport('keep_server')"
+        >
+            <span x-show="!isLocalRoutineImportBusy">
+                Start fresh
+            </span>
+
+            <span x-show="isLocalRoutineImportBusy" x-cloak>
+                Processing...
+            </span>
         </button>
     </footer>
 </dialog>

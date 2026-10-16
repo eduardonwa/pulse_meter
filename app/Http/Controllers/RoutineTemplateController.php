@@ -30,7 +30,7 @@ class RoutineTemplateController extends Controller
 
             $totalSeconds = $steps->sum(
                 fn ($step) =>
-                    $step->mode === 'timer'
+                    $step->mode === 'drill'
                         ? ($step->duration_seconds ?? 0)
                         : 0
             );
@@ -134,7 +134,7 @@ class RoutineTemplateController extends Controller
                     'mode' => $step->mode,
 
                     'duration_seconds' =>
-                        $step->mode === 'timer'
+                        $step->mode === 'drill'
                             ? $step->duration_seconds
                             : null,
                     

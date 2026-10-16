@@ -1,4 +1,4 @@
-<article class="mode-timer" x-show="metronome.mode === 'timer'">
+<article class="mode-timer" x-show="metronome.mode === 'drill'">
     <div class="time-display">
         <template x-if="!isPlaying">
             <div class="time-picker">

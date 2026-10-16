@@ -6,7 +6,7 @@ export const DEFAULT_SESSION_MODE_STORAGE_KEY =
 export const SESSION_MODES = [
     'classic',
     'creative',
-    'timer',
+    'drill',
 ]
 
 export function getDefaultSessionMode() {
@@ -16,8 +16,14 @@ export function getDefaultSessionMode() {
                 DEFAULT_SESSION_MODE_STORAGE_KEY
             )
 
-        return SESSION_MODES.includes(savedMode)
-            ? savedMode
+        const normalizedMode = savedMode === 'timer' ? 'drill' : savedMode
+
+        if (normalizedMode !== savedMode && normalizedMode === 'drill') {
+            globalThis.localStorage?.setItem(DEFAULT_SESSION_MODE_STORAGE_KEY, normalizedMode)
+        }
+
+        return SESSION_MODES.includes(normalizedMode)
+            ? normalizedMode
             : DEFAULT_SESSION_MODE
     } catch {
         return DEFAULT_SESSION_MODE

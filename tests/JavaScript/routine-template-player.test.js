@@ -55,11 +55,25 @@ test('local template copy preserves alpha_tex', () => {
         {
             name: 'Alternate Picking',
             bpm: 160,
-            mode: 'timer',
+            mode: 'drill',
             duration_seconds: 60,
 
             alpha_tex:
                 '\\staff {tabs}\n\n:16\n5.1 6.1 7.1 8.1 9.1',
         }
     )
+})
+
+test('drill template copy preserves duration', () => {
+    let storedValue
+    global.localStorage = { setItem(_key, value) { storedValue = value } }
+    const context = {
+        ...routineTemplateActions(),
+        steps: [{ name: 'Drill', bpm: 120, mode: 'drill', duration_seconds: 90 }],
+        $el: { closest() { return null } },
+    }
+    context.replaceLocalRoutineWithTemplate()
+    assert.deepEqual(JSON.parse(storedValue), [{
+        name: 'Drill', bpm: 120, mode: 'drill', duration_seconds: 90, alpha_tex: null,
+    }])
 })

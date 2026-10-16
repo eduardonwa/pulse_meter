@@ -39,7 +39,7 @@ class LocalRoutineImportController extends Controller
 
             'steps.*.mode' => [
                 'required',
-                'in:timer,classic',
+                'in:drill,classic',
             ],
 
             'steps.*.duration_seconds' => [
@@ -202,7 +202,7 @@ class LocalRoutineImportController extends Controller
                                         $mode,
 
                                     'duration_seconds' =>
-                                        $mode === 'timer'
+                                        $mode === 'drill'
                                             ? (int) $step[
                                                 'duration_seconds'
                                             ]

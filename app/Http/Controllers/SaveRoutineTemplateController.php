@@ -45,7 +45,7 @@ class SaveRoutineTemplateController extends Controller
 
             'steps.*.mode' => [
                 'required',
-                'in:timer,classic',
+                'in:drill,classic',
             ],
 
             'steps.*.duration_seconds' => [

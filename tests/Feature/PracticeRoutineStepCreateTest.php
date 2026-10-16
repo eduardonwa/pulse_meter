@@ -36,7 +36,7 @@ class PracticeRoutineStepCreateTest extends TestCase
                 [
                     'name' => 'Custom Exercise',
                     'bpm' => 160,
-                    'mode' => 'timer',
+                    'mode' => 'drill',
                     'duration_seconds' => 60,
 
                     // Todavía no permitimos crear patterns propios.

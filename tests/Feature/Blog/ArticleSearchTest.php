@@ -473,7 +473,7 @@ class ArticleSearchTest extends TestCase
             'name_es' => 'Alternate picking',
             'notes_es' => 'Mantén el movimiento relajado.',
             'bpm' => 90,
-            'mode' => 'timer',
+            'mode' => 'drill',
             'duration_seconds' => 1200,
             'position' => 0,
         ]);

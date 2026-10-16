@@ -41,7 +41,7 @@
         <meta name="robots" content="index, follow">
     @endif
     
-    <style> [x-cloak] { display: none !important; } </style>
+    <style> [x-cloak] { display: none !important; } .subscription-icon { width: 89px; height: 89px; opacity: 0; } </style>
     
     @vite(['resources/styles/main.scss', 'resources/js/app.js'])
 

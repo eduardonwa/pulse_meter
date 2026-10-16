@@ -32,7 +32,7 @@
                             isPlaying &&
                             playbackSource === 'exercise' &&
                             currentIndex === index &&
-                            step.mode === 'timer',
+                            step.mode === 'drill',
 
                         'badge': step.mode === 'classic'
                     }"

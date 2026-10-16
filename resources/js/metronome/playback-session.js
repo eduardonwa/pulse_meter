@@ -26,7 +26,7 @@ export function playbackSession() {
             
             const normalizedBpm = Number(bpm)
             
-            const normalizedDuration = mode === 'timer' ? Number(duration ?? 60) : null
+            const normalizedDuration = mode === 'drill' ? Number(duration ?? 60) : null
 
             if (!useAlphaTab) {
                 this.ensureAudioContext()
@@ -42,7 +42,7 @@ export function playbackSession() {
             * No borramos la duración configurada al entrar
             * en Classic o Creative.
             */
-            if (mode === 'timer') {
+            if (mode === 'drill') {
                 this.metronome.duration_seconds = normalizedDuration
             }
 
@@ -52,7 +52,7 @@ export function playbackSession() {
                 this.startMetronome(normalizedBpm)
             }
 
-            if (mode === 'timer' && normalizedDuration !== null) {
+            if (mode === 'drill' && normalizedDuration !== null) {
                 this.startTimer(normalizedDuration)
             }
 
@@ -66,7 +66,7 @@ export function playbackSession() {
         startMetronomeSession() {
             const mode = this.metronome.mode
 
-            const configuredDuration = mode === 'timer' ? Number(this.metronome.duration_seconds) : null
+            const configuredDuration = mode === 'drill' ? Number(this.metronome.duration_seconds) : null
 
             this.startPlaybackSession({
                 source: 'free',

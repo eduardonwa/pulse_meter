@@ -49,11 +49,11 @@ class PracticeRoutineStepController extends Controller
 
             'mode' => [
                 'required',
-                'in:timer,classic',
+                'in:drill,classic',
             ],
 
             'duration_seconds' => [
-                'required_if:mode,timer',
+                'required_if:mode,drill',
                 'nullable',
                 'integer',
                 'min:1',
@@ -121,11 +121,11 @@ class PracticeRoutineStepController extends Controller
 
             'mode' => [
                 'required',
-                'in:timer,classic',
+                'in:drill,classic',
             ],
 
             'duration_seconds' => [
-                'required_if:mode,timer',
+                'required_if:mode,drill',
                 'nullable',
                 'integer',
                 'min:1',

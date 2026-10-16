@@ -80,7 +80,7 @@
 
                         @if ($durationLabel)
                             <span
-                                @if ($step->mode === 'timer' && in_array($viewerType, ['trial', 'pro', 'lifetime'], true))
+                                @if ($step->mode === 'drill' && in_array($viewerType, ['trial', 'pro', 'lifetime'], true))
                                     x-text=" isPlaying && activeExerciseIndex === {{ $loop->index }} && remaining !== null
                                         ? (remaining < 60 ? `${remaining} sec` : remaining % 60 === 0
                                             ? `${remaining / 60} min`
@@ -159,43 +159,15 @@
 
                         <div class="routine-player__exercise-audio-controls" @alphatab:playback-state.window="syncPlaybackState($event, $refs.alphaTab)">
                             <button class="badge badge--neutral" type="button"
-
-                                @if (in_array($viewerType, ['trial', 'pro', 'lifetime'], true))
-                                    @click="
-                                        activeExerciseIndex === {{ $loop->index }} && isPlaying
-                                            ? stop('manual')
-                                            : startExercise({{ $loop->index }})
-                                    "
-                                @else
-                                    @click="
-                                        hearing
-                                            ? stopPlayback()
-                                            : playPause($refs.alphaTab)
-                                    "
-                                @endif
+                                @click="
+                                    hearing
+                                        ? stopPlayback()
+                                        : playPause($refs.alphaTab)
+                                "
                             >
-                                @if (in_array($viewerType, ['trial', 'pro', 'lifetime'], true))
-                                    <span
-                                        x-text="
-                                            activeExerciseIndex === {{ $loop->index }} && isPlaying
-                                                ? 'Stop'
-                                                : 'Listen'
-                                        "
-                                    >
-                                        Listen
-                                    </span>
-                                @else
-                                    <span x-text="hearing ? 'Stop' : 'Listen'">
-                                        Listen
-                                    </span>
-                                @endif
+                                <span x-text="hearing ? 'Stop' : 'Preview'">Preview</span>
                             </button>
 
-                            <button class="badge badge--neutral" type="button" :aria-pressed="looping.toString()" @click="toggleLoop($refs.alphaTab)">
-                                <span x-text="looping ? 'Disable loop' : 'Enable loop'">
-                                    Enable loop
-                                </span>
-                            </button>
                         </div>
                     </div>
                 @endif

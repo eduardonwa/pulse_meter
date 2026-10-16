@@ -43,7 +43,7 @@ class PracticeRoutineStepValidationTest extends TestCase
         return $user;
     }
 
-    public function test_trial_timer_exercise_requires_a_duration_when_created(): void
+    public function test_trial_drill_exercise_requires_a_duration_when_created(): void
     {
         $user = $this->createActiveTrialUser();
 
@@ -63,7 +63,7 @@ class PracticeRoutineStepValidationTest extends TestCase
                 [
                     'name' => 'Timer without duration',
                     'bpm' => 120,
-                    'mode' => 'timer',
+                    'mode' => 'drill',
                     'duration_seconds' => null,
                 ]
             );
@@ -83,7 +83,7 @@ class PracticeRoutineStepValidationTest extends TestCase
         );
     }
 
-    public function test_pro_can_create_a_timer_exercise_of_up_to_fifteen_minutes(): void
+    public function test_pro_can_create_a_drill_exercise_of_up_to_fifteen_minutes(): void
     {
         $user = $this->createProUser();
 
@@ -103,7 +103,7 @@ class PracticeRoutineStepValidationTest extends TestCase
                 [
                     'name' => 'Long Timer',
                     'bpm' => 120,
-                    'mode' => 'timer',
+                    'mode' => 'drill',
                     'duration_seconds' => 900,
                 ]
             );
@@ -120,7 +120,7 @@ class PracticeRoutineStepValidationTest extends TestCase
         );
     }
 
-    public function test_pro_can_update_a_timer_exercise_to_fifteen_minutes(): void
+    public function test_pro_can_update_a_drill_exercise_to_fifteen_minutes(): void
     {
         $user = $this->createProUser();
 
@@ -133,7 +133,7 @@ class PracticeRoutineStepValidationTest extends TestCase
         $exercise = $routine->steps()->create([
             'name' => 'Short Timer',
             'bpm' => 120,
-            'mode' => 'timer',
+            'mode' => 'drill',
             'duration_seconds' => 300,
             'position' => 0,
             'origin' => 'custom',
@@ -149,7 +149,7 @@ class PracticeRoutineStepValidationTest extends TestCase
                 [
                     'name' => 'Long Timer',
                     'bpm' => 120,
-                    'mode' => 'timer',
+                    'mode' => 'drill',
                     'duration_seconds' => 900,
                 ]
             );
@@ -166,7 +166,7 @@ class PracticeRoutineStepValidationTest extends TestCase
         );
     }
 
-    public function test_trial_cannot_update_a_timer_exercise_beyond_five_minutes(): void
+    public function test_trial_cannot_update_a_drill_exercise_beyond_five_minutes(): void
     {
         $user = $this->createActiveTrialUser();
 
@@ -179,7 +179,7 @@ class PracticeRoutineStepValidationTest extends TestCase
         $exercise = $routine->steps()->create([
             'name' => 'Timer',
             'bpm' => 120,
-            'mode' => 'timer',
+            'mode' => 'drill',
             'duration_seconds' => 300,
             'position' => 0,
             'origin' => 'custom',
@@ -192,7 +192,7 @@ class PracticeRoutineStepValidationTest extends TestCase
                 [
                     'name' => 'Too Long Timer',
                     'bpm' => 120,
-                    'mode' => 'timer',
+                    'mode' => 'drill',
                     'duration_seconds' => 301,
                 ]
             );
@@ -212,7 +212,7 @@ class PracticeRoutineStepValidationTest extends TestCase
         );
     }
 
-    public function test_pro_cannot_create_a_timer_exercise_beyond_fifteen_minutes(): void
+    public function test_pro_cannot_create_a_drill_exercise_beyond_fifteen_minutes(): void
     {
         $user = $this->createProUser();
 
@@ -229,7 +229,7 @@ class PracticeRoutineStepValidationTest extends TestCase
                 [
                     'name' => 'Too Long Timer',
                     'bpm' => 120,
-                    'mode' => 'timer',
+                    'mode' => 'drill',
                     'duration_seconds' => 901,
                 ]
             );
@@ -263,7 +263,7 @@ class PracticeRoutineStepValidationTest extends TestCase
             $routine->steps()->create([
                 'name' => 'Exercise '.($position + 1),
                 'bpm' => 120,
-                'mode' => 'timer',
+                'mode' => 'drill',
                 'duration_seconds' => 60,
                 'position' => $position,
                 'origin' => 'custom',
@@ -280,7 +280,7 @@ class PracticeRoutineStepValidationTest extends TestCase
                 [
                     'name' => 'Exercise 11',
                     'bpm' => 120,
-                    'mode' => 'timer',
+                    'mode' => 'drill',
                     'duration_seconds' => 60,
                 ]
             );
@@ -316,7 +316,7 @@ class PracticeRoutineStepValidationTest extends TestCase
             $routine->steps()->create([
                 'name' => 'Exercise '.($position + 1),
                 'bpm' => 120,
-                'mode' => 'timer',
+                'mode' => 'drill',
                 'duration_seconds' => 60,
                 'position' => $position,
                 'origin' => 'custom',
@@ -330,7 +330,7 @@ class PracticeRoutineStepValidationTest extends TestCase
                 [
                     'name' => 'Exercise 11',
                     'bpm' => 120,
-                    'mode' => 'timer',
+                    'mode' => 'drill',
                     'duration_seconds' => 60,
                 ]
             );
@@ -351,7 +351,7 @@ class PracticeRoutineStepValidationTest extends TestCase
         );
     }
 
-    public function test_pro_can_import_a_timer_exercise_of_up_to_fifteen_minutes(): void
+    public function test_pro_can_import_a_drill_exercise_of_up_to_fifteen_minutes(): void
     {
         $user = $this->createProUser();
 
@@ -364,7 +364,7 @@ class PracticeRoutineStepValidationTest extends TestCase
                         [
                             'name' => 'Long Imported Timer',
                             'bpm' => 120,
-                            'mode' => 'timer',
+                            'mode' => 'drill',
                             'duration_seconds' => 900,
                         ],
                     ],
@@ -377,7 +377,7 @@ class PracticeRoutineStepValidationTest extends TestCase
             'practice_routine_steps',
             [
                 'name' => 'Long Imported Timer',
-                'mode' => 'timer',
+                'mode' => 'drill',
                 'duration_seconds' => 900,
             ]
         );

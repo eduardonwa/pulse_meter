@@ -33,7 +33,7 @@
 
             <span
                 class="current-exercise-readout__time"
-                :class="{ 'is-counting': isPlaying && steps[activeExerciseIndex]?.mode === 'timer' }"
+                :class="{ 'is-counting': isPlaying && steps[activeExerciseIndex]?.mode === 'drill' }"
                 x-text="getActiveExerciseTimeLabel()"
             ></span>
         </div>

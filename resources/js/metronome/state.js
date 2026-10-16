@@ -10,7 +10,7 @@ export function defaultSteps() {
         {
             name: 'Alternate Picking',
             bpm: 100,
-            mode: 'timer',
+            mode: 'drill',
             duration_seconds: 5,
             time_signature_numerator: 4,
             time_signature_denominator: 4,
@@ -18,7 +18,7 @@ export function defaultSteps() {
         {
             name: 'Legato',
             bpm: 80,
-            mode: 'timer',
+            mode: 'drill',
             duration_seconds: 5,
             time_signature_numerator: 4,
             time_signature_denominator: 4,
@@ -26,7 +26,7 @@ export function defaultSteps() {
         {
             name: 'Sweep Picking',
             bpm: 90,
-            mode: 'timer',
+            mode: 'drill',
             duration_seconds: 60,
             time_signature_numerator: 4,
             time_signature_denominator: 4,

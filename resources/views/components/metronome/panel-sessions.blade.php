@@ -5,7 +5,7 @@
         <label for="mode">
             <select class="mode-selector" x-model="metronome.mode"
                 @change="trackSessionTypeSelected($event.target.value); handleSessionModeChange($event.target.value);
-                    $event.target.value === 'timer' && $nextTick(() => {
+                    $event.target.value === 'drill' && $nextTick(() => {
                         requestAnimationFrame(() => {
                             window.dispatchEvent(new Event('picker:sync'))
                         })})"
@@ -14,7 +14,7 @@
                     @can('use-pro')
                         <option value="creative">Creative</option>
                     @endcan
-                <option value="timer">Timer</option>
+                <option value="drill">Drill</option>
             </select>
         </label>
     </div>

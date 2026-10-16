@@ -14,7 +14,9 @@ import {
 function normalizeMode(mode) {
     return mode === 'manual'
         ? 'classic'
-        : mode
+        : mode === 'timer'
+            ? 'drill'
+            : mode
 }
 
 export function storage() {
@@ -72,7 +74,7 @@ export function storage() {
                 // Guarda nuevamente los datos ya migrados.
                 if (
                     Array.isArray(parsedSteps)
-                    && parsedSteps.some(step => step.mode === 'manual')
+                    && parsedSteps.some(step => ['manual', 'timer'].includes(step.mode))
                 ) {
                     this.saveToLocalStorage()
                 }
@@ -227,7 +229,7 @@ export function storage() {
                         mode,
 
                         duration_seconds:
-                            mode === 'timer'
+                            mode === 'drill'
                                 ? Number(
                                     step.duration_seconds
                                 )
@@ -267,7 +269,7 @@ export function storage() {
 
                     if (
                         ![
-                            'timer',
+                            'drill',
                             'classic',
                         ].includes(step.mode)
                     ) {
@@ -275,7 +277,7 @@ export function storage() {
                     }
 
                     if (
-                        step.mode === 'timer'
+                        step.mode === 'drill'
                         && (
                             !Number.isInteger(
                                 step.duration_seconds
@@ -325,7 +327,26 @@ export function storage() {
             * Esta versión ya fue importada o rechazada
             * explícitamente por el usuario.
             */
-            if (handledSignature === signature) { return null }
+            let matchesLegacySignature = false
+            if (handledSignature && handledSignature !== signature) {
+                try {
+                    const previousSteps = JSON.parse(handledSignature)
+                    matchesLegacySignature = Array.isArray(previousSteps)
+                        && JSON.stringify(previousSteps.map(step => ({
+                            ...step,
+                            mode: normalizeMode(step.mode),
+                        }))) === signature
+                } catch {
+                    // Ignore signatures that are not serialized routine steps.
+                }
+            }
+
+            if (handledSignature === signature || matchesLegacySignature) {
+                if (matchesLegacySignature) {
+                    localStorage.setItem(config.markerKey, signature)
+                }
+                return null
+            }
 
             return {
                 type: handledSignature === null
@@ -610,7 +631,7 @@ export function storage() {
 
             this.recentSessions = {
                 classic: [],
-                timer: [],
+                drill: [],
             }
 
             this.currentIndex = 0
