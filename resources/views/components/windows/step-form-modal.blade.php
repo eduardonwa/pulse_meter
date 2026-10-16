@@ -52,12 +52,12 @@
                     <label class="exercise-type-wrapper">
                         <p class="exercise-form-label">Type</p>
                         <select x-model="stepForm.mode">
-                            <option value="timer">Timer</option>
+                            <option value="drill">Drill</option>
                             <option value="classic">Classic</option>
                         </select>
                     </label>
     
-                    <div class="form-group" x-show="stepForm.mode === 'timer'">
+                    <div class="form-group" x-show="stepForm.mode === 'drill'">
                         <label class="exercise-length-wrapper">
                             <p class="exercise-form-label">Length</p>
     
