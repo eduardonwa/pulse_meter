@@ -32,7 +32,7 @@ ALPHATEX;
             'name_es' => 'Alternate Picking',
             'name_en' => 'Alternate Picking',
             'bpm' => 160,
-            'mode' => 'timer',
+            'mode' => 'drill',
             'duration_seconds' => 60,
             'position' => 0,
             'alpha_tex' => $alphaTex,
@@ -48,7 +48,7 @@ ALPHATEX;
                 [
                     'name' => 'Alternate Picking',
                     'bpm' => 180,
-                    'mode' => 'timer',
+                    'mode' => 'drill',
                     'duration_seconds' => 90,
                 ],
             ],
@@ -94,7 +94,7 @@ ALPHATEX;
             'name_es' => 'Alternate Picking',
             'name_en' => 'Alternate Picking',
             'bpm' => 160,
-            'mode' => 'timer',
+            'mode' => 'drill',
             'duration_seconds' => 60,
             'position' => 0,
             'alpha_tex' => $officialAlphaTex,
@@ -110,7 +110,7 @@ ALPHATEX;
                 [
                     'name' => 'Alternate Picking',
                     'bpm' => 160,
-                    'mode' => 'timer',
+                    'mode' => 'drill',
                     'duration_seconds' => 60,
 
                     // Intento de manipulación desde frontend.
