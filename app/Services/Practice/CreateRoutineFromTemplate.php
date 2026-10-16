@@ -55,7 +55,7 @@ class CreateRoutineFromTemplate
                         'mode' => $step['mode'] === 'timer' ? 'drill' : $step['mode'],
 
                         'duration_seconds' =>
-                            $step['mode'] === 'timer'
+                            in_array($step['mode'], ['timer', 'drill'], true)
                                 ? (int) $step['duration_seconds']
                                 : null,
 
