@@ -58,7 +58,7 @@ test('an alphaTab exercise does not start the Dorelog metronome', () => {
         activeExerciseIndex: null,
         metronome: {
             bpm: 100,
-            mode: 'timer',
+            mode: 'drill',
             duration_seconds: 60,
         },
 
@@ -77,7 +77,7 @@ test('an alphaTab exercise does not start the Dorelog metronome', () => {
 
     session.startPlaybackSession({
         source: 'exercise',
-        mode: 'timer',
+        mode: 'drill',
         bpm: 180,
         duration: 60,
         exerciseIndex: 0,
