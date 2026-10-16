@@ -1,7 +1,6 @@
 export function alphaTabExerciseControls() {
     return {
         detailsOpen: false,
-        looping: false,
         hearing: false,
 
         syncPlaybackState(event, element) {
@@ -21,7 +20,7 @@ export function alphaTabExerciseControls() {
                     {
                         detail: {
                             element,
-                            loop: this.looping,
+                            loop: false,
                         },
                     }
                 )
@@ -31,22 +30,6 @@ export function alphaTabExerciseControls() {
         stopPlayback() {
             window.dispatchEvent(
                 new Event('alphatab:stop')
-            )
-        },
-
-        toggleLoop(element) {
-            this.looping = !this.looping
-
-            window.dispatchEvent(
-                new CustomEvent(
-                    'alphatab:toggle-loop',
-                    {
-                        detail: {
-                            element,
-                            enabled: this.looping,
-                        },
-                    }
-                )
             )
         },
 
