@@ -69,14 +69,16 @@ test('preview loop preference is explicit in exercise controls', async () => {
     const { alphaTabExerciseControls } = await import('../../resources/js/metronome/alphatab/exercise-controls.js')
     const controls = alphaTabExerciseControls()
     const element = {}
-    let playDetail = null
+    const playDetails = []
     let loopDetail = null
-    window.addEventListener('alphatab:play-pause', event => { playDetail = event.detail }, { once: true })
+    const onPlay = event => playDetails.push(event.detail)
+    window.addEventListener('alphatab:play-pause', onPlay)
     controls.playPause(element)
-    assert.deepEqual(playDetail, { element, loop: false })
+    assert.deepEqual(playDetails[0], { element, loop: false })
     window.addEventListener('alphatab:toggle-loop', event => { loopDetail = event.detail }, { once: true })
     controls.toggleLoop(element)
     assert.deepEqual(loopDetail, { element, enabled: true })
     controls.playPause(element)
-    assert.deepEqual(playDetail, { element, loop: false })
+    assert.deepEqual(playDetails[1], { element, loop: true })
+    window.removeEventListener('alphatab:play-pause', onPlay)
 })
