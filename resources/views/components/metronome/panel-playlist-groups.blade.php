@@ -37,7 +37,7 @@
                                             isPlaying
                                             && playbackSource === 'exercise'
                                             && currentIndex === step.queue_position
-                                            && step.mode === 'timer',
+                                            && step.mode === 'drill',
 
                                         'badge': step.mode === 'classic'
                                     }"
@@ -67,13 +67,10 @@
                                     <div x-ref="alphaTab" data-alphatab :data-exercise-index="step.queue_position" :data-alpha-tex="btoa(step.alpha_tex)" :data-bpm="step.bpm"></div>
 
                                     <div class="exercise-row__audio-controls" @alphatab:playback-state.window="syncPlaybackState($event, $refs.alphaTab)">
-                                        <button class="badge badge--neutral" type="button" @click="playPause($refs.alphaTab)">
-                                            <span x-text="hearing ? 'Mute' : 'Listen'">Listen</span>
+                                        <button class="badge badge--neutral" type="button" @click="hearing ? stopPlayback() : playPause($refs.alphaTab)">
+                                            <span x-text="hearing ? 'Stop' : 'Preview'">Preview</span>
                                         </button>
 
-                                        <button class="badge badge--neutral" type="button" :aria-pressed="looping.toString()" @click="toggleLoop($refs.alphaTab)">
-                                            <span x-text="looping ? 'Disable loop' : 'Enable loop'">Enable loop</span>
-                                        </button>
                                     </div>
                                 </div>
                             </div>
