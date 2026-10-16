@@ -68,6 +68,9 @@ test('dispatches playing false when alphaTab is not playing', () => {
 test('preview loop preference is explicit in exercise controls', async () => {
     const { alphaTabExerciseControls } = await import('../../resources/js/metronome/alphatab/exercise-controls.js')
     const controls = alphaTabExerciseControls()
+    // Isolate control events from the real AlphaTab listeners registered above.
+    const previousWindow = global.window
+    global.window = new EventTarget()
     const element = {}
     const playDetails = []
     let loopDetail = null
@@ -81,4 +84,5 @@ test('preview loop preference is explicit in exercise controls', async () => {
     controls.playPause(element)
     assert.deepEqual(playDetails[1], { element, loop: true })
     window.removeEventListener('alphatab:play-pause', onPlay)
+    global.window = previousWindow
 })
