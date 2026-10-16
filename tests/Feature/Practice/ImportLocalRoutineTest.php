@@ -140,7 +140,7 @@ class ImportLocalRoutineTest extends TestCase
                         [
                             'name' => 'FREE CHANGED AGAIN',
                             'bpm' => 200,
-                            'mode' => 'timer',
+                            'mode' => 'drill',
                             'duration_seconds' => 45,
                         ],
                     ],
@@ -387,7 +387,7 @@ class ImportLocalRoutineTest extends TestCase
             $routine->steps()->create([
                 'name' => 'Exercise ' . ($position + 1),
                 'bpm' => 100,
-                'mode' => 'timer',
+                'mode' => 'drill',
                 'duration_seconds' => 60,
                 'position' => $position,
                 'origin' => 'custom',
@@ -404,7 +404,7 @@ class ImportLocalRoutineTest extends TestCase
             [
                 'name' => 'LOCAL TEST',
                 'bpm' => 145,
-                'mode' => 'timer',
+                'mode' => 'drill',
                 'duration_seconds' => 90,
             ],
             [
