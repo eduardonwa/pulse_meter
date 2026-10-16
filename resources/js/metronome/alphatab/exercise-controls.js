@@ -21,6 +21,7 @@ export function alphaTabExerciseControls() {
                     {
                         detail: {
                             element,
+                            loop: this.looping,
                         },
                     }
                 )
@@ -42,6 +43,7 @@ export function alphaTabExerciseControls() {
                     {
                         detail: {
                             element,
+                            enabled: this.looping,
                         },
                     }
                 )
