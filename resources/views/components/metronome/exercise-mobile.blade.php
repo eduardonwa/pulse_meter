@@ -35,7 +35,7 @@
 
         <div class="mobile-exercise__stats">
             <div>
-                <small>LENGTH</small>
+                <small>DURATION</small>
                 <strong x-text="getStepTimeLabel(step, index)"></strong>
             </div>
             
@@ -46,7 +46,7 @@
         </div>
 
         <div class="mobile-exercise__actions">
-            <button class="button" data-type="primary" type="button" class="mobile-exercise__practice"
+            <button class="button" data-type="play-drill" type="button" class="mobile-exercise__practice"
                 @click.stop="activeExerciseIndex === index && isPlaying ? stop() : startExercise(index)">
                 <span x-text="activeExerciseIndex === index && isPlaying ? 'Stop' : 'Practice'"></span>
             </button>
@@ -71,9 +71,14 @@
                 <div class="mobile-exercise-sheet__handle"></div>
                 
                 <div class="mobile-exercise-sheet__title">
-                    <div><strong x-text="mobileMoving ? 'Move exercise' : 'Exercise options'"></strong>
-                        <small x-text="step.name"></small></div>
-                    <button type="button" aria-label="Close exercise options" @click="mobileOptionsOpen = false; mobileMoving = false">×</button>
+                    <div>
+                        <strong x-text="mobileMoving ? 'Move exercise' : 'Exercise options'"></strong>
+                        <small x-text="step.name"></small>
+                    </div>
+
+                    <button class="button" data-type="icon" type="button" aria-label="Close exercise options" @click="mobileOptionsOpen = false; mobileMoving = false">
+                        <x-heroicon-o-x-mark />
+                    </button>
                 </div>
 
                 <template x-if="!mobileMoving">
@@ -89,11 +94,15 @@
                 <template x-if="mobileMoving">
                     <div class="mobile-exercise-sheet__list">
                         <p x-text="`Position ${index + 1} of ${steps.length}`"></p>
+
                         <div class="mobile-exercise-sheet__directions">
-                            <button type="button" :disabled="index === 0 || exerciseActionBusy || isPlaying || isWaitingForNextExercise"
-                                @click="moveMobileExercise(index, -1)">Move up</button>
-                            <button type="button" :disabled="index === steps.length - 1 || exerciseActionBusy || isPlaying || isWaitingForNextExercise"
-                                @click="moveMobileExercise(index, 1)">Move down</button>
+                            <button class="button" data-type="icon" type="button" aria-label="Move up" :disabled="index === 0 || exerciseActionBusy || isPlaying || isWaitingForNextExercise" @click="moveMobileExercise(index, -1)">
+                                <x-heroicon-o-arrow-up />
+                            </button>
+
+                            <button class="button" data-type="icon" type="button" aria-label="Move down" :disabled="index === steps.length - 1 || exerciseActionBusy || isPlaying || isWaitingForNextExercise" @click="moveMobileExercise(index, 1)">
+                                <x-heroicon-o-arrow-down />
+                            </button>
                         </div>
                         
                         <button type="button" @click="mobileOptionsOpen = false; mobileMoving = false">Done</button>

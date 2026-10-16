@@ -21,16 +21,22 @@ export default defineConfig({
         }),
         tailwindcss(),
     ],
-    
+
+    // Mobile testing (WSL2):
+    // 1. Find Windows LAN IP: ipconfig
+    // 2. Forward ports 8000 (Laravel) and 5137 (Vite) to WSL2 using netsh portproxy.
+    // 3. Allow both ports through Windows Firewall.
+    // 4. Update origin and hmr.host if the Windows LAN IP changes.
+    // 5. Open http://WINDOWS_IP:8000 on your phone (same network).
     server: {
         host: '0.0.0.0',
         port: 5137,
         strictPort: true,
         cors: true,
-        origin: 'http://localhost:5137',
+        origin: 'http://192.168.1.87:5137',
 
         hmr: {
-            host: 'localhost',
+            host: '192.168.1.87',
         },
 
         watch: {

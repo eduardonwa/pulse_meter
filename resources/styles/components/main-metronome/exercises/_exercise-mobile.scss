@@ -18,7 +18,7 @@
         align-items: center;
 
         background-color: rgba(232, 239, 245, 0.78);
-        border: 1px solid hsl(var(--neutral-800) / 0.2);
+        border: 1px solid hsl(var(--primary-800) / .2);
         border-radius: $border-radius-2;
     }
 
@@ -45,6 +45,13 @@
 
         .name {
             font-size: $font-size-300;
+            padding-block-end: $size-1;
+            color: hsl(var(--primary-950) / .8);
+        }
+
+        .short {
+            font-size: $font-size-500;
+            color: $color-primary-950;
         }
     }
 
@@ -91,14 +98,15 @@
         border-block-end: 1px solid;
 
         .button[data-type="icon"] {
-            border: 1px solid hsl(var(--neutral-900) / 0.6);
-
-            width: 30px;
-            height: 30px;
+            width: 48px;
+            height: 48px;
 
             padding: $size-1;
-            color: $color-neutral-900;
             border-radius: 50%;
+
+            background-color: hsl(var(--primary-200) / .5);
+            border: 1px solid hsl(var(--primary-800) / .2);
+            color: $color-primary-900;
         }
 
         &-controls {
@@ -109,8 +117,7 @@
             gap: $size-2;
 
             .tempo {
-                font-size: $font-size-600;
-                font-weight: 500;
+                font-size: $font-size-800;
                 text-align: center;
             }
         }
@@ -120,17 +127,16 @@
         padding-block: $size-4;
 
         display: flex;
-        justify-content: space-between;
+        justify-content: space-around;
 
         border-block-end: 1px solid;
 
         div {
             display: flex;
             flex-direction: column;
-            align-items: center;
 
             strong {
-                font-weight: 600;
+            color: $color-primary-950;
             }
         }
     }
@@ -143,17 +149,19 @@
         gap: $size-2;
         align-items: center;
         justify-items: center;
-
+        
         button { width: 100%; }
-
+        
+        // EDIT, OPTIONS
         .button[data-type="icon"] {
-            border: 1px solid hsl(var(--neutral-900) / 0.6);
+            border: 1px solid hsl(var(--neutral-900) / .1);
 
-            width: 34px;
-            height: 34px;
+            width: 44px;
+            height: 44px;
 
             border-radius: 50%;
-            color: $color-neutral-900;
+            color: $color-primary-950;
+            background-color: hsl(var(--neutral-500) / .1);
         }
     }
 }
@@ -206,22 +214,19 @@
             gap: 4px;
         }
 
-        small {
-            color: hsl(var(--neutral-600));
-        }
+            color: $color-primary-950;
 
         button {
-            border: 0;
-            background: transparent;
-            font-size: 30px;
-
             min-width: 44px;
             min-height: 44px;
+            color: $color-primary-950;
+            outline: 1px solid;
         }
     }
 
     &__list {
         display: grid;
+        outline: 1px solid;
         gap: 10px;
 
         > button,
@@ -246,9 +251,14 @@
     }
 
     &__directions {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         gap: 10px;
+
+        .button {
+            width: 100%;
+        }
     }
 }
 

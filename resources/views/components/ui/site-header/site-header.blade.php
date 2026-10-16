@@ -6,11 +6,7 @@
             @auth
                 {{-- Trigger mobile --}}
                 <div class="display-none--on-desktop">
-                    <button class="button" data-type="icon-text" type="button"
-                        :aria-expanded="sidebar"
-                        aria-controls="sidebar"
-                        @click="sidebar = !sidebar"
-                    >
+                    <button class="button" data-type="icon-text" type="button" :aria-expanded="sidebar" aria-controls="sidebar" @click="sidebar = !sidebar">
                         @if ($user->hasLifetimePro())
                             <x-heroicon-s-bolt class="pro-icon pro-icon--lifetime" />
                         @elseif ($user->isPro())

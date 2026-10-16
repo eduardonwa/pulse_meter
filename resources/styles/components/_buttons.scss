@@ -14,6 +14,7 @@
   border: $button-border;
   border-radius: $button-border-radius;
   transition: 150ms ease;
+  color: $color-neutral-900;
 
   &[data-type="accent"] {
     background-color: $button-accent-background;
@@ -164,8 +165,11 @@
     }
 
     svg {
-      width: 18px;
-      height: 18px;
+      display: block;
+      width: 20px;
+      height: 20px;
+      min-width: 20px;
+      aspect-ratio: 1 / 1;
       flex-shrink: 0;
     }
   }
@@ -197,6 +201,21 @@
     }
 
     @include mq(large) { width: 50%; }
+  }
+
+  // MOBILE: ROUTINE -> ACTION -> PRACTICE BTN
+  &[data-type="play-drill"] {
+    height: 48px;
+
+    display: flex;
+    align-items: center;
+
+    background-color: $color-accent-400;
+    color: $color-accent-950;
+    font-weight: 600;
+    font-size: $font-size-400;
+
+    border-radius: $border-radius-3;
   }
 
   // TABS

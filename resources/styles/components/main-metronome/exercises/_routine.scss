@@ -13,15 +13,22 @@
         }
 
         &__footer {
-            margin-inline: $size-2;
+            margin-inline: $size-3;
             margin-block: $size-8;
     
             .button[data-type="icon-text"] {
                 width: 100%;
-                padding: $size-3;
+                padding: $size-4;
     
-                background: $color-primary-500;
-                color: $color-primary-50;
+                background-color: hsl(var(--neutral-600) / .1);
+                border: 1px solid $color-neutral-300;
+                color: $color-neutral-700;
+                font-size: $font-size-400;
+
+                svg {
+                    width: 24px;
+                    height: 24px;
+                }
     
                 @include mq(large) {
                     width: fit-content;
