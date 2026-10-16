@@ -52,7 +52,7 @@ class CreateRoutineFromTemplate
                     ->map(fn ($step, $position) => [
                         'name' => trim($step['name']),
                         'bpm' => (int) $step['bpm'],
-                        'mode' => $step['mode'],
+                        'mode' => $step['mode'] === 'timer' ? 'drill' : $step['mode'],
 
                         'duration_seconds' =>
                             $step['mode'] === 'timer'
