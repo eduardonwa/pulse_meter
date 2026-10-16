@@ -56,7 +56,7 @@ class CreatePracticeRoutine
                 $routine->steps()->create([
                     'name' => 'New Exercise',
                     'bpm' => 100,
-                    'mode' => 'timer',
+                    'mode' => 'drill',
                     'duration_seconds' => 60,
                     'position' => 0,
                     'origin' => 'custom',
