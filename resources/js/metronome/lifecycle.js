@@ -70,6 +70,11 @@ export function lifecycle() {
             if (isRoutinePage) {
                 event.preventDefault()
                 event.stopPropagation()
+
+                if (!event.repeat && this.isWaitingForNextExercise) {
+                    this.continueToNextExercise()
+                }
+
                 return
             }
 
