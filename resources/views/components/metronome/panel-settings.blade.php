@@ -78,7 +78,7 @@
                         <option value="creative">Creative</option>
                     @endcan
 
-                    <option value="timer">Timer</option>
+                    <option value="drill">Drill</option>
                 </select>
             </label>
 
