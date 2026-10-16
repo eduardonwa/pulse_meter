@@ -80,7 +80,7 @@
 
                         @if ($durationLabel)
                             <span
-                                @if ($step->mode === 'timer' && in_array($viewerType, ['trial', 'pro', 'lifetime'], true))
+                                @if ($step->mode === 'drill' && in_array($viewerType, ['trial', 'pro', 'lifetime'], true))
                                     x-text=" isPlaying && activeExerciseIndex === {{ $loop->index }} && remaining !== null
                                         ? (remaining < 60 ? `${remaining} sec` : remaining % 60 === 0
                                             ? `${remaining / 60} min`
