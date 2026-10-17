@@ -1,4 +1,4 @@
-<section class="metronome__main">
+<section class="metronome__main" x-data="{ showStickyDivider: window.scrollY >= 200 }" :class="{ 'is-scrolled': showStickyDivider }" @scroll.window="showStickyDivider = window.scrollY >= 200">
     <div class="compact-beat-counter" aria-label="Current beat and measure beats">
         <span class="compact-beat-counter__current" x-text="currentBeat" aria-label="Current beat"></span>
         <span class="compact-beat-counter__divider" aria-hidden="true"></span>
