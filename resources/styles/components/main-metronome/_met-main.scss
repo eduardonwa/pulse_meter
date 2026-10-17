@@ -16,9 +16,6 @@
         }
 
         .compact-beat-counter {
-            position: sticky;
-            top: 0;
-            z-index: 20;
             display: flex;
             align-items: center;
             gap: $size-3;
@@ -71,7 +68,12 @@
         flex-direction: column;
         gap: $size-8;
         padding: $size-4;
-    
+
+        @media screen and (max-width: 767px) {
+            gap: $size-3;
+            padding: $size-3 $size-4;
+        }
+
         @media screen and (max-width: 767px) {
             .current-beat,
             .beats { display: none; }
