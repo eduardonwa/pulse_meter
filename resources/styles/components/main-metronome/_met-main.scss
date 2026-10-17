@@ -10,8 +10,9 @@
             gap: $size-3;
             padding: $size-3 $size-4;
             background: $color-neutral-100;
-            border-block-end: 1px solid $color-neutral-400;
+            border-block-end: 1px solid transparent;
 
+            &.is-scrolled { border-block-end-color: $color-neutral-400; }
         }
 
         .compact-beat-counter {
@@ -271,7 +272,7 @@
                         margin-top: 0;
                         margin-left: calc((var(--track-height) - var(--thumb-size)) / 2);
                         border-width: 1px;
-                        border-radius: 4px;
+                        border-radius: 50%;
                     }
 
                     &::-moz-range-track {
@@ -283,7 +284,7 @@
 
                     &::-moz-range-thumb {
                         border-width: 1px;
-                        border-radius: 4px;
+                        border-radius: 50%;
                     }
                 }
 
