@@ -2,6 +2,69 @@
 
 @mixin styles {
     &__main {
+        // One compact metronome in the mobile layout, retained while scrolling routines.
+        @media screen and (max-width: 767px) {
+            position: sticky;
+            top: 0;
+            z-index: 20;
+            gap: $size-3;
+            padding: $size-3 $size-4;
+            background: $color-neutral-100;
+            border-block-end: 1px solid $color-neutral-400;
+
+            .tempo-display { display: none; }
+        }
+
+        .compact-beat-counter {
+            position: sticky;
+            top: 0;
+            z-index: 20;
+            display: flex;
+            align-items: center;
+            gap: $size-3;
+            min-width: 0;
+            padding: $size-3 $size-4;
+            background: $color-neutral-100;
+            border-block-end: 1px solid $color-neutral-400;
+            font-variant-numeric: tabular-nums;
+
+            &__current {
+                flex: 0 0 2rem;
+                text-align: center;
+                font-size: $font-size-700;
+                font-weight: 700;
+                color: $color-primary-500;
+            }
+
+            &__divider {
+                width: 1px;
+                height: 1.5rem;
+                flex: 0 0 1px;
+                background: $color-neutral-400;
+            }
+
+            &__strip {
+                display: flex;
+                gap: $size-4;
+                flex: 1 1 0;
+                min-width: 0;
+                overflow-x: auto;
+                overflow-y: hidden;
+                scrollbar-width: none;
+                scroll-behavior: auto;
+                &::-webkit-scrollbar { display: none; }
+            }
+
+            &__beat {
+                flex: 0 0 1.75rem;
+                text-align: center;
+                opacity: .5;
+                font-size: $font-size-500;
+                &.is-active { opacity: 1; font-weight: 700; color: $color-primary-500; }
+            }
+
+            @include mq(medium) { display: none; }
+        }
         display: flex;
         align-items: center;
         justify-content: center;
