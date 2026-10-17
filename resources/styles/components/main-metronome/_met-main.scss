@@ -2,13 +2,78 @@
 
 @mixin styles {
     &__main {
+        // One compact metronome in the mobile layout, retained while scrolling routines.
+        @media screen and (max-width: 767px) {
+            position: sticky;
+            top: 0;
+            z-index: 20;
+            gap: $size-3;
+            padding: $size-3 $size-4;
+            background: $color-neutral-100;
+            border-block-end: 1px solid transparent;
+
+            &.is-scrolled { border-block-end-color: $color-neutral-400; }
+        }
+
+        .compact-beat-counter {
+            display: flex;
+            align-items: center;
+            gap: $size-3;
+            min-width: 0;
+            padding: $size-3 $size-4;
+            background: $color-neutral-100;
+            border-block-end: 1px solid $color-neutral-400;
+            font-variant-numeric: tabular-nums;
+
+            &__current {
+                flex: 0 0 2rem;
+                text-align: center;
+                font-size: $font-size-700;
+                font-weight: 700;
+                color: $color-primary-500;
+            }
+
+            &__divider {
+                width: 1px;
+                height: 1.5rem;
+                flex: 0 0 1px;
+                background: $color-neutral-400;
+            }
+
+            &__strip {
+                display: flex;
+                gap: $size-4;
+                flex: 1 1 0;
+                min-width: 0;
+                overflow-x: auto;
+                overflow-y: hidden;
+                scrollbar-width: none;
+                scroll-behavior: auto;
+                &::-webkit-scrollbar { display: none; }
+            }
+
+            &__beat {
+                flex: 0 0 1.75rem;
+                text-align: center;
+                opacity: .5;
+                font-size: $font-size-500;
+                &.is-active { opacity: 1; font-weight: 700; color: $color-primary-500; }
+            }
+
+            @include mq(medium) { display: none; }
+        }
         display: flex;
         align-items: center;
         justify-content: center;
         flex-direction: column;
         gap: $size-8;
         padding: $size-4;
-    
+
+        @media screen and (max-width: 767px) {
+            gap: $size-3;
+            padding: $size-3 $size-4;
+        }
+
         .current-beat {
             display: flex;
             align-items: center;
@@ -159,5 +224,83 @@
         }
 
         .play { width: 100%; }
+
+        // Override the base element styles AFTER their declarations.
+        // On mobile, the compact counter replaces both old beat displays.
+        @media screen and (max-width: 767px) {
+            .current-beat,
+            .beats {
+                display: none;
+            }
+
+            .tempo-control {
+                display: grid;
+                grid-template-columns: 44px minmax(0, 1fr);
+                align-items: center;
+                column-gap: $size-3;
+                row-gap: $size-3;
+
+                .tempo-display {
+                    grid-column: 2;
+                    grid-row: 1;
+                    display: flex;
+                    margin-block: 0;
+                    min-width: 0;
+                }
+
+                .tempo-range {
+                    grid-column: 1;
+                    grid-row: 1;
+                    width: 40px;
+                    height: 88px;
+                    min-width: 0;
+                    margin: 0;
+                    writing-mode: vertical-lr;
+                    direction: rtl;
+                    touch-action: none;
+                    --track-height: 3px;
+                    --thumb-size: 16px;
+
+                    &::-webkit-slider-runnable-track {
+                        width: var(--track-height);
+                        height: 100%;
+                        border: 0;
+                        border-radius: 2px;
+                    }
+
+                    &::-webkit-slider-thumb {
+                        margin-top: 0;
+                        margin-left: calc((var(--track-height) - var(--thumb-size)) / 2);
+                        border-width: 1px;
+                        border-radius: 50%;
+                    }
+
+                    &::-moz-range-track {
+                        width: var(--track-height);
+                        height: 100%;
+                        border: 0;
+                        border-radius: 2px;
+                    }
+
+                    &::-moz-range-thumb {
+                        border-width: 1px;
+                        border-radius: 50%;
+                    }
+                }
+
+                .current-exercise-readout {
+                    grid-column: 1 / -1;
+                }
+            }
+
+            .compact-beat-counter {
+                align-self: stretch;
+                width: 100%;
+                padding: $size-2 0;
+                background: transparent;
+                border: 0;
+            }
+
+        }
     }
 }
