@@ -233,12 +233,62 @@
             }
 
             .tempo-control {
-                gap: $size-3;
+                display: grid;
+                grid-template-columns: 44px minmax(0, 1fr);
+                align-items: center;
+                column-gap: $size-3;
+                row-gap: $size-3;
 
                 .tempo-display {
+                    grid-column: 2;
+                    grid-row: 1;
                     display: flex;
                     margin-block: 0;
+                    min-width: 0;
+                }
 
+                .tempo-range {
+                    grid-column: 1;
+                    grid-row: 1;
+                    width: 40px;
+                    height: 88px;
+                    min-width: 0;
+                    margin: 0;
+                    writing-mode: vertical-lr;
+                    direction: rtl;
+                    touch-action: none;
+                    --track-height: 3px;
+                    --thumb-size: 16px;
+
+                    &::-webkit-slider-runnable-track {
+                        width: var(--track-height);
+                        height: 100%;
+                        border: 0;
+                        border-radius: 2px;
+                    }
+
+                    &::-webkit-slider-thumb {
+                        margin-top: 0;
+                        margin-left: calc((var(--track-height) - var(--thumb-size)) / 2);
+                        border-width: 1px;
+                        border-radius: 4px;
+                    }
+
+                    &::-moz-range-track {
+                        width: var(--track-height);
+                        height: 100%;
+                        border: 0;
+                        border-radius: 2px;
+                    }
+
+                    &::-moz-range-thumb {
+                        border-width: 1px;
+                        border-radius: 4px;
+                    }
+                }
+
+                .current-exercise-readout {
+                    grid-column: 1 / -1;
                 }
             }
 
@@ -250,30 +300,6 @@
                 border: 0;
             }
 
-            .tempo-range {
-                --track-height: 3px;
-                --thumb-size: 13px;
-
-                &::-webkit-slider-runnable-track {
-                    border-width: 0;
-                    border-radius: 2px;
-                }
-
-                &::-webkit-slider-thumb {
-                    border-width: 1px;
-                    border-radius: 3px;
-                }
-
-                &::-moz-range-track {
-                    border-width: 0;
-                    border-radius: 2px;
-                }
-
-                &::-moz-range-thumb {
-                    border-width: 1px;
-                    border-radius: 3px;
-                }
-            }
         }
     }
 }
