@@ -18,6 +18,7 @@ import { playbackSession } from './playback-session.js'
 import { routineTemplateActions } from '../routine-template-player.js'
 import { alphaTabExerciseControls } from './alphatab/index.js'
 import { sessionPreferences } from './session-preferences.js'
+import { scrollActiveBeatIntoView } from './beat-strip.js'
 
 window.routinePlayer = function (
     practiceContext = null,
@@ -25,6 +26,7 @@ window.routinePlayer = function (
 ) {
     return compose(
         state(practiceContext),
+        { scrollActiveBeatIntoView },
         sessionPreferences(),
         lifecycle(),
         storage(),
