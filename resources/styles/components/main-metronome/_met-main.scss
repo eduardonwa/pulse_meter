@@ -12,7 +12,6 @@
             background: $color-neutral-100;
             border-block-end: 1px solid $color-neutral-400;
 
-            .tempo-display { display: none; }
         }
 
         .compact-beat-counter {
@@ -72,11 +71,6 @@
         @media screen and (max-width: 767px) {
             gap: $size-3;
             padding: $size-3 $size-4;
-        }
-
-        @media screen and (max-width: 767px) {
-            .current-beat,
-            .beats { display: none; }
         }
 
         .current-beat {
@@ -229,5 +223,40 @@
         }
 
         .play { width: 100%; }
+
+        // Override the base element styles AFTER their declarations.
+        // On mobile, the compact counter replaces both old beat displays.
+        @media screen and (max-width: 767px) {
+            .current-beat,
+            .beats {
+                display: none;
+            }
+
+            .tempo-control {
+                gap: $size-3;
+
+                .tempo-display {
+                    display: flex;
+                    margin-block: 0;
+
+                    .tempo-value {
+                        font-size: $font-size-500;
+                        inline-size: auto;
+                        letter-spacing: normal;
+                    }
+
+                    .tempo-unit {
+                        font-size: $font-size-300;
+                    }
+                }
+            }
+
+            .compact-beat-counter {
+                align-self: stretch;
+                width: 100%;
+                padding: $size-2 0;
+                background: transparent;
+            }
+        }
     }
 }
