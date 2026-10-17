@@ -239,15 +239,6 @@
                     display: flex;
                     margin-block: 0;
 
-                    .tempo-value {
-                        font-size: $font-size-500;
-                        inline-size: auto;
-                        letter-spacing: normal;
-                    }
-
-                    .tempo-unit {
-                        font-size: $font-size-300;
-                    }
                 }
             }
 
@@ -256,6 +247,32 @@
                 width: 100%;
                 padding: $size-2 0;
                 background: transparent;
+                border: 0;
+            }
+
+            .tempo-range {
+                --track-height: 3px;
+                --thumb-size: 13px;
+
+                &::-webkit-slider-runnable-track {
+                    border-width: 0;
+                    border-radius: 2px;
+                }
+
+                &::-webkit-slider-thumb {
+                    border-width: 1px;
+                    border-radius: 3px;
+                }
+
+                &::-moz-range-track {
+                    border-width: 0;
+                    border-radius: 2px;
+                }
+
+                &::-moz-range-thumb {
+                    border-width: 1px;
+                    border-radius: 3px;
+                }
             }
         }
     }
