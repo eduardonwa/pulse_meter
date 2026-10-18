@@ -1,9 +1,25 @@
 import { isTypingInField } from '../helpers'
+import { logAudioLifecycle } from './audio-engine'
 
 export function lifecycle() {
     return {
         // INITIALIZATION
         async init() {
+            logAudioLifecycle('init', { audioState: this.audioContext?.state ?? null })
+            this.audioPagehideListener = event => {
+                logAudioLifecycle('pagehide', {
+                    persisted: event.persisted,
+                    audioState: this.audioContext?.state ?? null,
+                })
+            }
+            this.audioPageshowListener = event => {
+                logAudioLifecycle('pageshow', {
+                    persisted: event.persisted,
+                    audioState: this.audioContext?.state ?? null,
+                })
+            }
+            window.addEventListener('pagehide', this.audioPagehideListener)
+            window.addEventListener('pageshow', this.audioPageshowListener)
             if (this.usesLocalPersistence) {
                 this.loadFromLocalStorage()
 
@@ -16,7 +32,11 @@ export function lifecycle() {
             this.loadClickSounds?.()
 
             this.audioVisibilityListener = () => {
-                if (document.hidden) this.cancelAudioRecovery?.()
+                logAudioLifecycle('visibilitychange', {
+                    audioState: this.audioContext?.state ?? null,
+                    playing: this.isPlaying,
+                })
+                if (document.hidden) this.cancelAudioRecovery?.('hidden')
                 else this.scheduleAudioRecovery?.()
             }
             document.addEventListener('visibilitychange', this.audioVisibilityListener)
@@ -38,7 +58,10 @@ export function lifecycle() {
         },
 
         destroy() {
-            this.cancelAudioRecovery?.()
+            logAudioLifecycle('destroy', { audioState: this.audioContext?.state ?? null })
+            window.removeEventListener('pagehide', this.audioPagehideListener)
+            window.removeEventListener('pageshow', this.audioPageshowListener)
+            this.cancelAudioRecovery?.('destroy')
             document.removeEventListener('visibilitychange', this.audioVisibilityListener)
             this.stop?.('navigation')
         },
