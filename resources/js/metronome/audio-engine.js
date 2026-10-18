@@ -30,6 +30,7 @@ export function audioEngine() {
         audioContext: null,
         intervalId: null,
         metronomeRunId: 0,
+        audioDiagnosticClickCount: 0,
         audioRecoveryGeneration: 0,
         audioRecoverySuspendTimer: null,
         audioRecoveryResumeTimer: null,
@@ -172,6 +173,21 @@ export function audioEngine() {
 
             source.start(now)
 
+            // Sparse diagnostics only: scheduling a source does not prove audibility.
+            if (this.isPlaying) {
+                const count = ++this.audioDiagnosticClickCount
+                if ([1, 2, 5, 10, 20, 40, 80, 160].includes(count)) {
+                    logAudioLifecycle('click-source-started', {
+                        runId: this.metronomeRunId,
+                        count,
+                        beat: this.currentBeat,
+                        state: this.audioContext.state,
+                        audioTime: this.audioContext.currentTime,
+                        bufferDuration: buffer?.duration ?? null,
+                    })
+                }
+            }
+
             source.onended = () => {
                 source.disconnect()
                 gain.disconnect()
@@ -195,6 +211,12 @@ export function audioEngine() {
             * que todavía esté esperando la carga de sonidos.
             */
             const runId = ++this.metronomeRunId
+            this.audioDiagnosticClickCount = 0
+            logAudioLifecycle('metronome-start-requested', {
+                runId, bpm, state: this.audioContext?.state ?? null,
+                audioTime: this.audioContext?.currentTime ?? null,
+                buffersReady: Boolean(this.clickBuffer && this.accentBuffer),
+            })
 
             clearInterval(this.intervalId)
             this.intervalId = null
@@ -212,8 +234,15 @@ export function audioEngine() {
             * y no debe comenzar a sonar.
             */
             if (runId !== this.metronomeRunId) {
+                logAudioLifecycle('metronome-start-stale', { runId })
                 return
             }
+
+            logAudioLifecycle('metronome-started', {
+                runId, bpm, state: this.audioContext?.state ?? null,
+                audioTime: this.audioContext?.currentTime ?? null,
+                buffersReady: Boolean(this.clickBuffer && this.accentBuffer),
+            })
 
             this.activeMetronomeBpm = bpm
             this.currentBeat = 1
