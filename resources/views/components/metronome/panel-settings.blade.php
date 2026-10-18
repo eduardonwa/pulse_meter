@@ -98,6 +98,22 @@
         </div>
     </div>
 
+    {{-- Temporary: remove after Firefox iOS audio investigation. --}}
+    <div class="setting-option group">
+        <div class="group__header">
+            <h2 class="group__title">Audio diagnostics (temporary)</h2>
+            <p class="group__hint">
+                Copy recent page and audio events after testing on iOS.
+            </p>
+        </div>
+        <div class="group__body group__body--stacked">
+            <button type="button" class="button" @click="copyAudioDiagnostics()">
+                Copy diagnostics
+            </button>
+            <p role="status" aria-live="polite" x-text="audioDiagnosticsCopyStatus"></p>
+        </div>
+    </div>
+
     <div class="setting-option group">
         <div class="group__header">
             <h2 class="group__title">DANGER ZONE</h2>
