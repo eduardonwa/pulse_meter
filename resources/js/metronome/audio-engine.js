@@ -287,11 +287,13 @@ export function audioEngine() {
             this.playPatternBeat()
             // The UI updates reactively, so the next frame is an approximation
             // of visual presentation, not proof of pixel/physical speaker timing.
-            requestAnimationFrame(() => {
-                if (runId === this.metronomeRunId) {
-                    this.recordAudioEvent('visual-frame-after-start', this.timingDetails())
-                }
-            })
+            if (typeof requestAnimationFrame === 'function') {
+                requestAnimationFrame(() => {
+                    if (runId === this.metronomeRunId) {
+                        this.recordAudioEvent('visual-frame-after-start', this.timingDetails())
+                    }
+                })
+            }
 
             this.intervalId = setInterval(() => {
                 this.advancePatternPosition()
@@ -349,6 +351,7 @@ export function audioEngine() {
             if (this.beatTimingSamples.length > 16) this.beatTimingSamples.shift()
             this.activeBeatTimingSample = sample
             const runId = this.metronomeRunId
+            if (typeof requestAnimationFrame !== 'function') return
             requestAnimationFrame(() => {
                 if (runId !== this.metronomeRunId) return
                 sample.visualFrameMs = Number(performance.now().toFixed(2))
