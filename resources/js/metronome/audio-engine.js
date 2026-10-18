@@ -34,6 +34,7 @@ export function audioEngine() {
         audioRecoveryGeneration: 0,
         audioRecoverySuspendTimer: null,
         audioRecoveryResumeTimer: null,
+        audioRecoverySuspendPromise: null,
 
         activeMetronomeBpm: null,
         currentBeat: 1,
@@ -73,6 +74,7 @@ export function audioEngine() {
         },
 
         // Experimental iOS recovery: only when returning to a stopped metronome.
+        // Keep track of an in-flight suspend so START can finish with resume.
         cancelAudioRecovery(reason = 'unspecified') {
             const hadTimers = this.audioRecoverySuspendTimer !== null ||
                 this.audioRecoveryResumeTimer !== null
@@ -84,6 +86,33 @@ export function audioEngine() {
             clearTimeout(this.audioRecoveryResumeTimer)
             this.audioRecoverySuspendTimer = null
             this.audioRecoveryResumeTimer = null
+        },
+
+        resumeAudioForStart() {
+            const ctx = this.audioContext
+            if (!ctx || ctx.state === 'closed') return
+
+            // Execute synchronously in the START gesture when possible.
+            const resume = () => {
+                if (this.audioContext !== ctx || ctx.state === 'closed') return
+                logAudioLifecycle('start-resume-requested', { state: ctx.state })
+                ctx.resume().then(
+                    () => logAudioLifecycle('start-resume-completed', { state: ctx.state }),
+                    error => logAudioLifecycle('start-resume-rejected', { error: String(error) })
+                )
+            }
+
+            if (ctx.state !== 'running') resume()
+
+            // A previously requested suspend may settle *after* START.
+            // Ensure its completion cannot leave the new session suspended.
+            const pendingSuspend = this.audioRecoverySuspendPromise
+            if (pendingSuspend) {
+                pendingSuspend.then(() => {
+                    if (this.audioContext === ctx && this.isPlaying &&
+                        ctx.state !== 'closed') resume()
+                }, () => {})
+            }
         },
 
         scheduleAudioRecovery() {
@@ -100,28 +129,42 @@ export function audioEngine() {
             const generation = this.audioRecoveryGeneration
             logAudioLifecycle('recovery-scheduled', { generation, state: ctx.state })
             this.audioRecoverySuspendTimer = setTimeout(() => {
+                this.audioRecoverySuspendTimer = null
                 if (generation !== this.audioRecoveryGeneration ||
                     document.hidden || this.isPlaying || this.audioContext !== ctx) return
+
                 logAudioLifecycle('suspend-requested', { generation, state: ctx.state })
-                ctx.suspend().then(
+                const pending = ctx.suspend()
+                this.audioRecoverySuspendPromise = pending
+                pending.then(
                     () => logAudioLifecycle('suspend-completed', { generation, state: ctx.state }),
                     error => logAudioLifecycle('suspend-rejected', {
                         generation, error: String(error),
                     })
-                )
-            }, 250)
+                ).finally(() => {
+                    if (this.audioRecoverySuspendPromise === pending) {
+                        this.audioRecoverySuspendPromise = null
+                    }
+                })
 
-            this.audioRecoveryResumeTimer = setTimeout(() => {
-                if (generation !== this.audioRecoveryGeneration ||
-                    document.hidden || this.isPlaying || this.audioContext !== ctx) return
-                logAudioLifecycle('resume-requested', { generation, state: ctx.state })
-                ctx.resume().then(
-                    () => logAudioLifecycle('resume-completed', { generation, state: ctx.state }),
-                    error => logAudioLifecycle('resume-rejected', {
-                        generation, error: String(error),
-                    })
-                )
-            }, 500)
+                // Resume only after suspend completes; do not race independent timers.
+                pending.then(() => {
+                    if (generation !== this.audioRecoveryGeneration ||
+                        document.hidden || this.isPlaying || this.audioContext !== ctx) return
+                    this.audioRecoveryResumeTimer = setTimeout(() => {
+                        this.audioRecoveryResumeTimer = null
+                        if (generation !== this.audioRecoveryGeneration ||
+                            document.hidden || this.isPlaying || this.audioContext !== ctx) return
+                        logAudioLifecycle('resume-requested', { generation, state: ctx.state })
+                        ctx.resume().then(
+                            () => logAudioLifecycle('resume-completed', { generation, state: ctx.state }),
+                            error => logAudioLifecycle('resume-rejected', {
+                                generation, error: String(error),
+                            })
+                        )
+                    }, 250)
+                }, () => {})
+            }, 250)
         },
 
         async loadAudioBuffer(path) {
