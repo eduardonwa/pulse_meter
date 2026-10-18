@@ -73,6 +73,40 @@ export function audioEngine() {
             }
         },
 
+        // Isolated diagnostic: a short oscillator tone, unrelated to WAV files
+        // and to the metronome scheduler.
+        async testAudioOutput() {
+            this.ensureAudioContext()
+            const ctx = this.audioContext
+            const before = ctx.currentTime
+            this.recordAudioEvent('test-tone-start', { audioTime: before })
+
+            try {
+                if (ctx.state !== 'running') await ctx.resume()
+                const oscillator = ctx.createOscillator()
+                const gain = ctx.createGain()
+                oscillator.type = 'sine'
+                oscillator.frequency.value = 660
+                gain.gain.setValueAtTime(0.15, ctx.currentTime)
+                gain.gain.setValueAtTime(0.15, ctx.currentTime + 0.3)
+                gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.35)
+                oscillator.connect(gain)
+                gain.connect(ctx.destination)
+                oscillator.onended = () => {
+                    oscillator.disconnect()
+                    gain.disconnect()
+                    this.recordAudioEvent('test-tone-ended', {
+                        elapsedAudioSeconds: Number((ctx.currentTime - before).toFixed(3)),
+                    })
+                }
+                oscillator.start()
+                oscillator.stop(ctx.currentTime + 0.36)
+                this.recordAudioEvent('test-tone-scheduled', { state: ctx.state })
+            } catch (error) {
+                this.recordAudioEvent('test-tone-error', { error: String(error) })
+            }
+        },
+
         async loadAudioBuffer(path) {
             this.ensureAudioContext()
 
