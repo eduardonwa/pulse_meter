@@ -60,6 +60,9 @@
             class="button uppercase"
             data-type="play-metronome"
             :data-state="isPlaying ? 'stop' : 'start'"
+            :disabled="!isPlaying && audioRecovering"
+            :aria-busy="!isPlaying && audioRecovering ? 'true' : null"
+            :style="!isPlaying && audioRecovering ? 'opacity: 0.5; cursor: not-allowed;' : null"
             @click="toggle()"
         >
             <span
