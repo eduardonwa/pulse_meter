@@ -10,6 +10,19 @@
         &__play {
             display: none;
         }
+
+        &__details {
+            display: block;
+            margin: 0 $size-4;
+            padding-block: $size-1 $size-4;
+
+            .button {
+                outline: 1px solid;
+                margin: 0 auto;
+                padding: $size-2;
+                width: 100%;
+            }
+        }
     }
 
     @include mq(medium) {
@@ -31,7 +44,6 @@
             grid-template-areas:
                 "bpm     main     play"
                 "details details  details";
-
 
             &__bpm {
                 grid-area: bpm;
