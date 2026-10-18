@@ -28,13 +28,21 @@ test('centers the active beat before it reaches the right edge', () => {
     scrollActiveBeatIntoView(element, 4)
     assert.equal(element.scrollLeft, 86)
     scrollActiveBeatIntoView(element, 4)
-    assert.equal(element.scrollLeft, 44)
+    assert.equal(element.scrollLeft, 86)
 })
 
 test('reveals an earlier beat when the measure wraps', () => {
     const element = strip(120, [0, 44, 88, 132, 176], 84)
     scrollActiveBeatIntoView(element, 1)
-    assert.equal(element.scrollLeft, -46) // Browser clamps this to 0 in the real DOM.
+    assert.equal(element.scrollLeft, 0)
+})
+
+test('resets beat 1 after scrolling through a long measure', () => {
+    const element = strip(120, [0, 44, 88, 132, 176, 220, 264], 160)
+    scrollActiveBeatIntoView(element, 7)
+    assert.ok(element.scrollLeft > 160)
+    scrollActiveBeatIntoView(element, 1)
+    assert.equal(element.scrollLeft, 0)
 })
 
 test('handles missing elements without throwing', () => {
