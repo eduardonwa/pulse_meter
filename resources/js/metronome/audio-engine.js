@@ -5,6 +5,9 @@ export function audioEngine() {
         metronomeRunId: 0,
         audioEvents: [],
         audioStateListener: null,
+        audioRecoverySuspendTimer: null,
+        audioRecoveryResumeTimer: null,
+        audioRecoveryGeneration: 0,
 
         activeMetronomeBpm: null,
         currentBeat: 1,
@@ -62,6 +65,7 @@ export function audioEngine() {
         // Called synchronously from the actual START gesture so Firefox/iOS
         // can resume audio without waiting for a file fetch or decode.
         wakeAudioContext() {
+            this.cancelAudioRecovery()
             this.ensureAudioContext()
             this.recordAudioEvent('start-gesture')
             if (this.audioContext.state !== 'running') {
@@ -73,170 +77,55 @@ export function audioEngine() {
             }
         },
 
-        // Isolated diagnostic: a short oscillator tone, unrelated to WAV files
-        // and to the metronome scheduler.
-        async testAudioOutput() {
-            this.ensureAudioContext()
+        cancelAudioRecovery() {
+            ++this.audioRecoveryGeneration
+            clearTimeout(this.audioRecoverySuspendTimer)
+            clearTimeout(this.audioRecoveryResumeTimer)
+            this.audioRecoverySuspendTimer = null
+            this.audioRecoveryResumeTimer = null
+        },
+
+        // Experimental WebKit recovery on returning to this tab.
+        // Never alter an active metronome session.
+        scheduleAudioRecovery() {
+            this.cancelAudioRecovery()
             const ctx = this.audioContext
-            const before = ctx.currentTime
-            this.recordAudioEvent('test-tone-start', { audioTime: before })
-
-            try {
-                if (ctx.state !== 'running') await ctx.resume()
-                const oscillator = ctx.createOscillator()
-                const gain = ctx.createGain()
-                oscillator.type = 'sine'
-                oscillator.frequency.value = 660
-                gain.gain.setValueAtTime(0.15, ctx.currentTime)
-                gain.gain.setValueAtTime(0.15, ctx.currentTime + 0.3)
-                gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.35)
-                oscillator.connect(gain)
-                gain.connect(ctx.destination)
-                oscillator.onended = () => {
-                    oscillator.disconnect()
-                    gain.disconnect()
-                    this.recordAudioEvent('test-tone-ended', {
-                        elapsedAudioSeconds: Number((ctx.currentTime - before).toFixed(3)),
-                    })
-                }
-                oscillator.start()
-                oscillator.stop(ctx.currentTime + 0.36)
-                this.recordAudioEvent('test-tone-scheduled', { state: ctx.state })
-            } catch (error) {
-                this.recordAudioEvent('test-tone-error', { error: String(error) })
-            }
-        },
-
-        // Manual, opt-in recovery experiment. Do not change an active session.
-        // Construct the replacement within the button gesture on iOS.
-        testFreshAudioContext() {
-            if (this.isPlaying) {
-                this.recordAudioEvent('fresh-context-skipped', {
-                    reason: 'stop metronome first',
+            if (!ctx || ctx.state === 'closed' || this.isPlaying) {
+                this.recordAudioEvent('recovery-skipped', {
+                    reason: !ctx ? 'no-context' : this.isPlaying ? 'playing' : 'closed',
                 })
                 return
             }
 
-            const previous = this.audioContext
-            let replacement
-            try {
-                replacement = new AudioContext()
-                this.audioContext = replacement
-                replacement.onstatechange = () => {
-                    if (this.audioContext === replacement) {
-                        this.recordAudioEvent('fresh-context-statechange')
-                    }
+            const generation = this.audioRecoveryGeneration
+            this.recordAudioEvent('recovery-scheduled')
+            this.audioRecoverySuspendTimer = setTimeout(() => {
+                if (generation !== this.audioRecoveryGeneration ||
+                    document.hidden || this.isPlaying || this.audioContext !== ctx) {
+                    this.recordAudioEvent('recovery-cancelled')
+                    return
                 }
-                this.recordAudioEvent('fresh-context-created', {
-                    previousState: previous?.state ?? 'missing',
-                    audioTime: replacement.currentTime,
-                })
-                // Invoke resume directly from the gesture, before any awaits.
-                const ready = replacement.state === 'running'
-                    ? Promise.resolve()
-                    : replacement.resume()
-
-                ready.then(() => {
-                    this.recordAudioEvent('fresh-context-resumed')
-                    if (this.audioContext === replacement) {
-                        this.testAudioOutput()
-                    }
-                }).catch(error => {
-                    this.recordAudioEvent('fresh-context-resume-failed', {
+                this.recordAudioEvent('recovery-suspend-requested')
+                ctx.suspend()
+                    .then(() => this.recordAudioEvent('recovery-suspended'))
+                    .catch(error => this.recordAudioEvent('recovery-suspend-failed', {
                         error: String(error),
-                    })
-                })
+                    }))
+            }, 250)
 
-                if (previous && previous !== replacement && previous.state !== 'closed') {
-                    previous.onstatechange = null
-                    previous.close().then(() => {
-                        this.recordAudioEvent('previous-context-closed')
-                    }).catch(error => {
-                        this.recordAudioEvent('previous-context-close-failed', {
-                            error: String(error),
-                        })
-                    })
+            this.audioRecoveryResumeTimer = setTimeout(() => {
+                if (generation !== this.audioRecoveryGeneration ||
+                    document.hidden || this.isPlaying || this.audioContext !== ctx) {
+                    this.recordAudioEvent('recovery-cancelled')
+                    return
                 }
-            } catch (error) {
-                this.recordAudioEvent('fresh-context-error', {
-                    error: String(error),
-                })
-            }
-        },
-
-        // Opt-in experiment for iOS audio routing; no automatic behavior.
-        testAudioSessionReset() {
-            const session = navigator.audioSession
-            if (!session || typeof session.type !== 'string') {
-                this.recordAudioEvent('audio-session-unsupported')
-                return
-            }
-
-            if (this.isPlaying) {
-                this.recordAudioEvent('audio-session-reset-skipped', {
-                    reason: 'stop metronome first',
-                })
-                return
-            }
-
-            const previousType = session.type
-            this.recordAudioEvent('audio-session-reset-start', { previousType })
-
-            try {
-                session.type = 'ambient'
-                this.recordAudioEvent('audio-session-ambient', {
-                    selectedType: session.type,
-                })
-            } catch (error) {
-                this.recordAudioEvent('audio-session-reset-error', {
-                    step: 'ambient',
-                    error: String(error),
-                })
-                return
-            }
-
-            setTimeout(() => {
-                try {
-                    session.type = 'playback'
-                    this.recordAudioEvent('audio-session-playback', {
-                        selectedType: session.type,
-                    })
-                } catch (error) {
-                    this.recordAudioEvent('audio-session-reset-error', {
-                        step: 'playback',
+                this.recordAudioEvent('recovery-resume-requested')
+                ctx.resume()
+                    .then(() => this.recordAudioEvent('recovery-resumed'))
+                    .catch(error => this.recordAudioEvent('recovery-resume-failed', {
                         error: String(error),
-                    })
-                }
-            }, 0)
-        },
-
-        // Direct HTML media playback bypasses Web Audio entirely.
-        // An isolated alternative path for the exact same metronome WAV.
-        testHtmlAudioClick() {
-            const path = this.currentDawProfile?.click
-            if (!path) {
-                this.recordAudioEvent('html-audio-missing-click-path')
-                return
-            }
-            try {
-                const element = new Audio(path)
-                element.volume = 1
-                this.recordAudioEvent('html-audio-start', { path })
-                element.onplaying = () => this.recordAudioEvent('html-audio-playing')
-                element.onended = () => this.recordAudioEvent('html-audio-ended')
-                element.onerror = () => this.recordAudioEvent('html-audio-error', {
-                    mediaErrorCode: element.error?.code ?? null,
-                })
-                const result = element.play()
-                if (result?.then) {
-                    result.then(() => this.recordAudioEvent('html-audio-play-resolved'))
-                        .catch(error => this.recordAudioEvent('html-audio-play-rejected', {
-                            error: String(error),
-                        }))
-                }
-            } catch (error) {
-                this.recordAudioEvent('html-audio-exception', { error: String(error) })
-            }
+                    }))
+            }, 500)
         },
 
         async loadAudioBuffer(path) {
