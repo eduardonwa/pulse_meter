@@ -13,6 +13,11 @@ export function audioEngine() {
         audioStartRunId: null,
         beatTimingSamples: [],
         activeBeatTimingSample: null,
+        beatClockStart: null,
+        beatClockFrame: null,
+        beatClockNextStep: 0,
+        beatClockScheduledTime: null,
+        beatClockSources: [],
 
         activeMetronomeBpm: null,
         currentBeat: 1,
@@ -204,7 +209,7 @@ export function audioEngine() {
         playBuffer(buffer, volume = 1) {
             this.ensureAudioContext()
 
-            const now = this.audioContext.currentTime
+            const now = this.beatClockScheduledTime ?? this.audioContext.currentTime
             const source = this.audioContext.createBufferSource()
             const gain = this.audioContext.createGain()
 
@@ -216,6 +221,7 @@ export function audioEngine() {
             gain.connect(this.audioContext.destination)
 
             source.start(now)
+            if (this.beatClockScheduledTime !== null) this.beatClockSources.push(source)
             if (this.currentSubdivision === 0 && this.activeBeatTimingSample) {
                 this.activeBeatTimingSample.audioScheduledMs = Number(performance.now().toFixed(2))
             }
@@ -225,6 +231,7 @@ export function audioEngine() {
             }
 
             source.onended = () => {
+                this.beatClockSources = this.beatClockSources.filter(item => item !== source)
                 source.disconnect()
                 gain.disconnect()
             }
@@ -282,20 +289,48 @@ export function audioEngine() {
             this.currentBeat = 1
             this.currentSubdivision = 0
 
-            this.recordAudioEvent('first-beat-scheduled', this.timingDetails())
-            this.playPatternBeat()
-            // The UI updates reactively, so the next frame is an approximation
-            // of visual presentation, not proof of pixel/physical speaker timing.
+            // A single AudioContext timeline drives both sound scheduling and
+            // the visible beat. A short lookahead prevents late interval callbacks
+            // from introducing cumulative timing drift.
+            const ctx = this.audioContext
+            const stepSeconds = this.getSubdivisionIntervalMs(bpm) / 1000
+            const subdivisions = Math.max(1, Number(this.getPlaybackPulse().subdivision) || 1)
+            const numerator = this.getPlaybackPulse().timeSignature.numerator
+            const stepsPerBar = numerator * subdivisions
+            this.beatClockStart = ctx.currentTime + 0.025
+            this.beatClockNextStep = 0
+            const schedule = () => {
+                if (runId !== this.metronomeRunId) return
+                const horizon = ctx.currentTime + 0.08
+                while (this.beatClockStart + this.beatClockNextStep * stepSeconds <= horizon) {
+                    const step = this.beatClockNextStep++
+                    this.currentBeat = Math.floor((step % stepsPerBar) / subdivisions) + 1
+                    this.currentSubdivision = step % subdivisions
+                    this.beatClockScheduledTime = this.beatClockStart + step * stepSeconds
+                    if (step === 0) this.recordAudioEvent('first-beat-scheduled', this.timingDetails())
+                    this.playPatternPosition()
+                    this.beatClockScheduledTime = null
+                }
+            }
+            schedule()
+            this.intervalId = setInterval(schedule, 20)
+            const visual = () => {
+                if (runId !== this.metronomeRunId) return
+                // Present the beat near estimated output time, rather than
+                // exposing the scheduler's ahead-of-time beat position.
+                const outputDelay = ctx.outputLatency || 0
+                const elapsed = ctx.currentTime - this.beatClockStart - outputDelay
+                const step = Math.max(0, Math.floor((elapsed + 0.001) / stepSeconds))
+                this.currentBeat = Math.floor((step % stepsPerBar) / subdivisions) + 1
+                this.currentSubdivision = step % subdivisions
+                this.beatClockFrame = requestAnimationFrame(visual)
+            }
+            this.beatClockFrame = requestAnimationFrame(visual)
             requestAnimationFrame(() => {
                 if (runId === this.metronomeRunId) {
                     this.recordAudioEvent('visual-frame-after-start', this.timingDetails())
                 }
             })
-
-            this.intervalId = setInterval(() => {
-                this.advancePatternPosition()
-                this.playPatternPosition()
-            }, this.getSubdivisionIntervalMs(bpm))
         },
 
         getBeatIntervalMs(bpm) {
@@ -480,7 +515,7 @@ export function audioEngine() {
             this.ensureAudioContext()
 
             const ctx = this.audioContext
-            const now = ctx.currentTime
+            const now = this.beatClockScheduledTime ?? ctx.currentTime
 
             const bpm =
                 this.activeMetronomeBpm
@@ -557,6 +592,7 @@ export function audioEngine() {
             gain.connect(ctx.destination)
 
             oscillator.start(now)
+            if (this.beatClockScheduledTime !== null) this.beatClockSources.push(oscillator)
             if (this.currentSubdivision === 0 && this.activeBeatTimingSample) {
                 this.activeBeatTimingSample.audioScheduledMs = Number(performance.now().toFixed(2))
             }
@@ -570,6 +606,7 @@ export function audioEngine() {
             )
 
             oscillator.onended = () => {
+                this.beatClockSources = this.beatClockSources.filter(item => item !== oscillator)
                 oscillator.disconnect()
                 gain.disconnect()
             }
@@ -615,7 +652,15 @@ export function audioEngine() {
             this.audioStartRunId = null
 
             clearInterval(this.intervalId)
-
+            cancelAnimationFrame(this.beatClockFrame)
+            this.beatClockFrame = null
+            this.beatClockStart = null
+            this.beatClockScheduledTime = null
+            this.beatClockNextStep = 0
+            for (const source of this.beatClockSources) {
+                try { source.stop() } catch (_) { /* Already ended */ }
+            }
+            this.beatClockSources = []
             this.intervalId = null
             if (this.beatTimingSamples.length) {
                 this.recordAudioEvent('beat-timing-summary', {
