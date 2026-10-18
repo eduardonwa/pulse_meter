@@ -74,6 +74,7 @@ export function playbackSession() {
         },
         
         startMetronomeSession() {
+            if (this.audioRecovering) return
             const mode = this.metronome.mode
 
             const configuredDuration = mode === 'drill' ? Number(this.metronome.duration_seconds) : null
