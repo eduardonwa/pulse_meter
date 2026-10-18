@@ -12,7 +12,10 @@
             background: $color-neutral-100;
             border-block-end: 1px solid transparent;
 
-            &.is-scrolled { border-block-end-color: $color-neutral-400; }
+            &.is-scrolled {
+                border-block-end-color: $color-neutral-400;
+                box-shadow: $box-shadow-3;
+            }
         }
 
         .compact-beat-counter {
