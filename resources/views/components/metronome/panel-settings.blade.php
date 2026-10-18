@@ -98,6 +98,16 @@
         </div>
     </div>
 
+    <div class="setting-option group mobile-audio-help">
+        <div class="group__header">
+            <h2 class="group__title">No sound?</h2>
+            <p class="group__hint">
+                If the metronome goes silent after switching apps or tabs,
+                try reloading the page or restarting your browser.
+            </p>
+        </div>
+    </div>
+
     <div class="setting-option group">
         <div class="group__header">
             <h2 class="group__title">DANGER ZONE</h2>
