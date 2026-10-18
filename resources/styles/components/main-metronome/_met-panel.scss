@@ -30,6 +30,57 @@
             }
         }
 
+        // On phones, the existing tab buttons become persistent app navigation.
+        // Keep the original buttons/Alpine handlers and desktop tabs unchanged.
+        @media screen and (max-width: 767px) {
+            padding-block-end: calc(5rem + env(safe-area-inset-bottom, 0px));
+
+            .tabs {
+                position: fixed;
+                inset-inline: 0;
+                bottom: 0;
+                z-index: 50;
+                display: grid;
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                gap: 0;
+                width: 100%;
+                margin: 0;
+                padding: $size-2 $size-2 calc($size-2 + env(safe-area-inset-bottom, 0px));
+                background: $color-neutral-100;
+                border: 0;
+                border-block-start: 1px solid $color-neutral-400;
+                box-shadow: $box-shadow-3;
+
+                .button[data-type="tab-btn"] {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    gap: $size-1;
+                    min-width: 0;
+                    min-height: 3.5rem;
+                    padding: $size-2;
+                    text-align: center;
+
+                    svg {
+                        width: 1.5rem;
+                        height: 1.5rem;
+                        flex: 0 0 auto;
+                    }
+
+                    &.is-active {
+                        color: $color-primary-500;
+                        border-block-end: 2px solid currentColor;
+                    }
+
+                    &:focus-visible {
+                        outline: 2px solid $color-primary-500;
+                        outline-offset: -2px;
+                    }
+                }
+            }
+        }
+
         .modes {
             margin-block-start: $size-4;
             padding-inline: $size-3;
