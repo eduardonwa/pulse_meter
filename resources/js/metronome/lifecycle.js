@@ -4,6 +4,7 @@ import { logAudioLifecycle } from './audio-engine'
 export function lifecycle() {
     return {
         // INITIALIZATION
+        audioDiagnosticsCopyStatus: '',
         async init() {
             logAudioLifecycle('init', { audioState: this.audioContext?.state ?? null })
             this.audioPagehideListener = event => {
@@ -64,6 +65,49 @@ export function lifecycle() {
             this.cancelAudioRecovery?.('destroy')
             document.removeEventListener('visibilitychange', this.audioVisibilityListener)
             this.stop?.('navigation')
+        },
+
+        // Temporary diagnostics export for testing Firefox on iOS.
+        async copyAudioDiagnostics() {
+            let payload
+
+            try {
+                payload = localStorage.getItem('dorelog:audio-lifecycle-debug')
+                if (!payload) {
+                    this.audioDiagnosticsCopyStatus = 'No diagnostics recorded yet'
+                    return
+                }
+            } catch {
+                this.audioDiagnosticsCopyStatus = 'Could not read diagnostics'
+                return
+            }
+
+            try {
+                if (navigator.clipboard?.writeText) {
+                    await navigator.clipboard.writeText(payload)
+                } else {
+                    const field = document.createElement('textarea')
+                    field.value = payload
+                    field.setAttribute('readonly', '')
+                    field.style.position = 'fixed'
+                    field.style.opacity = '0'
+                    document.body.appendChild(field)
+                    field.focus()
+                    field.select()
+                    field.setSelectionRange(0, field.value.length)
+                    try {
+                        if (!document.execCommand('copy')) {
+                            throw new Error('Copy was not supported')
+                        }
+                    } finally {
+                        field.remove()
+                    }
+                }
+
+                this.audioDiagnosticsCopyStatus = 'Diagnostics copied'
+            } catch {
+                this.audioDiagnosticsCopyStatus = 'Copy failed. Try again'
+            }
         },
 
         // GLOBAL SHORCUTS
