@@ -8,6 +8,8 @@ export function audioEngine() {
         audioRecoverySuspendTimer: null,
         audioRecoveryResumeTimer: null,
         audioRecoveryGeneration: 0,
+        audioStartPerfTime: null,
+        audioStartRunId: null,
 
         activeMetronomeBpm: null,
         currentBeat: 1,
@@ -60,6 +62,31 @@ export function audioEngine() {
             if (this.audioEvents.length > 40) this.audioEvents.shift()
             window.__dorelogAudioDiagnostics = this.audioEvents
             console.info('[Dorelog audio]', entry)
+        },
+
+        timingDetails() {
+            const ctx = this.audioContext
+            const elapsed = this.audioStartPerfTime === null
+                ? null : Number((performance.now() - this.audioStartPerfTime).toFixed(2))
+            let outputTimestamp = null
+            try {
+                const stamp = ctx?.getOutputTimestamp?.()
+                if (stamp && stamp.performanceTime > 0) {
+                    outputTimestamp = {
+                        contextTime: Number(stamp.contextTime.toFixed(4)),
+                        performanceTime: Number(stamp.performanceTime.toFixed(2)),
+                    }
+                }
+            } catch (_) {
+                // Optional browser API.
+            }
+            return {
+                msFromStart: elapsed,
+                audioTime: ctx ? Number(ctx.currentTime.toFixed(4)) : null,
+                baseLatencyMs: ctx?.baseLatency == null ? null : Number((ctx.baseLatency * 1000).toFixed(2)),
+                outputLatencyMs: ctx?.outputLatency == null ? null : Number((ctx.outputLatency * 1000).toFixed(2)),
+                outputTimestamp,
+            }
         },
 
         // Called synchronously from the actual START gesture so Firefox/iOS
@@ -176,6 +203,10 @@ export function audioEngine() {
             gain.connect(this.audioContext.destination)
 
             source.start(now)
+            if (this.audioStartRunId === this.metronomeRunId) {
+                this.recordAudioEvent('audio-buffer-source-start', this.timingDetails())
+                this.audioStartRunId = null
+            }
 
             source.onended = () => {
                 source.disconnect()
@@ -229,11 +260,19 @@ export function audioEngine() {
             }
 
             this.activeMetronomeBpm = bpm
+            this.audioStartRunId = runId
             this.currentBeat = 1
             this.currentSubdivision = 0
 
-            this.recordAudioEvent('first-beat-scheduled')
+            this.recordAudioEvent('first-beat-scheduled', this.timingDetails())
             this.playPatternBeat()
+            // The UI updates reactively, so the next frame is an approximation
+            // of visual presentation, not proof of pixel/physical speaker timing.
+            requestAnimationFrame(() => {
+                if (runId === this.metronomeRunId) {
+                    this.recordAudioEvent('visual-frame-after-start', this.timingDetails())
+                }
+            })
 
             this.intervalId = setInterval(() => {
                 this.advancePatternPosition()
@@ -478,6 +517,10 @@ export function audioEngine() {
             gain.connect(ctx.destination)
 
             oscillator.start(now)
+            if (this.audioStartRunId === this.metronomeRunId) {
+                this.recordAudioEvent('audio-oscillator-start', this.timingDetails())
+                this.audioStartRunId = null
+            }
 
             oscillator.stop(
                 now + decayDuration + 0.02
@@ -526,6 +569,7 @@ export function audioEngine() {
             * esperando la carga asíncrona de sonidos.
             */
             this.metronomeRunId += 1
+            this.audioStartRunId = null
 
             clearInterval(this.intervalId)
 
