@@ -4,6 +4,12 @@ export function scrollActiveBeatIntoView(strip, currentBeat) {
     const beatIndex = Number(currentBeat) - 1
     if (!strip || !Number.isInteger(beatIndex) || beatIndex < 0) return
 
+    // A new measure must start with beat 1 visible, regardless of previous scroll.
+    if (beatIndex === 0) {
+        strip.scrollLeft = 0
+        return
+    }
+
     const beat = strip.children?.[beatIndex]
     if (!beat || !strip.clientWidth) return
 
