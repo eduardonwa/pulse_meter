@@ -47,7 +47,7 @@
 
         <div class="mobile-exercise__actions">
             <button class="button" data-type="play-drill" type="button" class="mobile-exercise__practice"
-                @click.stop="activeExerciseIndex === index && isPlaying ? stop() : startExercise(index)">
+                @click.stop="startMobileExercisePractice(index, step, $refs.exerciseViewDialog, $refs.exerciseViewContent, $refs.exerciseDetails, $refs.alphaTab, $nextTick)">
                 <span x-text="activeExerciseIndex === index && isPlaying ? 'Stop' : 'Practice'"></span>
             </button>
 
