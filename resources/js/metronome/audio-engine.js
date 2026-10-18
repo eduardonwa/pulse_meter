@@ -3,6 +3,8 @@ export function audioEngine() {
         audioContext: null,
         intervalId: null,
         metronomeRunId: 0,
+        audioEvents: [],
+        audioStateListener: null,
 
         activeMetronomeBpm: null,
         currentBeat: 1,
@@ -32,7 +34,43 @@ export function audioEngine() {
 
         // AUDIO CONTEXT
         ensureAudioContext() {
-            this.audioContext ??= new AudioContext()
+            if (this.audioContext && this.audioContext.state !== 'closed') return
+
+            this.audioContext = new AudioContext()
+            this.audioContext.onstatechange = () => {
+                this.recordAudioEvent('statechange')
+            }
+            this.recordAudioEvent('context-created')
+        },
+
+        recordAudioEvent(event, details = {}) {
+            const entry = {
+                event,
+                state: this.audioContext?.state ?? 'missing',
+                visibility: document.visibilityState,
+                clickLoaded: !!this.clickBuffer,
+                accentLoaded: !!this.accentBuffer,
+                time: new Date().toISOString(),
+                ...details,
+            }
+            this.audioEvents.push(entry)
+            if (this.audioEvents.length > 40) this.audioEvents.shift()
+            window.__dorelogAudioDiagnostics = this.audioEvents
+            console.info('[Dorelog audio]', entry)
+        },
+
+        // Called synchronously from the actual START gesture so Firefox/iOS
+        // can resume audio without waiting for a file fetch or decode.
+        wakeAudioContext() {
+            this.ensureAudioContext()
+            this.recordAudioEvent('start-gesture')
+            if (this.audioContext.state !== 'running') {
+                this.audioContext.resume()
+                    .then(() => this.recordAudioEvent('resume-resolved'))
+                    .catch(error => this.recordAudioEvent('resume-failed', {
+                        error: String(error),
+                    }))
+            }
         },
 
         async loadAudioBuffer(path) {
@@ -111,7 +149,15 @@ export function audioEngine() {
             clearInterval(this.intervalId)
             this.intervalId = null
 
-            await this.loadClickSounds()
+            this.recordAudioEvent('metronome-loading')
+            try {
+                await this.loadClickSounds()
+            } catch (error) {
+                this.recordAudioEvent('samples-failed', { error: String(error) })
+                if (runId === this.metronomeRunId) this.stop('audio_error')
+                return
+            }
+            this.recordAudioEvent('samples-ready')
 
             /*
             * Durante la espera pudo ocurrir:
@@ -131,6 +177,7 @@ export function audioEngine() {
             this.currentBeat = 1
             this.currentSubdivision = 0
 
+            this.recordAudioEvent('first-beat-scheduled')
             this.playPatternBeat()
 
             this.intervalId = setInterval(() => {
@@ -428,6 +475,7 @@ export function audioEngine() {
             clearInterval(this.intervalId)
 
             this.intervalId = null
+            this.recordAudioEvent('metronome-stopped')
             this.currentBeat = 1
             this.currentSubdivision = 0
         },
