@@ -354,3 +354,9 @@
 @include mq(medium) {
     .mobile-exercise-view-dialog { display: none; }
 }
+
+/* On phones notation is only visible in the dialog, never below the card. */
+@media (max-width: 767px) {
+    .exercise-row__details { display: none; }
+    .mobile-exercise-view-dialog .exercise-row__notation { display: block; }
+}
