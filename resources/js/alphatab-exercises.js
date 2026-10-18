@@ -121,8 +121,17 @@ async function mountAlphaTab(element) {
                 enableAnimatedBeatCursor: true,
                 enableElementHighlighting: !isAdminPreview,
 
-                scrollMode: alphaTab.ScrollMode.Off,
+                scrollMode: isAdminPreview
+                    ? alphaTab.ScrollMode.Off
+                    : alphaTab.ScrollMode.Continuous,
             },
+        })
+
+        api.renderFinished.on(() => {
+            element.dataset.alphaTabRendered = 'true'
+            window.dispatchEvent(new CustomEvent('alphatab:rendered', {
+                detail: { element },
+            }))
         })
 
         api.metronomeVolume = 1

@@ -2,6 +2,11 @@ export function alphaTabExerciseControls() {
     return {
         detailsOpen: false,
         hearing: false,
+        scoreLoading: false,
+
+        syncScoreRendered(event, element) {
+            if (event.detail?.element === element) this.scoreLoading = false
+        },
 
         syncPlaybackState(event, element) {
             if (event.detail?.element !== element) {
@@ -69,6 +74,52 @@ export function alphaTabExerciseControls() {
                     new Event('alphatab:stop')
                 )
             }
+        },
+
+        startMobileExercisePractice(index, step, dialog, content, home, element, nextTick) {
+            if (this.activeExerciseIndex === index && this.isPlaying) {
+                this.stop()
+                return
+            }
+
+            if (this.hasAlphaTabPattern(step)) {
+                this.openMobileExerciseView(dialog, content, home, element, nextTick)
+            }
+
+            this.startExercise(index)
+        },
+
+        openMobileExerciseView(dialog, content, home, element, nextTick) {
+            if (!dialog?.showModal || !content) return
+
+            // Move the existing notation; never duplicate the alphaTab host/API.
+            const notation = home?.querySelector('.exercise-row__notation')
+            if (notation) content.appendChild(notation)
+
+            this.scoreLoading = Boolean(element && element.dataset.alphaTabRendered !== 'true')
+            this.detailsOpen = true
+            dialog.showModal()
+
+            if (element) {
+                nextTick(() => {
+                    window.dispatchEvent(new CustomEvent('alphatab:mount', {
+                        detail: { element },
+                    }))
+                    requestAnimationFrame(() => {
+                        window.dispatchEvent(new CustomEvent('alphatab:render', {
+                            detail: { element },
+                        }))
+                    })
+                })
+            }
+        },
+
+        closeMobileExerciseView(home) {
+            const content = this.$refs?.exerciseViewContent
+            const notation = content?.querySelector('.exercise-row__notation')
+            if (notation && home) home.appendChild(notation)
+            this.detailsOpen = false
+            // Closing the viewer does not stop an ongoing practice session.
         },
 
         clearActiveExercise() {

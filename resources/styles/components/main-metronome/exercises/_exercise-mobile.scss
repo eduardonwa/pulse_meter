@@ -312,3 +312,77 @@
         display: none;
     }
 }
+
+/* The native dialog enters the top layer without cloning the score/player. */
+.mobile-exercise__view {
+    width: 100%;
+    margin-block-end: 1rem;
+    padding: .75rem;
+}
+
+.mobile-exercise-view-dialog {
+    width: calc(100% - 1rem);
+    max-width: none;
+    height: calc(100dvh - 1rem);
+    max-height: calc(100dvh - 1rem);
+
+    &__header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 1rem;
+    }
+
+    &__content {
+        overflow-y: auto;
+        min-height: 0;
+        flex: 1;
+        padding: 1rem;
+    }
+
+    &__facts {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .exercise-row__notation { display: block; }
+}
+
+@include mq(medium) {
+    .mobile-exercise-view-dialog { display: none; }
+}
+
+/* On phones notation is only visible in the dialog, never below the card. */
+@media (max-width: 767px) {
+    .exercise-row__details { display: none; }
+    .mobile-exercise-view-dialog .exercise-row__notation { display: block; }
+}
+
+.mobile-exercise-view-dialog__skeleton {
+    display: grid;
+    gap: 1rem;
+    padding: 1rem 0;
+
+    .skeleton-line {
+        background: hsl(var(--neutral-900) / .09);
+        border-radius: .375rem;
+        animation: exercise-score-pulse 1.4s ease-in-out infinite;
+        height: 3.25rem;
+
+        &--heading { width: 42%; height: 1rem; }
+        &--staff { width: 100%; }
+        &--short { width: 60%; height: 1rem; }
+    }
+}
+
+@keyframes exercise-score-pulse {
+    0%, 100% { opacity: .55; }
+    50% { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .mobile-exercise-view-dialog__skeleton .skeleton-line { animation: none; }
+}
