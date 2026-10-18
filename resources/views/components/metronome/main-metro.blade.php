@@ -32,8 +32,7 @@
             </label>
         </div>
 
-        <input
-            class="tempo-range"
+        <input class="tempo-range"
             type="range"
             min="30"
             max="400"

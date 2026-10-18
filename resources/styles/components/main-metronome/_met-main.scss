@@ -257,6 +257,7 @@
                 flex-direction: column;
                 width: 100%;
                 gap: $size-3;
+                margin-block: $size-2;
 
                 .tempo-display { display: none; }
 
@@ -268,7 +269,7 @@
                     direction: ltr;
                     touch-action: auto;
                     --track-height: 3px;
-                    --thumb-size: 16px;
+                    --thumb-size: 24px;
 
                     &::-webkit-slider-runnable-track {
                         height: var(--track-height);
