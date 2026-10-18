@@ -1,20 +1,22 @@
-// Reveal the active beat immediately, keeping the page and fixed BPM in place.
+// Keep the active beat near the middle of the available strip,
+// rather than waiting until it has already crossed the right edge.
 export function scrollActiveBeatIntoView(strip, currentBeat) {
-    if (!strip || !Number.isInteger(Number(currentBeat))) return
+    const beatIndex = Number(currentBeat) - 1
+    if (!strip || !Number.isInteger(beatIndex) || beatIndex < 0) return
 
-    const beat = strip.children?.[Number(currentBeat) - 1]
+    const beat = strip.children?.[beatIndex]
     if (!beat || !strip.clientWidth) return
 
-    // Rectangles are relative to the viewport, even when offset parents differ.
     const stripRect = strip.getBoundingClientRect?.()
     const beatRect = beat.getBoundingClientRect?.()
-
     if (!stripRect || !beatRect) return
 
-    const inset = 4
-    if (beatRect.right > stripRect.right - inset) {
-        strip.scrollLeft += beatRect.right - stripRect.right + inset
-    } else if (beatRect.left < stripRect.left + inset) {
-        strip.scrollLeft -= stripRect.left + inset - beatRect.left
+    // Reading viewport coordinates works even when the beat and the strip
+    // have different offset parents. The browser clamps scrollLeft at both ends.
+    const stripCenter = (stripRect.left + stripRect.right) / 2
+    const beatCenter = (beatRect.left + beatRect.right) / 2
+    const delta = beatCenter - stripCenter
+    if (Math.abs(delta) > 0.5) {
+        strip.scrollLeft += delta
     }
 }
