@@ -3,7 +3,7 @@
     
     <button
         class="button"
-        data-type="secondary"
+        data-type="primary"
         type="button"
         @click="startRoutineOver()"
     >
