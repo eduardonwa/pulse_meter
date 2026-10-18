@@ -30,6 +30,15 @@ export function playbackSession() {
 
             if (!useAlphaTab) {
                 this.ensureAudioContext()
+
+                // iOS: request resume within the user's START gesture.
+                // Does not guarantee audibility if the output path is muted.
+                const ctx = this.audioContext
+                if (ctx && ctx.state !== 'running' && ctx.state !== 'closed') {
+                    ctx.resume().catch(error => {
+                        console.warn('AudioContext resume failed on START', error)
+                    })
+                }
             }
 
             this.playbackSource = source
