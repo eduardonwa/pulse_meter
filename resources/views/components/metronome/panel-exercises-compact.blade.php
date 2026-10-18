@@ -12,6 +12,12 @@
     >
         <x-metronome.exercise-desktop />
         <x-metronome.exercise-mobile />
+        <template x-if="hasAlphaTabPattern(step)">
+            <button type="button" class="button exercise-row__view" data-type="outline"
+                @click.stop="openMobileExerciseView($refs.exerciseViewDialog, $refs.exerciseViewContent, $refs.exerciseDetails, $refs.alphaTab, $nextTick)">
+                View exercise
+            </button>
+        </template>
 
         <dialog class="dialog-shell mobile-exercise-view-dialog" x-ref="exerciseViewDialog"
             @close="closeMobileExerciseView($refs.exerciseDetails)"
@@ -48,17 +54,6 @@
         <!-- TAB / EXERCISE DETAILS -->
                 <template x-if="step.alpha_tex">
                     <div class="exercise-row__details" x-ref="exerciseDetails">
-                        <button class="button" data-type="icon-text" type="button"
-                            :aria-expanded="detailsOpen.toString()"
-                            @click="toggleDetails($refs.alphaTab, $nextTick)"
-                        >
-                            <span x-text=" detailsOpen ? 'Hide exercise' : 'View exercise'">
-                                View exercise
-                            </span>
-        
-                            <x-heroicon-s-chevron-down />
-                        </button>
-        
                         <div class="exercise-row__notation" x-show="detailsOpen" x-cloak>
                             <div x-ref="alphaTab"
                                 data-alphatab
