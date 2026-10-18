@@ -107,6 +107,63 @@ export function audioEngine() {
             }
         },
 
+        // Manual, opt-in recovery experiment. Do not change an active session.
+        // Construct the replacement within the button gesture on iOS.
+        testFreshAudioContext() {
+            if (this.isPlaying) {
+                this.recordAudioEvent('fresh-context-skipped', {
+                    reason: 'stop metronome first',
+                })
+                return
+            }
+
+            const previous = this.audioContext
+            let replacement
+            try {
+                replacement = new AudioContext()
+                this.audioContext = replacement
+                replacement.onstatechange = () => {
+                    if (this.audioContext === replacement) {
+                        this.recordAudioEvent('fresh-context-statechange')
+                    }
+                }
+                this.recordAudioEvent('fresh-context-created', {
+                    previousState: previous?.state ?? 'missing',
+                    audioTime: replacement.currentTime,
+                })
+                // Invoke resume directly from the gesture, before any awaits.
+                const ready = replacement.state === 'running'
+                    ? Promise.resolve()
+                    : replacement.resume()
+
+                ready.then(() => {
+                    this.recordAudioEvent('fresh-context-resumed')
+                    if (this.audioContext === replacement) {
+                        this.testAudioOutput()
+                    }
+                }).catch(error => {
+                    this.recordAudioEvent('fresh-context-resume-failed', {
+                        error: String(error),
+                    })
+                })
+
+                if (previous && previous !== replacement && previous.state !== 'closed') {
+                    previous.onstatechange = null
+                    previous.close().then(() => {
+                        this.recordAudioEvent('previous-context-closed')
+                    }).catch(error => {
+                        this.recordAudioEvent('previous-context-close-failed', {
+                            error: String(error),
+                        })
+                    })
+                }
+            } catch (error) {
+                this.recordAudioEvent('fresh-context-error', {
+                    error: String(error),
+                })
+            }
+        },
+
         async loadAudioBuffer(path) {
             this.ensureAudioContext()
 
