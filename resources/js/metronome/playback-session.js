@@ -29,6 +29,8 @@ export function playbackSession() {
             const normalizedDuration = mode === 'drill' ? Number(duration ?? 60) : null
 
             if (!useAlphaTab) {
+                this.audioStartPerfTime = performance.now()
+                this.recordAudioEvent('start-pressed', this.timingDetails())
                 this.wakeAudioContext()
             }
 
@@ -47,6 +49,9 @@ export function playbackSession() {
             }
 
             this.isPlaying = true
+            if (!useAlphaTab) {
+                this.recordAudioEvent('ui-playing-state-set', this.timingDetails())
+            }
 
             if (!useAlphaTab) {
                 this.startMetronome(normalizedBpm)
