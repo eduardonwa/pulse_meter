@@ -4,6 +4,24 @@ export function lifecycle() {
     return {
         // INITIALIZATION
         async init() {
+            // iOS/WebKit experiment: choose playback before the first
+            // AudioContext is constructed by loadClickSounds().
+            if (navigator.audioSession) {
+                try {
+                    const previousType = navigator.audioSession.type
+                    navigator.audioSession.type = 'playback'
+                    this.recordAudioEvent?.('audio-session-initialized', {
+                        previousType,
+                        selectedType: navigator.audioSession.type,
+                    })
+                } catch (error) {
+                    this.recordAudioEvent?.('audio-session-init-error', {
+                        error: String(error),
+                    })
+                }
+            } else {
+                this.recordAudioEvent?.('audio-session-unsupported')
+            }
             if (this.usesLocalPersistence) {
                 this.loadFromLocalStorage()
 
