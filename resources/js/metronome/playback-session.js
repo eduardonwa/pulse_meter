@@ -7,7 +7,6 @@ export function playbackSession() {
         
         // SESSION CONTROLS
         toggle() {
-            if (this.audioRecovering && !this.isPlaying) return
             this.isPlaying ? this.stop() : this.startMetronomeSession()
         },
 
@@ -19,10 +18,6 @@ export function playbackSession() {
             exerciseIndex = null,
             useAlphaTab = false,
         }) {
-            if (!useAlphaTab && this.audioRecovering) {
-                this.recordAudioEvent('start-blocked-recovering')
-                return null
-            }
             /*
             * Cierra cualquier sesión anterior antes
             * de configurar la nueva.
@@ -34,9 +29,8 @@ export function playbackSession() {
             const normalizedDuration = mode === 'drill' ? Number(duration ?? 60) : null
 
             if (!useAlphaTab) {
-                this.audioStartPerfTime = performance.now()
-                this.recordAudioEvent('start-pressed', this.timingDetails())
-                this.wakeAudioContext()
+                this.cancelAudioRecovery?.()
+                this.ensureAudioContext()
             }
 
             this.playbackSource = source
@@ -54,9 +48,6 @@ export function playbackSession() {
             }
 
             this.isPlaying = true
-            if (!useAlphaTab) {
-                this.recordAudioEvent('ui-playing-state-set', this.timingDetails())
-            }
 
             if (!useAlphaTab) {
                 this.startMetronome(normalizedBpm)
@@ -74,7 +65,6 @@ export function playbackSession() {
         },
         
         startMetronomeSession() {
-            if (this.audioRecovering) return
             const mode = this.metronome.mode
 
             const configuredDuration = mode === 'drill' ? Number(this.metronome.duration_seconds) : null
