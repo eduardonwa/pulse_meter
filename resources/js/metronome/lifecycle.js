@@ -36,6 +36,11 @@ export function lifecycle() {
             })
             this.audioVisibilityListener = () => {
                 this.recordAudioEvent?.('visibility-change')
+                if (document.hidden) {
+                    this.cancelAudioRecovery?.()
+                } else {
+                    this.scheduleAudioRecovery?.()
+                }
             }
             document.addEventListener('visibilitychange', this.audioVisibilityListener)
 
@@ -56,6 +61,7 @@ export function lifecycle() {
         },
 
         destroy() {
+            this.cancelAudioRecovery?.()
             document.removeEventListener('visibilitychange', this.audioVisibilityListener)
             this.stop?.('navigation')
         },
