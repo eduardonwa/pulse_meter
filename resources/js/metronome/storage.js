@@ -19,6 +19,11 @@ function normalizeMode(mode) {
             : mode
 }
 
+function isSupportedTimeSignatureNumerator(value) {
+    const numerator = Number(value)
+    return Number.isInteger(numerator) && numerator >= 2 && numerator <= 16
+}
+
 export function storage() {
     return {
         storageKey: 'pulse_meter_routine',
@@ -53,7 +58,7 @@ export function storage() {
                             mode: normalizeMode(step.mode),
                             
                             time_signature_numerator:
-                                    [2, 3, 4].includes(
+                                    isSupportedTimeSignatureNumerator(
                                         Number(
                                             step.time_signature_numerator
                                         )
@@ -236,7 +241,7 @@ export function storage() {
                                 : null,
 
                         time_signature_numerator:
-                            [2, 3, 4].includes(
+                            isSupportedTimeSignatureNumerator(
                                 Number(
                                     step.time_signature_numerator
                                 )
