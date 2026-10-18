@@ -3,17 +3,9 @@ export function audioEngine() {
         audioContext: null,
         intervalId: null,
         metronomeRunId: 0,
-        audioEvents: [],
-        audioStateListener: null,
+        audioRecoveryGeneration: 0,
         audioRecoverySuspendTimer: null,
         audioRecoveryResumeTimer: null,
-        audioRecoveryGeneration: 0,
-        audioRecovering: false,
-        audioRecoveryEnabled: true,
-        audioStartPerfTime: null,
-        audioStartRunId: null,
-        beatTimingSamples: [],
-        activeBeatTimingSample: null,
 
         activeMetronomeBpm: null,
         currentBeat: 1,
@@ -43,75 +35,11 @@ export function audioEngine() {
 
         // AUDIO CONTEXT
         ensureAudioContext() {
-            if (this.audioContext && this.audioContext.state !== 'closed') return
-
-            this.audioContext = new AudioContext()
-            this.audioContext.onstatechange = () => {
-                this.recordAudioEvent('statechange')
-            }
-            this.recordAudioEvent('context-created')
+            this.audioContext ??= new AudioContext()
         },
 
-        recordAudioEvent(event, details = {}) {
-            const entry = {
-                event,
-                state: this.audioContext?.state ?? 'missing',
-                visibility: typeof document === 'undefined' ? 'unknown' : document.visibilityState,
-                clickLoaded: !!this.clickBuffer,
-                accentLoaded: !!this.accentBuffer,
-                time: new Date().toISOString(),
-                ...details,
-            }
-            this.audioEvents.push(entry)
-            if (this.audioEvents.length > 40) this.audioEvents.shift()
-            if (typeof window !== 'undefined') {
-                window.__dorelogAudioDiagnostics = this.audioEvents
-            }
-            console.info('[Dorelog audio]', entry)
-        },
-
-        timingDetails() {
-            const ctx = this.audioContext
-            const elapsed = this.audioStartPerfTime === null
-                ? null : Number((performance.now() - this.audioStartPerfTime).toFixed(2))
-            let outputTimestamp = null
-            try {
-                const stamp = ctx?.getOutputTimestamp?.()
-                if (stamp && stamp.performanceTime > 0) {
-                    outputTimestamp = {
-                        contextTime: Number(stamp.contextTime.toFixed(4)),
-                        performanceTime: Number(stamp.performanceTime.toFixed(2)),
-                    }
-                }
-            } catch (_) {
-                // Optional browser API.
-            }
-            return {
-                msFromStart: elapsed,
-                audioTime: ctx ? Number(ctx.currentTime.toFixed(4)) : null,
-                baseLatencyMs: ctx?.baseLatency == null ? null : Number((ctx.baseLatency * 1000).toFixed(2)),
-                outputLatencyMs: ctx?.outputLatency == null ? null : Number((ctx.outputLatency * 1000).toFixed(2)),
-                outputTimestamp,
-            }
-        },
-
-        // Called synchronously from the actual START gesture so Firefox/iOS
-        // can resume audio without waiting for a file fetch or decode.
-        wakeAudioContext() {
-            this.cancelAudioRecovery()
-            this.ensureAudioContext()
-            this.recordAudioEvent('start-gesture')
-            if (this.audioContext.state !== 'running') {
-                this.audioContext.resume()
-                    .then(() => this.recordAudioEvent('resume-resolved'))
-                    .catch(error => this.recordAudioEvent('resume-failed', {
-                        error: String(error),
-                    }))
-            }
-        },
-
+        // Experimental iOS recovery: only when returning to a stopped metronome.
         cancelAudioRecovery() {
-            this.audioRecovering = false
             ++this.audioRecoveryGeneration
             clearTimeout(this.audioRecoverySuspendTimer)
             clearTimeout(this.audioRecoveryResumeTimer)
@@ -119,58 +47,22 @@ export function audioEngine() {
             this.audioRecoveryResumeTimer = null
         },
 
-        // Experimental WebKit recovery on returning to this tab.
-        // Never alter an active metronome session.
         scheduleAudioRecovery() {
             this.cancelAudioRecovery()
-            if (!this.audioRecoveryEnabled) {
-                this.recordAudioEvent('recovery-disabled')
-                return
-            }
             const ctx = this.audioContext
-            if (!ctx || ctx.state === 'closed' || this.isPlaying) {
-                this.recordAudioEvent('recovery-skipped', {
-                    reason: !ctx ? 'no-context' : this.isPlaying ? 'playing' : 'closed',
-                })
-                return
-            }
+            if (!ctx || ctx.state === 'closed' || this.isPlaying) return
 
             const generation = this.audioRecoveryGeneration
-            this.audioRecovering = true
-            this.recordAudioEvent('recovery-scheduled')
             this.audioRecoverySuspendTimer = setTimeout(() => {
                 if (generation !== this.audioRecoveryGeneration ||
-                    document.hidden || this.isPlaying || this.audioContext !== ctx) {
-                    this.recordAudioEvent('recovery-cancelled')
-                    return
-                }
-                this.recordAudioEvent('recovery-suspend-requested')
-                ctx.suspend()
-                    .then(() => this.recordAudioEvent('recovery-suspended'))
-                    .catch(error => this.recordAudioEvent('recovery-suspend-failed', {
-                        error: String(error),
-                    }))
+                    document.hidden || this.isPlaying || this.audioContext !== ctx) return
+                ctx.suspend().catch(() => {})
             }, 250)
 
             this.audioRecoveryResumeTimer = setTimeout(() => {
                 if (generation !== this.audioRecoveryGeneration ||
-                    document.hidden || this.isPlaying || this.audioContext !== ctx) {
-                    this.recordAudioEvent('recovery-cancelled')
-                    return
-                }
-                this.recordAudioEvent('recovery-resume-requested')
-                ctx.resume()
-                    .then(() => {
-                        if (generation !== this.audioRecoveryGeneration) return
-                        this.audioRecovering = false
-                        this.recordAudioEvent('recovery-resumed')
-                    })
-                    .catch(error => {
-                        if (generation !== this.audioRecoveryGeneration) return
-                        this.recordAudioEvent('recovery-resume-failed', {
-                            error: String(error),
-                        })
-                    })
+                    document.hidden || this.isPlaying || this.audioContext !== ctx) return
+                ctx.resume().catch(() => {})
             }, 500)
         },
 
@@ -222,13 +114,6 @@ export function audioEngine() {
             gain.connect(this.audioContext.destination)
 
             source.start(now)
-            if (this.currentSubdivision === 0 && this.activeBeatTimingSample) {
-                this.activeBeatTimingSample.audioScheduledMs = Number(performance.now().toFixed(2))
-            }
-            if (this.audioStartRunId === this.metronomeRunId) {
-                this.recordAudioEvent('audio-buffer-source-start', this.timingDetails())
-                this.audioStartRunId = null
-            }
 
             source.onended = () => {
                 source.disconnect()
@@ -257,15 +142,7 @@ export function audioEngine() {
             clearInterval(this.intervalId)
             this.intervalId = null
 
-            this.recordAudioEvent('metronome-loading')
-            try {
-                await this.loadClickSounds()
-            } catch (error) {
-                this.recordAudioEvent('samples-failed', { error: String(error) })
-                if (runId === this.metronomeRunId) this.stop('audio_error')
-                return
-            }
-            this.recordAudioEvent('samples-ready')
+            await this.loadClickSounds()
 
             /*
             * Durante la espera pudo ocurrir:
@@ -281,24 +158,11 @@ export function audioEngine() {
                 return
             }
 
-            this.beatTimingSamples = []
-            this.activeBeatTimingSample = null
             this.activeMetronomeBpm = bpm
-            this.audioStartRunId = runId
             this.currentBeat = 1
             this.currentSubdivision = 0
 
-            this.recordAudioEvent('first-beat-scheduled', this.timingDetails())
             this.playPatternBeat()
-            // The UI updates reactively, so the next frame is an approximation
-            // of visual presentation, not proof of pixel/physical speaker timing.
-            if (typeof requestAnimationFrame === 'function') {
-                requestAnimationFrame(() => {
-                    if (runId === this.metronomeRunId) {
-                        this.recordAudioEvent('visual-frame-after-start', this.timingDetails())
-                    }
-                })
-            }
 
             this.intervalId = setInterval(() => {
                 this.advancePatternPosition()
@@ -343,30 +207,7 @@ export function audioEngine() {
             }
         },
 
-        // Bounded instrumentation of main beats; no changes to playback timing.
-        beginBeatTiming(beat) {
-            const sample = {
-                beat,
-                subdivision: this.currentSubdivision,
-                uiUpdateMs: Number(performance.now().toFixed(2)),
-                audioScheduledMs: null,
-                visualFrameMs: null,
-            }
-            this.beatTimingSamples.push(sample)
-            if (this.beatTimingSamples.length > 16) this.beatTimingSamples.shift()
-            this.activeBeatTimingSample = sample
-            const runId = this.metronomeRunId
-            if (typeof requestAnimationFrame !== 'function') return
-            requestAnimationFrame(() => {
-                if (runId !== this.metronomeRunId) return
-                sample.visualFrameMs = Number(performance.now().toFixed(2))
-                sample.visualMinusAudioMs = sample.audioScheduledMs === null
-                    ? null : Number((sample.visualFrameMs - sample.audioScheduledMs).toFixed(2))
-            })
-        },
-
         playPatternBeat(beat = this.currentBeat) {
-            this.beginBeatTiming(beat)
             const playbackPulse = this.getPlaybackPulse()
             const patternBeat = playbackPulse.pattern[beat - 1]
 
@@ -566,13 +407,6 @@ export function audioEngine() {
             gain.connect(ctx.destination)
 
             oscillator.start(now)
-            if (this.currentSubdivision === 0 && this.activeBeatTimingSample) {
-                this.activeBeatTimingSample.audioScheduledMs = Number(performance.now().toFixed(2))
-            }
-            if (this.audioStartRunId === this.metronomeRunId) {
-                this.recordAudioEvent('audio-oscillator-start', this.timingDetails())
-                this.audioStartRunId = null
-            }
 
             oscillator.stop(
                 now + decayDuration + 0.02
@@ -621,26 +455,10 @@ export function audioEngine() {
             * esperando la carga asíncrona de sonidos.
             */
             this.metronomeRunId += 1
-            this.audioStartRunId = null
 
             clearInterval(this.intervalId)
 
             this.intervalId = null
-            if (this.beatTimingSamples.length) {
-                this.recordAudioEvent('beat-timing-summary', {
-                    samples: this.beatTimingSamples.map(sample => ({
-                        beat: sample.beat,
-                        uiToAudioMs: sample.audioScheduledMs === null ? null :
-                            Number((sample.audioScheduledMs - sample.uiUpdateMs).toFixed(2)),
-                        uiToFrameMs: sample.visualFrameMs === null ? null :
-                            Number((sample.visualFrameMs - sample.uiUpdateMs).toFixed(2)),
-                        frameMinusAudioMs: sample.visualMinusAudioMs ?? null,
-                    })),
-                })
-                this.beatTimingSamples = []
-                this.activeBeatTimingSample = null
-            }
-            this.recordAudioEvent('metronome-stopped')
             this.currentBeat = 1
             this.currentSubdivision = 0
         },
