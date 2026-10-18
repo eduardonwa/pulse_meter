@@ -63,7 +63,9 @@ export function audioEngine() {
             }
             this.audioEvents.push(entry)
             if (this.audioEvents.length > 40) this.audioEvents.shift()
-            window.__dorelogAudioDiagnostics = this.audioEvents
+            if (typeof window !== 'undefined') {
+                window.__dorelogAudioDiagnostics = this.audioEvents
+            }
             console.info('[Dorelog audio]', entry)
         },
 
