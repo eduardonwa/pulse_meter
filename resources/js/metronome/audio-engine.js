@@ -3,7 +3,6 @@ export function audioEngine() {
         audioContext: null,
         intervalId: null,
         metronomeRunId: 0,
-        activeClickSources: new Set(),
 
         activeMetronomeBpm: null,
         currentBeat: 1,
@@ -63,19 +62,13 @@ export function audioEngine() {
                 return
             }
 
-            const [click, accent, finish] = await Promise.all([
-                this.loadAudioBuffer(profile.click),
-                this.loadAudioBuffer(profile.accent),
-                this.loadAudioBuffer(profile.finish),
-            ])
-
-            this.clickBuffer = click
-            this.accentBuffer = accent
-            this.finishBuffer = finish
+            this.clickBuffer = await this.loadAudioBuffer(profile.click)
+            this.accentBuffer = await this.loadAudioBuffer(profile.accent)
+            this.finishBuffer = await this.loadAudioBuffer(profile.finish)
         },
 
         // BUFFER PLAYBACK
-        playBuffer(buffer, volume = 1, isMetronomeClick = false) {
+        playBuffer(buffer, volume = 1) {
             this.ensureAudioContext()
 
             const now = this.audioContext.currentTime
@@ -89,17 +82,12 @@ export function audioEngine() {
             source.connect(gain)
             gain.connect(this.audioContext.destination)
 
-            if (isMetronomeClick) {
-                this.activeClickSources.add(source)
-            }
+            source.start(now)
 
             source.onended = () => {
-                this.activeClickSources.delete(source)
                 source.disconnect()
                 gain.disconnect()
             }
-
-            source.start(now)
         },
 
         tick(isAccent = false) {
@@ -109,7 +97,7 @@ export function audioEngine() {
                 return
             }
 
-            this.playBuffer(buffer, isAccent ? 1 : 0.9, true)
+            this.playBuffer(buffer, isAccent ? 1 : 0.9)
         },
 
         // START METRONOME
@@ -123,14 +111,7 @@ export function audioEngine() {
             clearInterval(this.intervalId)
             this.intervalId = null
 
-            // Resume within the START gesture for mobile Safari; load assets
-            // concurrently with resuming the output context.
-            this.ensureAudioContext()
-            const ready = this.audioContext.state === 'suspended'
-                ? this.audioContext.resume()
-                : Promise.resolve()
-
-            await Promise.all([ready, this.loadClickSounds()])
+            await this.loadClickSounds()
 
             /*
             * Durante la espera pudo ocurrir:
@@ -447,18 +428,6 @@ export function audioEngine() {
             clearInterval(this.intervalId)
 
             this.intervalId = null
-
-            // An interval cancel prevents future clicks, but does not stop
-            // already-playing AudioBufferSourceNodes (visible on mobile).
-            for (const source of this.activeClickSources) {
-                try {
-                    source.stop()
-                } catch {
-                    // A source that already ended is safe to ignore.
-                }
-            }
-            this.activeClickSources.clear()
-
             this.currentBeat = 1
             this.currentSubdivision = 0
         },
