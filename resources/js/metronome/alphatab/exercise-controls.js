@@ -2,6 +2,11 @@ export function alphaTabExerciseControls() {
     return {
         detailsOpen: false,
         hearing: false,
+        scoreLoading: false,
+
+        syncScoreRendered(event, element) {
+            if (event.detail?.element === element) this.scoreLoading = false
+        },
 
         syncPlaybackState(event, element) {
             if (event.detail?.element !== element) {
@@ -91,6 +96,7 @@ export function alphaTabExerciseControls() {
             const notation = home?.querySelector('.exercise-row__notation')
             if (notation) content.appendChild(notation)
 
+            this.scoreLoading = Boolean(element && element.dataset.alphaTabRendered !== 'true')
             this.detailsOpen = true
             dialog.showModal()
 
