@@ -81,6 +81,19 @@ export function dispatchPlaybackState(
     )
 }
 
+function scoreScrollContainer(element) {
+    return element.closest('.mobile-exercise-view-dialog__content') ?? 'html,body'
+}
+
+function syncScoreScrollContainer(api, element) {
+    const container = scoreScrollContainer(element)
+
+    if (api.settings.player.scrollElement === container) return
+
+    api.settings.player.scrollElement = container
+    api.updateSettings()
+}
+
 async function mountAlphaTab(element) {
     if (!element) return null
 
@@ -120,6 +133,7 @@ async function mountAlphaTab(element) {
                 enableCursor: true,
                 enableAnimatedBeatCursor: true,
                 enableElementHighlighting: !isAdminPreview,
+                scrollElement: scoreScrollContainer(element),
 
                 scrollMode: isAdminPreview
                     ? alphaTab.ScrollMode.Off
@@ -323,5 +337,6 @@ window.addEventListener('alphatab:render', event => {
 
     if (!api) return
 
+    syncScoreScrollContainer(api, element)
     api.render()
 })

@@ -60,7 +60,6 @@
                 <x-heroicon-o-ellipsis-horizontal />
             </button>
         </div>
-        <button type="button" class="button mobile-exercise__view" @click.stop="openMobileExerciseView($refs.exerciseViewDialog, $refs.exerciseViewContent, $refs.exerciseDetails, $refs.alphaTab, $nextTick)">View exercise</button>
     </div>
     
     {{-- BOTTOM SHEET --}}
