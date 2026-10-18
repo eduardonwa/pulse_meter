@@ -4,6 +4,13 @@ export function lifecycle() {
     return {
         // INITIALIZATION
         async init() {
+            // A/B diagnostic: ?audio_recovery=off skips only automatic
+            // suspend/resume. All playback and other audio settings stay the same.
+            this.audioRecoveryEnabled = new URLSearchParams(window.location.search)
+                .get('audio_recovery') !== 'off'
+            this.recordAudioEvent?.('recovery-mode', {
+                mode: this.audioRecoveryEnabled ? 'on' : 'off',
+            })
             // iOS/WebKit experiment: choose playback before the first
             // AudioContext is constructed by loadClickSounds().
             if (navigator.audioSession) {
