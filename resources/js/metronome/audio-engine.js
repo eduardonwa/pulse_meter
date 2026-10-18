@@ -8,6 +8,7 @@ export function audioEngine() {
         audioRecoverySuspendTimer: null,
         audioRecoveryResumeTimer: null,
         audioRecoveryGeneration: 0,
+        audioRecovering: false,
         audioStartPerfTime: null,
         audioStartRunId: null,
         beatTimingSamples: [],
@@ -107,6 +108,7 @@ export function audioEngine() {
         },
 
         cancelAudioRecovery() {
+            this.audioRecovering = false
             ++this.audioRecoveryGeneration
             clearTimeout(this.audioRecoverySuspendTimer)
             clearTimeout(this.audioRecoveryResumeTimer)
@@ -127,6 +129,7 @@ export function audioEngine() {
             }
 
             const generation = this.audioRecoveryGeneration
+            this.audioRecovering = true
             this.recordAudioEvent('recovery-scheduled')
             this.audioRecoverySuspendTimer = setTimeout(() => {
                 if (generation !== this.audioRecoveryGeneration ||
@@ -150,10 +153,18 @@ export function audioEngine() {
                 }
                 this.recordAudioEvent('recovery-resume-requested')
                 ctx.resume()
-                    .then(() => this.recordAudioEvent('recovery-resumed'))
-                    .catch(error => this.recordAudioEvent('recovery-resume-failed', {
-                        error: String(error),
-                    }))
+                    .then(() => {
+                        if (generation !== this.audioRecoveryGeneration) return
+                        this.audioRecovering = false
+                        this.recordAudioEvent('recovery-resumed')
+                    })
+                    .catch(error => {
+                        if (generation !== this.audioRecoveryGeneration) return
+                        this.recordAudioEvent('recovery-resume-failed', {
+                            error: String(error),
+                        })
+                        // Keep START disabled until the next visibility recovery.
+                    })
             }, 500)
         },
 
