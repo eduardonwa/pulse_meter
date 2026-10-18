@@ -5,15 +5,33 @@ export function lifecycle() {
     return {
         // INITIALIZATION
         audioDiagnosticsCopyStatus: '',
+        logAudioSession(event) {
+            const session = navigator.audioSession
+            logAudioLifecycle(event, {
+                supported: Boolean(session),
+                type: session?.type ?? null,
+                sessionState: session?.state ?? null,
+                audioState: this.audioContext?.state ?? null,
+            })
+        },
         async init() {
             logAudioLifecycle('init', { audioState: this.audioContext?.state ?? null })
+            this.logAudioSession('audio-session-init')
+            this.audioSessionStateListener = () => {
+                this.logAudioSession('audio-session-statechange')
+            }
+            navigator.audioSession?.addEventListener?.(
+                'statechange', this.audioSessionStateListener
+            )
             this.audioPagehideListener = event => {
+                this.logAudioSession('audio-session-pagehide')
                 logAudioLifecycle('pagehide', {
                     persisted: event.persisted,
                     audioState: this.audioContext?.state ?? null,
                 })
             }
             this.audioPageshowListener = event => {
+                this.logAudioSession('audio-session-pageshow')
                 logAudioLifecycle('pageshow', {
                     persisted: event.persisted,
                     audioState: this.audioContext?.state ?? null,
@@ -33,6 +51,7 @@ export function lifecycle() {
             this.loadClickSounds?.()
 
             this.audioVisibilityListener = () => {
+                this.logAudioSession('audio-session-visibility')
                 logAudioLifecycle('visibilitychange', {
                     audioState: this.audioContext?.state ?? null,
                     playing: this.isPlaying,
@@ -60,6 +79,9 @@ export function lifecycle() {
 
         destroy() {
             logAudioLifecycle('destroy', { audioState: this.audioContext?.state ?? null })
+            navigator.audioSession?.removeEventListener?.(
+                'statechange', this.audioSessionStateListener
+            )
             window.removeEventListener('pagehide', this.audioPagehideListener)
             window.removeEventListener('pageshow', this.audioPageshowListener)
             this.cancelAudioRecovery?.('destroy')
