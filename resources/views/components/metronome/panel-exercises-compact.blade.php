@@ -7,6 +7,7 @@
                 currentIndex === index
         }"
         @routine:exercise-clear-active.window="clearActiveExercise()"
+        @alphatab:rendered.window="syncScoreRendered($event, $refs.alphaTab)"
         @routine:exercise-active.window="syncActiveExercise($event, index, !!step.alpha_tex)"
     >
         <x-metronome.exercise-desktop />
@@ -27,6 +28,13 @@
                     <span x-text="`${step.bpm} BPM`"></span>
                     <span x-text="getStepTimeLabel(step, index)"></span>
                     <span x-text="`${step.time_signature_numerator ?? 4}/${step.time_signature_denominator ?? 4}`"></span>
+                </div>
+                <div class="mobile-exercise-view-dialog__skeleton" x-show="step.alpha_tex && scoreLoading" x-cloak role="status" aria-label="Loading tablature">
+                    <div class="skeleton-line skeleton-line--heading"></div>
+                    <div class="skeleton-line skeleton-line--staff"></div>
+                    <div class="skeleton-line skeleton-line--staff"></div>
+                    <div class="skeleton-line skeleton-line--short"></div>
+                    <span class="sr-only">Loading tablature</span>
                 </div>
                 <p x-show="!step.alpha_tex">This exercise has no tablature.</p>
                 <div class="mobile-exercise-view-dialog__actions">
