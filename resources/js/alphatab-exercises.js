@@ -121,9 +121,7 @@ async function mountAlphaTab(element) {
                 enableAnimatedBeatCursor: true,
                 enableElementHighlighting: !isAdminPreview,
 
-                scrollMode: isAdminPreview
-                    ? alphaTab.ScrollMode.Off
-                    : alphaTab.ScrollMode.Continuous,
+                scrollMode: alphaTab.ScrollMode.Off,
             },
         })
 
