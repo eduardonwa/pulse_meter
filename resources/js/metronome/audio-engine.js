@@ -55,7 +55,7 @@ export function audioEngine() {
             const entry = {
                 event,
                 state: this.audioContext?.state ?? 'missing',
-                visibility: document.visibilityState,
+                visibility: typeof document === 'undefined' ? 'unknown' : document.visibilityState,
                 clickLoaded: !!this.clickBuffer,
                 accentLoaded: !!this.accentBuffer,
                 time: new Date().toISOString(),
