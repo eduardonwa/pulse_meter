@@ -9,6 +9,7 @@ export function audioEngine() {
         audioRecoveryResumeTimer: null,
         audioRecoveryGeneration: 0,
         audioRecovering: false,
+        audioRecoveryEnabled: true,
         audioStartPerfTime: null,
         audioStartRunId: null,
         beatTimingSamples: [],
@@ -122,6 +123,10 @@ export function audioEngine() {
         // Never alter an active metronome session.
         scheduleAudioRecovery() {
             this.cancelAudioRecovery()
+            if (!this.audioRecoveryEnabled) {
+                this.recordAudioEvent('recovery-disabled')
+                return
+            }
             const ctx = this.audioContext
             if (!ctx || ctx.state === 'closed' || this.isPlaying) {
                 this.recordAudioEvent('recovery-skipped', {
