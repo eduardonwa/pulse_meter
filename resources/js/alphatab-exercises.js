@@ -127,6 +127,13 @@ async function mountAlphaTab(element) {
             },
         })
 
+        api.renderFinished.on(() => {
+            element.dataset.alphaTabRendered = 'true'
+            window.dispatchEvent(new CustomEvent('alphatab:rendered', {
+                detail: { element },
+            }))
+        })
+
         api.metronomeVolume = 1
 
         api.playerStateChanged.on(args => {
