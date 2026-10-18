@@ -10,6 +10,8 @@ export function audioEngine() {
         audioRecoveryGeneration: 0,
         audioStartPerfTime: null,
         audioStartRunId: null,
+        beatTimingSamples: [],
+        activeBeatTimingSample: null,
 
         activeMetronomeBpm: null,
         currentBeat: 1,
@@ -203,6 +205,9 @@ export function audioEngine() {
             gain.connect(this.audioContext.destination)
 
             source.start(now)
+            if (this.activeBeatTimingSample) {
+                this.activeBeatTimingSample.audioScheduledMs = Number(performance.now().toFixed(2))
+            }
             if (this.audioStartRunId === this.metronomeRunId) {
                 this.recordAudioEvent('audio-buffer-source-start', this.timingDetails())
                 this.audioStartRunId = null
@@ -259,6 +264,8 @@ export function audioEngine() {
                 return
             }
 
+            this.beatTimingSamples = []
+            this.activeBeatTimingSample = null
             this.activeMetronomeBpm = bpm
             this.audioStartRunId = runId
             this.currentBeat = 1
@@ -317,7 +324,29 @@ export function audioEngine() {
             }
         },
 
+        // Bounded instrumentation of main beats; no changes to playback timing.
+        beginBeatTiming(beat) {
+            const sample = {
+                beat,
+                subdivision: this.currentSubdivision,
+                uiUpdateMs: Number(performance.now().toFixed(2)),
+                audioScheduledMs: null,
+                visualFrameMs: null,
+            }
+            this.beatTimingSamples.push(sample)
+            if (this.beatTimingSamples.length > 16) this.beatTimingSamples.shift()
+            this.activeBeatTimingSample = sample
+            const runId = this.metronomeRunId
+            requestAnimationFrame(() => {
+                if (runId !== this.metronomeRunId) return
+                sample.visualFrameMs = Number(performance.now().toFixed(2))
+                sample.visualMinusAudioMs = sample.audioScheduledMs === null
+                    ? null : Number((sample.visualFrameMs - sample.audioScheduledMs).toFixed(2))
+            })
+        },
+
         playPatternBeat(beat = this.currentBeat) {
+            this.beginBeatTiming(beat)
             const playbackPulse = this.getPlaybackPulse()
             const patternBeat = playbackPulse.pattern[beat - 1]
 
@@ -517,6 +546,9 @@ export function audioEngine() {
             gain.connect(ctx.destination)
 
             oscillator.start(now)
+            if (this.activeBeatTimingSample) {
+                this.activeBeatTimingSample.audioScheduledMs = Number(performance.now().toFixed(2))
+            }
             if (this.audioStartRunId === this.metronomeRunId) {
                 this.recordAudioEvent('audio-oscillator-start', this.timingDetails())
                 this.audioStartRunId = null
@@ -574,6 +606,20 @@ export function audioEngine() {
             clearInterval(this.intervalId)
 
             this.intervalId = null
+            if (this.beatTimingSamples.length) {
+                this.recordAudioEvent('beat-timing-summary', {
+                    samples: this.beatTimingSamples.map(sample => ({
+                        beat: sample.beat,
+                        uiToAudioMs: sample.audioScheduledMs === null ? null :
+                            Number((sample.audioScheduledMs - sample.uiUpdateMs).toFixed(2)),
+                        uiToFrameMs: sample.visualFrameMs === null ? null :
+                            Number((sample.visualFrameMs - sample.uiUpdateMs).toFixed(2)),
+                        frameMinusAudioMs: sample.visualMinusAudioMs ?? null,
+                    })),
+                })
+                this.beatTimingSamples = []
+                this.activeBeatTimingSample = null
+            }
             this.recordAudioEvent('metronome-stopped')
             this.currentBeat = 1
             this.currentSubdivision = 0
