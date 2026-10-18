@@ -157,6 +157,14 @@
 
             .setting-option { padding: $size-4; }
 
+            .mobile-audio-help {
+                display: none;
+
+                @media screen and (max-width: 767px) {
+                    display: grid;
+                }
+            }
+
             .group {
                 display: grid;
                 gap: $size-3;
