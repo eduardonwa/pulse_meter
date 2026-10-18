@@ -12,9 +12,29 @@
         <x-metronome.exercise-desktop />
         <x-metronome.exercise-mobile />
 
+        <dialog class="dialog-shell mobile-exercise-view-dialog" x-ref="exerciseViewDialog"
+            @close="closeMobileExerciseView($refs.exerciseDetails)"
+            @cancel.prevent="$refs.exerciseViewDialog.close()"
+            @click.self="$refs.exerciseViewDialog.close()">
+            <header class="mobile-exercise-view-dialog__header">
+                <strong x-text="step.name"></strong>
+                <button type="button" class="button" data-type="icon" aria-label="Close exercise" @click="$refs.exerciseViewDialog.close()">
+                    <x-heroicon-o-x-mark />
+                </button>
+            </header>
+            <div class="mobile-exercise-view-dialog__content" x-ref="exerciseViewContent">
+                <div class="mobile-exercise-view-dialog__facts">
+                    <span x-text="`${step.bpm} BPM`"></span>
+                    <span x-text="getStepTimeLabel(step, index)"></span>
+                    <span x-text="`${step.time_signature_numerator ?? 4}/${step.time_signature_denominator ?? 4}`"></span>
+                </div>
+                <p x-show="!step.alpha_tex">This exercise has no tablature.</p>
+            </div>
+        </dialog>
+
         <!-- TAB / EXERCISE DETAILS -->
                 <template x-if="step.alpha_tex">
-                    <div class="exercise-row__details">
+                    <div class="exercise-row__details" x-ref="exerciseDetails">
                         <button class="button" data-type="icon-text" type="button"
                             :aria-expanded="detailsOpen.toString()"
                             @click="toggleDetails($refs.alphaTab, $nextTick)"
