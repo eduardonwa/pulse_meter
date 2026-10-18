@@ -164,6 +164,52 @@ export function audioEngine() {
             }
         },
 
+        // Opt-in experiment for iOS audio routing; no automatic behavior.
+        testAudioSessionReset() {
+            const session = navigator.audioSession
+            if (!session || typeof session.type !== 'string') {
+                this.recordAudioEvent('audio-session-unsupported')
+                return
+            }
+
+            if (this.isPlaying) {
+                this.recordAudioEvent('audio-session-reset-skipped', {
+                    reason: 'stop metronome first',
+                })
+                return
+            }
+
+            const previousType = session.type
+            this.recordAudioEvent('audio-session-reset-start', { previousType })
+
+            try {
+                session.type = 'ambient'
+                this.recordAudioEvent('audio-session-ambient', {
+                    selectedType: session.type,
+                })
+            } catch (error) {
+                this.recordAudioEvent('audio-session-reset-error', {
+                    step: 'ambient',
+                    error: String(error),
+                })
+                return
+            }
+
+            setTimeout(() => {
+                try {
+                    session.type = 'playback'
+                    this.recordAudioEvent('audio-session-playback', {
+                        selectedType: session.type,
+                    })
+                } catch (error) {
+                    this.recordAudioEvent('audio-session-reset-error', {
+                        step: 'playback',
+                        error: String(error),
+                    })
+                }
+            }, 0)
+        },
+
         async loadAudioBuffer(path) {
             this.ensureAudioContext()
 
