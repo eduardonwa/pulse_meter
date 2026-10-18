@@ -13,7 +13,13 @@ export function lifecycle() {
             }
 
             this.loadRecentSessions()
-            this.loadClickSounds?.()
+            this.loadClickSounds?.().catch(error => {
+                this.recordAudioEvent?.('preload-failed', { error: String(error) })
+            })
+            this.audioVisibilityListener = () => {
+                this.recordAudioEvent?.('visibility-change')
+            }
+            document.addEventListener('visibilitychange', this.audioVisibilityListener)
 
             if (this.usesServerPersistence) {
                 await this.loadPulsePatterns?.()
@@ -32,6 +38,7 @@ export function lifecycle() {
         },
 
         destroy() {
+            document.removeEventListener('visibilitychange', this.audioVisibilityListener)
             this.stop?.('navigation')
         },
 
