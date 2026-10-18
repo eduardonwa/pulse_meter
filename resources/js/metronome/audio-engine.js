@@ -210,6 +210,35 @@ export function audioEngine() {
             }, 0)
         },
 
+        // Direct HTML media playback bypasses Web Audio entirely.
+        // An isolated alternative path for the exact same metronome WAV.
+        testHtmlAudioClick() {
+            const path = this.currentDawProfile?.click
+            if (!path) {
+                this.recordAudioEvent('html-audio-missing-click-path')
+                return
+            }
+            try {
+                const element = new Audio(path)
+                element.volume = 1
+                this.recordAudioEvent('html-audio-start', { path })
+                element.onplaying = () => this.recordAudioEvent('html-audio-playing')
+                element.onended = () => this.recordAudioEvent('html-audio-ended')
+                element.onerror = () => this.recordAudioEvent('html-audio-error', {
+                    mediaErrorCode: element.error?.code ?? null,
+                })
+                const result = element.play()
+                if (result?.then) {
+                    result.then(() => this.recordAudioEvent('html-audio-play-resolved'))
+                        .catch(error => this.recordAudioEvent('html-audio-play-rejected', {
+                            error: String(error),
+                        }))
+                }
+            } catch (error) {
+                this.recordAudioEvent('html-audio-exception', { error: String(error) })
+            }
+        },
+
         async loadAudioBuffer(path) {
             this.ensureAudioContext()
 
