@@ -7,6 +7,7 @@ export function playbackSession() {
         
         // SESSION CONTROLS
         toggle() {
+            if (this.audioRecovering && !this.isPlaying) return
             this.isPlaying ? this.stop() : this.startMetronomeSession()
         },
 
@@ -18,6 +19,10 @@ export function playbackSession() {
             exerciseIndex = null,
             useAlphaTab = false,
         }) {
+            if (!useAlphaTab && this.audioRecovering) {
+                this.recordAudioEvent('start-blocked-recovering')
+                return null
+            }
             /*
             * Cierra cualquier sesión anterior antes
             * de configurar la nueva.
