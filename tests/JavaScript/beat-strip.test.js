@@ -17,16 +17,16 @@ function strip(width, offsets, scrollLeft = 0) {
     return element
 }
 
-test('does not scroll when the active beat is fully visible', () => {
-    const element = strip(120, [0, 44, 88])
+test('does not scroll when the active beat is centered', () => {
+    const element = strip(120, [2, 46, 90])
     scrollActiveBeatIntoView(element, 2)
     assert.equal(element.scrollLeft, 0)
 })
 
-test('reveals a beat as soon as it crosses the right edge', () => {
+test('centers the active beat before it reaches the right edge', () => {
     const element = strip(120, [0, 44, 88, 132, 176])
     scrollActiveBeatIntoView(element, 4)
-    assert.equal(element.scrollLeft, 44)
+    assert.equal(element.scrollLeft, 86)
     scrollActiveBeatIntoView(element, 4)
     assert.equal(element.scrollLeft, 44)
 })
@@ -34,7 +34,7 @@ test('reveals a beat as soon as it crosses the right edge', () => {
 test('reveals an earlier beat when the measure wraps', () => {
     const element = strip(120, [0, 44, 88, 132, 176], 84)
     scrollActiveBeatIntoView(element, 1)
-    assert.equal(element.scrollLeft, -4) // Browser clamps this to 0 in the real DOM.
+    assert.equal(element.scrollLeft, -46) // Browser clamps this to 0 in the real DOM.
 })
 
 test('handles missing elements without throwing', () => {
