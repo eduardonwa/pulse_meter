@@ -1,3 +1,30 @@
+// Temporary iOS lifecycle diagnostics. Remove after investigation.
+const diagnosticKey = 'dorelog:audio-lifecycle-debug'
+const documentId = Math.random().toString(36).slice(2) + '-' + Date.now().toString(36)
+
+export function logAudioLifecycle(event, details = {}) {
+    const navigation = performance.getEntriesByType('navigation')[0]
+    const entry = {
+        documentId,
+        at: new Date().toISOString(),
+        elapsedMs: Math.round(performance.now()),
+        event,
+        visibility: document.visibilityState,
+        navigationType: navigation?.type ?? 'unknown',
+        ...details,
+    }
+
+    try {
+        const stored = JSON.parse(localStorage.getItem(diagnosticKey) || '[]')
+        const records = Array.isArray(stored) ? stored : []
+        localStorage.setItem(diagnosticKey, JSON.stringify([...records, entry].slice(-40)))
+    } catch {
+        // Diagnostics must not affect metronome functionality.
+    }
+
+    console.debug('[Dorelog lifecycle]', entry)
+}
+
 export function audioEngine() {
     return {
         audioContext: null,
@@ -35,11 +62,22 @@ export function audioEngine() {
 
         // AUDIO CONTEXT
         ensureAudioContext() {
-            this.audioContext ??= new AudioContext()
+            if (this.audioContext) return
+            const ctx = new AudioContext()
+            this.audioContext = ctx
+            logAudioLifecycle('audio-created', { state: ctx.state })
+            ctx.addEventListener('statechange', () => {
+                logAudioLifecycle('audio-statechange', { state: ctx.state })
+            })
         },
 
         // Experimental iOS recovery: only when returning to a stopped metronome.
-        cancelAudioRecovery() {
+        cancelAudioRecovery(reason = 'unspecified') {
+            const hadTimers = this.audioRecoverySuspendTimer !== null ||
+                this.audioRecoveryResumeTimer !== null
+            if (hadTimers) logAudioLifecycle('recovery-cancelled', {
+                reason, generation: this.audioRecoveryGeneration,
+            })
             ++this.audioRecoveryGeneration
             clearTimeout(this.audioRecoverySuspendTimer)
             clearTimeout(this.audioRecoveryResumeTimer)
@@ -48,21 +86,40 @@ export function audioEngine() {
         },
 
         scheduleAudioRecovery() {
-            this.cancelAudioRecovery()
+            this.cancelAudioRecovery('rescheduled')
             const ctx = this.audioContext
-            if (!ctx || ctx.state === 'closed' || this.isPlaying) return
+            if (!ctx || ctx.state === 'closed' || this.isPlaying) {
+                logAudioLifecycle('recovery-skipped', {
+                    reason: !ctx ? 'no-context' : ctx.state === 'closed' ? 'closed' : 'playing',
+                    state: ctx?.state ?? null,
+                })
+                return
+            }
 
             const generation = this.audioRecoveryGeneration
+            logAudioLifecycle('recovery-scheduled', { generation, state: ctx.state })
             this.audioRecoverySuspendTimer = setTimeout(() => {
                 if (generation !== this.audioRecoveryGeneration ||
                     document.hidden || this.isPlaying || this.audioContext !== ctx) return
-                ctx.suspend().catch(() => {})
+                logAudioLifecycle('suspend-requested', { generation, state: ctx.state })
+                ctx.suspend().then(
+                    () => logAudioLifecycle('suspend-completed', { generation, state: ctx.state }),
+                    error => logAudioLifecycle('suspend-rejected', {
+                        generation, error: String(error),
+                    })
+                )
             }, 250)
 
             this.audioRecoveryResumeTimer = setTimeout(() => {
                 if (generation !== this.audioRecoveryGeneration ||
                     document.hidden || this.isPlaying || this.audioContext !== ctx) return
-                ctx.resume().catch(() => {})
+                logAudioLifecycle('resume-requested', { generation, state: ctx.state })
+                ctx.resume().then(
+                    () => logAudioLifecycle('resume-completed', { generation, state: ctx.state }),
+                    error => logAudioLifecycle('resume-rejected', {
+                        generation, error: String(error),
+                    })
+                )
             }, 500)
         },
 
