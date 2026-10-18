@@ -29,6 +29,11 @@
                     <span x-text="`${step.time_signature_numerator ?? 4}/${step.time_signature_denominator ?? 4}`"></span>
                 </div>
                 <p x-show="!step.alpha_tex">This exercise has no tablature.</p>
+                <div class="mobile-exercise-view-dialog__actions">
+                    <button type="button" class="button" data-type="play-drill"
+                        @click="activeExerciseIndex === index && isPlaying ? stop() : startExercise(index)"
+                        x-text="activeExerciseIndex === index && isPlaying ? 'Stop' : 'Practice'"></button>
+                </div>
             </div>
         </dialog>
 
