@@ -360,3 +360,29 @@
     .exercise-row__details { display: none; }
     .mobile-exercise-view-dialog .exercise-row__notation { display: block; }
 }
+
+.mobile-exercise-view-dialog__skeleton {
+    display: grid;
+    gap: 1rem;
+    padding: 1rem 0;
+
+    .skeleton-line {
+        background: hsl(var(--neutral-900) / .09);
+        border-radius: .375rem;
+        animation: exercise-score-pulse 1.4s ease-in-out infinite;
+        height: 3.25rem;
+
+        &--heading { width: 42%; height: 1rem; }
+        &--staff { width: 100%; }
+        &--short { width: 60%; height: 1rem; }
+    }
+}
+
+@keyframes exercise-score-pulse {
+    0%, 100% { opacity: .55; }
+    50% { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .mobile-exercise-view-dialog__skeleton .skeleton-line { animation: none; }
+}
