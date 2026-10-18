@@ -1,19 +1,20 @@
-// Keep the active beat visible without scrolling the surrounding page.
+// Reveal the active beat immediately, keeping the page and fixed BPM in place.
 export function scrollActiveBeatIntoView(strip, currentBeat) {
     if (!strip || !Number.isInteger(Number(currentBeat))) return
 
-    const index = Number(currentBeat) - 1
-    const beat = strip.children?.[index]
-    if (!beat) return
+    const beat = strip.children?.[Number(currentBeat) - 1]
+    if (!beat || !strip.clientWidth) return
 
-    const viewportLeft = strip.scrollLeft
-    const viewportRight = viewportLeft + strip.clientWidth
-    const beatLeft = beat.offsetLeft - strip.offsetLeft
-    const beatRight = beatLeft + beat.offsetWidth
+    // Rectangles are relative to the viewport, even when offset parents differ.
+    const stripRect = strip.getBoundingClientRect?.()
+    const beatRect = beat.getBoundingClientRect?.()
 
-    if (beatLeft < viewportLeft) {
-        strip.scrollLeft = beatLeft
-    } else if (beatRight > viewportRight) {
-        strip.scrollLeft = beatRight - strip.clientWidth
+    if (!stripRect || !beatRect) return
+
+    const inset = 4
+    if (beatRect.right > stripRect.right - inset) {
+        strip.scrollLeft += beatRect.right - stripRect.right + inset
+    } else if (beatRect.left < stripRect.left + inset) {
+        strip.scrollLeft -= stripRect.left + inset - beatRect.left
     }
 }
