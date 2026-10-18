@@ -205,7 +205,7 @@ export function audioEngine() {
             gain.connect(this.audioContext.destination)
 
             source.start(now)
-            if (this.activeBeatTimingSample) {
+            if (this.currentSubdivision === 0 && this.activeBeatTimingSample) {
                 this.activeBeatTimingSample.audioScheduledMs = Number(performance.now().toFixed(2))
             }
             if (this.audioStartRunId === this.metronomeRunId) {
@@ -546,7 +546,7 @@ export function audioEngine() {
             gain.connect(ctx.destination)
 
             oscillator.start(now)
-            if (this.activeBeatTimingSample) {
+            if (this.currentSubdivision === 0 && this.activeBeatTimingSample) {
                 this.activeBeatTimingSample.audioScheduledMs = Number(performance.now().toFixed(2))
             }
             if (this.audioStartRunId === this.metronomeRunId) {
