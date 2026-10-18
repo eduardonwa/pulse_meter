@@ -314,9 +314,10 @@
 }
 
 /* The native dialog enters the top layer without cloning the score/player. */
-.mobile-exercise__view {
-    width: 100%;
-    margin-block-end: 1rem;
+.exercise-row__view {
+    display: block;
+    width: calc(100% - 2rem);
+    margin: 0 1rem 1rem;
     padding: .75rem;
 }
 
@@ -352,14 +353,21 @@
 }
 
 @include mq(medium) {
-    .mobile-exercise-view-dialog { display: none; }
+    .exercise-row__view {
+        grid-column: 1 / -1;
+        width: auto;
+        margin: .5rem;
+    }
+
+    .mobile-exercise-view-dialog {
+        max-width: 610px;
+        height: min(80dvh, 42rem);
+    }
 }
 
 /* On phones notation is only visible in the dialog, never below the card. */
-@media (max-width: 767px) {
-    .exercise-row__details { display: none; }
-    .mobile-exercise-view-dialog .exercise-row__notation { display: block; }
-}
+.exercise-row__details { display: none !important; }
+.mobile-exercise-view-dialog .exercise-row__notation { display: block; }
 
 .mobile-exercise-view-dialog__skeleton {
     display: grid;
