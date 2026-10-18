@@ -1,9 +1,44 @@
 import { isTypingInField } from '../helpers'
+import { logAudioLifecycle } from './audio-engine'
 
 export function lifecycle() {
     return {
         // INITIALIZATION
+        audioDiagnosticsCopyStatus: '',
+        logAudioSession(event) {
+            const session = navigator.audioSession
+            logAudioLifecycle(event, {
+                supported: Boolean(session),
+                type: session?.type ?? null,
+                sessionState: session?.state ?? null,
+                audioState: this.audioContext?.state ?? null,
+            })
+        },
         async init() {
+            logAudioLifecycle('init', { audioState: this.audioContext?.state ?? null })
+            this.logAudioSession('audio-session-init')
+            this.audioSessionStateListener = () => {
+                this.logAudioSession('audio-session-statechange')
+            }
+            navigator.audioSession?.addEventListener?.(
+                'statechange', this.audioSessionStateListener
+            )
+            this.audioPagehideListener = event => {
+                this.logAudioSession('audio-session-pagehide')
+                logAudioLifecycle('pagehide', {
+                    persisted: event.persisted,
+                    audioState: this.audioContext?.state ?? null,
+                })
+            }
+            this.audioPageshowListener = event => {
+                this.logAudioSession('audio-session-pageshow')
+                logAudioLifecycle('pageshow', {
+                    persisted: event.persisted,
+                    audioState: this.audioContext?.state ?? null,
+                })
+            }
+            window.addEventListener('pagehide', this.audioPagehideListener)
+            window.addEventListener('pageshow', this.audioPageshowListener)
             if (this.usesLocalPersistence) {
                 this.loadFromLocalStorage()
 
@@ -14,6 +49,17 @@ export function lifecycle() {
 
             this.loadRecentSessions()
             this.loadClickSounds?.()
+
+            this.audioVisibilityListener = () => {
+                this.logAudioSession('audio-session-visibility')
+                logAudioLifecycle('visibilitychange', {
+                    audioState: this.audioContext?.state ?? null,
+                    playing: this.isPlaying,
+                })
+                if (document.hidden) this.cancelAudioRecovery?.('hidden')
+                else this.scheduleAudioRecovery?.()
+            }
+            document.addEventListener('visibilitychange', this.audioVisibilityListener)
 
             if (this.usesServerPersistence) {
                 await this.loadPulsePatterns?.()
@@ -32,7 +78,58 @@ export function lifecycle() {
         },
 
         destroy() {
+            logAudioLifecycle('destroy', { audioState: this.audioContext?.state ?? null })
+            navigator.audioSession?.removeEventListener?.(
+                'statechange', this.audioSessionStateListener
+            )
+            window.removeEventListener('pagehide', this.audioPagehideListener)
+            window.removeEventListener('pageshow', this.audioPageshowListener)
+            this.cancelAudioRecovery?.('destroy')
+            document.removeEventListener('visibilitychange', this.audioVisibilityListener)
             this.stop?.('navigation')
+        },
+
+        // Temporary diagnostics export for testing Firefox on iOS.
+        async copyAudioDiagnostics() {
+            let payload
+
+            try {
+                payload = localStorage.getItem('dorelog:audio-lifecycle-debug')
+                if (!payload) {
+                    this.audioDiagnosticsCopyStatus = 'No diagnostics recorded yet'
+                    return
+                }
+            } catch {
+                this.audioDiagnosticsCopyStatus = 'Could not read diagnostics'
+                return
+            }
+
+            try {
+                if (navigator.clipboard?.writeText) {
+                    await navigator.clipboard.writeText(payload)
+                } else {
+                    const field = document.createElement('textarea')
+                    field.value = payload
+                    field.setAttribute('readonly', '')
+                    field.style.position = 'fixed'
+                    field.style.opacity = '0'
+                    document.body.appendChild(field)
+                    field.focus()
+                    field.select()
+                    field.setSelectionRange(0, field.value.length)
+                    try {
+                        if (!document.execCommand('copy')) {
+                            throw new Error('Copy was not supported')
+                        }
+                    } finally {
+                        field.remove()
+                    }
+                }
+
+                this.audioDiagnosticsCopyStatus = 'Diagnostics copied'
+            } catch {
+                this.audioDiagnosticsCopyStatus = 'Copy failed. Try again'
+            }
         },
 
         // GLOBAL SHORCUTS

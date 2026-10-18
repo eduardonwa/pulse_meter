@@ -29,7 +29,9 @@ export function playbackSession() {
             const normalizedDuration = mode === 'drill' ? Number(duration ?? 60) : null
 
             if (!useAlphaTab) {
+                this.cancelAudioRecovery?.('start')
                 this.ensureAudioContext()
+                this.resumeAudioForStart?.()
             }
 
             this.playbackSource = source
