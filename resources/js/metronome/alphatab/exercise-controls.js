@@ -71,6 +71,19 @@ export function alphaTabExerciseControls() {
             }
         },
 
+        startMobileExercisePractice(index, step, dialog, content, home, element, nextTick) {
+            if (this.activeExerciseIndex === index && this.isPlaying) {
+                this.stop()
+                return
+            }
+
+            if (this.hasAlphaTabPattern(step)) {
+                this.openMobileExerciseView(dialog, content, home, element, nextTick)
+            }
+
+            this.startExercise(index)
+        },
+
         openMobileExerciseView(dialog, content, home, element, nextTick) {
             if (!dialog?.showModal || !content) return
 
