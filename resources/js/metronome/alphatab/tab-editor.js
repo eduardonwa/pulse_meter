@@ -45,5 +45,5 @@ export function serializeTabDraft(draft, numerator = 4, bpm = 100) {
         }
     }
     if (current.length) measures.push(current.join(' '));
-    return `\\\\tempo ${Number(bpm)}\n\\\\staff {tabs}\n.\n${measures.join(' | ')}`;
+    return `\\tempo ${Number(bpm)}\n\\staff {tabs}\n.\n${measures.join(' | ')}`;
 }
