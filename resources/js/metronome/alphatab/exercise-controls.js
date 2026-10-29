@@ -135,6 +135,10 @@ export function alphaTabExerciseControls() {
         },
 
         clearActiveExercise() {
+            // Native modal dialogs remain in the browser's top layer and
+            // otherwise conceal the Continue and review overlays.
+            const dialog = this.$refs?.exerciseViewDialog
+            if (dialog?.open) dialog.close()
             this.detailsOpen = false
         },
 
