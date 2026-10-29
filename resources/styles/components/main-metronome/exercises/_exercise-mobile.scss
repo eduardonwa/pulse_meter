@@ -402,7 +402,7 @@
     .exercise-row__notation { display: block; }
 
     @include mq(extraLarge) {
-        height: 60dvh;
+        height: 60vh;
     }
 }
 
