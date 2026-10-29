@@ -139,3 +139,47 @@ export function clearTabNotes(beats, indices) {
             : note
     );
 }
+
+
+// Derive playable, meter-safe alphaTex without modifying saved tablature.
+// Once a beat overflows a bar, skip it and any later beats in that bar.
+export function serializeTabPlayback(draft, numerator = 4, bpm = 100) {
+    const measures = layoutTabMeasures(draft, numerator);
+    if (!measures.some(measure => measure.used > measure.capacity)) {
+        return serializeTabDraft(draft, numerator, bpm);
+    }
+    const capacity = Number(numerator) * 4;
+    const beats = [];
+    const breaks = [];
+    for (const measure of measures) {
+        if (beats.length) breaks.push(beats.length);
+        let used = 0;
+        for (const beat of measure.notes) {
+            const amount = 16 / beat.duration;
+            if (used + amount > capacity) break;
+            const { index, ...note } = beat;
+            beats.push(note);
+            used += amount;
+        }
+        // Fill remaining time with rests so the next bar starts on schedule.
+        let remaining = capacity - used;
+        for (const duration of [1, 2, 4, 8, 16]) {
+            const amount = 16 / duration;
+            while (amount <= remaining) {
+                beats.push({ rest: true, duration });
+                remaining -= amount;
+            }
+        }
+    }
+    return serializeTabDraft({ ...draft, beats, breaks }, numerator, bpm);
+}
+
+export function playbackAlphaTex(alphaTex) {
+    try {
+        const { draft, numerator, bpm } = parseTabDraft(alphaTex);
+        return serializeTabPlayback(draft, numerator, bpm);
+    } catch {
+        // Advanced Filament scores are not part of our restricted editor format.
+        return alphaTex;
+    }
+}
