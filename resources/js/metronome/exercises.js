@@ -11,6 +11,10 @@ export function exercises() {
         tabSelectedIndex: 0,
         tabSelectedIndices: [],
         tabSelectionAnchor: null,
+        tabDragAnchor: null,
+        tabDragging: false,
+        tabDragMoved: false,
+        tabDigitPending: null,
         tabViewportWidth: 700,
 
         // EXERCISE STATE
@@ -416,6 +420,7 @@ export function exercises() {
                 this.tabSelectionAnchor = validNote ? index : null;
             }
             this.tabSelectedIndex = index;
+            this.tabDigitPending = null;
             const note = this.tabDraft.beats[index];
             this.tabDraft = {
                 ...this.tabDraft,
@@ -423,6 +428,58 @@ export function exercises() {
                 fret: note?.fret ?? this.tabDraft.fret,
                 duration: note?.duration ?? this.tabDraft.duration,
             };
+        },
+
+        startTabDrag(index, string, event) {
+            if (event.button !== 0 || event.shiftKey || event.ctrlKey || event.metaKey) return;
+            this.tabDragAnchor = index;
+            this.tabDragging = true;
+            this.tabDragMoved = false;
+        },
+
+        extendTabDrag(index) {
+            if (!this.tabDragging || this.tabDragAnchor === null || index >= this.tabDraft.beats.length) return;
+            if (index === this.tabDragAnchor) return;
+            this.tabDragMoved = true;
+            this.selectTabEditorCell(index, this.tabDraft.beats[index].string, {
+                shiftKey: true,
+            });
+        },
+
+        endTabDrag() {
+            this.tabDragging = false;
+            this.tabDragAnchor = null;
+        },
+
+        clickTabCell(index, string, event) {
+            if (this.tabDragMoved) {
+                this.tabDragMoved = false;
+                return;
+            }
+            this.selectTabEditorCell(index, string, event);
+        },
+
+        enterTabFretDigit(digit) {
+            const now = Date.now();
+            const pending = this.tabDigitPending;
+            // A second digit entered quickly replaces the first note's fret.
+            // Only combine valid 10-24 frets; otherwise start a new note.
+            if (pending && now - pending.at < 650 && this.tabSelectedIndex === pending.index + 1) {
+                const fret = pending.digit * 10 + digit;
+                if (fret >= 10 && fret <= 24 && pending.index < this.tabDraft.beats.length) {
+                    const beats = this.tabDraft.beats.map((note, index) =>
+                        index === pending.index ? { ...note, fret } : note
+                    );
+                    this.tabDraft = { ...this.tabDraft, beats, fret };
+                    this.tabDigitPending = null;
+                    return;
+                }
+            }
+            this.tabDigitPending = null;
+            const index = this.tabSelectedIndex;
+            this.tabDraft = { ...this.tabDraft, fret: digit };
+            this.addTabEditorNote();
+            if (digit === 1 || digit === 2) this.tabDigitPending = { digit, index, at: now };
         },
 
         changeTabEditorDuration(value) {
@@ -484,8 +541,7 @@ export function exercises() {
                 this.selectTabEditorCell(index, this.tabDraft.beats[index]?.string ?? this.tabDraft.string);
             } else if (/^[0-9]$/.test(event.key)) {
                 event.preventDefault();
-                this.tabDraft = { ...this.tabDraft, fret: Number(event.key) };
-                this.addTabEditorNote();
+                this.enterTabFretDigit(Number(event.key));
             } else if (event.key === 'Delete' || event.key === 'Backspace') {
                 event.preventDefault();
                 this.undoTabEditorNote();
