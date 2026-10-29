@@ -1,3 +1,4 @@
+import { playbackAlphaTex } from './metronome/alphatab/tab-editor.js'
 let alphaTabModule = null
 let activeApi = null
 
@@ -164,7 +165,7 @@ async function mountAlphaTab(element) {
             })
         })
 
-        api.tex(applyMetadata(pattern, { bpm }))
+        api.tex(applyMetadata(playbackAlphaTex(pattern), { bpm }))
 
         instances.set(element, api)
         readyPromises.set(element, readyPromise)
@@ -212,7 +213,7 @@ window.addEventListener('alphatab:update', async event => {
 
     if (!element || !alphaTex) return
 
-    const renderedAlphaTex = applyMetadata(alphaTex, metadata)
+    const renderedAlphaTex = applyMetadata(playbackAlphaTex(alphaTex), metadata)
 
     element.dataset.alphaTex = encodeBase64(renderedAlphaTex)
     element.dataset.bpm = String(bpm)
@@ -243,7 +244,7 @@ window.addEventListener('alphatab:preview-draft', async event => {
 
     if (!alphaTex) return
 
-    const pattern = applyMetadata(alphaTex, { bpm: Number(bpm) || 100, instrument: Number(instrument ?? 25) })
+    const pattern = applyMetadata(playbackAlphaTex(alphaTex), { bpm: Number(bpm) || 100, instrument: Number(instrument ?? 25) })
     element.dataset.alphaTex = encodeBase64(pattern)
     element.dataset.bpm = String(Number(bpm) || 100)
 
@@ -346,7 +347,7 @@ window.addEventListener('alphatab:set-bpm', async event => {
 
         api.stop()
         api.playbackSpeed = 1
-        api.tex(applyMetadata(decodeBase64(encodedAlphaTex), { bpm }))
+        api.tex(applyMetadata(playbackAlphaTex(decodeBase64(encodedAlphaTex)), { bpm }))
 
         renderedBpms.set(element, bpm)
         return
