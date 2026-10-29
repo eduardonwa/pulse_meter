@@ -1,3 +1,5 @@
+let resumeViewerOnNextExercise = false
+
 export function alphaTabExerciseControls() {
     return {
         detailsOpen: false,
@@ -134,10 +136,15 @@ export function alphaTabExerciseControls() {
             // Closing the viewer does not stop an ongoing practice session.
         },
 
-        clearActiveExercise() {
+        clearActiveExercise(event) {
             // Native modal dialogs remain in the browser's top layer and
             // otherwise conceal the Continue and review overlays.
             const dialog = this.$refs?.exerciseViewDialog
+            if (dialog?.open && event?.detail?.resumeOnNext) {
+                resumeViewerOnNextExercise = true
+            } else if (!event?.detail?.resumeOnNext) {
+                resumeViewerOnNextExercise = false
+            }
             if (dialog?.open) dialog.close()
             this.detailsOpen = false
         },
@@ -146,8 +153,20 @@ export function alphaTabExerciseControls() {
             const isActive =
                 Number(event.detail?.index) === Number(index)
 
-            this.detailsOpen =
-                isActive && Boolean(hasPattern)
+            if (!isActive) return
+
+            if (resumeViewerOnNextExercise) {
+                resumeViewerOnNextExercise = false
+                if (hasPattern) {
+                    this.openMobileExerciseView(
+                        this.$refs.exerciseViewDialog,
+                        this.$refs.exerciseViewContent,
+                        this.$refs.exerciseDetails,
+                        this.$refs.alphaTab,
+                        this.$nextTick.bind(this)
+                    )
+                }
+            }
         },
     }
 }
