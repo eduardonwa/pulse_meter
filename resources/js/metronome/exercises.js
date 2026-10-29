@@ -367,7 +367,7 @@ export function exercises() {
             if (!element) return;
             this.tabPreviewPlaying = true;
             window.dispatchEvent(new CustomEvent("alphatab:preview-draft", {
-                detail: { element, alphaTex, bpm: Number(this.stepForm.bpm), play: true },
+                detail: { element, alphaTex, bpm: Number(this.stepForm.bpm), instrument: this.tabDraft.instrument, play: true },
             }));
         },
 
@@ -662,6 +662,7 @@ export function exercises() {
                                 element,
                                 alphaTex: updated.alpha_tex,
                                 bpm: Number(updated.bpm),
+                                instrument: this.tabDraft.instrument,
                             },
                         }));
                     });
