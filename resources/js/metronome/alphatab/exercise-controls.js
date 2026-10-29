@@ -3,6 +3,7 @@ export function alphaTabExerciseControls() {
         detailsOpen: false,
         hearing: false,
         scoreLoading: false,
+        viewFullscreen: false,
 
         syncScoreRendered(event, element) {
             if (event.detail?.element === element) this.scoreLoading = false
@@ -89,6 +90,15 @@ export function alphaTabExerciseControls() {
             this.startExercise(index)
         },
 
+        toggleExerciseViewSize(element, nextTick) {
+            this.viewFullscreen = !this.viewFullscreen
+            nextTick(() => {
+                requestAnimationFrame(() => {
+                    window.dispatchEvent(new CustomEvent('alphatab:render', { detail: { element } }))
+                })
+            })
+        },
+
         openMobileExerciseView(dialog, content, home, element, nextTick) {
             if (!dialog?.showModal || !content) return
 
@@ -96,6 +106,7 @@ export function alphaTabExerciseControls() {
             const notation = home?.querySelector('.exercise-row__notation')
             if (notation) content.appendChild(notation)
 
+            this.viewFullscreen = false
             this.scoreLoading = Boolean(element && element.dataset.alphaTabRendered !== 'true')
             this.detailsOpen = true
             dialog.showModal()
@@ -119,6 +130,7 @@ export function alphaTabExerciseControls() {
             const notation = content?.querySelector('.exercise-row__notation')
             if (notation && home) home.appendChild(notation)
             this.detailsOpen = false
+            this.viewFullscreen = false
             // Closing the viewer does not stop an ongoing practice session.
         },
 
