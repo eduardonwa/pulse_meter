@@ -1,4 +1,4 @@
-import { createTabDraft, appendTabNote, serializeTabDraft, parseTabDraft, layoutTabMeasures, selectTabNoteIndices, changeSelectedTabDurations, clearTabNotes, shiftTabBreaks, updateTabBreaks, TAB_STRINGS } from "./alphatab/tab-editor.js";
+import { createTabDraft, appendTabNote, serializeTabDraft, parseTabDraft, layoutTabMeasures, selectTabNoteIndices, changeSelectedTabDurations, clearTabNotes, shiftTabBreaks, updateTabBreaks, breaksForInsertedTabNote, TAB_STRINGS } from "./alphatab/tab-editor.js";
 
 export function exercises() {
     return {
@@ -589,7 +589,7 @@ export function exercises() {
                 } else {
                     beats.splice(this.tabSelectedIndex, 0, next.beats.at(-1));
                 }
-                this.tabDraft = { ...next, beats, breaks: beats.length > this.tabDraft.beats.length ? updateTabBreaks(this.tabDraft.breaks ?? [], this.tabSelectedIndex, 'insert', beats.length) : this.tabDraft.breaks };
+                this.tabDraft = { ...next, beats, breaks: beats.length > this.tabDraft.beats.length ? breaksForInsertedTabNote(this.tabDraft, this.tabSelectedIndex, next.beats.at(-1).duration, this.stepForm.time_signature_numerator) : this.tabDraft.breaks };
                 this.tabSelectedIndex = Math.min(beats.length, this.tabSelectedIndex + 1);
                 this.tabSelectedIndices = [];
                 this.tabSelectionAnchor = null;
