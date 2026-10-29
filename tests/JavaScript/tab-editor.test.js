@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { createTabDraft, appendTabNote, serializeTabDraft, layoutTabMeasures, parseTabDraft, selectTabNoteIndices, changeSelectedTabDurations } from '../../resources/js/metronome/alphatab/tab-editor.js'
+import { createTabDraft, appendTabNote, serializeTabDraft, layoutTabMeasures, parseTabDraft, selectTabNoteIndices, changeSelectedTabDurations, clearTabNotes } from '../../resources/js/metronome/alphatab/tab-editor.js'
 
 test('adds notes and serializes a four-beat measure', () => {
     let draft = createTabDraft()
@@ -95,4 +95,17 @@ test('duration edit only affects selected notes', () => {
     const edited = changeSelectedTabDurations(notes, [1, 3], 4);
     assert.deepEqual(edited.map(note => note.duration), [8, 4, 8, 4]);
     assert.deepEqual(notes.map(note => note.duration), [8, 8, 8, 8]);
+});
+
+test('Backspace-style clearing keeps duration and note positions on alphaTex round-trip', () => {
+    let draft = { ...createTabDraft(), duration: 4 };
+    for (const fret of [5, 7, 8, 10]) draft = appendTabNote(draft, fret, 1);
+    const cleared = { ...draft, beats: clearTabNotes(draft.beats, [1]) };
+    assert.equal(cleared.beats.length, 4);
+    assert.deepEqual(cleared.beats[1], { rest: true, duration: 4 });
+    assert.equal(cleared.beats[2].fret, 8);
+    const tex = serializeTabDraft(cleared, 4, 120);
+    assert.match(tex, /:4 r/);
+    assert.equal(layoutTabMeasures(cleared, 4)[0].complete, true);
+    assert.deepEqual(parseTabDraft(tex).draft.beats, cleared.beats);
 });
