@@ -543,3 +543,26 @@
     border-top-right-radius: 0;
     border-bottom-right-radius: 0;
 }
+
+.tab-editor__measure-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem;
+    margin-bottom: .75rem;
+}
+.tab-editor__measure-indicator {
+    display: inline-flex;
+    padding: .3rem .6rem;
+    border-radius: .4rem;
+    border: 1px solid hsl(var(--neutral-500) / .25);
+    font-size: .85rem;
+    background: hsl(var(--neutral-500) / .09);
+    &[data-status="complete"] {
+        border-color: hsl(var(--neutral-500) / .3);
+    }
+    &[data-status="incomplete"],
+    &[data-status="overflow"] {
+        border-color: hsl(35 90% 45% / .5);
+        background: hsl(35 90% 50% / .12);
+    }
+}
