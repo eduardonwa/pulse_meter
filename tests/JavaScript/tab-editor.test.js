@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { createTabDraft, appendTabNote, serializeTabDraft, layoutTabMeasures } from '../../resources/js/metronome/alphatab/tab-editor.js'
+import { createTabDraft, appendTabNote, serializeTabDraft, layoutTabMeasures, parseTabDraft } from '../../resources/js/metronome/alphatab/tab-editor.js'
 
 test('adds notes and serializes a four-beat measure', () => {
     let draft = createTabDraft()
@@ -52,4 +52,21 @@ test('metadata headers contain one backslash, not two', () => {
     assert.equal(tex.split('\n')[1], '\\ts 4 4');
     assert.equal(tex.split('\n')[2], '\\staff {tabs}');
     assert.doesNotMatch(tex, /\\\\tempo/);
+});
+
+test('user-authored tab can be parsed for editing and round-trips without losing durations', () => {
+    let draft = createTabDraft();
+    draft = appendTabNote({ ...draft, duration: 8 }, 0, 1);
+    draft = appendTabNote({ ...draft, duration: 4 }, 5, 2);
+    draft = appendTabNote({ ...draft, duration: 16 }, 7, 3);
+    const alphaTex = serializeTabDraft(draft, 4, 126);
+    const parsed = parseTabDraft(alphaTex);
+    assert.deepEqual(parsed.draft.beats, draft.beats);
+    assert.equal(parsed.bpm, 126);
+    assert.equal(parsed.numerator, 4);
+    assert.equal(serializeTabDraft(parsed.draft, parsed.numerator, parsed.bpm), alphaTex);
+});
+
+test('parser refuses unfamiliar alphaTex rather than losing notes', () => {
+    assert.throws(() => parseTabDraft('\\tempo 100\n\\ts 4 4\n\\staff {tabs}\n.\n:4 0.1 (bend)'), Error);
 });
