@@ -1,4 +1,4 @@
-import { createTabDraft, appendTabNote, serializeTabDraft, parseTabDraft, layoutTabMeasures, selectTabNoteIndices, changeSelectedTabDurations, TAB_STRINGS } from "./alphatab/tab-editor.js";
+import { createTabDraft, appendTabNote, serializeTabDraft, parseTabDraft, layoutTabMeasures, selectTabNoteIndices, changeSelectedTabDurations, clearTabNotes, TAB_STRINGS } from "./alphatab/tab-editor.js";
 
 export function exercises() {
     return {
@@ -437,6 +437,7 @@ export function exercises() {
 
         tabEditorNoteAt(index, string) {
             const note = this.tabDraft.beats[index];
+            if (note?.rest) return string === 1 ? 'R' : null;
             return note?.string === string ? note.fret : null;
         },
 
@@ -456,8 +457,8 @@ export function exercises() {
             const note = this.tabDraft.beats[index];
             this.tabDraft = {
                 ...this.tabDraft,
-                string,
-                fret: note?.fret ?? this.tabDraft.fret,
+                string: note?.rest ? string : (note?.string ?? string),
+                fret: note?.rest ? 0 : (note?.fret ?? this.tabDraft.fret),
                 duration: note?.duration ?? this.tabDraft.duration,
             };
         },
@@ -560,13 +561,25 @@ export function exercises() {
                 } else {
                     beats.push(next.beats.at(-1));
                 }
-                this.tabDraft = { ...next, beats };
+                this.tabDraft = { ...next, beats: beats.map((note, index) => index === this.tabSelectedIndex ? { ...note, rest: false } : note) };
                 this.tabSelectedIndex = Math.min(beats.length, this.tabSelectedIndex + 1);
                 this.tabSelectedIndices = [];
                 this.tabSelectionAnchor = null;
             } catch (error) {
                 this.showToast?.(error.message, "error");
             }
+        },
+
+        clearTabEditorNote() {
+            this.finishPendingTabDigit(false);
+            const selected = this.tabSelectedIndices.length
+                ? this.tabSelectedIndices
+                : (this.tabSelectedIndex < this.tabDraft.beats.length ? [this.tabSelectedIndex] : []);
+            if (!selected.length) return;
+            this.tabDraft = {
+                ...this.tabDraft,
+                beats: clearTabNotes(this.tabDraft.beats, selected),
+            };
         },
 
         undoTabEditorNote() {
@@ -599,9 +612,12 @@ export function exercises() {
             } else if (/^[0-9]$/.test(event.key)) {
                 event.preventDefault();
                 this.enterTabFretDigit(Number(event.key));
-            } else if (event.key === 'Delete' || event.key === 'Backspace') {
+            } else if (event.key === 'Delete') {
                 event.preventDefault();
                 this.undoTabEditorNote();
+            } else if (event.key === 'Backspace') {
+                event.preventDefault();
+                this.clearTabEditorNote();
             }
         },
 
