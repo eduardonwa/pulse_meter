@@ -134,7 +134,7 @@
     @cancel.prevent="closeNewTabEditor()"
     @close="tabEditorOpen = false">
     <header class="mobile-exercise-view-dialog__header">
-        <strong>New tablature</strong>
+        <strong x-text="tabEditorEditingIndex === null ? 'New tablature' : 'Edit tablature'"></strong>
         <button class="button" type="button" data-type="icon" aria-label="Close tablature editor"
             @click="closeNewTabEditor()">
             <x-heroicon-o-x-mark />
@@ -199,7 +199,7 @@
         <div class="tab-editor__actions">
             <button type="button" class="button" data-type="primary"
                 :disabled="tabEditorSaving || !tabDraft.beats.length" @click="saveNewTabExercise()"
-                x-text="tabEditorSaving ? 'Saving…' : 'Save exercise'"></button>
+                x-text="tabEditorSaving ? 'Saving…' : (tabEditorEditingIndex === null ? 'Save exercise' : 'Save changes')"></button>
             <button type="button" class="button" data-type="outline" :disabled="tabEditorSaving"
                 @click="closeNewTabEditor()">Cancel</button>
         </div>
