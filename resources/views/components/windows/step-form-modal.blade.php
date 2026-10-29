@@ -175,6 +175,7 @@
         <div class="tab-editor__actions">
             <button type="button" class="button" data-type="primary" @click="addTabEditorNote()">Add note</button>
             <button type="button" class="button" data-type="outline" :disabled="!tabDraft.beats.length" @click="previewTabEditor()" x-text="tabPreviewPlaying ? 'Stop' : 'Play'"></button>
+            <button type="button" class="button" data-type="outline" :disabled="tabSelectedIndex <= 0 || tabSelectedIndex >= tabDraft.beats.length" @click="insertTabEditorBar()">Insert bar before selection</button>
             <button type="button" class="button" data-type="outline" :disabled="!tabDraft.beats.length"
                 @click="undoTabEditorNote()">Undo last note</button>
         </div>
