@@ -135,7 +135,9 @@
     <header class="mobile-exercise-view-dialog__header">
         <strong>New tablature</strong>
         <button class="button" type="button" data-type="icon" aria-label="Close tablature editor"
-            @click="closeNewTabEditor()">×</button>
+            @click="closeNewTabEditor()">
+            <x-heroicon-o-x-mark />
+        </button>
     </header>
     <div class="mobile-exercise-view-dialog__content tab-editor">
         <p class="tab-editor__intro">Add notes to your exercise. The score will be saved when you finish.</p>
