@@ -58,5 +58,5 @@ export function serializeTabDraft(draft, numerator = 4, bpm = 100) {
     const body = measures.map(measure => measure.notes.map(note =>
         `:${note.duration} ${note.fret}.${note.string}`
     ).join(' ')).join(' | ');
-    return `\\\\tempo ${Number(bpm)}\n\\\\ts ${Number(numerator)} 4\n\\\\staff {tabs}\n.\n${body}`;
+    return `\\tempo ${Number(bpm)}\n\\ts ${Number(numerator)} 4\n\\staff {tabs}\n.\n${body}`;
 }
