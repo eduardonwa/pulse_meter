@@ -110,6 +110,10 @@
         </div>
 
         <div class="form-actions">
+            <button x-show="stepFormMode === 'create'" type="button" class="button" data-type="outline"
+                @click="openNewTabEditor()">
+                Create with tablature
+            </button>
             <button class="button" data-type="primary" type="submit"
                 x-text="stepFormMode === 'edit' ? 'Save changes' : 'Save'"
             ></button>
@@ -122,4 +126,57 @@
             </button>
         </div>
     </form>
+</dialog>
+{{-- Separate native dialog: the exercise does not exist until Save is confirmed. --}}
+<dialog class="dialog-shell dialog-shell--bottom-sheet mobile-exercise-view-dialog is-fullscreen"
+    x-ref="tabEditorDialog"
+    @cancel.prevent="closeNewTabEditor()"
+    @close="tabEditorOpen = false">
+    <header class="mobile-exercise-view-dialog__header">
+        <strong>New tablature</strong>
+        <button class="button" type="button" data-type="icon" aria-label="Close tablature editor"
+            @click="closeNewTabEditor()">×</button>
+    </header>
+    <div class="mobile-exercise-view-dialog__content tab-editor">
+        <p class="tab-editor__intro">Add notes to your exercise. The score will be saved when you finish.</p>
+        <div class="tab-editor__settings">
+            <label>Exercise name <input type="text" x-model="stepForm.name" maxlength="255"></label>
+            <label>BPM <input type="number" x-model.number="stepForm.bpm" min="30" max="400"></label>
+            <label>String
+                <select x-model.number="tabDraft.string">
+                    <template x-for="(name, i) in tabStringNames" :key="i">
+                        <option :value="i + 1" x-text="`${i + 1} · ${name}`"></option>
+                    </template>
+                </select>
+            </label>
+            <label>Fret <input type="number" x-model.number="tabDraft.fret" min="0" max="24"></label>
+            <label>Duration
+                <select x-model.number="tabDraft.duration">
+                    <option value="4">Quarter</option>
+                    <option value="8">Eighth</option>
+                    <option value="16">Sixteenth</option>
+                    <option value="2">Half</option>
+                    <option value="1">Whole</option>
+                </select>
+            </label>
+        </div>
+        <div class="tab-editor__actions">
+            <button type="button" class="button" data-type="primary" @click="addTabEditorNote()">Add note</button>
+            <button type="button" class="button" data-type="outline" :disabled="!tabDraft.beats.length"
+                @click="undoTabEditorNote()">Undo last note</button>
+        </div>
+        <p x-text="`${tabDraft.beats.length} notes · 4/4 grid`"></p>
+        <div class="tab-editor__notes" aria-label="Entered notes">
+            <template x-for="(note, i) in tabDraft.beats" :key="i">
+                <span class="tab-editor__note" x-text="`${note.fret} · ${tabStringNames[note.string - 1]} · 1/${note.duration}`"></span>
+            </template>
+        </div>
+        <div class="tab-editor__actions">
+            <button type="button" class="button" data-type="primary"
+                :disabled="tabEditorSaving || !tabDraft.beats.length" @click="saveNewTabExercise()"
+                x-text="tabEditorSaving ? 'Saving…' : 'Save exercise'"></button>
+            <button type="button" class="button" data-type="outline" :disabled="tabEditorSaving"
+                @click="closeNewTabEditor()">Cancel</button>
+        </div>
+    </div>
 </dialog>
