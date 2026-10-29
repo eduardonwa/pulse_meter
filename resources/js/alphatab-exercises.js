@@ -232,6 +232,37 @@ window.addEventListener('alphatab:update', async event => {
     renderedBpms.set(element, bpm)
 })
 
+window.addEventListener('alphatab:preview-draft', async event => {
+    const { element, alphaTex, bpm, play } = event.detail ?? {}
+    if (!element) return
+
+    if (!play) {
+        instances.get(element)?.stop()
+        return
+    }
+
+    if (!alphaTex) return
+
+    const pattern = applyMetadata(alphaTex, { bpm: Number(bpm) || 100 })
+    element.dataset.alphaTex = encodeBase64(pattern)
+    element.dataset.bpm = String(Number(bpm) || 100)
+
+    // Mount if needed, then replace the score on subsequent previews.
+    const alreadyMounted = instances.has(element)
+    const api = await mountAlphaTab(element)
+    if (!api || !element.isConnected) return
+
+    if (activeApi && activeApi !== api) activeApi.stop()
+    activeApi = api
+    if (alreadyMounted) {
+        api.stop()
+        api.tex(pattern)
+    }
+    api.playbackSpeed = 1
+    api.isLooping = false
+    api.play()
+})
+
 window.addEventListener('alphatab:mount', async event => {
     await mountAlphaTab(event.detail?.element)
 })
