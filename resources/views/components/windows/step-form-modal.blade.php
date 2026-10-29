@@ -170,6 +170,11 @@
         </div>
         <p x-text="`${tabDraft.beats.length} notes · ${stepForm.time_signature_numerator}/4 · arrows navigate, 0–9 enter frets`"></p>
         <p class="tab-editor__measure-status" x-text="tabEditorMeasureStatus()"></p>
+        <div class="tab-editor__measure-list" aria-live="polite">
+            <template x-for="measure in tabEditorMeasureWarnings()" :key="measure.number">
+                <span class="tab-editor__measure-indicator" :data-status="measure.status" :title="measure.message" x-text="measure.message"></span>
+            </template>
+        </div>
         <div class="tab-editor__score" x-ref="tabEditorScore" @resize.window="updateTabEditorWidth()" tabindex="0" role="group" aria-label="Interactive six-string tablature">
             <template x-for="(system, systemIndex) in tabEditorSystems()" :key="systemIndex">
                 <div class="tab-editor__system">
