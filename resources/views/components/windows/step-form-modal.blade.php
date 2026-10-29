@@ -165,9 +165,11 @@
         </div>
         <div class="tab-editor__actions">
             <button type="button" class="button" data-type="primary" @click="addTabEditorNote()">Add note</button>
+            <button type="button" class="button" data-type="outline" :disabled="!tabDraft.beats.length" @click="previewTabEditor()" x-text="tabPreviewPlaying ? 'Stop' : 'Play'"></button>
             <button type="button" class="button" data-type="outline" :disabled="!tabDraft.beats.length"
                 @click="undoTabEditorNote()">Undo last note</button>
         </div>
+        <div class="tab-editor__preview" x-show="tabPreviewPlaying" x-cloak><div x-ref="tabEditorPreview" data-alphatab></div></div>
         <p x-text="`${tabDraft.beats.length} notes · ${stepForm.time_signature_numerator}/4 · arrows navigate, 0–9 enter frets`"></p>
         <p class="tab-editor__selection-hint">Drag to select a range · Shift + click selects a range · Ctrl/Cmd + click toggles notes · type 10–24 quickly for two-digit frets.</p>
         <p class="tab-editor__measure-status" x-text="tabEditorMeasureStatus()"></p>
