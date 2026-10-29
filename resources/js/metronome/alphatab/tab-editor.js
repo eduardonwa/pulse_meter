@@ -56,7 +56,7 @@ export function serializeTabDraft(draft, numerator = 4, bpm = 100) {
     if (!draft.beats.length) throw new RangeError('Add at least one note');
     const measures = layoutTabMeasures(draft, numerator);
     const body = measures.map(measure => measure.notes.map(note =>
-        `:${note.duration} ${note.fret}.${note.string}`
+        `:${note.duration} ${note.rest ? "r" : `${note.fret}.${note.string}`}`
     ).join(' ')).join(' | ');
     return `\\tempo ${Number(bpm)}\n\\ts ${Number(numerator)} 4\n\\staff {tabs}\n.\n${body}`;
 }
@@ -77,19 +77,20 @@ export function parseTabDraft(alphaTex) {
     const bpm = Number(tempo[1]);
     const beats = [];
     for (const measure of lines[4].split('|')) {
-        const tokens = measure.trim().match(/:\d+\s+\d+\.\d+/g) ?? [];
+        const tokens = measure.trim().match(/:\d+\s+(?:\d+\.\d+|r)/g) ?? [];
         if (!tokens.length || tokens.join(' ').replace(/\s+/g, ' ') !== measure.trim().replace(/\s+/g, ' ')) {
             throw new Error('This tablature contains unsupported notation');
         }
         for (const token of tokens) {
-            const match = /^:(\d+)\s+(\d+)\.(\d+)$/.exec(token);
+            const match = /^:(\d+)\s+(?:(\d+)\.(\d+)|(r))$/.exec(token);
             const duration = Number(match[1]);
-            const fret = Number(match[2]);
-            const string = Number(match[3]);
+            const rest = match[4] === "r";
+            const fret = rest ? 0 : Number(match[2]);
+            const string = rest ? 1 : Number(match[3]);
             if (!TAB_DURATIONS.includes(duration) || fret < 0 || fret > 24 || string < 1 || string > 6) {
                 throw new Error('This tablature contains unsupported notes');
             }
-            beats.push({ fret, string, duration });
+            beats.push(rest ? { rest: true, duration, string: 1, fret: 0 } : { fret, string, duration });
         }
     }
     const draft = { ...createTabDraft(), beats };
@@ -118,4 +119,8 @@ export function changeSelectedTabDurations(beats, indices, duration) {
     if (!TAB_DURATIONS.includes(value)) throw new RangeError('Invalid duration');
     const selected = new Set(indices);
     return beats.map((note, index) => selected.has(index) ? { ...note, duration: value } : note);
+}
+
+export function clearTabNote(beats, index) {
+    return beats.map((note, i) => i === index ? { rest: true, fret: 0, string: 1, duration: note.duration } : note);
 }
