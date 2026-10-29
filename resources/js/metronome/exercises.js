@@ -7,6 +7,7 @@ export function exercises() {
         tabEditorSaving: false,
         tabDraft: createTabDraft(),
         tabStringNames: TAB_STRINGS,
+        tabSelectedIndex: 0,
 
         // EXERCISE STATE
         activeExerciseIndex: null,
@@ -288,6 +289,7 @@ export function exercises() {
             this.isStepFormOpen = false;
             this.$refs.stepDialog.close();
             this.tabDraft = createTabDraft();
+            this.tabSelectedIndex = 0;
             this.tabEditorOpen = true;
             this.$nextTick(() => this.$refs.tabEditorDialog?.showModal());
         },
@@ -297,19 +299,66 @@ export function exercises() {
             this.tabEditorOpen = false;
         },
 
+        tabEditorColumns() {
+            return Math.max(1, this.tabDraft.beats.length + 1);
+        },
+
+        tabEditorNoteAt(index, string) {
+            const note = this.tabDraft.beats[index];
+            return note?.string === string ? note.fret : null;
+        },
+
+        selectTabEditorCell(index, string) {
+            this.tabSelectedIndex = index;
+            this.tabDraft = { ...this.tabDraft, string };
+        },
+
         addTabEditorNote() {
             try {
-                this.tabDraft = appendTabNote(this.tabDraft);
+                const next = appendTabNote(this.tabDraft);
+                const beats = [...this.tabDraft.beats];
+                if (this.tabSelectedIndex < beats.length) {
+                    beats[this.tabSelectedIndex] = next.beats.at(-1);
+                } else {
+                    beats.push(next.beats.at(-1));
+                }
+                this.tabDraft = { ...next, beats };
+                this.tabSelectedIndex = Math.min(beats.length, this.tabSelectedIndex + 1);
             } catch (error) {
                 this.showToast?.(error.message, "error");
             }
         },
 
         undoTabEditorNote() {
-            this.tabDraft = {
-                ...this.tabDraft,
-                beats: this.tabDraft.beats.slice(0, -1),
-            };
+            if (this.tabSelectedIndex < this.tabDraft.beats.length) {
+                const beats = this.tabDraft.beats.filter((_, i) => i !== this.tabSelectedIndex);
+                this.tabDraft = { ...this.tabDraft, beats };
+                this.tabSelectedIndex = Math.min(this.tabSelectedIndex, beats.length);
+            } else {
+                this.tabDraft = { ...this.tabDraft, beats: this.tabDraft.beats.slice(0, -1) };
+                this.tabSelectedIndex = this.tabDraft.beats.length;
+            }
+        },
+
+        handleTabEditorKey(event) {
+            const tag = event.target?.tagName;
+            if (['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON'].includes(tag)) return;
+            if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
+                event.preventDefault();
+                const delta = event.key === 'ArrowUp' ? -1 : 1;
+                this.selectTabEditorCell(this.tabSelectedIndex, Math.max(1, Math.min(6, this.tabDraft.string + delta)));
+            } else if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+                event.preventDefault();
+                const delta = event.key === 'ArrowLeft' ? -1 : 1;
+                this.tabSelectedIndex = Math.max(0, Math.min(this.tabDraft.beats.length, this.tabSelectedIndex + delta));
+            } else if (/^[0-9]$/.test(event.key)) {
+                event.preventDefault();
+                this.tabDraft = { ...this.tabDraft, fret: Number(event.key) };
+                this.addTabEditorNote();
+            } else if (event.key === 'Delete' || event.key === 'Backspace') {
+                event.preventDefault();
+                this.undoTabEditorNote();
+            }
         },
 
         async saveNewTabExercise() {
