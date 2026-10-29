@@ -4,7 +4,7 @@ import { createTabDraft, appendTabNote, serializeTabDraft } from '../../resource
 
 test('adds notes and serializes a four-beat measure', () => {
     let draft = createTabDraft()
-    for (const fret of [5, 7, 8, 10, 12, 10, 8, 7]) {
+    for (const fret of [5, 7, 8, 10, 12, 10, 8, 7, 5]) {
         draft = appendTabNote(draft, fret, 1)
     }
     const tex = serializeTabDraft(draft, 4, 120)
@@ -12,7 +12,7 @@ test('adds notes and serializes a four-beat measure', () => {
     assert.match(tex, /\\ts 4 4/)
     assert.match(tex, /5\.1/)
     assert.match(tex, /\|/)
-    assert.equal(draft.beats.length, 8)
+    assert.equal(draft.beats.length, 9)
 })
 
 test('rejects unsupported strings, frets and empty scores', () => {
