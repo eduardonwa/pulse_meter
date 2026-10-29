@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { createTabDraft, appendTabNote, serializeTabDraft, layoutTabMeasures, parseTabDraft, selectTabNoteIndices, changeSelectedTabDurations, clearTabNotes, updateTabBreaks, breaksForInsertedTabNote, serializeTabPlayback, playbackAlphaTex } from '../../resources/js/metronome/alphatab/tab-editor.js'
+import { createTabDraft, appendTabNote, serializeTabDraft, layoutTabMeasures, parseTabDraft, selectTabNoteIndices, changeSelectedTabDurations, clearTabNotes, updateTabBreaks, breaksForInsertedTabNote, serializeTabPlayback, playbackAlphaTex, tabBeatNotes, setTabBeatNote } from '../../resources/js/metronome/alphatab/tab-editor.js'
 
 test('adds notes and serializes a four-beat measure', () => {
     let draft = createTabDraft()
@@ -229,4 +229,21 @@ test('a new note at the next barline can fill a gap in the previous bar', () => 
 test('an overlarge new note remains in the next measure', () => {
     const draft = { ...createTabDraft(), beats: [1,2,3,5].map(fret => ({ fret, string:1, duration:4 })), breaks: [3] };
     assert.deepEqual(breaksForInsertedTabNote(draft, 3, 2, 4), [3]);
+});
+
+test('simultaneous frets form a chord without adding rhythmic beats', () => {
+    const first = { duration: 4, fret: 2, string: 5 };
+    const chord = setTabBeatNote(setTabBeatNote(first, 4, 4), 4, 3);
+    assert.equal(tabBeatNotes(chord).length, 3);
+    const draft = { ...createTabDraft(), beats: [chord] };
+    const tex = serializeTabDraft(draft, 4, 120);
+    assert.match(tex, /:4 \\(4\\.3 4\\.4 2\\.5\\)/);
+    assert.deepEqual(parseTabDraft(tex).draft.beats, [chord]);
+    assert.equal(layoutTabMeasures(draft, 4)[0].used, 4);
+});
+test('legacy single note updates into chord and back to a single note', () => {
+    const note = { fret: 3, string: 2, duration: 8 };
+    const chord = setTabBeatNote(note, 7, 1);
+    assert.deepEqual(tabBeatNotes(chord), [{ fret: 7, string: 1 }, { fret: 3, string: 2 }]);
+    assert.deepEqual(setTabBeatNote(note, 8, 2), { duration: 8, fret: 8, string: 2 });
 });
