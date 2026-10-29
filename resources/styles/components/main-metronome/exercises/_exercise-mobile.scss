@@ -532,3 +532,14 @@
     }
     &:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
 }
+
+.tab-editor__measure-status {
+    font-weight: 600;
+    margin-block: .5rem;
+    color: hsl(var(--neutral-700));
+}
+.tab-editor__cell.is-measure-end {
+    border-right: 3px solid hsl(var(--primary-800));
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
