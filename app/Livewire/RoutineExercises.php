@@ -48,6 +48,10 @@ class RoutineExercises extends Component
                 'duration_seconds',
                 'position',
                 'origin',
+                'alpha_tex',
+                'tab_source',
+                'time_signature_numerator',
+                'time_signature_denominator',
             ])
             ->orderBy('position')
             ->orderBy('id')
@@ -61,6 +65,10 @@ class RoutineExercises extends Component
                     $exercise->duration_seconds,
                 'position' => $exercise->position,
                 'origin' => $exercise->origin,
+                'alpha_tex' => $exercise->alpha_tex,
+                'tab_source' => $exercise->tab_source,
+                'time_signature_numerator' => $exercise->time_signature_numerator,
+                'time_signature_denominator' => $exercise->time_signature_denominator,
             ])
             ->values()
             ->all();
