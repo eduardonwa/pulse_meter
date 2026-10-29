@@ -6,6 +6,7 @@ export function exercises() {
         tabEditorOpen: false,
         tabEditorEditingIndex: null,
         tabEditorSaving: false,
+        tabPreviewPlaying: false,
         tabDraft: createTabDraft(),
         tabStringNames: TAB_STRINGS,
         tabSelectedIndex: 0,
@@ -343,10 +344,39 @@ export function exercises() {
         },
 
         closeNewTabEditor() {
+            this.stopTabEditorPreview();
             this.finishPendingTabDigit(false);
             this.$refs.tabEditorDialog?.close();
             this.tabEditorOpen = false;
             this.tabEditorEditingIndex = null;
+        },
+
+        previewTabEditor() {
+            if (this.tabPreviewPlaying) {
+                this.stopTabEditorPreview();
+                return;
+            }
+            let alphaTex;
+            try {
+                alphaTex = serializeTabDraft(this.tabDraft, this.stepForm.time_signature_numerator, this.stepForm.bpm);
+            } catch (error) {
+                this.showToast?.(error.message, "error");
+                return;
+            }
+            const element = this.$refs.tabEditorPreview;
+            if (!element) return;
+            this.tabPreviewPlaying = true;
+            window.dispatchEvent(new CustomEvent("alphatab:preview-draft", {
+                detail: { element, alphaTex, bpm: Number(this.stepForm.bpm), play: true },
+            }));
+        },
+
+        stopTabEditorPreview() {
+            const element = this.$refs.tabEditorPreview;
+            if (element) window.dispatchEvent(new CustomEvent("alphatab:preview-draft", {
+                detail: { element, play: false },
+            }));
+            this.tabPreviewPlaying = false;
         },
 
         updateTabEditorWidth() {
