@@ -169,6 +169,7 @@
                 @click="undoTabEditorNote()">Undo last note</button>
         </div>
         <p x-text="`${tabDraft.beats.length} notes · ${stepForm.time_signature_numerator}/4 · arrows navigate, 0–9 enter frets`"></p>
+        <p class="tab-editor__selection-hint">Shift + click selects a range · Ctrl/Cmd + click toggles notes · Duration applies to selected notes.</p>
         <p class="tab-editor__measure-status" x-text="tabEditorMeasureStatus()"></p>
         <div class="tab-editor__measure-list" aria-live="polite">
             <template x-for="measure in tabEditorMeasureWarnings()" :key="measure.number">
@@ -188,10 +189,10 @@
                             <div class="tab-editor__string-row">
                                 <template x-for="columnIndex in system" :key="columnIndex">
                                     <button type="button" class="tab-editor__cell"
-                                        :class="{ 'is-selected': tabSelectedIndex === columnIndex && tabDraft.string === stringIndex + 1, 'is-measure-end': tabEditorMeasureEnd(columnIndex) }"
+                                        :class="{ 'is-selected': tabSelectedIndex === columnIndex && tabDraft.string === stringIndex + 1, 'is-measure-end': tabEditorMeasureEnd(columnIndex), 'is-multi-selected': tabSelectedIndices.includes(columnIndex) && columnIndex < tabDraft.beats.length }"
                                         :aria-label="`String ${stringIndex + 1}, position ${columnIndex + 1}`"
                                         :aria-pressed="tabSelectedIndex === columnIndex && tabDraft.string === stringIndex + 1"
-                                        @click="selectTabEditorCell(columnIndex, stringIndex + 1); $refs.tabEditorScoreFocus?.focus()"
+                                        @click="selectTabEditorCell(columnIndex, stringIndex + 1, $event); $refs.tabEditorScoreFocus?.focus()"
                                         x-text="tabEditorNoteAt(columnIndex, stringIndex + 1) ?? '·'"></button>
                                 </template>
                             </div>
