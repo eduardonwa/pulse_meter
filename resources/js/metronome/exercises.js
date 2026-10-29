@@ -371,9 +371,22 @@ export function exercises() {
 
         tabEditorMeasureStatus() {
             const measures = this.tabEditorMeasureLayout();
-            const last = measures.at(-1);
-            if (!last) return 'Measure 1 · empty';
-            return `Measure ${measures.length} · ${last.used}/${last.capacity} sixteenth-note units`;
+            if (!measures.length) return 'Measure 1 · empty';
+            const warnings = measures.filter(measure => !measure.complete);
+            const overflow = warnings.filter(measure => measure.overflowBeforeIndex !== null).length;
+            return `${measures.length} measure(s) · ${warnings.length} incomplete${overflow ? ` · ${overflow} overflow boundary/boundaries` : ''}`;
+        },
+
+        tabEditorMeasureWarnings() {
+            return this.tabEditorMeasureLayout().map((measure, index) => ({
+                number: index + 1,
+                status: measure.complete ? 'complete' : (measure.overflowBeforeIndex !== null ? 'overflow' : 'incomplete'),
+                message: measure.complete
+                    ? `Measure ${index + 1}: complete`
+                    : measure.overflowBeforeIndex !== null
+                        ? `Measure ${index + 1}: ${measure.capacity - measure.used} sixteenth-note units left; next note moved to a new measure`
+                        : `Measure ${index + 1}: ${measure.capacity - measure.used} sixteenth-note units remaining`,
+            }));
         },
 
         tabEditorColumns() {
