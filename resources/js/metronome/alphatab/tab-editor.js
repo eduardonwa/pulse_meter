@@ -2,8 +2,9 @@
 // (techniques, tuplets, voices) stays in Filament, not this editor.
 export const TAB_STRINGS = ['e', 'B', 'G', 'D', 'A', 'E'];
 export const TAB_DURATIONS = [1, 2, 4, 8, 16];
+export const TAB_INSTRUMENTS = [24, 25, 26, 27];
 export function createTabDraft() {
-    return { beats: [], duration: 8, string: 1, fret: 0 };
+    return { beats: [], duration: 8, string: 1, fret: 0, instrument: 25 };
 }
 export function appendTabNote(draft, fret = draft.fret, string = draft.string) {
     const number = Number(fret);
@@ -54,11 +55,13 @@ export function layoutTabMeasures(draft, numerator = 4) {
 
 export function serializeTabDraft(draft, numerator = 4, bpm = 100) {
     if (!draft.beats.length) throw new RangeError('Add at least one note');
+    const instrument = Number(draft.instrument ?? 25);
+    if (!TAB_INSTRUMENTS.includes(instrument)) throw new RangeError('Invalid instrument');
     const measures = layoutTabMeasures(draft, numerator);
     const body = measures.map(measure => measure.notes.map(note =>
         `:${note.duration} ${note.rest ? "r" : `${note.fret}.${note.string}`}`
     ).join(' ')).join(' | ');
-    return `\\tempo ${Number(bpm)}\n\\ts ${Number(numerator)} 4\n\\staff {tabs}\n.\n${body}`;
+    return `\\tempo ${Number(bpm)}\n\\instrument ${instrument}\n\\ts ${Number(numerator)} 4\n\\staff {tabs}\n.\n${body}`;
 }
 
 
@@ -67,16 +70,21 @@ export function serializeTabDraft(draft, numerator = 4, bpm = 100) {
 export function parseTabDraft(alphaTex) {
     if (typeof alphaTex !== 'string') throw new TypeError('Missing tablature');
     const lines = alphaTex.trim().split(/\r?\n/).map(line => line.trim()).filter(Boolean);
-    if (lines.length !== 5) throw new Error('This tablature format cannot be edited here yet');
+    if (lines.length !== 5 && lines.length !== 6) throw new Error('This tablature format cannot be edited here yet');
+    const withInstrument = lines.length === 6;
+    const instrumentMatch = withInstrument ? /^\\instrument\s+(\d+)$/.exec(lines[1]) : null;
+    const instrument = instrumentMatch ? Number(instrumentMatch[1]) : 25;
+    if (withInstrument && (!instrumentMatch || !TAB_INSTRUMENTS.includes(instrument))) throw new Error('Unsupported instrument');
+    const content = withInstrument ? [lines[0], ...lines.slice(2)] : lines;
     const tempo = /^\\tempo\s+(\d+)$/.exec(lines[0]);
-    const meter = /^\\ts\s+(\d+)\s+4$/.exec(lines[1]);
-    if (!tempo || !meter || lines[2] !== '\\staff {tabs}' || lines[3] !== '.') {
+    const meter = /^\\ts\s+(\d+)\s+4$/.exec(content[1]);
+    if (!tempo || !meter || content[2] !== '\\staff {tabs}' || content[3] !== '.') {
         throw new Error('This tablature format cannot be edited here yet');
     }
     const numerator = Number(meter[1]);
     const bpm = Number(tempo[1]);
     const beats = [];
-    for (const measure of lines[4].split('|')) {
+    for (const measure of content[4].split('|')) {
         const tokens = measure.trim().match(/:\d+\s+(?:\d+\.\d+|r)/g) ?? [];
         if (!tokens.length || tokens.join(' ').replace(/\s+/g, ' ') !== measure.trim().replace(/\s+/g, ' ')) {
             throw new Error('This tablature contains unsupported notation');
@@ -93,9 +101,9 @@ export function parseTabDraft(alphaTex) {
             beats.push(rest ? { rest: true, duration } : { fret, string, duration });
         }
     }
-    const draft = { ...createTabDraft(), beats };
+    const draft = { ...createTabDraft(), beats, instrument };
     const canonical = serializeTabDraft(draft, numerator, bpm);
-    if (canonical !== lines.join('\n')) {
+    if ((withInstrument ? canonical : canonical.replace(/^\\instrument 25\n/m, '')) !== lines.join('\n')) {
         throw new Error('This tablature has custom measure boundaries or notation and cannot be edited here yet');
     }
     return { draft, numerator, bpm };
