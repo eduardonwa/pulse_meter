@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { createTabDraft, appendTabNote, serializeTabDraft, layoutTabMeasures, parseTabDraft, selectTabNoteIndices, changeSelectedTabDurations, clearTabNotes } from '../../resources/js/metronome/alphatab/tab-editor.js'
+import { createTabDraft, appendTabNote, serializeTabDraft, layoutTabMeasures, parseTabDraft, selectTabNoteIndices, changeSelectedTabDurations, clearTabNotes, serializeTabPlayback, playbackAlphaTex } from '../../resources/js/metronome/alphatab/tab-editor.js'
 
 test('adds notes and serializes a four-beat measure', () => {
     let draft = createTabDraft()
@@ -184,4 +184,25 @@ test('an editable rest before a manual bar preserves the following note', () => 
     const saved = serializeTabDraft(draft, 4, 120);
     assert.deepEqual(parseTabDraft(saved).draft.breaks, [4]);
     assert.deepEqual(parseTabDraft(saved).draft.beats, beats);
+});
+
+test('overfull bar skips offending notes but resumes normally at next manual bar', () => {
+    let draft = { ...createTabDraft(), duration: 4 };
+    for (const fret of [1, 2, 3, 4, 5]) draft = appendTabNote(draft, fret, 1);
+    draft = { ...draft, beats: draft.beats.map((beat, index) => index === 3 || index === 4 ? { ...beat, duration: 2 } : beat), breaks: [4] };
+    const original = serializeTabDraft(draft, 4, 120);
+    const playback = playbackAlphaTex(original);
+    assert.equal(playbackAlphaTex(original), serializeTabPlayback(draft, 4, 120));
+    assert.ok(original.includes(':2 4.1 | :2 5.1'));
+    assert.ok(!playback.includes('4.1'));
+    assert.ok(playback.includes(':4 r | :2 5.1'));
+    assert.equal(layoutTabMeasures(parseTabDraft(playback).draft, 4)[0].used, 16);
+    assert.equal(parseTabDraft(original).draft.beats[3].fret, 4);
+});
+
+test('incomplete bars stay unchanged when no beat exceeds the meter', () => {
+    let draft = { ...createTabDraft(), duration: 4 };
+    for (const fret of [1, 2, 3]) draft = appendTabNote(draft, fret, 1);
+    const original = serializeTabDraft(draft, 4, 120);
+    assert.equal(playbackAlphaTex(original), original);
 });
