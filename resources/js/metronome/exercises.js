@@ -605,7 +605,7 @@ export function exercises() {
             }
         },
 
-        async saveNewTabExercise() {
+        async saveNewTabExercise(closeAfterSave = true) {
             if (this.tabEditorSaving || (this.tabEditorEditingIndex === null && this.steps.length >= this.maxSteps)) return;
             let alphaTex;
             try {
@@ -649,8 +649,12 @@ export function exercises() {
                             },
                         }));
                     });
-                    this.closeNewTabEditor();
-                    this.resetStepForm();
+                    if (closeAfterSave) {
+                        this.closeNewTabEditor();
+                        this.resetStepForm();
+                    } else {
+                        this.showToast?.('Tablature saved', 'success');
+                    }
                     return;
                 }
                 let createdStep;
@@ -666,14 +670,19 @@ export function exercises() {
                     };
                 }
                 this.steps.push(createdStep);
+                if (!closeAfterSave) this.tabEditorEditingIndex = this.steps.length - 1;
                 if (!this.usesServerPersistence) this.saveToLocalStorage();
                 this.track("exercise_created", {
                     exercise_index: this.steps.length - 1,
                     exercise_origin: "custom",
                     has_tablature: true,
                 });
-                this.closeNewTabEditor();
-                this.resetStepForm();
+                if (closeAfterSave) {
+                    this.closeNewTabEditor();
+                    this.resetStepForm();
+                } else {
+                    this.showToast?.('Tablature saved', 'success');
+                }
                 this.$nextTick(() => window.dispatchEvent(new Event("picker:sync")));
             } finally {
                 this.tabEditorSaving = false;
