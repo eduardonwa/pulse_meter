@@ -6,7 +6,6 @@ const mountPromises = new WeakMap()
 
 const readyPromises = new WeakMap()
 const renderedBpms = new WeakMap()
-const pendingInstrumentChanges = new WeakMap()
 
 async function getAlphaTab() {
     if (!alphaTabModule) {
@@ -149,15 +148,6 @@ async function mountAlphaTab(element) {
             }))
         })
 
-        // MIDI regeneration stops playback; resume at the saved musical tick.
-        api.midiLoaded.on(() => {
-            const pending = pendingInstrumentChanges.get(api)
-            if (!pending) return
-            pendingInstrumentChanges.delete(api)
-            api.tickPosition = Math.max(0, Math.min(pending.tick, api.endTick ?? pending.tick))
-            if (pending.resume) api.play()
-        })
-
         api.metronomeVolume = 1
 
         api.playerStateChanged.on(args => {
@@ -271,28 +261,6 @@ window.addEventListener('alphatab:preview-draft', async event => {
     api.playbackSpeed = 1
     api.isLooping = false
     api.play()
-})
-
-window.addEventListener('alphatab:change-draft-instrument', async event => {
-    const { element, instrument } = event.detail ?? {}
-    const program = Number(instrument)
-    if (!element || ![24, 25, 26, 27].includes(program)) return
-
-    // Before the first Play, the next preview already uses the draft's instrument.
-    const api = instances.get(element)
-    if (!api?.score?.tracks?.length) return
-
-    const track = api.score.tracks[0]
-    if (track.playbackInfo.program === program) return
-
-    // Only rebuild the MIDI, not the notation or the current draft.
-    // alphaTab does not offer a direct live GM program switch.
-    const previous = pendingInstrumentChanges.get(api)
-    const tick = previous?.tick ?? api.tickPosition
-    const resume = previous?.resume ?? (activeApi === api && api.playerState === alphaTabModule?.synth.PlayerState.Playing)
-    track.playbackInfo.program = program
-    pendingInstrumentChanges.set(api, { tick, resume })
-    api.loadMidiForScore()
 })
 
 window.addEventListener('alphatab:mount', async event => {
