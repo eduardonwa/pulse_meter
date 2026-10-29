@@ -29,10 +29,10 @@ test('four quarter notes fill exactly one 4/4 measure', () => {
     assert.equal(measures.length, 1);
     assert.equal(measures[0].complete, true);
     assert.equal(measures[0].endIndex, 3);
-    assert.doesNotMatch(serializeTabDraft(draft), /\\|/);
+    assert.doesNotMatch(serializeTabDraft(draft), /\|/);
     draft = appendTabNote(draft, 4, 1);
     assert.equal(layoutTabMeasures(draft, 4).length, 2);
-    assert.match(serializeTabDraft(draft), /\\|/);
+    assert.match(serializeTabDraft(draft), /\|/);
 });
 
 test('mixed durations start a new measure before overflow', () => {
