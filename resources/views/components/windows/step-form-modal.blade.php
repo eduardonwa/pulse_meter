@@ -154,7 +154,7 @@
             </label>
             <label>Fret <input type="number" x-model.number="tabDraft.fret" min="0" max="24"></label>
             <label>Duration
-                <select x-model.number="tabDraft.duration">
+                <select x-model.number="tabDraft.duration" @change="changeTabEditorDuration($event.target.value)">
                     <option value="4">Quarter</option>
                     <option value="8">Eighth</option>
                     <option value="16">Sixteenth</option>
