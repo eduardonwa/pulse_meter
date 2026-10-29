@@ -1,3 +1,4 @@
+import { playbackAlphaTex } from './metronome/alphatab/tab-editor.js'
 let alphaTabModule = null
 let activeApi = null
 
@@ -6,6 +7,8 @@ const mountPromises = new WeakMap()
 
 const readyPromises = new WeakMap()
 const renderedBpms = new WeakMap()
+const playbackRequests = new WeakMap()
+let playbackGeneration = 0
 
 async function getAlphaTab() {
     if (!alphaTabModule) {
@@ -164,7 +167,7 @@ async function mountAlphaTab(element) {
             })
         })
 
-        api.tex(applyMetadata(pattern, { bpm }))
+        api.tex(applyMetadata(playbackAlphaTex(pattern), { bpm }))
 
         instances.set(element, api)
         readyPromises.set(element, readyPromise)
@@ -207,14 +210,14 @@ window.addEventListener('alphatab:update', async event => {
         bpm,
         title: String(event.detail?.title ?? '').trim(),
         track: String(event.detail?.track ?? '').trim(),
-        instrument: Number(event.detail?.instrument ?? 25),
+        instrument: Number(event.detail?.instrument ?? (/\\instrument\s+(\d+)/.exec(alphaTex)?.[1] ?? 25)),
     }
 
     if (!element || !alphaTex) return
 
-    const renderedAlphaTex = applyMetadata(alphaTex, metadata)
+    const renderedAlphaTex = applyMetadata(playbackAlphaTex(alphaTex), metadata)
 
-    element.dataset.alphaTex = encodeBase64(renderedAlphaTex)
+    element.dataset.alphaTex = encodeBase64(alphaTex)
     element.dataset.bpm = String(bpm)
 
     const existingApi = instances.get(element)
@@ -230,6 +233,40 @@ window.addEventListener('alphatab:update', async event => {
     existingApi.tex(renderedAlphaTex)
 
     renderedBpms.set(element, bpm)
+})
+
+window.addEventListener('alphatab:preview-draft', async event => {
+    const { element, alphaTex, bpm, play, instrument } = event.detail ?? {}
+    if (!element) return
+
+    if (!play) {
+        playbackRequests.set(element, ++playbackGeneration)
+        instances.get(element)?.stop()
+        return
+    }
+
+    if (!alphaTex) return
+
+    const request = ++playbackGeneration
+    playbackRequests.set(element, request)
+    const pattern = applyMetadata(playbackAlphaTex(alphaTex), { bpm: Number(bpm) || 100, instrument: Number(instrument ?? 25) })
+    element.dataset.alphaTex = encodeBase64(alphaTex)
+    element.dataset.bpm = String(Number(bpm) || 100)
+
+    // Mount if needed, then replace the score on subsequent previews.
+    const alreadyMounted = instances.has(element)
+    const api = await mountAlphaTab(element)
+    if (!api || !element.isConnected || playbackRequests.get(element) !== request || playbackGeneration !== request) return
+
+    if (activeApi && activeApi !== api) activeApi.stop()
+    activeApi = api
+    if (alreadyMounted) {
+        api.stop()
+        api.tex(pattern)
+    }
+    api.playbackSpeed = 1
+    api.isLooping = false
+    api.play()
 })
 
 window.addEventListener('alphatab:mount', async event => {
@@ -276,6 +313,7 @@ window.addEventListener('alphatab:start-exercise', async event => {
 })
 
 window.addEventListener('alphatab:stop', () => {
+    ++playbackGeneration
     activeApi?.stop()
     activeApi = null
 })
@@ -315,7 +353,7 @@ window.addEventListener('alphatab:set-bpm', async event => {
 
         api.stop()
         api.playbackSpeed = 1
-        api.tex(applyMetadata(decodeBase64(encodedAlphaTex), { bpm }))
+        api.tex(applyMetadata(playbackAlphaTex(decodeBase64(encodedAlphaTex)), { bpm }))
 
         renderedBpms.set(element, bpm)
         return

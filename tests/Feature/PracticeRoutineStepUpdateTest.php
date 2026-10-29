@@ -11,110 +11,57 @@ class PracticeRoutineStepUpdateTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_updating_step_preserves_alpha_tex_and_ignores_submitted_alpha_tex(): void
+    private function setupStep(string $source): array
     {
-        $this->withoutMiddleware(
-            \Illuminate\Auth\Middleware\Authorize::class
-        );
-
+        $this->withoutMiddleware(\Illuminate\Auth\Middleware\Authorize::class);
         $user = User::factory()->create();
+        $routine = $user->practiceRoutines()->create([
+            'name' => 'Test Routine', 'position' => 0, 'is_default' => true,
+        ]);
+        $step = $routine->steps()->create([
+            'name' => 'Alternate Picking', 'bpm' => 160,
+            'mode' => 'drill', 'duration_seconds' => 60,
+            'position' => 0, 'origin' => 'custom',
+            'alpha_tex' => 'original', 'tab_source' => $source,
+        ]);
+        return [$user, $step];
+    }
 
-        $routine = $user
-            ->practiceRoutines()
-            ->create([
-                'name' => 'Test Routine',
-                'position' => 0,
-                'is_default' => true,
-            ]);
+    private function updateUrl($step): string
+    {
+        return action([PracticeRoutineStepController::class, 'update'], [
+            'practiceRoutineStep' => $step,
+        ]);
+    }
 
-        $originalAlphaTex = <<<'ALPHATEX'
-\staff {tabs}
+    public function test_user_tablature_can_be_updated(): void
+    {
+        [$user, $step] = $this->setupStep('user');
+        $this->actingAs($user)->patchJson($this->updateUrl($step), [
+            'name' => 'Updated Exercise', 'bpm' => 180, 'mode' => 'drill',
+            'duration_seconds' => 90, 'alpha_tex' => ':8 5.1 7.1',
+        ])->assertOk()->assertJsonPath('tab_source', 'user');
+        $this->assertSame(':8 5.1 7.1', $step->fresh()->alpha_tex);
+    }
 
-:16
-5.1 6.1 7.1 8.1 9.1
-ALPHATEX;
+    public function test_template_tablature_cannot_be_modified(): void
+    {
+        [$user, $step] = $this->setupStep('template');
+        $this->actingAs($user)->patchJson($this->updateUrl($step), [
+            'name' => 'Updated Exercise', 'bpm' => 180, 'mode' => 'drill',
+            'duration_seconds' => 90, 'alpha_tex' => ':8 5.1',
+        ])->assertForbidden();
+        $this->assertSame('original', $step->fresh()->alpha_tex);
+    }
 
-        $step = $routine
-            ->steps()
-            ->create([
-                'name' => 'Alternate Picking',
-                'bpm' => 160,
-                'mode' => 'drill',
-                'duration_seconds' => 60,
-                'position' => 0,
-                'origin' => 'custom',
-                'alpha_tex' => $originalAlphaTex,
-            ]);
-
-            $this->assertSame(
-                $user->id,
-                (int) $routine->user_id
-            );
-
-            $this->assertSame(
-                $routine->id,
-                (int) $step->practice_routine_id
-            );
-
-            $this->assertNotNull(
-                $step->routine
-            );
-
-            $this->assertSame(
-                $user->id,
-                (int) $step->routine->user_id
-            );
-
-        $response = $this
-            ->actingAs($user)
-            ->patchJson(
-                action(
-                    [
-                        PracticeRoutineStepController::class,
-                        'update',
-                    ],
-                    [
-                        'practiceRoutineStep' => $step,
-                    ]
-                ),
-                [
-                    'name' => 'Updated Exercise',
-                    'bpm' => 180,
-                    'mode' => 'drill',
-                    'duration_seconds' => 90,
-
-                    // Intento de modificar el pattern.
-                    'alpha_tex' => 'MALICIOUS PATTERN',
-                ]
-            );
-
-        $response->assertOk();
-
-        $step->refresh();
-
-        $this->assertSame(
-            'Updated Exercise',
-            $step->name
-        );
-
-        $this->assertSame(
-            180,
-            $step->bpm
-        );
-
-        $this->assertSame(
-            90,
-            $step->duration_seconds
-        );
-
-        $this->assertSame(
-            $originalAlphaTex,
-            $step->alpha_tex
-        );
-
-        $this->assertNotSame(
-            'MALICIOUS PATTERN',
-            $step->alpha_tex
-        );
+    public function test_updating_bpm_does_not_modify_existing_template_tablature(): void
+    {
+        [$user, $step] = $this->setupStep('template');
+        $this->actingAs($user)->patchJson($this->updateUrl($step), [
+            'name' => 'Updated Exercise', 'bpm' => 180, 'mode' => 'drill',
+            'duration_seconds' => 90,
+        ])->assertOk();
+        $this->assertSame('original', $step->fresh()->alpha_tex);
+        $this->assertSame('template', $step->fresh()->tab_source);
     }
 }

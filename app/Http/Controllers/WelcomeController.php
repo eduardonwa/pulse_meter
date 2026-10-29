@@ -190,6 +190,7 @@ class WelcomeController extends Controller
                             'duration_seconds' =>
                                 $step->duration_seconds,
                             'alpha_tex' => $step->alpha_tex,
+                            'tab_source' => $step->tab_source,
                             'position' => $step->position,
                             'origin' => $step->origin,
                         ])
@@ -265,6 +266,7 @@ class WelcomeController extends Controller
                         'mode' => $step->mode,
                         'duration_seconds' => $step->duration_seconds,
                         'alpha_tex' => $step->alpha_tex,
+                            'tab_source' => $step->tab_source,
                         'position' => $step->position,
                         'origin' => $step->origin,
                     ])
