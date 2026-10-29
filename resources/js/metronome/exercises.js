@@ -437,7 +437,7 @@ export function exercises() {
 
         tabEditorNoteAt(index, string) {
             const note = this.tabDraft.beats[index];
-            if (note?.rest) return string === 1 ? 'R' : null;
+            if (note?.rest) return null;
             return note?.string === string ? note.fret : null;
         },
 

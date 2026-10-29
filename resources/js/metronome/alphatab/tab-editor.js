@@ -121,6 +121,12 @@ export function changeSelectedTabDurations(beats, indices, duration) {
     return beats.map((note, index) => selected.has(index) ? { ...note, duration: value } : note);
 }
 
-export function clearTabNote(beats, index) {
-    return beats.map((note, i) => i === index ? { rest: true, fret: 0, string: 1, duration: note.duration } : note);
+export function clearTabNotes(beats, indices) {
+    const selected = new Set(indices);
+
+    return beats.map((note, index) =>
+        selected.has(index)
+            ? { rest: true, duration: note.duration }
+            : note
+    );
 }
