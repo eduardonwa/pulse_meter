@@ -480,25 +480,33 @@
 
 .tab-editor__score {
     display: flex;
+    flex-direction: column;
+    gap: 1rem;
     width: 100%;
-    overflow-x: auto;
     margin-block: 1rem;
-    padding: .75rem 0;
+    padding: 1rem;
     border: 1px solid hsl(var(--neutral-500) / .25);
     border-radius: .75rem;
+    background: hsl(var(--neutral-500) / .065);
+}
+.tab-editor__system {
+    display: flex;
+    width: 100%;
+    min-width: 0;
+    padding: .5rem;
+    border-radius: .5rem;
+    background: hsl(var(--neutral-100));
+    border: 1px solid hsl(var(--neutral-500) / .16);
 }
 .tab-editor__string-labels {
-    position: sticky;
-    left: 0;
-    z-index: 1;
     display: grid;
     grid-template-rows: repeat(6, 42px);
     align-items: center;
-    min-width: 34px;
+    flex: none;
+    width: 34px;
     padding-inline: .5rem;
-    background: hsl(var(--neutral-100));
 }
-.tab-editor__grid { width: max-content; min-width: 100%; }
+.tab-editor__grid { flex: 1; min-width: 0; }
 .tab-editor__string-row {
     display: flex;
     height: 42px;
