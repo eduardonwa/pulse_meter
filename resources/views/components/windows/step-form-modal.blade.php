@@ -130,6 +130,7 @@
 {{-- Separate native dialog: the exercise does not exist until Save is confirmed. --}}
 <dialog class="dialog-shell dialog-shell--bottom-sheet mobile-exercise-view-dialog is-fullscreen"
     x-ref="tabEditorDialog"
+    @keydown="handleTabEditorKey($event)"
     @cancel.prevent="closeNewTabEditor()"
     @close="tabEditorOpen = false">
     <header class="mobile-exercise-view-dialog__header">
@@ -167,12 +168,29 @@
             <button type="button" class="button" data-type="outline" :disabled="!tabDraft.beats.length"
                 @click="undoTabEditorNote()">Undo last note</button>
         </div>
-        <p x-text="`${tabDraft.beats.length} notes · 4/4 grid`"></p>
-        <div class="tab-editor__notes" aria-label="Entered notes">
-            <template x-for="(note, i) in tabDraft.beats" :key="i">
-                <span class="tab-editor__note" x-text="`${note.fret} · ${tabStringNames[note.string - 1]} · 1/${note.duration}`"></span>
-            </template>
+        <p x-text="`${tabDraft.beats.length} notes · ${stepForm.time_signature_numerator}/4 · arrows navigate, 0–9 enter frets`"></p>
+        <div class="tab-editor__score" tabindex="0" role="group" aria-label="Interactive six-string tablature">
+            <div class="tab-editor__string-labels">
+                <template x-for="(name, stringIndex) in tabStringNames" :key="stringIndex">
+                    <span x-text="name"></span>
+                </template>
+            </div>
+            <div class="tab-editor__grid">
+                <template x-for="(name, stringIndex) in tabStringNames" :key="stringIndex">
+                    <div class="tab-editor__string-row">
+                        <template x-for="column in tabEditorColumns()" :key="column">
+                            <button type="button" class="tab-editor__cell"
+                                :class="{ 'is-selected': tabSelectedIndex === column - 1 && tabDraft.string === stringIndex + 1 }"
+                                :aria-label="`String ${stringIndex + 1}, beat ${column}`"
+                                :aria-pressed="tabSelectedIndex === column - 1 && tabDraft.string === stringIndex + 1"
+                                @click="selectTabEditorCell(column - 1, stringIndex + 1); $refs.tabEditorScoreFocus?.focus()"
+                                x-text="tabEditorNoteAt(column - 1, stringIndex + 1) ?? '·'"></button>
+                        </template>
+                    </div>
+                </template>
+            </div>
         </div>
+        <span x-ref="tabEditorScoreFocus" class="sr-only" tabindex="-1">Tab keyboard controls</span>
         <div class="tab-editor__actions">
             <button type="button" class="button" data-type="primary"
                 :disabled="tabEditorSaving || !tabDraft.beats.length" @click="saveNewTabExercise()"
