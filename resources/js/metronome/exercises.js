@@ -612,7 +612,7 @@ export function exercises() {
                 const next = appendTabNote(this.tabDraft);
                 const beats = [...this.tabDraft.beats];
                 // Reuse a rest; otherwise insert at the caret without overwriting a note.
-                if (beats[this.tabSelectedIndex]?.rest) {
+                if (beats[this.tabSelectedIndex]?.rest && !this.tabInsertAtBar) {
                     beats[this.tabSelectedIndex] = next.beats.at(-1);
                 } else {
                     beats.splice(this.tabSelectedIndex, 0, next.beats.at(-1));
