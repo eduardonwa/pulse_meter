@@ -169,6 +169,7 @@
                 @click="undoTabEditorNote()">Undo last note</button>
         </div>
         <p x-text="`${tabDraft.beats.length} notes · ${stepForm.time_signature_numerator}/4 · arrows navigate, 0–9 enter frets`"></p>
+        <p class="tab-editor__measure-status" x-text="tabEditorMeasureStatus()"></p>
         <div class="tab-editor__score" x-ref="tabEditorScore" @resize.window="updateTabEditorWidth()" tabindex="0" role="group" aria-label="Interactive six-string tablature">
             <template x-for="(system, systemIndex) in tabEditorSystems()" :key="systemIndex">
                 <div class="tab-editor__system">
@@ -182,7 +183,7 @@
                             <div class="tab-editor__string-row">
                                 <template x-for="columnIndex in system" :key="columnIndex">
                                     <button type="button" class="tab-editor__cell"
-                                        :class="{ 'is-selected': tabSelectedIndex === columnIndex && tabDraft.string === stringIndex + 1 }"
+                                        :class="{ 'is-selected': tabSelectedIndex === columnIndex && tabDraft.string === stringIndex + 1, 'is-measure-end': tabEditorMeasureEnd(columnIndex) }"
                                         :aria-label="`String ${stringIndex + 1}, position ${columnIndex + 1}`"
                                         :aria-pressed="tabSelectedIndex === columnIndex && tabDraft.string === stringIndex + 1"
                                         @click="selectTabEditorCell(columnIndex, stringIndex + 1); $refs.tabEditorScoreFocus?.focus()"
