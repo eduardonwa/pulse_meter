@@ -170,3 +170,18 @@ test('manual barlines remain in place even with invalid measure durations', () =
     assert.match(tex, /:2 4\.1 \| :4 5\.1/);
     assert.deepEqual(parseTabDraft(tex).draft.breaks, [4]);
 });
+
+test('an editable rest before a manual bar preserves the following note', () => {
+    let draft = { ...createTabDraft(), duration: 4 };
+    for (const fret of [1, 2, 3, 4]) draft = appendTabNote(draft, fret, 1);
+    draft = { ...draft, beats: draft.beats.map((beat, index) => index === 3 ? { ...beat, duration: 2 } : beat) };
+    const beats = [...draft.beats];
+    beats.splice(3, 0, { rest: true, duration: 4 });
+    draft = { ...draft, beats, breaks: [4] };
+    const measures = layoutTabMeasures(draft, 4);
+    assert.deepEqual(measures.map(measure => measure.used), [16, 8]);
+    assert.equal(draft.beats[4].fret, 4);
+    const saved = serializeTabDraft(draft, 4, 120);
+    assert.deepEqual(parseTabDraft(saved).draft.breaks, [4]);
+    assert.deepEqual(parseTabDraft(saved).draft.beats, beats);
+});
