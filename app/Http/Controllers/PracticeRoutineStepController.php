@@ -74,8 +74,6 @@ class PracticeRoutineStepController extends Controller
             ],
 
             'alpha_tex' => ['sometimes', 'nullable', 'string', 'max:65535'],
-
-            'alpha_tex' => ['sometimes', 'nullable', 'string', 'max:65535'],
         ]);
 
         if (filled($validated['alpha_tex'] ?? null)) {
@@ -152,6 +150,8 @@ class PracticeRoutineStepController extends Controller
                 'integer',
                 'in:4',
             ],
+
+            'alpha_tex' => ['sometimes', 'nullable', 'string', 'max:65535'],
         ]);
 
         if (array_key_exists('alpha_tex', $validated)) {
