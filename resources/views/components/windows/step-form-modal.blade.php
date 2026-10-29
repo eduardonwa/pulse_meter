@@ -199,15 +199,15 @@
                     <div class="tab-editor__grid">
                         <template x-for="(name, stringIndex) in tabStringNames" :key="stringIndex">
                             <div class="tab-editor__string-row">
-                                <template x-for="columnIndex in system" :key="columnIndex">
+                                <template x-for="column in system" :key="`${column.index}-${column.insertion}`">
                                     <button type="button" class="tab-editor__cell"
-                                        :class="{ 'is-selected': tabSelectedIndex === columnIndex && tabDraft.string === stringIndex + 1, 'is-measure-end': tabEditorMeasureEnd(columnIndex), 'is-multi-selected': tabSelectedIndices.includes(columnIndex) && columnIndex < tabDraft.beats.length }"
-                                        :aria-label="`String ${stringIndex + 1}, position ${columnIndex + 1}`"
-                                        :aria-pressed="tabSelectedIndex === columnIndex && tabDraft.string === stringIndex + 1"
-                                        @pointerdown="startTabDrag(columnIndex, stringIndex + 1, $event)"
-                                        @pointerenter="extendTabDrag(columnIndex)"
-                                        @click="clickTabCell(columnIndex, stringIndex + 1, $event); $refs.tabEditorScoreFocus?.focus()"
-                                        x-text="tabEditorNoteAt(columnIndex, stringIndex + 1) ?? '·'"></button>
+                                        :class="{ 'is-selected': tabSelectedIndex === column.index && tabDraft.string === stringIndex + 1 && tabInsertAtBar === column.insertion, 'is-measure-end': !column.insertion && tabEditorMeasureEnd(column.index), 'is-multi-selected': !column.insertion && tabSelectedIndices.includes(column.index) && column.index < tabDraft.beats.length, 'is-insertion': column.insertion }"
+                                        :aria-label="column.insertion ? `Insert note before next measure, string ${stringIndex + 1}` : `String ${stringIndex + 1}, position ${column.index + 1}`"
+                                        :aria-pressed="tabSelectedIndex === column.index && tabDraft.string === stringIndex + 1 && tabInsertAtBar === column.insertion"
+                                        @pointerdown="!column.insertion && startTabDrag(column.index, stringIndex + 1, $event)"
+                                        @pointerenter="!column.insertion && extendTabDrag(column.index)"
+                                        @click="column.insertion ? selectTabEditorInsertion(column.index, stringIndex + 1) : clickTabCell(column.index, stringIndex + 1, $event); $refs.tabEditorScoreFocus?.focus()"
+                                        x-text="column.insertion ? (stringIndex + 1 === tabDraft.string ? '+' : '·') : (tabEditorNoteAt(column.index, stringIndex + 1) ?? '·')"></button>
                                 </template>
                             </div>
                         </template>
