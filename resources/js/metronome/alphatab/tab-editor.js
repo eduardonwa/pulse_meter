@@ -52,6 +52,15 @@ export function shiftTabBreaks(breaks, index, delta) {
         .filter(position => position > 0))].sort((a, b) => a - b);
 }
 
+// Insert at a barline belongs to the following bar; deletion keeps the next
+// surviving note at its existing barline. Never retain a trailing barline.
+export function updateTabBreaks(breaks, index, operation, length) {
+    return [...new Set(breaks.map(position => {
+        if (operation === 'insert') return position > index ? position + 1 : position;
+        return position > index ? position - 1 : position;
+    }).filter(position => position > 0 && position < length))].sort((a, b) => a - b);
+}
+
 export function serializeTabDraft(draft, numerator = 4, bpm = 100) {
     if (!draft.beats.length) throw new RangeError('Add at least one note');
     const instrument = Number(draft.instrument ?? 25);
