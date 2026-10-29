@@ -124,3 +124,40 @@ test('chosen instrument round-trips and older scores retain Steel guitar', () =>
     assert.equal(parseTabDraft(legacy).draft.instrument, 25);
     assert.throws(() => serializeTabDraft({ ...draft, instrument: 90 }), RangeError);
 });
+
+test('incomplete final measure preserves its actual rhythmic length', () => {
+    let draft = { ...createTabDraft(), duration: 4 };
+    for (const fret of [5, 7, 9]) draft = appendTabNote(draft, fret, 1);
+    const measures = layoutTabMeasures(draft, 4);
+    assert.equal(measures.length, 1);
+    assert.equal(measures[0].complete, false);
+    assert.equal(measures[0].used, 12);
+    assert.equal(measures[0].capacity, 16);
+    const saved = serializeTabDraft(draft, 4, 120);
+    assert.ok(saved.endsWith(':4 5.1 :4 7.1 :4 9.1'));
+    assert.deepEqual(parseTabDraft(saved).draft.beats, draft.beats);
+});
+
+test('overflow boundary preserves incomplete measures and note order', () => {
+    let draft = createTabDraft();
+    draft = appendTabNote({ ...draft, duration: 2 }, 5, 1);
+    draft = appendTabNote({ ...draft, duration: 4 }, 7, 1);
+    draft = appendTabNote({ ...draft, duration: 2 }, 9, 1);
+    const measures = layoutTabMeasures(draft, 4);
+    assert.deepEqual(measures.map(m => m.used), [12, 8]);
+    assert.deepEqual(measures.map(m => m.complete), [false, false]);
+    const saved = serializeTabDraft(draft, 4, 120);
+    assert.ok(saved.includes(':4 7.1 | :2 9.1'));
+    assert.deepEqual(parseTabDraft(saved).draft.beats, draft.beats);
+});
+
+test('cleared note retains rhythmic space in incomplete measure', () => {
+    let draft = { ...createTabDraft(), duration: 4 };
+    for (const fret of [5, 7, 9]) draft = appendTabNote(draft, fret, 1);
+    draft = { ...draft, beats: clearTabNotes(draft.beats, [1]) };
+    const measures = layoutTabMeasures(draft, 4);
+    assert.equal(measures[0].used, 12);
+    const saved = serializeTabDraft(draft, 4, 120);
+    assert.ok(saved.includes(':4 5.1 :4 r :4 9.1'));
+    assert.deepEqual(parseTabDraft(saved).draft.beats, draft.beats);
+});
