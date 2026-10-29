@@ -1,4 +1,4 @@
-import { createTabDraft, appendTabNote, serializeTabDraft, TAB_STRINGS } from "./alphatab/tab-editor.js";
+import { createTabDraft, appendTabNote, serializeTabDraft, layoutTabMeasures, TAB_STRINGS } from "./alphatab/tab-editor.js";
 
 export function exercises() {
     return {
@@ -320,6 +320,26 @@ export function exercises() {
                 ));
             }
             return systems;
+        },
+
+        tabEditorMeasureLayout() {
+            return layoutTabMeasures(this.tabDraft, this.stepForm.time_signature_numerator);
+        },
+
+        tabEditorMeasureEnd(index) {
+            return this.tabEditorMeasureLayout().some(measure => measure.endIndex === index);
+        },
+
+        tabEditorMeasureNumber(index) {
+            const measures = this.tabEditorMeasureLayout();
+            return measures.findIndex(measure => measure.notes.some(note => note.index === index)) + 1;
+        },
+
+        tabEditorMeasureStatus() {
+            const measures = this.tabEditorMeasureLayout();
+            const last = measures.at(-1);
+            if (!last) return 'Measure 1 · empty';
+            return `Measure ${measures.length} · ${last.used}/${last.capacity} sixteenth-note units`;
         },
 
         tabEditorColumns() {
