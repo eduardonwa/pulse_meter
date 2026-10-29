@@ -1,4 +1,4 @@
-import { createTabDraft, appendTabNote, serializeTabDraft, parseTabDraft, layoutTabMeasures, selectTabNoteIndices, changeSelectedTabDurations, clearTabNotes, TAB_STRINGS } from "./alphatab/tab-editor.js";
+import { createTabDraft, appendTabNote, serializeTabDraft, parseTabDraft, layoutTabMeasures, selectTabNoteIndices, changeSelectedTabDurations, clearTabNotes, shiftTabBreaks, TAB_STRINGS } from "./alphatab/tab-editor.js";
 
 export function exercises() {
     return {
@@ -402,6 +402,12 @@ export function exercises() {
             return layoutTabMeasures(this.tabDraft, this.stepForm.time_signature_numerator);
         },
 
+        insertTabEditorBar() {
+            const at = this.tabSelectedIndex;
+            if (at <= 0 || at >= this.tabDraft.beats.length) return;
+            this.tabDraft = { ...this.tabDraft, breaks: [...new Set([...(this.tabDraft.breaks ?? []), at])].sort((a, b) => a - b) };
+        },
+
         tabEditorMeasureEnd(index) {
             return this.tabEditorMeasureLayout().some(measure => measure.endIndex === index);
         },
@@ -414,19 +420,18 @@ export function exercises() {
         tabEditorMeasureStatus() {
             const measures = this.tabEditorMeasureLayout();
             if (!measures.length) return 'Measure 1 · empty';
-            const warnings = measures.filter(measure => !measure.complete);
-            const overflow = warnings.filter(measure => measure.overflowBeforeIndex !== null).length;
-            return `${measures.length} measure(s) · ${warnings.length} incomplete${overflow ? ` · ${overflow} overflow boundary/boundaries` : ''}`;
+            const invalid = measures.filter(measure => !measure.complete).length;
+            return `${measures.length} measure(s) · ${invalid} incomplete or overfull`;
         },
 
         tabEditorMeasureWarnings() {
             return this.tabEditorMeasureLayout().map((measure, index) => ({
                 number: index + 1,
-                status: measure.complete ? 'complete' : (measure.overflowBeforeIndex !== null ? 'overflow' : 'incomplete'),
+                status: measure.complete ? 'complete' : measure.used > measure.capacity ? 'overflow' : 'incomplete',
                 message: measure.complete
                     ? `Measure ${index + 1}: complete`
-                    : measure.overflowBeforeIndex !== null
-                        ? `Measure ${index + 1}: ${measure.capacity - measure.used} sixteenth-note units left; next note moved to a new measure`
+                    : measure.used > measure.capacity
+                        ? `Measure ${index + 1}: ${measure.used - measure.capacity} sixteenth-note units over limit`
                         : `Measure ${index + 1}: ${measure.capacity - measure.used} sixteenth-note units remaining`,
             }));
         },
@@ -562,7 +567,7 @@ export function exercises() {
                 } else {
                     beats.splice(this.tabSelectedIndex, 0, next.beats.at(-1));
                 }
-                this.tabDraft = { ...next, beats };
+                this.tabDraft = { ...next, beats, breaks: beats.length > this.tabDraft.beats.length ? shiftTabBreaks(this.tabDraft.breaks ?? [], this.tabSelectedIndex, 1) : this.tabDraft.breaks };
                 this.tabSelectedIndex = Math.min(beats.length, this.tabSelectedIndex + 1);
                 this.tabSelectedIndices = [];
                 this.tabSelectionAnchor = null;
@@ -586,7 +591,7 @@ export function exercises() {
         undoTabEditorNote() {
             if (this.tabSelectedIndex < this.tabDraft.beats.length) {
                 const beats = this.tabDraft.beats.filter((_, i) => i !== this.tabSelectedIndex);
-                this.tabDraft = { ...this.tabDraft, beats };
+                this.tabDraft = { ...this.tabDraft, beats, breaks: shiftTabBreaks(this.tabDraft.breaks ?? [], this.tabSelectedIndex + 1, -1) };
                 this.tabSelectedIndex = Math.min(this.tabSelectedIndex, beats.length);
                 this.tabSelectedIndices = [];
                 this.tabSelectionAnchor = null;
