@@ -424,6 +424,8 @@ export function exercises() {
             const available = Number(this.stepForm.time_signature_numerator) * 4 - used;
             this.selectTabEditorCell(index, string);
             this.tabInsertAtBar = true;
+            this.tabSelectedIndices = [];
+            this.tabSelectionAnchor = null;
             // A virtual insertion point is not an existing note: choose a
             // duration that fits, without changing any saved note's duration.
             if (16 / this.tabDraft.duration > available) {
@@ -660,7 +662,12 @@ export function exercises() {
             if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
                 event.preventDefault();
                 const delta = event.key === 'ArrowUp' ? -1 : 1;
-                this.selectTabEditorCell(this.tabSelectedIndex, Math.max(1, Math.min(6, this.tabDraft.string + delta)));
+                const string = Math.max(1, Math.min(6, this.tabDraft.string + delta));
+                if (this.tabInsertAtBar) {
+                    this.tabDraft = { ...this.tabDraft, string };
+                } else {
+                    this.selectTabEditorCell(this.tabSelectedIndex, string);
+                }
             } else if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
                 event.preventDefault();
                 const delta = event.key === 'ArrowLeft' ? -1 : 1;
