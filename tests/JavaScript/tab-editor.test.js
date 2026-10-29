@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { createTabDraft, appendTabNote, serializeTabDraft, layoutTabMeasures, parseTabDraft, selectTabNoteIndices, changeSelectedTabDurations, clearTabNotes, updateTabBreaks, serializeTabPlayback, playbackAlphaTex } from '../../resources/js/metronome/alphatab/tab-editor.js'
+import { createTabDraft, appendTabNote, serializeTabDraft, layoutTabMeasures, parseTabDraft, selectTabNoteIndices, changeSelectedTabDurations, clearTabNotes, updateTabBreaks, breaksForInsertedTabNote, serializeTabPlayback, playbackAlphaTex } from '../../resources/js/metronome/alphatab/tab-editor.js'
 
 test('adds notes and serializes a four-beat measure', () => {
     let draft = createTabDraft()
@@ -216,4 +216,17 @@ test('barlines follow the surviving note and do not remain at the end', () => {
     assert.deepEqual(updateTabBreaks([3], 3, 'delete', 4), [3]);
     assert.deepEqual(updateTabBreaks([4], 4, 'delete', 4), []);
     assert.deepEqual(updateTabBreaks([2], 0, 'delete', 2), [1]);
+});
+
+test('fifth quarter starts another measure automatically', () => {
+    const draft = { ...createTabDraft(), beats: [1,2,3,4].map(fret => ({ fret, string:1, duration:4 })), breaks: [] };
+    assert.deepEqual(breaksForInsertedTabNote(draft, 4, 4, 4), [4]);
+});
+test('a new note at the next barline can fill a gap in the previous bar', () => {
+    const draft = { ...createTabDraft(), beats: [1,2,3,5].map(fret => ({ fret, string:1, duration:4 })), breaks: [3] };
+    assert.deepEqual(breaksForInsertedTabNote(draft, 3, 4, 4), [4]);
+});
+test('an overlarge new note remains in the next measure', () => {
+    const draft = { ...createTabDraft(), beats: [1,2,3,5].map(fret => ({ fret, string:1, duration:4 })), breaks: [3] };
+    assert.deepEqual(breaksForInsertedTabNote(draft, 3, 2, 4), [3]);
 });
