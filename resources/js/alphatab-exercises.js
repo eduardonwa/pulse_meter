@@ -207,7 +207,7 @@ window.addEventListener('alphatab:update', async event => {
         bpm,
         title: String(event.detail?.title ?? '').trim(),
         track: String(event.detail?.track ?? '').trim(),
-        instrument: Number(event.detail?.instrument ?? 25),
+        instrument: Number(event.detail?.instrument ?? (/\\instrument\s+(\d+)/.exec(alphaTex)?.[1] ?? 25)),
     }
 
     if (!element || !alphaTex) return
@@ -233,7 +233,7 @@ window.addEventListener('alphatab:update', async event => {
 })
 
 window.addEventListener('alphatab:preview-draft', async event => {
-    const { element, alphaTex, bpm, play } = event.detail ?? {}
+    const { element, alphaTex, bpm, play, instrument } = event.detail ?? {}
     if (!element) return
 
     if (!play) {
@@ -243,7 +243,7 @@ window.addEventListener('alphatab:preview-draft', async event => {
 
     if (!alphaTex) return
 
-    const pattern = applyMetadata(alphaTex, { bpm: Number(bpm) || 100 })
+    const pattern = applyMetadata(alphaTex, { bpm: Number(bpm) || 100, instrument: Number(instrument ?? 25) })
     element.dataset.alphaTex = encodeBase64(pattern)
     element.dataset.bpm = String(Number(bpm) || 100)
 
