@@ -201,7 +201,7 @@
                             <div class="tab-editor__string-row">
                                 <template x-for="column in system" :key="`${column.index}-${column.insertion}`">
                                     <button type="button" class="tab-editor__cell"
-                                        :class="{ 'is-selected': tabSelectedIndex === column.index && tabDraft.string === stringIndex + 1 && tabInsertAtBar === column.insertion, 'is-measure-end': !column.insertion && tabEditorMeasureEnd(column.index), 'is-multi-selected': !column.insertion && tabSelectedIndices.includes(column.index) && column.index < tabDraft.beats.length, 'is-insertion': column.insertion }"
+                                        :class="{ 'is-selected': tabSelectedIndex === column.index && tabDraft.string === stringIndex + 1 && tabInsertAtBar === column.insertion, 'is-measure-end': column.insertion || (!column.insertion && tabEditorMeasureEnd(column.index)), 'is-multi-selected': !column.insertion && tabSelectedIndices.includes(column.index) && column.index < tabDraft.beats.length, 'is-insertion': column.insertion }"
                                         :aria-label="column.insertion ? `Insert note before next measure, string ${stringIndex + 1}` : `String ${stringIndex + 1}, position ${column.index + 1}`"
                                         :aria-pressed="tabSelectedIndex === column.index && tabDraft.string === stringIndex + 1 && tabInsertAtBar === column.insertion"
                                         @pointerdown="!column.insertion && startTabDrag(column.index, stringIndex + 1, $event)"
