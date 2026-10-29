@@ -90,7 +90,7 @@ export function parseTabDraft(alphaTex) {
             if (!TAB_DURATIONS.includes(duration) || fret < 0 || fret > 24 || string < 1 || string > 6) {
                 throw new Error('This tablature contains unsupported notes');
             }
-            beats.push(rest ? { rest: true, duration, string: 1, fret: 0 } : { fret, string, duration });
+            beats.push(rest ? { rest: true, duration } : { fret, string, duration });
         }
     }
     const draft = { ...createTabDraft(), beats };
