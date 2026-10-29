@@ -70,3 +70,16 @@ test('user-authored tab can be parsed for editing and round-trips without losing
 test('parser refuses unfamiliar alphaTex rather than losing notes', () => {
     assert.throws(() => parseTabDraft('\\tempo 100\n\\ts 4 4\n\\staff {tabs}\n.\n:4 0.1 (bend)'), Error);
 });
+
+test('measure layout identifies incomplete overflow without changing notes', () => {
+    let draft = createTabDraft();
+    draft = appendTabNote({ ...draft, duration: 2 }, 1, 1);
+    draft = appendTabNote({ ...draft, duration: 4 }, 2, 1);
+    draft = appendTabNote({ ...draft, duration: 2 }, 3, 1);
+    const measures = layoutTabMeasures(draft, 4);
+    assert.equal(measures[0].complete, false);
+    assert.equal(measures[0].overflowBeforeIndex, 2);
+    assert.equal(measures[0].capacity - measures[0].used, 4);
+    assert.equal(measures[1].overflowBeforeIndex, null);
+    assert.deepEqual(measures.flatMap(m => m.notes.map(n => n.index)), [0, 1, 2]);
+});
