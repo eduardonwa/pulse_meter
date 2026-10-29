@@ -199,6 +199,7 @@ export function exercises() {
 
                 duration_seconds:
                     this.stepForm.mode === "drill" ? duration : null,
+                ...(this.stepForm.alpha_tex !== undefined ? { alpha_tex: this.stepForm.alpha_tex } : {}),
             };
         },
 

@@ -72,7 +72,13 @@ class PracticeRoutineStepController extends Controller
                 'integer',
                 'in:4',
             ],
+
+            'alpha_tex' => ['sometimes', 'nullable', 'string', 'max:65535'],
         ]);
+
+        if (filled($validated['alpha_tex'] ?? null)) {
+            $validated['tab_source'] = 'user';
+        }
 
         $validated['time_signature_numerator'] ??= 4;
         $validated['time_signature_denominator'] ??= 4;
@@ -144,7 +150,15 @@ class PracticeRoutineStepController extends Controller
                 'integer',
                 'in:4',
             ],
+
+            'alpha_tex' => ['sometimes', 'nullable', 'string', 'max:65535'],
         ]);
+
+        if (array_key_exists('alpha_tex', $validated)) {
+            // Template tablatures are read-only in the user-facing editor.
+            abort_if($practiceRoutineStep->tab_source === 'template', 403);
+            $validated['tab_source'] = filled($validated['alpha_tex']) ? 'user' : null;
+        }
 
         if ($validated['mode'] === 'classic') {
             $validated['duration_seconds'] = null;
