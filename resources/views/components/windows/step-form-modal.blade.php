@@ -146,6 +146,14 @@
         <div class="tab-editor__settings">
             <label>Exercise name <input type="text" x-model="stepForm.name" maxlength="255"></label>
             <label>BPM <input type="number" x-model.number="stepForm.bpm" min="30" max="400"></label>
+            <label>Instrument
+                <select x-model.number="tabDraft.instrument">
+                    <option value="24">Nylon guitar</option>
+                    <option value="25">Steel guitar</option>
+                    <option value="26">Jazz guitar</option>
+                    <option value="27">Clean guitar</option>
+                </select>
+            </label>
             <label>String
                 <select x-model.number="tabDraft.string">
                     <template x-for="(name, i) in tabStringNames" :key="i">
