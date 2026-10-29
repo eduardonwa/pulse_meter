@@ -15,6 +15,7 @@ export function exercises() {
         tabDragging: false,
         tabDragMoved: false,
         tabDigitPending: null,
+        tabDigitTimer: null,
         tabViewportWidth: 700,
 
         // EXERCISE STATE
@@ -342,6 +343,7 @@ export function exercises() {
         },
 
         closeNewTabEditor() {
+            this.finishPendingTabDigit(false);
             this.$refs.tabEditorDialog?.close();
             this.tabEditorOpen = false;
             this.tabEditorEditingIndex = null;
@@ -420,7 +422,7 @@ export function exercises() {
                 this.tabSelectionAnchor = validNote ? index : null;
             }
             this.tabSelectedIndex = index;
-            this.tabDigitPending = null;
+            this.finishPendingTabDigit(false);
             const note = this.tabDraft.beats[index];
             this.tabDraft = {
                 ...this.tabDraft,
@@ -460,27 +462,51 @@ export function exercises() {
             this.selectTabEditorCell(index, string, event);
         },
 
-        enterTabFretDigit(digit) {
-            const now = Date.now();
+        finishPendingTabDigit(advance = true) {
             const pending = this.tabDigitPending;
-            // A second digit entered quickly replaces the first note's fret.
-            // Only combine valid 10-24 frets; otherwise start a new note.
-            if (pending && now - pending.at < 650 && this.tabSelectedIndex === pending.index + 1) {
+            clearTimeout(this.tabDigitTimer);
+            this.tabDigitTimer = null;
+            this.tabDigitPending = null;
+            if (advance && pending && this.tabSelectedIndex === pending.index) {
+                this.tabSelectedIndex = Math.min(this.tabDraft.beats.length, pending.index + 1);
+                this.tabSelectedIndices = [];
+                this.tabSelectionAnchor = null;
+            }
+        },
+
+        enterTabFretDigit(digit) {
+            const pending = this.tabDigitPending;
+            if (pending && this.tabSelectedIndex === pending.index) {
                 const fret = pending.digit * 10 + digit;
-                if (fret >= 10 && fret <= 24 && pending.index < this.tabDraft.beats.length) {
-                    const beats = this.tabDraft.beats.map((note, index) =>
-                        index === pending.index ? { ...note, fret } : note
-                    );
-                    this.tabDraft = { ...this.tabDraft, beats, fret };
-                    this.tabDigitPending = null;
+                if (fret >= 10 && fret <= 24) {
+                    this.tabDraft = {
+                        ...this.tabDraft,
+                        beats: this.tabDraft.beats.map((note, index) =>
+                            index === pending.index ? { ...note, fret } : note
+                        ),
+                        fret,
+                    };
+                    this.finishPendingTabDigit();
                     return;
                 }
+                // 25-29 are invalid frets: treat the second key as a new note.
+                this.finishPendingTabDigit();
             }
-            this.tabDigitPending = null;
             const index = this.tabSelectedIndex;
             this.tabDraft = { ...this.tabDraft, fret: digit };
             this.addTabEditorNote();
-            if (digit === 1 || digit === 2) this.tabDigitPending = { digit, index, at: now };
+            if (digit === 1 || digit === 2) {
+                // Keep the caret on the first digit until it is completed or expires.
+                this.tabSelectedIndex = index;
+                this.tabSelectedIndices = [index];
+                this.tabSelectionAnchor = index;
+                const entry = { digit, index };
+                this.tabDigitPending = entry;
+                clearTimeout(this.tabDigitTimer);
+                this.tabDigitTimer = setTimeout(() => {
+                    if (this.tabDigitPending === entry) this.finishPendingTabDigit();
+                }, 650);
+            }
         },
 
         changeTabEditorDuration(value) {
