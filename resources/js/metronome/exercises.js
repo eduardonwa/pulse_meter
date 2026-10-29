@@ -1,4 +1,4 @@
-import { createTabDraft, appendTabNote, serializeTabDraft, parseTabDraft, layoutTabMeasures, TAB_STRINGS } from "./alphatab/tab-editor.js";
+import { createTabDraft, appendTabNote, serializeTabDraft, parseTabDraft, layoutTabMeasures, selectTabNoteIndices, changeSelectedTabDurations, TAB_STRINGS } from "./alphatab/tab-editor.js";
 
 export function exercises() {
     return {
@@ -9,6 +9,8 @@ export function exercises() {
         tabDraft: createTabDraft(),
         tabStringNames: TAB_STRINGS,
         tabSelectedIndex: 0,
+        tabSelectedIndices: [],
+        tabSelectionAnchor: null,
         tabViewportWidth: 700,
 
         // EXERCISE STATE
@@ -293,6 +295,8 @@ export function exercises() {
             this.tabEditorEditingIndex = null;
             this.tabDraft = createTabDraft();
             this.tabSelectedIndex = 0;
+            this.tabSelectedIndices = [];
+            this.tabSelectionAnchor = null;
             this.tabEditorOpen = true;
             this.$nextTick(() => {
                 this.$refs.tabEditorDialog?.showModal();
@@ -313,6 +317,8 @@ export function exercises() {
             this.tabEditorEditingIndex = index;
             this.tabDraft = parsed.draft;
             this.tabSelectedIndex = parsed.draft.beats.length;
+            this.tabSelectedIndices = [];
+            this.tabSelectionAnchor = null;
             this.stepForm = {
                 name: step.name,
                 bpm: parsed.bpm,
@@ -398,7 +404,17 @@ export function exercises() {
             return note?.string === string ? note.fret : null;
         },
 
-        selectTabEditorCell(index, string) {
+        selectTabEditorCell(index, string, event = null) {
+            const validNote = index < this.tabDraft.beats.length;
+            if (event?.shiftKey && validNote) {
+                this.tabSelectedIndices = selectTabNoteIndices(this.tabSelectedIndices, this.tabSelectionAnchor, index, 'range', this.tabDraft.beats.length);
+            } else if ((event?.ctrlKey || event?.metaKey) && validNote) {
+                this.tabSelectedIndices = selectTabNoteIndices(this.tabSelectedIndices, this.tabSelectionAnchor, index, 'toggle', this.tabDraft.beats.length);
+                this.tabSelectionAnchor = index;
+            } else {
+                this.tabSelectedIndices = validNote ? [index] : [];
+                this.tabSelectionAnchor = validNote ? index : null;
+            }
             this.tabSelectedIndex = index;
             const note = this.tabDraft.beats[index];
             this.tabDraft = {
@@ -411,13 +427,13 @@ export function exercises() {
 
         changeTabEditorDuration(value) {
             const duration = Number(value);
-            this.tabDraft = { ...this.tabDraft, duration };
-            if (this.tabSelectedIndex >= this.tabDraft.beats.length) return;
+            const selected = this.tabSelectedIndices.length
+                ? this.tabSelectedIndices
+                : (this.tabSelectedIndex < this.tabDraft.beats.length ? [this.tabSelectedIndex] : []);
             this.tabDraft = {
                 ...this.tabDraft,
-                beats: this.tabDraft.beats.map((note, index) =>
-                    index === this.tabSelectedIndex ? { ...note, duration } : note
-                ),
+                duration,
+                beats: changeSelectedTabDurations(this.tabDraft.beats, selected, duration),
             };
         },
 
@@ -432,6 +448,8 @@ export function exercises() {
                 }
                 this.tabDraft = { ...next, beats };
                 this.tabSelectedIndex = Math.min(beats.length, this.tabSelectedIndex + 1);
+                this.tabSelectedIndices = [];
+                this.tabSelectionAnchor = null;
             } catch (error) {
                 this.showToast?.(error.message, "error");
             }
@@ -442,9 +460,13 @@ export function exercises() {
                 const beats = this.tabDraft.beats.filter((_, i) => i !== this.tabSelectedIndex);
                 this.tabDraft = { ...this.tabDraft, beats };
                 this.tabSelectedIndex = Math.min(this.tabSelectedIndex, beats.length);
+                this.tabSelectedIndices = [];
+                this.tabSelectionAnchor = null;
             } else {
                 this.tabDraft = { ...this.tabDraft, beats: this.tabDraft.beats.slice(0, -1) };
                 this.tabSelectedIndex = this.tabDraft.beats.length;
+                this.tabSelectedIndices = [];
+                this.tabSelectionAnchor = null;
             }
         },
 
