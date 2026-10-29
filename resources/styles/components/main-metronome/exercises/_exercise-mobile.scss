@@ -445,3 +445,35 @@
 @media (prefers-reduced-motion: reduce) {
     .mobile-exercise-view-dialog__skeleton .skeleton-line { animation: none; }
 }
+
+/* First-pass fullscreen tablature entry controls. */
+.tab-editor {
+    &__intro { margin-bottom: 1rem; }
+
+    &__settings {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+
+        label { display: grid; gap: .375rem; font-weight: 600; }
+        input, select {
+            min-height: 44px;
+            width: 100%;
+            padding: .625rem;
+            border: 1px solid hsl(var(--neutral-500) / .5);
+            border-radius: .5rem;
+            background: hsl(var(--neutral-100));
+            color: inherit;
+        }
+    }
+
+    &__actions { display: flex; flex-wrap: wrap; gap: .75rem; margin: 1rem 0; }
+    &__notes { display: flex; flex-wrap: wrap; gap: .5rem; margin: 1rem 0; }
+    &__note {
+        padding: .5rem .75rem;
+        border: 1px solid hsl(var(--neutral-500) / .4);
+        border-radius: .5rem;
+        font-variant-numeric: tabular-nums;
+    }
+}
