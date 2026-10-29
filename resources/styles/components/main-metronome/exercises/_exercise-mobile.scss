@@ -525,6 +525,11 @@
     font: inherit;
     font-weight: 650;
     cursor: pointer;
+    &.is-insertion {
+        color: hsl(var(--primary-800));
+        background: hsl(var(--primary-200) / .35);
+        border-radius: 0;
+    }
     &.is-selected {
         border-color: hsl(var(--primary-700));
         background: hsl(var(--primary-200));
