@@ -1,9 +1,10 @@
-import { createTabDraft, appendTabNote, serializeTabDraft, layoutTabMeasures, TAB_STRINGS } from "./alphatab/tab-editor.js";
+import { createTabDraft, appendTabNote, serializeTabDraft, parseTabDraft, layoutTabMeasures, TAB_STRINGS } from "./alphatab/tab-editor.js";
 
 export function exercises() {
     return {
         mobileExpandedIndex: 0,
         tabEditorOpen: false,
+        tabEditorEditingIndex: null,
         tabEditorSaving: false,
         tabDraft: createTabDraft(),
         tabStringNames: TAB_STRINGS,
@@ -289,8 +290,38 @@ export function exercises() {
             if (this.stepFormMode !== "create" || this.steps.length >= this.maxSteps) return;
             this.isStepFormOpen = false;
             this.$refs.stepDialog.close();
+            this.tabEditorEditingIndex = null;
             this.tabDraft = createTabDraft();
             this.tabSelectedIndex = 0;
+            this.tabEditorOpen = true;
+            this.$nextTick(() => {
+                this.$refs.tabEditorDialog?.showModal();
+                this.updateTabEditorWidth();
+            });
+        },
+
+        openSavedTabEditor(index, viewerDialog = null) {
+            const step = this.steps[index];
+            if (!step || step.tab_source !== "user" || !step.alpha_tex) return;
+            let parsed;
+            try {
+                parsed = parseTabDraft(step.alpha_tex);
+            } catch (error) {
+                this.showToast?.(error.message, "error");
+                return;
+            }
+            this.tabEditorEditingIndex = index;
+            this.tabDraft = parsed.draft;
+            this.tabSelectedIndex = parsed.draft.beats.length;
+            this.stepForm = {
+                name: step.name,
+                bpm: parsed.bpm,
+                time_signature_numerator: parsed.numerator,
+                time_signature_denominator: 4,
+                mode: step.mode,
+                duration_seconds: Number(step.duration_seconds ?? 60),
+            };
+            viewerDialog?.close();
             this.tabEditorOpen = true;
             this.$nextTick(() => {
                 this.$refs.tabEditorDialog?.showModal();
@@ -301,6 +332,7 @@ export function exercises() {
         closeNewTabEditor() {
             this.$refs.tabEditorDialog?.close();
             this.tabEditorOpen = false;
+            this.tabEditorEditingIndex = null;
         },
 
         updateTabEditorWidth() {
@@ -423,7 +455,7 @@ export function exercises() {
         },
 
         async saveNewTabExercise() {
-            if (this.tabEditorSaving || this.steps.length >= this.maxSteps) return;
+            if (this.tabEditorSaving || (this.tabEditorEditingIndex === null && this.steps.length >= this.maxSteps)) return;
             let alphaTex;
             try {
                 alphaTex = serializeTabDraft(
@@ -438,6 +470,23 @@ export function exercises() {
             this.tabEditorSaving = true;
             try {
                 const payload = { ...this.getStepFormPayload(), alpha_tex: alphaTex };
+                if (this.tabEditorEditingIndex !== null) {
+                    const index = this.tabEditorEditingIndex;
+                    const existing = this.steps[index];
+                    if (!existing || existing.tab_source !== "user") return;
+                    let updated;
+                    if (this.usesServerPersistence) {
+                        updated = await this.updateRoutineStep(existing.id, payload);
+                        if (!updated) return;
+                    } else {
+                        updated = { ...existing, ...payload, tab_source: "user" };
+                    }
+                    this.steps.splice(index, 1, updated);
+                    if (!this.usesServerPersistence) this.saveToLocalStorage();
+                    this.closeNewTabEditor();
+                    this.resetStepForm();
+                    return;
+                }
                 let createdStep;
                 if (this.usesServerPersistence) {
                     createdStep = await this.storeRoutineStep(payload);
