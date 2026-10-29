@@ -445,7 +445,8 @@ export function exercises() {
             } else if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
                 event.preventDefault();
                 const delta = event.key === 'ArrowLeft' ? -1 : 1;
-                this.tabSelectedIndex = Math.max(0, Math.min(this.tabDraft.beats.length, this.tabSelectedIndex + delta));
+                const index = Math.max(0, Math.min(this.tabDraft.beats.length, this.tabSelectedIndex + delta));
+                this.selectTabEditorCell(index, this.tabDraft.beats[index]?.string ?? this.tabDraft.string);
             } else if (/^[0-9]$/.test(event.key)) {
                 event.preventDefault();
                 this.tabDraft = { ...this.tabDraft, fret: Number(event.key) };
