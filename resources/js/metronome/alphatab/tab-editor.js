@@ -85,14 +85,35 @@ export function breaksForInsertedTabNote(draft, index, duration, numerator = 4) 
     return shifted;
 }
 
+// Legacy beats contain one fret/string; chord beats contain several notes.
+export function tabBeatNotes(beat) {
+    if (!beat || beat.rest) return [];
+    return beat.notes ?? [{ fret: beat.fret, string: beat.string }];
+}
+
+export function setTabBeatNote(beat, fret, string) {
+    if (!beat || beat.rest || !Number.isInteger(fret) || fret < 0 || fret > 24 ||
+        !Number.isInteger(string) || string < 1 || string > 6) throw new RangeError('Invalid note');
+    const notes = tabBeatNotes(beat).filter(note => note.string !== string);
+    notes.push({ fret, string });
+    notes.sort((a, b) => a.string - b.string);
+    return notes.length === 1
+        ? { duration: beat.duration, ...notes[0] }
+        : { duration: beat.duration, notes };
+}
+
 export function serializeTabDraft(draft, numerator = 4, bpm = 100) {
     if (!draft.beats.length) throw new RangeError('Add at least one note');
     const instrument = Number(draft.instrument ?? 25);
     if (!TAB_INSTRUMENTS.includes(instrument)) throw new RangeError('Invalid instrument');
     const measures = layoutTabMeasures(draft, numerator);
-    const body = measures.map(measure => measure.notes.map(note =>
-        `:${note.duration} ${note.rest ? "r" : `${note.fret}.${note.string}`}`
-    ).join(' ')).join(' | ');
+    const body = measures.map(measure => measure.notes.map(beat => {
+        const notes = tabBeatNotes(beat);
+        const content = beat.rest ? 'r' : notes.length === 1
+            ? `${notes[0].fret}.${notes[0].string}`
+            : `(${notes.map(note => `${note.fret}.${note.string}`).join(' ')})`;
+        return `:${beat.duration} ${content}`;
+    }).join(' ')).join(' | ');
     return `\\tempo ${Number(bpm)}\n\\instrument ${instrument}\n\\ts ${Number(numerator)} 4\n\\staff {tabs}\n.\n${body}`;
 }
 
@@ -119,20 +140,34 @@ export function parseTabDraft(alphaTex) {
     const breaks = [];
     for (const measure of content[4].split('|')) {
         if (beats.length) breaks.push(beats.length);
-        const tokens = measure.trim().match(/:\d+\s+(?:\d+\.\d+|r)/g) ?? [];
+        const tokens = measure.trim().match(/:\\d+\\s+(?:\\((?:\\d+\\.\\d+\\s*){2,6}\\)|\\d+\\.\\d+|r)/g) ?? [];
         if (!tokens.length || tokens.join(' ').replace(/\s+/g, ' ') !== measure.trim().replace(/\s+/g, ' ')) {
             throw new Error('This tablature contains unsupported notation');
         }
         for (const token of tokens) {
-            const match = /^:(\d+)\s+(?:(\d+)\.(\d+)|(r))$/.exec(token);
+            const match = /^:(\\d+)\\s+(.+)$/.exec(token);
+            if (!match) throw new Error('Unsupported note');
             const duration = Number(match[1]);
-            const rest = match[4] === "r";
-            const fret = rest ? 0 : Number(match[2]);
-            const string = rest ? 1 : Number(match[3]);
-            if (!TAB_DURATIONS.includes(duration) || fret < 0 || fret > 24 || string < 1 || string > 6) {
-                throw new Error('This tablature contains unsupported notes');
+            const body = match[2];
+            if (!TAB_DURATIONS.includes(duration)) throw new Error('Unsupported duration');
+            if (body === 'r') {
+                beats.push({ rest: true, duration });
+                continue;
             }
-            beats.push(rest ? { rest: true, duration } : { fret, string, duration });
+            const raw = body.startsWith('(') && body.endsWith(')')
+                ? body.slice(1, -1).trim().split(/\\s+/)
+                : [body];
+            const notes = raw.map(part => {
+                const note = /^(\\d+)\\.(\\d+)$/.exec(part);
+                if (!note) throw new Error('Unsupported chord');
+                return { fret: Number(note[1]), string: Number(note[2]) };
+            });
+            if (notes.length > 6 || notes.some(note => note.fret > 24 ||
+                note.string < 1 || note.string > 6) ||
+                new Set(notes.map(note => note.string)).size !== notes.length) {
+                throw new Error('Invalid chord');
+            }
+            beats.push(notes.length === 1 ? { ...notes[0], duration } : { notes, duration });
         }
     }
     const draft = { ...createTabDraft(), beats, instrument, breaks };
