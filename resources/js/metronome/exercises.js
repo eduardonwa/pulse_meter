@@ -458,7 +458,7 @@ export function exercises() {
         },
 
         tabEditorMeasureEnd(index) {
-            return this.tabEditorMeasureLayout().some(measure => measure.endIndex === index);
+            return this.tabEditorMeasureLayout().some(measure => measure.endIndex === index && measure.used >= measure.capacity);
         },
 
         tabEditorMeasureNumber(index) {
