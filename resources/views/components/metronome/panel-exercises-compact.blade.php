@@ -20,14 +20,22 @@
         </template>
 
         <dialog class="dialog-shell mobile-exercise-view-dialog" x-ref="exerciseViewDialog"
+            :class="{ 'is-fullscreen': viewFullscreen }"
             @close="closeMobileExerciseView($refs.exerciseDetails)"
             @cancel.prevent="$refs.exerciseViewDialog.close()"
             @click.self="$refs.exerciseViewDialog.close()">
             <header class="mobile-exercise-view-dialog__header">
+                <span class="mobile-exercise-view-dialog__handle" aria-hidden="true"></span>
                 <strong x-text="step.name"></strong>
-                <button type="button" class="button" data-type="icon" aria-label="Close exercise" @click="$refs.exerciseViewDialog.close()">
-                    <x-heroicon-o-x-mark />
-                </button>
+                <div class="mobile-exercise-view-dialog__window-actions">
+                    <button type="button" class="button" data-type="icon" :aria-label="viewFullscreen ? 'Minimize exercise' : 'Expand exercise'" :title="viewFullscreen ? 'Minimize' : 'Fullscreen'" @click="toggleExerciseViewSize($refs.alphaTab, $nextTick)">
+                        <x-heroicon-o-arrows-pointing-in x-show="viewFullscreen" />
+                        <x-heroicon-o-arrows-pointing-out x-show="!viewFullscreen" />
+                    </button>
+                    <button type="button" class="button" data-type="icon" aria-label="Close exercise" title="Close" @click="$refs.exerciseViewDialog.close()">
+                        <x-heroicon-o-x-mark />
+                    </button>
+                </div>
             </header>
             <div class="mobile-exercise-view-dialog__content" x-ref="exerciseViewContent">
                 <div class="mobile-exercise-view-dialog__facts">
