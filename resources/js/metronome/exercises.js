@@ -1,4 +1,4 @@
-import { createTabDraft, appendTabNote, serializeTabDraft, parseTabDraft, layoutTabMeasures, selectTabNoteIndices, changeSelectedTabDurations, clearTabNotes, shiftTabBreaks, updateTabBreaks, breaksForInsertedTabNote, tabBeatNotes, setTabBeatNote, TAB_DURATIONS, TAB_STRINGS } from "./alphatab/tab-editor.js";
+import { createTabDraft, appendTabNote, serializeTabDraft, parseTabDraft, layoutTabMeasures, selectTabNoteIndices, changeSelectedTabDurations, clearTabNotes, shiftTabBreaks, updateTabBreaks, breaksForInsertedTabNote, tabBeatNotes, setTabBeatNote, removeTabNoteAtString, TAB_DURATIONS, TAB_STRINGS } from "./alphatab/tab-editor.js";
 
 export function exercises() {
     return {
@@ -642,13 +642,12 @@ export function exercises() {
 
         clearTabEditorNote() {
             this.finishPendingTabDigit(false);
-            const selected = this.tabSelectedIndices.length
-                ? this.tabSelectedIndices
-                : (this.tabSelectedIndex < this.tabDraft.beats.length ? [this.tabSelectedIndex] : []);
-            if (!selected.length) return;
+            if (this.tabInsertAtBar || this.tabSelectedIndex >= this.tabDraft.beats.length) return;
+            const index = this.tabSelectedIndex;
             this.tabDraft = {
                 ...this.tabDraft,
-                beats: clearTabNotes(this.tabDraft.beats, selected),
+                beats: this.tabDraft.beats.map((beat, at) =>
+                    at === index ? removeTabNoteAtString(beat, this.tabDraft.string) : beat),
             };
         },
 
