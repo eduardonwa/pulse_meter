@@ -613,6 +613,16 @@ export function exercises() {
             try {
                 const next = appendTabNote(this.tabDraft);
                 const beats = [...this.tabDraft.beats];
+                // Typing on an occupied string edits that fret, never inserts a beat.
+                const occupiedBeat = beats[this.tabSelectedIndex];
+                if (!this.tabInsertAtBar && occupiedBeat && !occupiedBeat.rest &&
+                    tabBeatNotes(occupiedBeat).some(note => note.string === this.tabDraft.string)) {
+                    beats[this.tabSelectedIndex] = setTabBeatNote(occupiedBeat, this.tabDraft.fret, this.tabDraft.string);
+                    this.tabDraft = { ...this.tabDraft, beats };
+                    this.tabSelectedIndices = [this.tabSelectedIndex];
+                    this.tabSelectionAnchor = this.tabSelectedIndex;
+                    return;
+                }
                 // Empty strings at an existing beat add a simultaneous chord note.
                 const current = beats[this.tabSelectedIndex];
                 const isChordEntry = current && !current.rest && !this.tabInsertAtBar &&
