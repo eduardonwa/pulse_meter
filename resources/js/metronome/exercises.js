@@ -353,7 +353,25 @@ export function exercises() {
 
         selectTabEditorCell(index, string) {
             this.tabSelectedIndex = index;
-            this.tabDraft = { ...this.tabDraft, string };
+            const note = this.tabDraft.beats[index];
+            this.tabDraft = {
+                ...this.tabDraft,
+                string,
+                fret: note?.fret ?? this.tabDraft.fret,
+                duration: note?.duration ?? this.tabDraft.duration,
+            };
+        },
+
+        changeTabEditorDuration(value) {
+            const duration = Number(value);
+            this.tabDraft = { ...this.tabDraft, duration };
+            if (this.tabSelectedIndex >= this.tabDraft.beats.length) return;
+            this.tabDraft = {
+                ...this.tabDraft,
+                beats: this.tabDraft.beats.map((note, index) =>
+                    index === this.tabSelectedIndex ? { ...note, duration } : note
+                ),
+            };
         },
 
         addTabEditorNote() {
