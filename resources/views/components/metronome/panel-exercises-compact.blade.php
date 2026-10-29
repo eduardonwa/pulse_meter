@@ -6,7 +6,7 @@
                 playbackSource === 'exercise' &&
                 currentIndex === index
         }"
-        @routine:exercise-clear-active.window="clearActiveExercise()"
+        @routine:exercise-clear-active.window="clearActiveExercise($event)"
         @alphatab:rendered.window="syncScoreRendered($event, $refs.alphaTab)"
         @routine:exercise-active.window="syncActiveExercise($event, index, !!step.alpha_tex)"
     >
