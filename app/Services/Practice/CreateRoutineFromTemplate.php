@@ -64,6 +64,7 @@ class CreateRoutineFromTemplate
                                 ->get($position)
                                 ?->alpha_tex,
 
+                        'tab_source' => filled($templateSteps->get($position)?->alpha_tex) ? 'template' : null,
                         'position' => $position,
                         'origin' => 'custom',
                     ])
