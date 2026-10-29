@@ -104,7 +104,7 @@ test('Backspace-style clearing keeps duration and note positions on alphaTex rou
     assert.deepEqual(cleared.beats[1], { rest: true, duration: 4 });
     assert.equal(cleared.beats[2].fret, 8);
     const tex = serializeTabDraft(cleared, 4, 120);
-    assert.match(tex, /:4 r/);
+    assert.ok(tex.includes(':4 (4.3 4.4 2.5)'));
     assert.equal(layoutTabMeasures(cleared, 4)[0].complete, true);
     assert.deepEqual(parseTabDraft(tex).draft.beats, cleared.beats);
 });
