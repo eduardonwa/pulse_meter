@@ -1,4 +1,4 @@
-import { createTabDraft, appendTabNote, serializeTabDraft, parseTabDraft, layoutTabMeasures, selectTabNoteIndices, changeSelectedTabDurations, clearTabNotes, shiftTabBreaks, updateTabBreaks, breaksForInsertedTabNote, TAB_STRINGS } from "./alphatab/tab-editor.js";
+import { createTabDraft, appendTabNote, serializeTabDraft, parseTabDraft, layoutTabMeasures, selectTabNoteIndices, changeSelectedTabDurations, clearTabNotes, shiftTabBreaks, updateTabBreaks, breaksForInsertedTabNote, tabBeatNotes, setTabBeatNote, TAB_DURATIONS, TAB_STRINGS } from "./alphatab/tab-editor.js";
 
 export function exercises() {
     return {
@@ -494,7 +494,7 @@ export function exercises() {
         tabEditorNoteAt(index, string) {
             const note = this.tabDraft.beats[index];
             if (note?.rest) return null;
-            return note?.string === string ? note.fret : null;
+            return tabBeatNotes(note).find(n => n.string === string)?.fret ?? null;
         },
 
         selectTabEditorCell(index, string, event = null) {
@@ -514,8 +514,8 @@ export function exercises() {
             const note = this.tabDraft.beats[index];
             this.tabDraft = {
                 ...this.tabDraft,
-                string: note?.rest ? string : (note?.string ?? string),
-                fret: note?.rest ? 0 : (note?.fret ?? this.tabDraft.fret),
+                string,
+                fret: tabBeatNotes(note).find(n => n.string === string)?.fret ?? 0,
                 duration: note?.duration ?? this.tabDraft.duration,
             };
         },
@@ -570,7 +570,7 @@ export function exercises() {
                     this.tabDraft = {
                         ...this.tabDraft,
                         beats: this.tabDraft.beats.map((note, index) =>
-                            index === pending.index ? { ...note, fret } : note
+                            index === pending.index ? setTabBeatNote(note, fret, pending.string) : note
                         ),
                         fret,
                     };
@@ -588,7 +588,7 @@ export function exercises() {
                 this.tabSelectedIndex = index;
                 this.tabSelectedIndices = [index];
                 this.tabSelectionAnchor = index;
-                const entry = { digit, index };
+                const entry = { digit, index, string: this.tabDraft.string };
                 this.tabDigitPending = entry;
                 clearTimeout(this.tabDigitTimer);
                 this.tabDigitTimer = setTimeout(() => {
@@ -613,6 +613,17 @@ export function exercises() {
             try {
                 const next = appendTabNote(this.tabDraft);
                 const beats = [...this.tabDraft.beats];
+                // Empty strings at an existing beat add a simultaneous chord note.
+                const current = beats[this.tabSelectedIndex];
+                const isChordEntry = current && !current.rest && !this.tabInsertAtBar &&
+                    !tabBeatNotes(current).some(note => note.string === this.tabDraft.string);
+                if (isChordEntry) {
+                    beats[this.tabSelectedIndex] = setTabBeatNote(current, this.tabDraft.fret, this.tabDraft.string);
+                    this.tabDraft = { ...this.tabDraft, beats };
+                    this.tabSelectedIndices = [this.tabSelectedIndex];
+                    this.tabSelectionAnchor = this.tabSelectedIndex;
+                    return;
+                }
                 // Reuse a rest; otherwise insert at the caret without overwriting a note.
                 if (beats[this.tabSelectedIndex]?.rest && !this.tabInsertAtBar) {
                     beats[this.tabSelectedIndex] = next.beats.at(-1);
@@ -673,6 +684,14 @@ export function exercises() {
                 const delta = event.key === 'ArrowLeft' ? -1 : 1;
                 const index = Math.max(0, Math.min(this.tabDraft.beats.length, this.tabSelectedIndex + delta));
                 this.selectTabEditorCell(index, this.tabDraft.beats[index]?.string ?? this.tabDraft.string, event.shiftKey ? { shiftKey: true } : null);
+            } else if (event.key === '+' || event.key === '=' || event.key === '-') {
+                event.preventDefault();
+                const current = TAB_DURATIONS.indexOf(Number(this.tabDraft.duration));
+                if (current !== -1) {
+                    const next = Math.max(0, Math.min(TAB_DURATIONS.length - 1,
+                        current + (event.key === '-' ? 1 : -1)));
+                    this.changeTabEditorDuration(TAB_DURATIONS[next]);
+                }
             } else if (/^[0-9]$/.test(event.key)) {
                 event.preventDefault();
                 this.enterTabFretDigit(Number(event.key));
