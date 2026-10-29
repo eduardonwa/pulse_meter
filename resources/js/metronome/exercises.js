@@ -321,6 +321,8 @@ export function exercises() {
                 mode: step.mode,
                 duration_seconds: Number(step.duration_seconds ?? 60),
             };
+            this.stepFormMinutes = Math.floor(this.stepForm.duration_seconds / 60);
+            this.stepFormSeconds = this.stepForm.duration_seconds % 60;
             viewerDialog?.close();
             this.tabEditorOpen = true;
             this.$nextTick(() => {
