@@ -169,14 +169,14 @@
                 @click="undoTabEditorNote()">Undo last note</button>
         </div>
         <p x-text="`${tabDraft.beats.length} notes · ${stepForm.time_signature_numerator}/4 · arrows navigate, 0–9 enter frets`"></p>
-        <p class="tab-editor__selection-hint">Shift + click selects a range · Ctrl/Cmd + click toggles notes · Duration applies to selected notes.</p>
+        <p class="tab-editor__selection-hint">Drag to select a range · Shift + click selects a range · Ctrl/Cmd + click toggles notes · type 10–24 quickly for two-digit frets.</p>
         <p class="tab-editor__measure-status" x-text="tabEditorMeasureStatus()"></p>
         <div class="tab-editor__measure-list" aria-live="polite">
             <template x-for="measure in tabEditorMeasureWarnings()" :key="measure.number">
                 <span class="tab-editor__measure-indicator" :data-status="measure.status" :title="measure.message" x-text="measure.message"></span>
             </template>
         </div>
-        <div class="tab-editor__score" x-ref="tabEditorScore" @resize.window="updateTabEditorWidth()" tabindex="0" role="group" aria-label="Interactive six-string tablature">
+        <div class="tab-editor__score" x-ref="tabEditorScore" @pointerup.window="endTabDrag()" @pointercancel.window="endTabDrag()" @resize.window="updateTabEditorWidth()" tabindex="0" role="group" aria-label="Interactive six-string tablature">
             <template x-for="(system, systemIndex) in tabEditorSystems()" :key="systemIndex">
                 <div class="tab-editor__system">
                     <div class="tab-editor__string-labels">
@@ -192,7 +192,9 @@
                                         :class="{ 'is-selected': tabSelectedIndex === columnIndex && tabDraft.string === stringIndex + 1, 'is-measure-end': tabEditorMeasureEnd(columnIndex), 'is-multi-selected': tabSelectedIndices.includes(columnIndex) && columnIndex < tabDraft.beats.length }"
                                         :aria-label="`String ${stringIndex + 1}, position ${columnIndex + 1}`"
                                         :aria-pressed="tabSelectedIndex === columnIndex && tabDraft.string === stringIndex + 1"
-                                        @click="selectTabEditorCell(columnIndex, stringIndex + 1, $event); $refs.tabEditorScoreFocus?.focus()"
+                                        @pointerdown="startTabDrag(columnIndex, stringIndex + 1, $event)"
+                                        @pointerenter="extendTabDrag(columnIndex)"
+                                        @click="clickTabCell(columnIndex, stringIndex + 1, $event); $refs.tabEditorScoreFocus?.focus()"
                                         x-text="tabEditorNoteAt(columnIndex, stringIndex + 1) ?? '·'"></button>
                                 </template>
                             </div>
