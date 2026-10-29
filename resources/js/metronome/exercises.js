@@ -10,6 +10,7 @@ export function exercises() {
         tabDraft: createTabDraft(),
         tabStringNames: TAB_STRINGS,
         tabSelectedIndex: 0,
+        tabInsertAtBar: false,
         tabSelectedIndices: [],
         tabSelectionAnchor: null,
         tabDragAnchor: null,
@@ -301,6 +302,7 @@ export function exercises() {
             this.tabEditorEditingIndex = null;
             this.tabDraft = createTabDraft();
             this.tabSelectedIndex = 0;
+            this.tabInsertAtBar = false;
             this.tabSelectedIndices = [];
             this.tabSelectionAnchor = null;
             this.tabEditorOpen = true;
@@ -323,6 +325,7 @@ export function exercises() {
             this.tabEditorEditingIndex = index;
             this.tabDraft = parsed.draft;
             this.tabSelectedIndex = parsed.draft.beats.length;
+            this.tabInsertAtBar = false;
             this.tabSelectedIndices = [];
             this.tabSelectionAnchor = null;
             this.stepForm = {
@@ -391,18 +394,42 @@ export function exercises() {
             if (width) this.tabViewportWidth = width;
         },
 
+        tabEditorDisplayColumns() {
+            const measures = this.tabEditorMeasureLayout();
+            const insertions = new Set(measures.slice(0, -1)
+                .filter(measure => measure.used < measure.capacity)
+                .map(measure => measure.endIndex + 1));
+            const columns = [];
+            for (let index = 0; index <= this.tabDraft.beats.length; index++) {
+                if (insertions.has(index)) columns.push({ index, insertion: true });
+                columns.push({ index, insertion: false });
+            }
+            return columns;
+        },
+
         tabEditorSystems() {
-            // Each six-string staff is kept together when the layout wraps.
             const columns = Math.max(1, Math.floor((this.tabViewportWidth - 68) / 48));
-            const count = this.tabEditorColumns();
+            const display = this.tabEditorDisplayColumns();
             const systems = [];
-            for (let start = 0; start < count; start += columns) {
-                systems.push(Array.from(
-                    { length: Math.min(columns, count - start) },
-                    (_, i) => start + i,
-                ));
+            for (let start = 0; start < display.length; start += columns) {
+                systems.push(display.slice(start, start + columns));
             }
             return systems;
+        },
+
+        selectTabEditorInsertion(index, string) {
+            const previousBreak = Math.max(0, ...(this.tabDraft.breaks ?? []).filter(value => value < index));
+            const used = this.tabDraft.beats.slice(previousBreak, index)
+                .reduce((total, beat) => total + 16 / beat.duration, 0);
+            const available = Number(this.stepForm.time_signature_numerator) * 4 - used;
+            this.selectTabEditorCell(index, string);
+            this.tabInsertAtBar = true;
+            // A virtual insertion point is not an existing note: choose a
+            // duration that fits, without changing any saved note's duration.
+            if (16 / this.tabDraft.duration > available) {
+                this.tabDraft = { ...this.tabDraft, duration: [1, 2, 4, 8, 16]
+                    .find(duration => 16 / duration <= available) ?? 16 };
+            }
         },
 
         tabEditorMeasureLayout() {
@@ -480,6 +507,7 @@ export function exercises() {
                 this.tabSelectionAnchor = validNote ? index : null;
             }
             this.tabSelectedIndex = index;
+            this.tabInsertAtBar = false;
             this.finishPendingTabDigit(false);
             const note = this.tabDraft.beats[index];
             this.tabDraft = {
@@ -591,6 +619,7 @@ export function exercises() {
                 }
                 this.tabDraft = { ...next, beats, breaks: beats.length > this.tabDraft.beats.length ? breaksForInsertedTabNote(this.tabDraft, this.tabSelectedIndex, next.beats.at(-1).duration, this.stepForm.time_signature_numerator) : this.tabDraft.breaks };
                 this.tabSelectedIndex = Math.min(beats.length, this.tabSelectedIndex + 1);
+                this.tabInsertAtBar = false;
                 this.tabSelectedIndices = [];
                 this.tabSelectionAnchor = null;
             } catch (error) {
