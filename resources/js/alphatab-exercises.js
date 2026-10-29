@@ -154,7 +154,7 @@ async function mountAlphaTab(element) {
             const pending = pendingInstrumentChanges.get(api)
             if (!pending) return
             pendingInstrumentChanges.delete(api)
-            api.tickPosition = Math.min(pending.tick, api.endTick ?? pending.tick)
+            api.tickPosition = Math.max(0, Math.min(pending.tick, api.endTick ?? pending.tick))
             if (pending.resume) api.play()
         })
 
@@ -289,7 +289,7 @@ window.addEventListener('alphatab:change-draft-instrument', async event => {
     // alphaTab does not offer a direct live GM program switch.
     const previous = pendingInstrumentChanges.get(api)
     const tick = previous?.tick ?? api.tickPosition
-    const resume = previous?.resume ?? (activeApi === api && api.playerState === 1)
+    const resume = previous?.resume ?? (activeApi === api && api.playerState === alphaTabModule?.synth.PlayerState.Playing)
     track.playbackInfo.program = program
     pendingInstrumentChanges.set(api, { tick, resume })
     api.loadMidiForScore()
