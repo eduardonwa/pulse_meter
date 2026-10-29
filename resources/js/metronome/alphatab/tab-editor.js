@@ -209,6 +209,17 @@ export function clearTabNotes(beats, indices) {
 }
 
 
+// Backspace removes only the chosen string; the last note becomes a rest.
+export function removeTabNoteAtString(beat, string) {
+    if (!beat || beat.rest) return beat;
+    const notes = tabBeatNotes(beat);
+    if (!notes.some(note => note.string === string)) return beat;
+    const remaining = notes.filter(note => note.string !== string);
+    if (!remaining.length) return { rest: true, duration: beat.duration };
+    if (remaining.length === 1) return { ...remaining[0], duration: beat.duration };
+    return { notes: remaining, duration: beat.duration };
+}
+
 // Derive playable, meter-safe alphaTex without modifying saved tablature.
 // Once a beat overflows a bar, skip it and any later beats in that bar.
 export function serializeTabPlayback(draft, numerator = 4, bpm = 100) {
