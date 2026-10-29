@@ -209,8 +209,12 @@
         <span x-ref="tabEditorScoreFocus" class="sr-only" tabindex="-1">Tab keyboard controls</span>
         <div class="tab-editor__actions">
             <button type="button" class="button" data-type="primary"
-                :disabled="tabEditorSaving || !tabDraft.beats.length" @click="saveNewTabExercise()"
-                x-text="tabEditorSaving ? 'Saving…' : (tabEditorEditingIndex === null ? 'Save exercise' : 'Save changes')"></button>
+                :disabled="tabEditorSaving || !tabDraft.beats.length" @click="saveNewTabExercise(false)"
+                x-text="tabEditorSaving ? 'Saving…' : 'Save'"></button>
+            <button type="button" class="button" data-type="outline"
+                :disabled="tabEditorSaving || !tabDraft.beats.length" @click="saveNewTabExercise(true)">
+                Save &amp; Close
+            </button>
             <button type="button" class="button" data-type="outline" :disabled="tabEditorSaving"
                 @click="closeNewTabEditor()">Cancel</button>
         </div>
