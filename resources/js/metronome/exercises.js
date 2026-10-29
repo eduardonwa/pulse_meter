@@ -371,14 +371,6 @@ export function exercises() {
             }));
         },
 
-        changeTabEditorInstrument() {
-            const element = this.$refs.tabEditorPreview;
-            if (!element || !this.tabPreviewPlaying) return;
-            window.dispatchEvent(new CustomEvent("alphatab:change-draft-instrument", {
-                detail: { element, instrument: Number(this.tabDraft.instrument) },
-            }));
-        },
-
         stopTabEditorPreview() {
             const element = this.$refs.tabEditorPreview;
             if (element) window.dispatchEvent(new CustomEvent("alphatab:preview-draft", {
