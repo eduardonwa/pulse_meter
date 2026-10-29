@@ -19,31 +19,44 @@ export function appendTabNote(draft, fret = draft.fret, string = draft.string) {
         beats: [...draft.beats, { fret: number, string: line, duration }],
     };
 }
-export function serializeTabDraft(draft, numerator = 4, bpm = 100) {
+export function layoutTabMeasures(draft, numerator = 4) {
     const meter = Number(numerator);
     if (!Number.isInteger(meter) || meter < 2 || meter > 16) {
         throw new RangeError('Invalid time signature');
     }
-    if (!draft.beats.length) throw new RangeError('Add at least one note');
+    const capacity = meter * 4; // sixteenth-note units for a /4 meter
     const measures = [];
     let current = [];
     let units = 0;
-    const capacity = meter * 4; // sixteenths per 4-based measure
-    for (const beat of draft.beats) {
-        const amount = 16 / beat.duration;
-        if (units + amount > capacity && current.length) {
-            measures.push(current.join(' '));
+    for (const [index, beat] of draft.beats.entries()) {
+        const duration = Number(beat.duration);
+        if (!TAB_DURATIONS.includes(duration)) throw new RangeError('Invalid duration');
+        const amount = 16 / duration;
+        // A note that does not fit starts the next measure.
+        if (current.length && units + amount > capacity) {
+            measures.push({ notes: current, endIndex: index - 1, complete: false, used: units, capacity });
             current = [];
             units = 0;
         }
-        current.push(`:${beat.duration} ${beat.fret}.${beat.string}`);
+        current.push({ ...beat, index });
         units += amount;
         if (units === capacity) {
-            measures.push(current.join(' '));
+            measures.push({ notes: current, endIndex: index, complete: true, used: units, capacity });
             current = [];
             units = 0;
         }
     }
-    if (current.length) measures.push(current.join(' '));
-    return `\\tempo ${Number(bpm)}\n\\ts ${meter} 4\n\\staff {tabs}\n.\n${measures.join(' | ')}`;
+    if (current.length) {
+        measures.push({ notes: current, endIndex: draft.beats.length - 1, complete: false, used: units, capacity });
+    }
+    return measures;
+}
+
+export function serializeTabDraft(draft, numerator = 4, bpm = 100) {
+    if (!draft.beats.length) throw new RangeError('Add at least one note');
+    const measures = layoutTabMeasures(draft, numerator);
+    const body = measures.map(measure => measure.notes.map(note =>
+        `:${note.duration} ${note.fret}.${note.string}`
+    ).join(' ')).join(' | ');
+    return `\\\\tempo ${Number(bpm)}\n\\\\ts ${Number(numerator)} 4\n\\\\staff {tabs}\n.\n${body}`;
 }
