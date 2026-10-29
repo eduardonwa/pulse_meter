@@ -485,6 +485,21 @@ export function exercises() {
                     }
                     this.steps.splice(index, 1, updated);
                     if (!this.usesServerPersistence) this.saveToLocalStorage();
+                    // alphaTab keeps a mounted API instance, so changing Alpine's
+                    // data-alpha-tex binding alone does not replace its score.
+                    this.$nextTick(() => {
+                        const element = this.$root.querySelector(
+                            `[data-alphatab][data-exercise-index="${index}"]`
+                        );
+                        if (!element) return;
+                        window.dispatchEvent(new CustomEvent("alphatab:update", {
+                            detail: {
+                                element,
+                                alphaTex: updated.alpha_tex,
+                                bpm: Number(updated.bpm),
+                            },
+                        }));
+                    });
                     this.closeNewTabEditor();
                     this.resetStepForm();
                     return;
