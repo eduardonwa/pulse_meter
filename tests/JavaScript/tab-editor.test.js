@@ -11,7 +11,7 @@ test('adds notes and serializes a four-beat measure', () => {
     assert.match(tex, /\\tempo 120/)
     assert.match(tex, /\\ts 4 4/)
     assert.match(tex, /5\.1/)
-    assert.match(tex, /\|/)
+    assert.doesNotMatch(tex, /\|/)
     assert.equal(draft.beats.length, 9)
 })
 
@@ -31,8 +31,8 @@ test('four quarter notes fill exactly one 4/4 measure', () => {
     assert.equal(measures[0].endIndex, 3);
     assert.doesNotMatch(serializeTabDraft(draft), /\|/);
     draft = appendTabNote(draft, 4, 1);
-    assert.equal(layoutTabMeasures(draft, 4).length, 2);
-    assert.match(serializeTabDraft(draft), /\|/);
+    assert.equal(layoutTabMeasures(draft, 4).length, 1);
+    assert.equal(layoutTabMeasures(draft, 4)[0].used, 20);
 });
 
 test('mixed durations start a new measure before overflow', () => {
@@ -41,9 +41,8 @@ test('mixed durations start a new measure before overflow', () => {
     draft = appendTabNote({ ...draft, duration: 4 }, 2, 1);
     draft = appendTabNote({ ...draft, duration: 2 }, 3, 1);
     const measures = layoutTabMeasures(draft, 4);
-    assert.equal(measures.length, 2);
-    assert.equal(measures[0].used, 12);
-    assert.equal(measures[1].used, 8);
+    assert.equal(measures.length, 1);
+    assert.equal(measures[0].used, 20);
 });
 
 test('metadata headers contain one backslash, not two', () => {
@@ -79,9 +78,8 @@ test('measure layout identifies incomplete overflow without changing notes', () 
     draft = appendTabNote({ ...draft, duration: 2 }, 3, 1);
     const measures = layoutTabMeasures(draft, 4);
     assert.equal(measures[0].complete, false);
-    assert.equal(measures[0].overflowBeforeIndex, 2);
-    assert.equal(measures[0].capacity - measures[0].used, 4);
-    assert.equal(measures[1].overflowBeforeIndex, null);
+    assert.equal(measures[0].overflowBeforeIndex, null);
+    assert.equal(measures[0].used - measures[0].capacity, 4);
     assert.deepEqual(measures.flatMap(m => m.notes.map(n => n.index)), [0, 1, 2]);
 });
 
@@ -144,10 +142,10 @@ test('overflow boundary preserves incomplete measures and note order', () => {
     draft = appendTabNote({ ...draft, duration: 4 }, 7, 1);
     draft = appendTabNote({ ...draft, duration: 2 }, 9, 1);
     const measures = layoutTabMeasures(draft, 4);
-    assert.deepEqual(measures.map(m => m.used), [12, 8]);
-    assert.deepEqual(measures.map(m => m.complete), [false, false]);
+    assert.deepEqual(measures.map(m => m.used), [20]);
+    assert.deepEqual(measures.map(m => m.complete), [false]);
     const saved = serializeTabDraft(draft, 4, 120);
-    assert.ok(saved.includes(':4 7.1 | :2 9.1'));
+    assert.ok(saved.includes(':4 7.1 :2 9.1'));
     assert.deepEqual(parseTabDraft(saved).draft.beats, draft.beats);
 });
 
@@ -160,4 +158,15 @@ test('cleared note retains rhythmic space in incomplete measure', () => {
     const saved = serializeTabDraft(draft, 4, 120);
     assert.ok(saved.includes(':4 5.1 :4 r :4 9.1'));
     assert.deepEqual(parseTabDraft(saved).draft.beats, draft.beats);
+});
+
+test('manual barlines remain in place even with invalid measure durations', () => {
+    let draft = { ...createTabDraft(), duration: 4 };
+    for (const fret of [1, 2, 3, 4, 5]) draft = appendTabNote(draft, fret, 1);
+    draft = { ...draft, beats: draft.beats.map((beat, index) => index === 3 ? { ...beat, duration: 2 } : beat), breaks: [4] };
+    const measures = layoutTabMeasures(draft, 4);
+    assert.deepEqual(measures.map(m => m.used), [20, 4]);
+    const tex = serializeTabDraft(draft, 4, 120);
+    assert.match(tex, /:2 4\.1 \| :4 5\.1/);
+    assert.deepEqual(parseTabDraft(tex).draft.breaks, [4]);
 });
