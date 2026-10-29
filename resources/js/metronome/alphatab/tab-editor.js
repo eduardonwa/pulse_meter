@@ -140,12 +140,12 @@ export function parseTabDraft(alphaTex) {
     const breaks = [];
     for (const measure of content[4].split('|')) {
         if (beats.length) breaks.push(beats.length);
-        const tokens = measure.trim().match(/:\\d+\\s+(?:\\((?:\\d+\\.\\d+\\s*){2,6}\\)|\\d+\\.\\d+|r)/g) ?? [];
+        const tokens = measure.trim().match(/:\d+\s+(?:\((?:\d+\.\d+\s*){2,6}\)|\d+\.\d+|r)/g) ?? [];
         if (!tokens.length || tokens.join(' ').replace(/\s+/g, ' ') !== measure.trim().replace(/\s+/g, ' ')) {
             throw new Error('This tablature contains unsupported notation');
         }
         for (const token of tokens) {
-            const match = /^:(\\d+)\\s+(.+)$/.exec(token);
+            const match = /^:(\d+)\s+(.+)$/.exec(token);
             if (!match) throw new Error('Unsupported note');
             const duration = Number(match[1]);
             const body = match[2];
@@ -155,10 +155,10 @@ export function parseTabDraft(alphaTex) {
                 continue;
             }
             const raw = body.startsWith('(') && body.endsWith(')')
-                ? body.slice(1, -1).trim().split(/\\s+/)
+                ? body.slice(1, -1).trim().split(/\s+/)
                 : [body];
             const notes = raw.map(part => {
-                const note = /^(\\d+)\\.(\\d+)$/.exec(part);
+                const note = /^(\d+)\.(\d+)$/.exec(part);
                 if (!note) throw new Error('Unsupported chord');
                 return { fret: Number(note[1]), string: Number(note[2]) };
             });
