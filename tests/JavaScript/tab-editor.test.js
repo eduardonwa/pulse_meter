@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { createTabDraft, appendTabNote, serializeTabDraft, layoutTabMeasures, parseTabDraft, selectTabNoteIndices, changeSelectedTabDurations, clearTabNotes, updateTabBreaks, breaksForInsertedTabNote, serializeTabPlayback, playbackAlphaTex, tabBeatNotes, setTabBeatNote } from '../../resources/js/metronome/alphatab/tab-editor.js'
+import { createTabDraft, appendTabNote, serializeTabDraft, layoutTabMeasures, parseTabDraft, selectTabNoteIndices, changeSelectedTabDurations, clearTabNotes, updateTabBreaks, breaksForInsertedTabNote, serializeTabPlayback, playbackAlphaTex, tabBeatNotes, setTabBeatNote, removeTabNoteAtString } from '../../resources/js/metronome/alphatab/tab-editor.js'
 
 test('adds notes and serializes a four-beat measure', () => {
     let draft = createTabDraft()
@@ -246,4 +246,19 @@ test('legacy single note updates into chord and back to a single note', () => {
     const chord = setTabBeatNote(note, 7, 1);
     assert.deepEqual(tabBeatNotes(chord), [{ fret: 7, string: 1 }, { fret: 3, string: 2 }]);
     assert.deepEqual(setTabBeatNote(note, 8, 2), { duration: 8, fret: 8, string: 2 });
+});
+
+test('Backspace removes only the selected note in a chord', () => {
+    const chord = { duration: 4, notes: [
+        { fret: 4, string: 3 }, { fret: 4, string: 4 }, { fret: 2, string: 5 },
+    ] };
+    const twoNotes = removeTabNoteAtString(chord, 4);
+    assert.deepEqual(tabBeatNotes(twoNotes), [{ fret: 4, string: 3 }, { fret: 2, string: 5 }]);
+    assert.equal(twoNotes.duration, 4);
+    assert.equal(removeTabNoteAtString(twoNotes, 6), twoNotes);
+    const oneNote = removeTabNoteAtString(twoNotes, 3);
+    assert.deepEqual(oneNote, { fret: 2, string: 5, duration: 4 });
+    const rest = removeTabNoteAtString(oneNote, 5);
+    assert.deepEqual(rest, { rest: true, duration: 4 });
+    assert.equal(serializeTabDraft({ ...createTabDraft(), beats: [rest] }).includes(':4 r'), true);
 });
