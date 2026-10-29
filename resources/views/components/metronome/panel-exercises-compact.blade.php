@@ -19,7 +19,7 @@
             </button>
         </template>
 
-        <dialog class="dialog-shell mobile-exercise-view-dialog" x-ref="exerciseViewDialog"
+        <dialog class="dialog-shell dialog-shell--bottom-sheet mobile-exercise-view-dialog" x-ref="exerciseViewDialog"
             :class="{ 'is-fullscreen': viewFullscreen }"
             @close="closeMobileExerciseView($refs.exerciseDetails)"
             @cancel.prevent="$refs.exerciseViewDialog.close()"
