@@ -4,7 +4,7 @@ export const TAB_STRINGS = ['e', 'B', 'G', 'D', 'A', 'E'];
 export const TAB_DURATIONS = [1, 2, 4, 8, 16];
 export const TAB_INSTRUMENTS = [24, 25, 26, 27];
 export function createTabDraft() {
-    return { beats: [], duration: 8, string: 1, fret: 0, instrument: 25 };
+    return { beats: [], duration: 8, string: 1, fret: 0, instrument: 25, breaks: [] };
 }
 export function appendTabNote(draft, fret = draft.fret, string = draft.string) {
     const number = Number(fret);
@@ -25,32 +25,31 @@ export function layoutTabMeasures(draft, numerator = 4) {
     if (!Number.isInteger(meter) || meter < 2 || meter > 16) {
         throw new RangeError('Invalid time signature');
     }
-    const capacity = meter * 4; // sixteenth-note units for a /4 meter
+    const capacity = meter * 4;
     const measures = [];
+    const boundaries = new Set(draft.breaks ?? []);
     let current = [];
     let units = 0;
     for (const [index, beat] of draft.beats.entries()) {
+        if (boundaries.has(index) && current.length) {
+            measures.push({ notes: current, endIndex: index - 1, complete: units === capacity, used: units, capacity, overflowBeforeIndex: null });
+            current = [];
+            units = 0;
+        }
         const duration = Number(beat.duration);
         if (!TAB_DURATIONS.includes(duration)) throw new RangeError('Invalid duration');
-        const amount = 16 / duration;
-        // A note that does not fit starts the next measure.
-        if (current.length && units + amount > capacity) {
-            measures.push({ notes: current, endIndex: index - 1, complete: false, used: units, capacity, overflowBeforeIndex: index });
-            current = [];
-            units = 0;
-        }
         current.push({ ...beat, index });
-        units += amount;
-        if (units === capacity) {
-            measures.push({ notes: current, endIndex: index, complete: true, used: units, capacity, overflowBeforeIndex: null });
-            current = [];
-            units = 0;
-        }
+        units += 16 / duration;
     }
     if (current.length) {
-        measures.push({ notes: current, endIndex: draft.beats.length - 1, complete: false, used: units, capacity, overflowBeforeIndex: null });
+        measures.push({ notes: current, endIndex: draft.beats.length - 1, complete: units === capacity, used: units, capacity, overflowBeforeIndex: null });
     }
     return measures;
+}
+
+export function shiftTabBreaks(breaks, index, delta) {
+    return [...new Set(breaks.map(position => position >= index ? position + delta : position)
+        .filter(position => position > 0))].sort((a, b) => a - b);
 }
 
 export function serializeTabDraft(draft, numerator = 4, bpm = 100) {
@@ -84,7 +83,9 @@ export function parseTabDraft(alphaTex) {
     const numerator = Number(meter[1]);
     const bpm = Number(tempo[1]);
     const beats = [];
+    const breaks = [];
     for (const measure of content[4].split('|')) {
+        if (beats.length) breaks.push(beats.length);
         const tokens = measure.trim().match(/:\d+\s+(?:\d+\.\d+|r)/g) ?? [];
         if (!tokens.length || tokens.join(' ').replace(/\s+/g, ' ') !== measure.trim().replace(/\s+/g, ' ')) {
             throw new Error('This tablature contains unsupported notation');
@@ -101,7 +102,7 @@ export function parseTabDraft(alphaTex) {
             beats.push(rest ? { rest: true, duration } : { fret, string, duration });
         }
     }
-    const draft = { ...createTabDraft(), beats, instrument };
+    const draft = { ...createTabDraft(), beats, instrument, breaks };
     const canonical = serializeTabDraft(draft, numerator, bpm);
     if ((withInstrument ? canonical : canonical.replace(/^\\instrument 25\n/m, '')) !== lines.join('\n')) {
         throw new Error('This tablature has custom measure boundaries or notation and cannot be edited here yet');
