@@ -45,3 +45,11 @@ test('mixed durations start a new measure before overflow', () => {
     assert.equal(measures[0].used, 12);
     assert.equal(measures[1].used, 8);
 });
+
+test('metadata headers contain one backslash, not two', () => {
+    const tex = serializeTabDraft(appendTabNote(createTabDraft(), 0, 1), 4, 126);
+    assert.equal(tex.split('\n')[0], '\\tempo 126');
+    assert.equal(tex.split('\n')[1], '\\ts 4 4');
+    assert.equal(tex.split('\n')[2], '\\staff {tabs}');
+    assert.doesNotMatch(tex, /\\\\tempo/);
+});
