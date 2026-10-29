@@ -34,20 +34,20 @@ export function layoutTabMeasures(draft, numerator = 4) {
         const amount = 16 / duration;
         // A note that does not fit starts the next measure.
         if (current.length && units + amount > capacity) {
-            measures.push({ notes: current, endIndex: index - 1, complete: false, used: units, capacity });
+            measures.push({ notes: current, endIndex: index - 1, complete: false, used: units, capacity, overflowBeforeIndex: index });
             current = [];
             units = 0;
         }
         current.push({ ...beat, index });
         units += amount;
         if (units === capacity) {
-            measures.push({ notes: current, endIndex: index, complete: true, used: units, capacity });
+            measures.push({ notes: current, endIndex: index, complete: true, used: units, capacity, overflowBeforeIndex: null });
             current = [];
             units = 0;
         }
     }
     if (current.length) {
-        measures.push({ notes: current, endIndex: draft.beats.length - 1, complete: false, used: units, capacity });
+        measures.push({ notes: current, endIndex: draft.beats.length - 1, complete: false, used: units, capacity, overflowBeforeIndex: null });
     }
     return measures;
 }
