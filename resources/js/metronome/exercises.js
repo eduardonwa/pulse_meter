@@ -1,4 +1,4 @@
-import { createTabDraft, appendTabNote, serializeTabDraft, parseTabDraft, layoutTabMeasures, selectTabNoteIndices, changeSelectedTabDurations, clearTabNotes, shiftTabBreaks, TAB_STRINGS } from "./alphatab/tab-editor.js";
+import { createTabDraft, appendTabNote, serializeTabDraft, parseTabDraft, layoutTabMeasures, selectTabNoteIndices, changeSelectedTabDurations, clearTabNotes, shiftTabBreaks, updateTabBreaks, TAB_STRINGS } from "./alphatab/tab-editor.js";
 
 export function exercises() {
     return {
@@ -589,7 +589,7 @@ export function exercises() {
                 } else {
                     beats.splice(this.tabSelectedIndex, 0, next.beats.at(-1));
                 }
-                this.tabDraft = { ...next, beats, breaks: beats.length > this.tabDraft.beats.length ? shiftTabBreaks(this.tabDraft.breaks ?? [], this.tabSelectedIndex, 1) : this.tabDraft.breaks };
+                this.tabDraft = { ...next, beats, breaks: beats.length > this.tabDraft.beats.length ? updateTabBreaks(this.tabDraft.breaks ?? [], this.tabSelectedIndex, 'insert', beats.length) : this.tabDraft.breaks };
                 this.tabSelectedIndex = Math.min(beats.length, this.tabSelectedIndex + 1);
                 this.tabSelectedIndices = [];
                 this.tabSelectionAnchor = null;
@@ -613,12 +613,12 @@ export function exercises() {
         undoTabEditorNote() {
             if (this.tabSelectedIndex < this.tabDraft.beats.length) {
                 const beats = this.tabDraft.beats.filter((_, i) => i !== this.tabSelectedIndex);
-                this.tabDraft = { ...this.tabDraft, beats, breaks: shiftTabBreaks(this.tabDraft.breaks ?? [], this.tabSelectedIndex + 1, -1) };
+                this.tabDraft = { ...this.tabDraft, beats, breaks: updateTabBreaks(this.tabDraft.breaks ?? [], this.tabSelectedIndex, 'delete', beats.length) };
                 this.tabSelectedIndex = Math.min(this.tabSelectedIndex, beats.length);
                 this.tabSelectedIndices = [];
                 this.tabSelectionAnchor = null;
             } else {
-                this.tabDraft = { ...this.tabDraft, beats: this.tabDraft.beats.slice(0, -1) };
+                this.tabDraft = { ...this.tabDraft, beats: this.tabDraft.beats.slice(0, -1), breaks: (this.tabDraft.breaks ?? []).filter(index => index < this.tabDraft.beats.length - 1) };
                 this.tabSelectedIndex = this.tabDraft.beats.length;
                 this.tabSelectedIndices = [];
                 this.tabSelectionAnchor = null;
