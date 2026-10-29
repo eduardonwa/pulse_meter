@@ -49,8 +49,9 @@ test('mixed durations start a new measure before overflow', () => {
 test('metadata headers contain one backslash, not two', () => {
     const tex = serializeTabDraft(appendTabNote(createTabDraft(), 0, 1), 4, 126);
     assert.equal(tex.split('\n')[0], '\\tempo 126');
-    assert.equal(tex.split('\n')[1], '\\ts 4 4');
-    assert.equal(tex.split('\n')[2], '\\staff {tabs}');
+    assert.equal(tex.split('\n')[1], '\\instrument 25');
+    assert.equal(tex.split('\n')[2], '\\ts 4 4');
+    assert.equal(tex.split('\n')[3], '\\staff {tabs}');
     assert.doesNotMatch(tex, /\\\\tempo/);
 });
 
@@ -108,4 +109,18 @@ test('Backspace-style clearing keeps duration and note positions on alphaTex rou
     assert.match(tex, /:4 r/);
     assert.equal(layoutTabMeasures(cleared, 4)[0].complete, true);
     assert.deepEqual(parseTabDraft(tex).draft.beats, cleared.beats);
+});
+
+test('chosen instrument round-trips and older scores retain Steel guitar', () => {
+    const draft = appendTabNote(createTabDraft(), 7, 1);
+    for (const instrument of [24, 25, 26, 27]) {
+        const saved = serializeTabDraft({ ...draft, instrument }, 4, 125);
+        assert.ok(saved.includes('\\instrument ' + instrument));
+        const parsed = parseTabDraft(saved);
+        assert.equal(parsed.draft.instrument, instrument);
+        assert.equal(serializeTabDraft(parsed.draft, 4, 125), saved);
+    }
+    const legacy = serializeTabDraft(draft, 4, 125).replace('\\instrument 25\n', '');
+    assert.equal(parseTabDraft(legacy).draft.instrument, 25);
+    assert.throws(() => serializeTabDraft({ ...draft, instrument: 90 }), RangeError);
 });
