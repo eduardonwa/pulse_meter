@@ -556,12 +556,13 @@ export function exercises() {
             try {
                 const next = appendTabNote(this.tabDraft);
                 const beats = [...this.tabDraft.beats];
-                if (this.tabSelectedIndex < beats.length) {
+                // Reuse a rest; otherwise insert at the caret without overwriting a note.
+                if (beats[this.tabSelectedIndex]?.rest) {
                     beats[this.tabSelectedIndex] = next.beats.at(-1);
                 } else {
-                    beats.push(next.beats.at(-1));
+                    beats.splice(this.tabSelectedIndex, 0, next.beats.at(-1));
                 }
-                this.tabDraft = { ...next, beats: beats.map((note, index) => index === this.tabSelectedIndex ? { ...note, rest: false } : note) };
+                this.tabDraft = { ...next, beats };
                 this.tabSelectedIndex = Math.min(beats.length, this.tabSelectedIndex + 1);
                 this.tabSelectedIndices = [];
                 this.tabSelectionAnchor = null;
@@ -608,7 +609,7 @@ export function exercises() {
                 event.preventDefault();
                 const delta = event.key === 'ArrowLeft' ? -1 : 1;
                 const index = Math.max(0, Math.min(this.tabDraft.beats.length, this.tabSelectedIndex + delta));
-                this.selectTabEditorCell(index, this.tabDraft.beats[index]?.string ?? this.tabDraft.string);
+                this.selectTabEditorCell(index, this.tabDraft.beats[index]?.string ?? this.tabDraft.string, event.shiftKey ? { shiftKey: true } : null);
             } else if (/^[0-9]$/.test(event.key)) {
                 event.preventDefault();
                 this.enterTabFretDigit(Number(event.key));
