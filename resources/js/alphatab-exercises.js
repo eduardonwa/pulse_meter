@@ -256,7 +256,7 @@ window.addEventListener('alphatab:preview-draft', async event => {
     // Mount if needed, then replace the score on subsequent previews.
     const alreadyMounted = instances.has(element)
     const api = await mountAlphaTab(element)
-    if (!api || !element.isConnected || playbackRequests.get(element) !== request) return
+    if (!api || !element.isConnected || playbackRequests.get(element) !== request || playbackGeneration !== request) return
 
     if (activeApi && activeApi !== api) activeApi.stop()
     activeApi = api
