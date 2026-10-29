@@ -8,6 +8,7 @@ export function exercises() {
         tabDraft: createTabDraft(),
         tabStringNames: TAB_STRINGS,
         tabSelectedIndex: 0,
+        tabViewportWidth: 700,
 
         // EXERCISE STATE
         activeExerciseIndex: null,
@@ -291,12 +292,34 @@ export function exercises() {
             this.tabDraft = createTabDraft();
             this.tabSelectedIndex = 0;
             this.tabEditorOpen = true;
-            this.$nextTick(() => this.$refs.tabEditorDialog?.showModal());
+            this.$nextTick(() => {
+                this.$refs.tabEditorDialog?.showModal();
+                this.updateTabEditorWidth();
+            });
         },
 
         closeNewTabEditor() {
             this.$refs.tabEditorDialog?.close();
             this.tabEditorOpen = false;
+        },
+
+        updateTabEditorWidth() {
+            const width = this.$refs.tabEditorScore?.clientWidth;
+            if (width) this.tabViewportWidth = width;
+        },
+
+        tabEditorSystems() {
+            // Each six-string staff is kept together when the layout wraps.
+            const columns = Math.max(1, Math.floor((this.tabViewportWidth - 68) / 48));
+            const count = this.tabEditorColumns();
+            const systems = [];
+            for (let start = 0; start < count; start += columns) {
+                systems.push(Array.from(
+                    { length: Math.min(columns, count - start) },
+                    (_, i) => start + i,
+                ));
+            }
+            return systems;
         },
 
         tabEditorColumns() {
