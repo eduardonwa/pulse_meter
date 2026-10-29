@@ -99,3 +99,23 @@ export function parseTabDraft(alphaTex) {
     }
     return { draft, numerator, bpm };
 }
+
+
+export function selectTabNoteIndices(selected, anchor, index, mode = 'single', count = Infinity) {
+    if (!Number.isInteger(index) || index < 0 || index >= count) return [...selected];
+    if (mode === 'range') {
+        const start = Number.isInteger(anchor) && anchor >= 0 && anchor < count ? anchor : index;
+        return Array.from({ length: Math.abs(index - start) + 1 }, (_, i) => Math.min(start, index) + i);
+    }
+    if (mode === 'toggle') {
+        return selected.includes(index) ? selected.filter(i => i !== index) : [...selected, index].sort((a, b) => a - b);
+    }
+    return [index];
+}
+
+export function changeSelectedTabDurations(beats, indices, duration) {
+    const value = Number(duration);
+    if (!TAB_DURATIONS.includes(value)) throw new RangeError('Invalid duration');
+    const selected = new Set(indices);
+    return beats.map((note, index) => selected.has(index) ? { ...note, duration: value } : note);
+}
