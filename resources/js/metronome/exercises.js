@@ -335,6 +335,13 @@ export function exercises() {
             };
             this.stepFormMinutes = Math.floor(this.stepForm.duration_seconds / 60);
             this.stepFormSeconds = this.stepForm.duration_seconds % 60;
+            // Editing takes over from practice: stop the timer and alphaTab
+            // before closing the viewer or opening the editor.
+            if (this.isPlaying) {
+                this.stop("manual");
+            } else {
+                window.dispatchEvent(new Event("alphatab:stop"));
+            }
             viewerDialog?.close();
             this.tabEditorOpen = true;
             this.$nextTick(() => {
