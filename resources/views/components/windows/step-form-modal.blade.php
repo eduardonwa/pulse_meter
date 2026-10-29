@@ -180,7 +180,7 @@
         </div>
         <div class="tab-editor__preview" x-show="tabPreviewPlaying" x-cloak><div x-ref="tabEditorPreview" data-alphatab></div></div>
         <p x-text="`${tabDraft.beats.length} notes · ${stepForm.time_signature_numerator}/4 · arrows navigate, 0–9 enter frets`"></p>
-        <p class="tab-editor__selection-hint">Drag to select a range · Shift + click selects a range · Ctrl/Cmd + click toggles notes · type 10–24 quickly for two-digit frets · Backspace clears to rest · Delete removes position.</p>
+        <p class="tab-editor__selection-hint">Drag to select a range · Shift + ←/→ extends selection · Shift + click selects a range · Ctrl/Cmd + click toggles notes · type 10–24 quickly for two-digit frets · Backspace clears to rest · Delete removes position.</p>
         <p class="tab-editor__measure-status" x-text="tabEditorMeasureStatus()"></p>
         <div class="tab-editor__measure-list" aria-live="polite">
             <template x-for="measure in tabEditorMeasureWarnings()" :key="measure.number">
