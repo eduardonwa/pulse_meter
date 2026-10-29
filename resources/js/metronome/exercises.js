@@ -1,6 +1,12 @@
+import { createTabDraft, appendTabNote, serializeTabDraft, TAB_STRINGS } from "./alphatab/tab-editor.js";
+
 export function exercises() {
     return {
         mobileExpandedIndex: 0,
+        tabEditorOpen: false,
+        tabEditorSaving: false,
+        tabDraft: createTabDraft(),
+        tabStringNames: TAB_STRINGS,
 
         // EXERCISE STATE
         activeExerciseIndex: null,
@@ -274,6 +280,78 @@ export function exercises() {
             this.stepFormSeconds = 0;
 
             this.stepFormInitial = this.getStepFormPayload();
+        },
+
+        openNewTabEditor() {
+            if (this.stepFormMode !== "create" || this.steps.length >= this.maxSteps) return;
+            this.isStepFormOpen = false;
+            this.$refs.stepDialog.close();
+            this.tabDraft = createTabDraft();
+            this.tabEditorOpen = true;
+            this.$nextTick(() => this.$refs.tabEditorDialog?.showModal());
+        },
+
+        closeNewTabEditor() {
+            this.$refs.tabEditorDialog?.close();
+            this.tabEditorOpen = false;
+        },
+
+        addTabEditorNote() {
+            try {
+                this.tabDraft = appendTabNote(this.tabDraft);
+            } catch (error) {
+                this.showToast?.(error.message, "error");
+            }
+        },
+
+        undoTabEditorNote() {
+            this.tabDraft = {
+                ...this.tabDraft,
+                beats: this.tabDraft.beats.slice(0, -1),
+            };
+        },
+
+        async saveNewTabExercise() {
+            if (this.tabEditorSaving || this.steps.length >= this.maxSteps) return;
+            let alphaTex;
+            try {
+                alphaTex = serializeTabDraft(
+                    this.tabDraft,
+                    this.stepForm.time_signature_numerator,
+                    this.stepForm.bpm,
+                );
+            } catch (error) {
+                this.showToast?.(error.message, "error");
+                return;
+            }
+            this.tabEditorSaving = true;
+            try {
+                const payload = { ...this.getStepFormPayload(), alpha_tex: alphaTex };
+                let createdStep;
+                if (this.usesServerPersistence) {
+                    createdStep = await this.storeRoutineStep(payload);
+                    if (!createdStep) return;
+                } else {
+                    createdStep = {
+                        ...payload,
+                        position: this.steps.length,
+                        origin: "custom",
+                        tab_source: "user",
+                    };
+                }
+                this.steps.push(createdStep);
+                if (!this.usesServerPersistence) this.saveToLocalStorage();
+                this.track("exercise_created", {
+                    exercise_index: this.steps.length - 1,
+                    exercise_origin: "custom",
+                    has_tablature: true,
+                });
+                this.closeNewTabEditor();
+                this.resetStepForm();
+                this.$nextTick(() => window.dispatchEvent(new Event("picker:sync")));
+            } finally {
+                this.tabEditorSaving = false;
+            }
         },
 
         // MODALS
