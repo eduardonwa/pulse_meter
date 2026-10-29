@@ -477,3 +477,50 @@
         font-variant-numeric: tabular-nums;
     }
 }
+
+.tab-editor__score {
+    display: flex;
+    width: 100%;
+    overflow-x: auto;
+    margin-block: 1rem;
+    padding: .75rem 0;
+    border: 1px solid hsl(var(--neutral-500) / .25);
+    border-radius: .75rem;
+}
+.tab-editor__string-labels {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    display: grid;
+    grid-template-rows: repeat(6, 42px);
+    align-items: center;
+    min-width: 34px;
+    padding-inline: .5rem;
+    background: hsl(var(--neutral-100));
+}
+.tab-editor__grid { width: max-content; min-width: 100%; }
+.tab-editor__string-row {
+    display: flex;
+    height: 42px;
+    align-items: center;
+    background: linear-gradient(to bottom, transparent calc(50% - .5px), hsl(var(--neutral-500) / .55) 50%, transparent calc(50% + .5px));
+}
+.tab-editor__cell {
+    width: 48px;
+    height: 38px;
+    flex: none;
+    padding: 0;
+    border: 2px solid transparent;
+    border-radius: .4rem;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    font-weight: 650;
+    cursor: pointer;
+    &.is-selected {
+        border-color: hsl(var(--primary-700));
+        background: hsl(var(--primary-200));
+        color: hsl(var(--primary-950));
+    }
+    &:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+}
