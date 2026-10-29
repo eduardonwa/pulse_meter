@@ -432,6 +432,7 @@ export function exercises() {
 
         startTabDrag(index, string, event) {
             if (event.button !== 0 || event.shiftKey || event.ctrlKey || event.metaKey) return;
+            this.selectTabEditorCell(index, string);
             this.tabDragAnchor = index;
             this.tabDragging = true;
             this.tabDragMoved = false;
