@@ -779,7 +779,9 @@ export function exercises() {
                 return;
             }
 
-            window.dispatchEvent(new Event("routine:exercise-clear-active"));
+            window.dispatchEvent(new CustomEvent("routine:exercise-clear-active", {
+                detail: { resumeOnNext: true },
+            }));
 
             this.stop("completed");
 

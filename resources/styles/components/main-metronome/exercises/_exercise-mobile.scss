@@ -322,24 +322,74 @@
 }
 
 .mobile-exercise-view-dialog {
-    width: calc(100% - 1rem);
-    max-width: none;
-    height: calc(100dvh - 1rem);
-    max-height: calc(100dvh - 1rem);
+    // Positioning belongs to the dialog-shell--bottom-sheet variant.
+    box-sizing: border-box;
+    width: 100%;
+    height: 70dvh;
+    max-height: 100dvh;
+    padding: 0;
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+    border: 0;
+    border-radius: 18px 18px 0 0;
+    background: hsl(var(--neutral-100));
+    color: hsl(var(--neutral-900));
+    box-shadow: 0 -12px 40px rgb(0 0 0 / .2);
+
+    &[open] { display: flex; }
+
+    &.is-fullscreen {
+        height: 100dvh;
+        border-radius: 0;
+    }
+
+    &::backdrop { background: rgb(0 0 0 / .35); }
 
     &__header {
+        flex: none;
         display: flex;
         align-items: center;
         justify-content: space-between;
         gap: 1rem;
-        padding: 1rem;
+        padding: 1.25rem 1rem 1rem;
+        position: relative;
+        border-bottom: 1px solid hsl(var(--neutral-900) / .1);
     }
+
+    &__handle {
+        position: absolute;
+        top: .5rem;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 38px;
+        height: 4px;
+        border-radius: 100px;
+        background: hsl(var(--neutral-400));
+    }
+
+    &__window-actions {
+        display: flex;
+        align-items: center;
+        gap: .25rem;
+        flex: none;
+    }
+
+    &__window-actions .button {
+        display: grid;
+        place-items: center;
+        min-width: 40px;
+        min-height: 40px;
+    }
+
+    &__window-actions svg { width: 20px; height: 20px; }
 
     &__content {
         overflow-y: auto;
         min-height: 0;
         flex: 1;
-        padding: 1rem;
+        padding: 1rem 1rem max(1rem, env(safe-area-inset-bottom));
+        overscroll-behavior: contain;
     }
 
     &__facts {
@@ -350,6 +400,10 @@
     }
 
     .exercise-row__notation { display: block; }
+
+    @include mq(extraLarge) {
+        height: 60vh;
+    }
 }
 
 @include mq(medium) {
@@ -358,12 +412,9 @@
         width: auto;
         margin: .5rem;
     }
-
-    .mobile-exercise-view-dialog {
-        max-width: 610px;
-        height: min(80dvh, 42rem);
-    }
 }
+
+// The notation remains in its original host, moved into the dialog on open.
 
 /* On phones notation is only visible in the dialog, never below the card. */
 .exercise-row__details { display: none !important; }

@@ -1,8 +1,12 @@
+let resumeViewerOnNextExercise = false
+let resumeViewerFullscreen = false
+
 export function alphaTabExerciseControls() {
     return {
         detailsOpen: false,
         hearing: false,
         scoreLoading: false,
+        viewFullscreen: false,
 
         syncScoreRendered(event, element) {
             if (event.detail?.element === element) this.scoreLoading = false
@@ -89,13 +93,23 @@ export function alphaTabExerciseControls() {
             this.startExercise(index)
         },
 
-        openMobileExerciseView(dialog, content, home, element, nextTick) {
+        toggleExerciseViewSize(element, nextTick) {
+            this.viewFullscreen = !this.viewFullscreen
+            nextTick(() => {
+                requestAnimationFrame(() => {
+                    window.dispatchEvent(new CustomEvent('alphatab:render', { detail: { element } }))
+                })
+            })
+        },
+
+        openMobileExerciseView(dialog, content, home, element, nextTick, fullscreen = false) {
             if (!dialog?.showModal || !content) return
 
             // Move the existing notation; never duplicate the alphaTab host/API.
             const notation = home?.querySelector('.exercise-row__notation')
             if (notation) content.appendChild(notation)
 
+            this.viewFullscreen = fullscreen
             this.scoreLoading = Boolean(element && element.dataset.alphaTabRendered !== 'true')
             this.detailsOpen = true
             dialog.showModal()
@@ -119,10 +133,22 @@ export function alphaTabExerciseControls() {
             const notation = content?.querySelector('.exercise-row__notation')
             if (notation && home) home.appendChild(notation)
             this.detailsOpen = false
+            this.viewFullscreen = false
             // Closing the viewer does not stop an ongoing practice session.
         },
 
-        clearActiveExercise() {
+        clearActiveExercise(event) {
+            // Native modal dialogs remain in the browser's top layer and
+            // otherwise conceal the Continue and review overlays.
+            const dialog = this.$refs?.exerciseViewDialog
+            if (dialog?.open && event?.detail?.resumeOnNext) {
+                resumeViewerOnNextExercise = true
+                resumeViewerFullscreen = this.viewFullscreen
+            } else if (!event?.detail?.resumeOnNext) {
+                resumeViewerOnNextExercise = false
+                resumeViewerFullscreen = false
+            }
+            if (dialog?.open) dialog.close()
             this.detailsOpen = false
         },
 
@@ -130,8 +156,23 @@ export function alphaTabExerciseControls() {
             const isActive =
                 Number(event.detail?.index) === Number(index)
 
-            this.detailsOpen =
-                isActive && Boolean(hasPattern)
+            if (!isActive) return
+
+            if (resumeViewerOnNextExercise) {
+                const fullscreen = resumeViewerFullscreen
+                resumeViewerOnNextExercise = false
+                resumeViewerFullscreen = false
+                if (hasPattern) {
+                    this.openMobileExerciseView(
+                        this.$refs.exerciseViewDialog,
+                        this.$refs.exerciseViewContent,
+                        this.$refs.exerciseDetails,
+                        this.$refs.alphaTab,
+                        this.$nextTick.bind(this),
+                        fullscreen
+                    )
+                }
+            }
         },
     }
 }
