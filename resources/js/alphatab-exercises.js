@@ -7,6 +7,8 @@ const mountPromises = new WeakMap()
 
 const readyPromises = new WeakMap()
 const renderedBpms = new WeakMap()
+const playbackRequests = new WeakMap()
+let playbackGeneration = 0
 
 async function getAlphaTab() {
     if (!alphaTabModule) {
@@ -215,7 +217,7 @@ window.addEventListener('alphatab:update', async event => {
 
     const renderedAlphaTex = applyMetadata(playbackAlphaTex(alphaTex), metadata)
 
-    element.dataset.alphaTex = encodeBase64(renderedAlphaTex)
+    element.dataset.alphaTex = encodeBase64(alphaTex)
     element.dataset.bpm = String(bpm)
 
     const existingApi = instances.get(element)
@@ -238,20 +240,23 @@ window.addEventListener('alphatab:preview-draft', async event => {
     if (!element) return
 
     if (!play) {
+        playbackRequests.set(element, ++playbackGeneration)
         instances.get(element)?.stop()
         return
     }
 
     if (!alphaTex) return
 
+    const request = ++playbackGeneration
+    playbackRequests.set(element, request)
     const pattern = applyMetadata(playbackAlphaTex(alphaTex), { bpm: Number(bpm) || 100, instrument: Number(instrument ?? 25) })
-    element.dataset.alphaTex = encodeBase64(pattern)
+    element.dataset.alphaTex = encodeBase64(alphaTex)
     element.dataset.bpm = String(Number(bpm) || 100)
 
     // Mount if needed, then replace the score on subsequent previews.
     const alreadyMounted = instances.has(element)
     const api = await mountAlphaTab(element)
-    if (!api || !element.isConnected) return
+    if (!api || !element.isConnected || playbackRequests.get(element) !== request) return
 
     if (activeApi && activeApi !== api) activeApi.stop()
     activeApi = api
@@ -308,6 +313,7 @@ window.addEventListener('alphatab:start-exercise', async event => {
 })
 
 window.addEventListener('alphatab:stop', () => {
+    ++playbackGeneration
     activeApi?.stop()
     activeApi = null
 })
