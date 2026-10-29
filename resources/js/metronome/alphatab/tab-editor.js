@@ -61,6 +61,30 @@ export function updateTabBreaks(breaks, index, operation, length) {
     }).filter(position => position > 0 && position < length))].sort((a, b) => a - b);
 }
 
+// When typing at a measure boundary, fill the preceding bar if its
+// remaining space fits the note; otherwise keep the new note in the next bar.
+// At the end of the score, automatically start a new measure when necessary.
+export function breaksForInsertedTabNote(draft, index, duration, numerator = 4) {
+    const beats = draft.beats;
+    const boundaries = draft.breaks ?? [];
+    const previousBoundary = Math.max(0, ...boundaries.filter(value => value < index));
+    const used = beats.slice(previousBoundary, index)
+        .reduce((total, beat) => total + 16 / beat.duration, 0);
+    const size = 16 / duration;
+    const capacity = Number(numerator) * 4;
+    const nextLength = beats.length + 1;
+    const shifted = updateTabBreaks(boundaries, index, 'insert', nextLength);
+    if (index === beats.length && used > 0 && used + size > capacity) {
+        return [...new Set([...shifted, index])].sort((a, b) => a - b);
+    }
+    if (boundaries.includes(index) && used + size <= capacity) {
+        // The inserted beat belongs to the previous measure, not the next.
+        return [...new Set(shifted.map(value => value === index ? index + 1 : value))]
+            .sort((a, b) => a - b);
+    }
+    return shifted;
+}
+
 export function serializeTabDraft(draft, numerator = 4, bpm = 100) {
     if (!draft.beats.length) throw new RangeError('Add at least one note');
     const instrument = Number(draft.instrument ?? 25);
