@@ -1,3 +1,6 @@
+@if (! empty($isShared))
+<dl class="routine-player__facts"><div class="routine-player__fact"><dt>Exercises</dt><dd>{{ $original->steps->count() }}</dd></div></dl>
+@else
 <dl class="routine-player__facts">
     <div class="routine-player__fact">
         <dt>Instrument</dt>
@@ -50,4 +53,5 @@
 
         <p>{{ $routine->instructions }}</p>
     </div>
+@endif
 @endif
