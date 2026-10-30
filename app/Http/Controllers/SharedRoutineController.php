@@ -25,7 +25,7 @@ class SharedRoutineController extends Controller
         abort_unless($practiceRoutine->user_id === $request->user()->id, 404);
         SharedRoutine::firstOrCreate(
             ['practice_routine_id' => $practiceRoutine->id],
-            ['user_id' => $request->user()->id, 'token' => Str::random(48), 'is_active' => true]
+            ['user_id' => $request->user()->id, 'token' => Str::random(48), 'slug' => Str::slug($practiceRoutine->name) . '-' . Str::lower(Str::random(10)), 'is_active' => true]
         );
         return redirect()->route('account.my-routines');
     }
@@ -40,7 +40,7 @@ class SharedRoutineController extends Controller
 
     public function show(Request $request, string $locale, string $token)
     {
-        $publication = SharedRoutine::where('token', $token)->where('is_active', true)
+        $publication = SharedRoutine::where(fn ($query) => $query->where('slug', $token)->orWhere('token', $token))->where('is_active', true)
             ->with(['routine.steps', 'user'])->firstOrFail();
         $original = $publication->routine;
         abort_unless($original && $original->user_id === $publication->user_id, 404);
