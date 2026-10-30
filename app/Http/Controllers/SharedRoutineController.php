@@ -73,4 +73,37 @@ class SharedRoutineController extends Controller
             'coverUrl' => null, 'initialStepName' => $original->steps->first()?->name ?? 'Exercise',
         ]);
     }
+
+    public function saveCopy(Request $request, SharedRoutine $sharedRoutine)
+    {
+        $user = $request->user();
+        abort_unless($user->hasPaidProAccess(), 403);
+        abort_unless($sharedRoutine->is_active, 404);
+        $original = $sharedRoutine->routine()->with('steps')->firstOrFail();
+        abort_unless($original->user_id === $sharedRoutine->user_id, 404);
+        abort_if($original->user_id === $user->id, 422);
+        abort_if($original->steps->isEmpty() || $original->steps->count() > 20, 422);
+        $routine = \Illuminate\Support\Facades\DB::transaction(function () use ($user, $sharedRoutine, $original) {
+            $locked = $user->newQuery()->lockForUpdate()->findOrFail($user->id);
+            $position = $locked->practiceRoutines()->max('position');
+            $copy = $locked->practiceRoutines()->create([
+                'name' => $original->name, 'position' => $position === null ? 0 : $position + 1,
+                'is_default' => false, 'shared_routine_id' => $sharedRoutine->id,
+            ]);
+            $copy->steps()->createMany($original->steps->values()->map(fn ($s, $i) => [
+                'name' => $s->name, 'bpm' => $s->bpm, 'mode' => $s->mode,
+                'duration_seconds' => $s->duration_seconds,
+                'time_signature_numerator' => $s->time_signature_numerator,
+                'time_signature_denominator' => $s->time_signature_denominator,
+                'alpha_tex' => $s->alpha_tex,
+                'tab_source' => filled($s->alpha_tex) ? 'template' : null,
+                'position' => $i, 'origin' => 'custom',
+            ])->all());
+            return $copy;
+        });
+        return response()->json([
+            'status' => 'saved', 'routine_id' => $routine->id,
+            'redirect_url' => route('welcome', ['routine' => $routine->id]),
+        ]);
+    }
 }
