@@ -6,7 +6,7 @@
     </header>
 
     <ol class="routine-player__exercise-list">
-        @foreach ($template->steps as $step)
+        @foreach (! empty($isShared) ? $publicSteps : $template->steps as $step)
             @php
                 $stepName = ! empty($isShared) ? $step->name : (app()->isLocale('en')
                     ? ($step->name_en ?: $step->name_es)
