@@ -52,7 +52,7 @@ class SharedRoutineController extends Controller
             $user->hasActiveTrial() => 'trial',
             default => 'free',
         };
-        $queue = $original->steps->map(fn ($s) => [
+        $queue = $original->steps->take(10)->map(fn ($s) => [
             'id' => $s->id, 'name' => $s->name, 'bpm' => $s->bpm,
             'mode' => $s->mode, 'duration_seconds' => $s->duration_seconds,
             'time_signature_numerator' => $s->time_signature_numerator,
@@ -64,6 +64,7 @@ class SharedRoutineController extends Controller
             'publication' => $publication, 'original' => $original,
             'routine' => (object) ['title' => $original->name],
             'template' => $original, 'isShared' => true,
+            'publicSteps' => $original->steps->take(10),
             'viewerType' => $viewerType,
             'viewerHasTemplate' => $user ? $user->practiceRoutines()->where('shared_routine_id', $publication->id)->exists() : false,
             'practiceContext' => ['mode' => 'routine', 'persistence' => 'template',
@@ -82,7 +83,7 @@ class SharedRoutineController extends Controller
         $original = $sharedRoutine->routine()->with('steps')->firstOrFail();
         abort_unless($original->user_id === $sharedRoutine->user_id, 404);
         abort_if($original->user_id === $user->id, 422);
-        abort_if($original->steps->isEmpty() || $original->steps->count() > 20, 422);
+        abort_if($original->steps->isEmpty(), 422);
         $routine = \Illuminate\Support\Facades\DB::transaction(function () use ($user, $sharedRoutine, $original) {
             $locked = $user->newQuery()->lockForUpdate()->findOrFail($user->id);
             $position = $locked->practiceRoutines()->max('position');
@@ -90,7 +91,7 @@ class SharedRoutineController extends Controller
                 'name' => $original->name, 'position' => $position === null ? 0 : $position + 1,
                 'is_default' => false, 'shared_routine_id' => $sharedRoutine->id,
             ]);
-            $copy->steps()->createMany($original->steps->values()->map(fn ($s, $i) => [
+            $copy->steps()->createMany($original->steps->take(10)->values()->map(fn ($s, $i) => [
                 'name' => $s->name, 'bpm' => $s->bpm, 'mode' => $s->mode,
                 'duration_seconds' => $s->duration_seconds,
                 'time_signature_numerator' => $s->time_signature_numerator,
