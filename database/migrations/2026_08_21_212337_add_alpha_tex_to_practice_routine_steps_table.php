@@ -22,9 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('practice_routine_steps', function (Blueprint $table) {
-            Schema::table('practice_routine_steps', function (Blueprint $table) {
-                $table->dropColumn('alpha_tex');
-            });
+            $table->dropColumn('alpha_tex');
         });
     }
 };
