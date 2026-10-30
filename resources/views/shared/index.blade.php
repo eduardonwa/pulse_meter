@@ -51,7 +51,7 @@
                     @if ($copy->importedFrom?->is_active)
                         <a class="button" data-type="outline" href="{{ route('shared.show', ['locale' => app()->getLocale(), 'token' => $copy->importedFrom->token]) }}">View original</a>
                     @else
-                        <span>Original unavailable</span>
+                        <span>Link inactive</span>
                     @endif
                 </div>
             @empty
