@@ -22,4 +22,8 @@
     >
         Plans &amp; billing
     </a>
+    <a data-type="outline" data-variant="link" href="{{ route('account.my-routines') }}" wire:navigate
+        @class(['button', 'is-selected' => request()->routeIs('account.my-routines')])
+        @if (request()->routeIs('account.my-routines')) aria-current="page" @endif
+    >My Routines</a>
 </nav>

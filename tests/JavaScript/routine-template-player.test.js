@@ -60,6 +60,8 @@ test('local template copy preserves alpha_tex', () => {
 
             alpha_tex:
                 '\\staff {tabs}\n\n:16\n5.1 6.1 7.1 8.1 9.1',
+            time_signature_numerator: 4,
+            time_signature_denominator: 4,
         }
     )
 })
@@ -75,5 +77,6 @@ test('drill template copy preserves duration', () => {
     context.replaceLocalRoutineWithTemplate()
     assert.deepEqual(JSON.parse(storedValue), [{
         name: 'Drill', bpm: 120, mode: 'drill', duration_seconds: 90, alpha_tex: null,
+        time_signature_numerator: 4, time_signature_denominator: 4,
     }])
 })

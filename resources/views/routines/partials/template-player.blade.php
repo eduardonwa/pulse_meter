@@ -14,7 +14,7 @@
             </h2>
 
             <span class="routine-player__progress" x-text="`${currentIndex + 1} of ${steps.length}`">
-                1 of {{ $template->steps->count() }}
+                1 of {{ ! empty($isShared) ? $publicSteps->count() : $template->steps->count() }}
             </span>
         </header>
 
