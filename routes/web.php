@@ -16,6 +16,7 @@ use App\Http\Controllers\ProductEventController;
 use App\Http\Controllers\PulsePresetController;
 use App\Http\Controllers\RandomizedSessionController;
 use App\Http\Controllers\RoutineTemplateController;
+use App\Http\Controllers\SharedRoutineController;
 use App\Http\Controllers\SaveRoutineTemplateController;
 use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\TrialController;
@@ -65,6 +66,8 @@ Route::prefix('{locale}')
             'index',
         ])->name('routines.index');
 
+        Route::get('/shared/{token}', [SharedRoutineController::class, 'show'])->name('shared.show');
+
         Route::get('/routines/{slug}', [
             RoutineTemplateController::class,
             'show',
@@ -83,6 +86,18 @@ Route::view('/account/profile', 'profile.edit')
 Route::get('/account/billing', BillingPageController::class)
     ->middleware(['auth', 'verified'])
     ->name('billing.index');
+
+Route::get('/account/my-routines', [SharedRoutineController::class, 'index'])
+    ->middleware('auth')->name('account.my-routines');
+
+Route::post('/shared/{practiceRoutine}', [SharedRoutineController::class, 'store'])
+    ->middleware(['auth', 'can:use-paid-pro'])->name('shared.store');
+
+Route::patch('/shared/{sharedRoutine}/toggle', [SharedRoutineController::class, 'toggle'])
+    ->middleware('auth')->name('shared.toggle');
+
+Route::post('/shared/{sharedRoutine}/save-copy', [SharedRoutineController::class, 'saveCopy'])
+    ->middleware(['auth', 'can:use-paid-pro'])->name('shared.save-copy');
 
 // CHECKOUT
 Route::post(
