@@ -14,14 +14,14 @@
                 @method('PUT')
 
                 <div class="form-group">
-                    <label for="name">Name</label>
+                    <label for="name">User name</label>
     
                     <input
                         id="name"
                         type="text"
                         name="name"
                         value="{{ old('name', auth()->user()->name) }}"
-                        autocomplete="name"
+                        autocomplete="nickname"
                         required
                     >
 
