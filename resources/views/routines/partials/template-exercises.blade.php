@@ -55,8 +55,10 @@
                                     $refs.alphaTab
                                 )
                         "
-                    @else
+                    @elseif (! empty($isShared))
                         @click="startExercise({{ $loop->index }})"
+                    @else
+                        disabled
                     @endif
                 >
                     <span class="routine-player__exercise-position">
