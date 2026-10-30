@@ -12,6 +12,7 @@ return new class extends Migration {
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->foreignId('practice_routine_id')->unique()->constrained()->cascadeOnDelete();
             $table->string('token', 64)->unique();
+            $table->string('slug', 100)->unique();
             $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
