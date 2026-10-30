@@ -1,6 +1,23 @@
 <x-layouts.dorelog>
-    <main class="account-page | container">
+    <main class="account-page | container"
+        x-data="{
+            toast: { visible: false, message: '', type: 'success', timer: null },
+            showToast(message) {
+                clearTimeout(this.toast.timer);
+                this.toast.message = message;
+                this.toast.type = 'success';
+                this.toast.visible = true;
+                this.toast.timer = setTimeout(() => this.hideToast(), 3000);
+            },
+            hideToast() {
+                clearTimeout(this.toast.timer);
+                this.toast.visible = false;
+            }
+        }"
+        @shared-link-copied.window="showToast('Copied URL')"
+    >
         <x-account.navigation />
+        <x-toaster />
 
         <header class="account-page__header">
             <p>Manage the routines you've shared and saved from other creators.</p>
@@ -64,6 +81,7 @@
             if (navigator.clipboard?.writeText) {
                 try {
                     await navigator.clipboard.writeText(url);
+                    window.dispatchEvent(new Event("shared-link-copied"));
                     return;
                 } catch (error) {
                     // Fall back for environments without Clipboard API permission.
@@ -77,7 +95,9 @@
             document.body.appendChild(field);
             field.select();
             try {
-                document.execCommand('copy');
+                if (document.execCommand('copy')) {
+                    window.dispatchEvent(new Event('shared-link-copied'));
+                }
             } finally {
                 field.remove();
             }
