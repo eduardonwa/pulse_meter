@@ -37,4 +37,40 @@ class SharedRoutineController extends Controller
         $sharedRoutine->save();
         return redirect()->route('account.my-routines');
     }
+
+    public function show(Request $request, string $locale, string $token)
+    {
+        $publication = SharedRoutine::where('token', $token)->where('is_active', true)
+            ->with(['routine.steps', 'user'])->firstOrFail();
+        $original = $publication->routine;
+        abort_unless($original && $original->user_id === $publication->user_id, 404);
+        $user = $request->user();
+        $viewerType = match (true) {
+            ! $user => 'guest',
+            $user->hasLifetimePro() => 'lifetime',
+            $user->isPro() => 'pro',
+            $user->hasActiveTrial() => 'trial',
+            default => 'free',
+        };
+        $queue = $original->steps->map(fn ($s) => [
+            'id' => $s->id, 'name' => $s->name, 'bpm' => $s->bpm,
+            'mode' => $s->mode, 'duration_seconds' => $s->duration_seconds,
+            'time_signature_numerator' => $s->time_signature_numerator,
+            'time_signature_denominator' => $s->time_signature_denominator,
+            'alpha_tex' => $s->alpha_tex, 'position' => $s->position,
+            'origin' => $s->origin,
+        ])->all();
+        return view('shared.show', [
+            'publication' => $publication, 'original' => $original,
+            'routine' => (object) ['title' => $original->name],
+            'template' => $original, 'isShared' => true,
+            'viewerType' => $viewerType,
+            'viewerHasTemplate' => $user ? $user->practiceRoutines()->where('shared_routine_id', $publication->id)->exists() : false,
+            'practiceContext' => ['mode' => 'routine', 'persistence' => 'template',
+                'active_routine' => null, 'active_playlist' => null,
+                'groups' => [], 'queue' => $queue],
+            'pulsePresets' => \App\Models\PulsePreset::whereNull('user_id')->orderBy('id')->get(),
+            'coverUrl' => null, 'initialStepName' => $original->steps->first()?->name ?? 'Exercise',
+        ]);
+    }
 }
