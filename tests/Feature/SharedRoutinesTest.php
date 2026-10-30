@@ -57,6 +57,7 @@ class SharedRoutinesTest extends TestCase
         $publication->user_id = $owner->id;
         $publication->practice_routine_id = $source->id;
         $publication->token = str_repeat('a', 48);
+        $publication->slug = 'source-routine-aaaaaaaaaa';
         $publication->is_active = true;
         $publication->save();
 
