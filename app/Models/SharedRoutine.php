@@ -13,6 +13,14 @@ class SharedRoutine extends Model
         return ['is_active' => 'boolean'];
     }
 
+    public function publicUrl(string $locale = 'en'): string
+    {
+        return route('shared.show', [
+            'locale' => $locale,
+            'token' => $this->slug ?: $this->token,
+        ]);
+    }
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
