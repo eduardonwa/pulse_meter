@@ -29,6 +29,25 @@ class SharedRoutinesTest extends TestCase
         $this->get(route('shared.show', ['locale' => 'en', 'token' => $publication->token]))->assertOk();
     }
 
+    public function test_descriptive_and_legacy_links_resolve_to_same_routine(): void
+    {
+        $owner = User::factory()->create(['plan' => 'pro']);
+        $routine = $owner->practiceRoutines()->create([
+            'name' => 'Alternate Picking Workout', 'position' => 0, 'is_default' => true,
+        ]);
+
+        $this->actingAs($owner)->post(route('shared.store', $routine))->assertRedirect();
+        $share = SharedRoutine::firstOrFail();
+
+        $this->assertStringStartsWith('alternate-picking-workout-', $share->slug);
+        $this->get($share->publicUrl('en'))->assertOk();
+        $this->get(route('shared.show', ['locale' => 'en', 'token' => $share->token]))->assertOk();
+
+        $routine->update(['name' => 'Renamed Workout']);
+        $this->assertSame($share->slug, $share->fresh()->slug);
+        $this->get($share->publicUrl('en'))->assertOk();
+    }
+
     public function test_deleting_original_does_not_delete_imported_copy(): void
     {
         $owner = User::factory()->create(['plan' => 'pro']);
