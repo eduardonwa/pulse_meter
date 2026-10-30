@@ -16,7 +16,9 @@
                     @if ($share->is_active)
                         <a class="button" data-type="outline" href="{{ route('shared.show', ['locale' => app()->getLocale(), 'token' => $share->token]) }}">View</a>
                     @endif
-                    <button class="button" data-type="outline" type="button" onclick="copySharedRoutineLink(@js(route('shared.show', ['locale' => app()->getLocale(), 'token' => $share->token])))">Copy link</button>
+                    @if ($share->is_active)
+                        <button class="button" data-type="outline" type="button" onclick="copySharedRoutineLink(@js(route('shared.show', ['locale' => app()->getLocale(), 'token' => $share->token])))">Copy link</button>
+                    @endif
                     <form method="POST" action="{{ route('shared.toggle', $share) }}" style="display:inline;">
                         @csrf
                         @method('PATCH')
