@@ -12,9 +12,11 @@
             @forelse ($published as $share)
                 <div class="form-panel" style="margin-bottom: 1rem;">
                     <strong>{{ $share->routine?->name }}</strong>
-                    <p>{{ $share->routine?->steps()->count() ?? 0 }} exercises · {{ $share->is_active ? 'Active' : 'Inactive' }}</p>
-                    <a class="button" data-type="outline" href="{{ route('shared.show', ['locale' => app()->getLocale(), 'token' => $share->token]) }}" @if (! $share->is_active) aria-disabled="true" tabindex="-1" @endif>View</a>
-                    <button class="button" data-type="outline" type="button" onclick="navigator.clipboard.writeText(@js(route('shared.show', ['locale' => app()->getLocale(), 'token' => $share->token])))">Copy link</button>
+                    <p>{{ min(10, $share->routine?->steps->count() ?? 0) }} shared exercises · {{ $share->is_active ? 'Active' : 'Inactive' }}</p>
+                    @if ($share->is_active)
+                        <a class="button" data-type="outline" href="{{ route('shared.show', ['locale' => app()->getLocale(), 'token' => $share->token]) }}">View</a>
+                    @endif
+                    <button class="button" data-type="outline" type="button" onclick="copySharedRoutineLink(@js(route('shared.show', ['locale' => app()->getLocale(), 'token' => $share->token])))">Copy link</button>
                     <form method="POST" action="{{ route('shared.toggle', $share) }}" style="display:inline;">
                         @csrf
                         @method('PATCH')
@@ -55,4 +57,28 @@
             @endforelse
         </section>
     </main>
+    <script>
+        async function copySharedRoutineLink(url) {
+            if (navigator.clipboard?.writeText) {
+                try {
+                    await navigator.clipboard.writeText(url);
+                    return;
+                } catch (error) {
+                    // Fall back for environments without Clipboard API permission.
+                }
+            }
+
+            const field = document.createElement('textarea');
+            field.value = url;
+            field.style.position = 'fixed';
+            field.style.opacity = '0';
+            document.body.appendChild(field);
+            field.select();
+            try {
+                document.execCommand('copy');
+            } finally {
+                field.remove();
+            }
+        }
+    </script>
 </x-layouts.dorelog>
