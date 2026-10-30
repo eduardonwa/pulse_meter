@@ -1,4 +1,4 @@
-<x-layouts.dorelog>
+<x-layouts.dorelog :title="$original->name . ' | Dorelog'" :description="'Practice ' . $original->name . ' with Dorelog. Explore the exercises, BPM and tablatures in this shared routine.'">
     <main class="routine-player"
         x-data="routinePlayer(@js($practiceContext), @js($pulsePresets))"
         @keydown.window="handleKeydown($event)"
