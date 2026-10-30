@@ -31,10 +31,10 @@
                     <strong>{{ $share->routine?->name }}</strong>
                     <p>{{ min(10, $share->routine?->steps->count() ?? 0) }} shared exercises · {{ $share->is_active ? 'Active' : 'Inactive' }}</p>
                     @if ($share->is_active)
-                        <a class="button" data-type="outline" href="{{ route('shared.show', ['locale' => app()->getLocale(), 'token' => $share->token]) }}">View</a>
+                        <a class="button" data-type="outline" href="{{ $share->publicUrl(app()->getLocale()) }}">View</a>
                     @endif
                     @if ($share->is_active)
-                        <button class="button" data-type="outline" type="button" onclick="copySharedRoutineLink(@js(route('shared.show', ['locale' => app()->getLocale(), 'token' => $share->token])))">Copy link</button>
+                        <button class="button" data-type="outline" type="button" onclick="copySharedRoutineLink(@js($share->publicUrl(app()->getLocale())))">Copy link</button>
                     @endif
                     <form method="POST" action="{{ route('shared.toggle', $share) }}" style="display:inline;">
                         @csrf
@@ -66,7 +66,7 @@
                     <strong>{{ $copy->name }}</strong>
                     <p>{{ $copy->steps()->count() }} exercises</p>
                     @if ($copy->importedFrom?->is_active)
-                        <a class="button" data-type="outline" href="{{ route('shared.show', ['locale' => app()->getLocale(), 'token' => $copy->importedFrom->token]) }}">View original</a>
+                        <a class="button" data-type="outline" href="{{ $copy->importedFrom->publicUrl(app()->getLocale()) }}">View original</a>
                     @else
                         <span>Link inactive</span>
                     @endif
