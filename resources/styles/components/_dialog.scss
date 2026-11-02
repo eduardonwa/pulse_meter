@@ -552,15 +552,18 @@
   /* ITEM */
   @include dialog-entity-index;
 
-  &__heading {
-    small {
-      color: hsl(var(--neutral-950) / 0.5);
-    }
 
-    .exercise-count {
-      display: block;
-      margin-block-start: $size-4;
-    }
+}
+
+/* Encabezado de rutinas ahora vive en PracticeDialog, antes de las pestañas. */
+.practice-dialog .routine-dialog__heading {
+  small {
+    color: hsl(var(--neutral-950) / 0.5);
+  }
+
+  .exercise-count {
+    display: block;
+    margin-block-start: $size-4;
   }
 }
 
