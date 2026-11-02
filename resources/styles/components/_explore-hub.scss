@@ -1,0 +1,27 @@
+@use "../abstracts" as *;
+
+.explore-hub {
+    padding-block: $size-8;
+
+    &__grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+        gap: $size-4;
+        margin-block-start: $size-6;
+    }
+
+    &__card {
+        display: grid;
+        align-content: start;
+        justify-items: start;
+        gap: $size-3;
+        padding: $size-6;
+        border: 1px solid $color-neutral-400;
+        text-decoration: none;
+        color: inherit;
+
+        &:hover, &:focus-visible {
+            border-color: $color-primary-500;
+        }
+    }
+}
