@@ -1,9 +1,5 @@
-@include('livewire.practice-dialog.sections')
-
 {{-- INDEX --}}
 <div class="playlist-dialog">
-    <x-practice-dialog.playlists.heading />
-
     @if (count($playlists) === 0)
         <p class="practice-dialog__empty">
             You haven't created any playlists yet.
