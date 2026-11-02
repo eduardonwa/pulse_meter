@@ -214,19 +214,17 @@
             gap: 4px;
         }
 
-            color: $color-primary-950;
+        color: $color-primary-950;
 
         button {
             min-width: 44px;
             min-height: 44px;
             color: $color-primary-950;
-            outline: 1px solid;
         }
     }
 
     &__list {
         display: grid;
-        outline: 1px solid;
         gap: 10px;
 
         > button,
