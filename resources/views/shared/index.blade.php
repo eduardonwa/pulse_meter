@@ -60,12 +60,12 @@
                     <div class="shared-routine__actions">
                         @if ($share?->is_active)
                             <a class="button view" data-type="icon-text" href="{{ $share->publicUrl(app()->getLocale()) }}">
-                                <x-heroicon-o-eye />
+                                <x-heroicon-o-eye width="20" height="20" />
                                 View
                             </a>
 
                             <button class="button copy" data-type="icon-text" type="button" onclick="copySharedRoutineLink(@js($share->publicUrl(app()->getLocale())))">
-                                <x-heroicon-o-clipboard />
+                                <x-heroicon-o-clipboard width="20" height="20" />
                                 Copy link
                             </button>
                         @endif
@@ -81,9 +81,9 @@
                                     @endif
                                 >
                                     @if ($share->is_active)
-                                        <x-heroicon-o-lock-closed />
+                                        <x-heroicon-o-lock-closed width="20" height="20"/>
                                     @else
-                                        <x-heroicon-o-lock-open />
+                                        <x-heroicon-o-lock-open width="20" height="20"/>
                                     @endif
                                     {{ $share->is_active ? 'Unshare' : 'Share' }}
                                 </button>
@@ -92,7 +92,7 @@
                             <form method="POST" action="{{ route('shared.store', $personal) }}">
                                 @csrf
                                 <button class="button share" data-type="icon-text" type="submit">
-                                    <x-heroicon-o-lock-open />
+                                    <x-heroicon-o-lock-open width="20" height="20" />
                                     Share
                                 </button>
                             </form>
@@ -112,7 +112,9 @@
 
                     <p>{{ $copy->steps()->count() }} exercises</p>
                     @if ($copy->importedFrom?->is_active)
-                        <a class="button" data-type="outline" href="{{ $copy->importedFrom->publicUrl(app()->getLocale()) }}">View original</a>
+                        <a class="button" data-type="outline" href="{{ $copy->importedFrom->publicUrl(app()->getLocale()) }}">
+                            View original
+                        </a>
                     @else
                         <span>Link inactive</span>
                     @endif
