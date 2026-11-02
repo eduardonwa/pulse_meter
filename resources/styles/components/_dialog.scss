@@ -576,6 +576,25 @@
     margin-block-start: $size-4;
 
     .exercise-item {
+      .drag-handle {
+        flex: 0 0 30px;
+        align-self: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 44px;
+        border: 1px solid hsl(var(--neutral-950) / 0.2);
+        border-radius: $border-radius-1;
+        color: $color-neutral-600;
+        cursor: grab;
+        touch-action: none;
+        user-select: none;
+
+        &:active { cursor: grabbing; }
+
+        svg { width: 20px; height: 20px; }
+      }
+
       display: flex;
       align-items: center;
       justify-content: space-between;
