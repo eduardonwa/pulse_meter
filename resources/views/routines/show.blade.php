@@ -106,5 +106,4 @@
     </main>
 
     <x-windows.pro-upsell-modal :viewer-type="$viewerType" />
-    <x-ui.mobile-bottom-nav />
 </x-layouts.dorelog>
