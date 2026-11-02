@@ -56,7 +56,7 @@
                     </button>
 
                 @elseif (in_array($viewerType, ['pro', 'lifetime'], true))
-                    <button class="button save-action" data-type="icon-text" type="button" @click="saveTemplateCopy()">
+                    <button class="button save-action" data-type="icon-text" type="button" @click="{{ ! empty($isShared) ? 'saveSharedCopy()' : 'saveTemplateCopy()' }}">
                         <x-heroicon-o-bookmark
                             width="14"
                             height="14"

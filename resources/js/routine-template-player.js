@@ -27,6 +27,8 @@ export function routineTemplateActions() {
                         : null,
                 
                 alpha_tex: step.alpha_tex ?? null,
+                time_signature_numerator: step.time_signature_numerator ?? 4,
+                time_signature_denominator: step.time_signature_denominator ?? 4,
             }))
 
             localStorage.setItem(
@@ -42,6 +44,19 @@ export function routineTemplateActions() {
             if (url) {
                 window.location.href = url
             }
+        },
+
+        async saveSharedCopy() {
+            const url = this.$el.closest('.routine-player')?.dataset.saveTemplateCopyUrl
+            if (!url) return
+            const response = await fetch(url, {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: { Accept: 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content ?? '' },
+            })
+            if (!response.ok) return
+            const data = await response.json()
+            window.location.href = data.redirect_url
         },
 
         async saveTemplateCopy() {

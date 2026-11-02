@@ -16,35 +16,13 @@
     </header>
 
     <div class="dialog-shell__content manage-exercises-dialog__content">
-        <div class="dialog-shell__list manage-exercises-dialog__list">
+        <div class="dialog-shell__list manage-exercises-dialog__list" wire:sort="sortExercise">
             @forelse ($exercises as $exercise)
-                <div class="exercise-item" wire:key="exercise-{{ $exercise['id'] }}">
-                    <div class="move-btns">
-                        <button class="button" type="button" data-type="icon" aria-label="Move {{ $exercise['name'] }} up"
-                            wire:click="moveExercise(
-                                {{ $exercise['id'] }},
-                                'up'
-                            )"
-                            wire:loading.attr="disabled"
-                            wire:target="moveExercise"
-                            @disabled($loop->first)
-                        >
-                            <x-heroicon-o-chevron-up />
-                        </button>
-
-                        <button class="button" type="button" data-type="icon" aria-label="Move {{ $exercise['name'] }} down"
-                            wire:click="moveExercise(
-                                {{ $exercise['id'] }},
-                                'down'
-                            )"
-                            wire:loading.attr="disabled"
-                            wire:target="moveExercise"
-                            @disabled($loop->last)
-                        >
-                            <x-heroicon-o-chevron-down />
-                        </button>
+                <div class="exercise-item" wire:key="exercise-{{ $exercise['id'] }}" wire:sort:item="{{ $exercise['id'] }}">
+                    <div class="drag-handle" wire:sort:handle aria-label="Drag to reorder {{ $exercise['name'] }}">
+                        <x-heroicon-o-bars-3 />
                     </div>
-                    
+
                     <div class="item-summary">
                         <strong class="item-summary__name"> {{ $exercise['name'] }} </strong>
 

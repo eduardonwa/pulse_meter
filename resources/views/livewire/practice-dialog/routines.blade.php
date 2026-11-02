@@ -1,10 +1,6 @@
-@include('livewire.practice-dialog.sections')
-
 {{-- INDEX --}}
 <div class="routine-dialog">
-    <x-practice-dialog.routines.heading />
-
-    <div class="dialog-shell__content routine-dialog__content">
+    <div class="dialog-shell__content routine-dialog__content" wire:sort="sortRoutine">
         @foreach ($routines as $routineOption)
             <x-practice-dialog.routines.item
                 :routine-option="$routineOption"
@@ -13,7 +9,7 @@
                 :is-first="$loop->first"
                 :is-last="$loop->last"
                 :can-delete="count($routines) > 1"
-                wire:key="routine-{{ $routineOption['id'] }}"
+                wire:key="routine-{{ $routineOption['id'] }}" wire:sort:item="{{ $routineOption['id'] }}"
             />
         @endforeach
     </div>

@@ -22,6 +22,16 @@ class PracticeRoutine extends Model
         ];
     }
 
+    public function sharedPublication(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(SharedRoutine::class);
+    }
+
+    public function importedFrom(): BelongsTo
+    {
+        return $this->belongsTo(SharedRoutine::class, 'shared_routine_id');
+    }
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

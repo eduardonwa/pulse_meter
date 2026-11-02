@@ -6,15 +6,15 @@
     </header>
 
     <ol class="routine-player__exercise-list">
-        @foreach ($template->steps as $step)
+        @foreach (! empty($isShared) ? $publicSteps : $template->steps as $step)
             @php
-                $stepName = app()->isLocale('en')
+                $stepName = ! empty($isShared) ? $step->name : (app()->isLocale('en')
                     ? ($step->name_en ?: $step->name_es)
-                    : $step->name_es;
+                    : $step->name_es);
 
-                $stepNotes = app()->isLocale('en')
+                $stepNotes = ! empty($isShared) ? null : (app()->isLocale('en')
                     ? ($step->notes_en ?: $step->notes_es)
-                    : $step->notes_es;
+                    : $step->notes_es);
 
                 $duration = $step->duration_seconds;
 
@@ -55,6 +55,8 @@
                                     $refs.alphaTab
                                 )
                         "
+                    @elseif (! empty($isShared))
+                        @click="startExercise({{ $loop->index }})"
                     @else
                         disabled
                     @endif

@@ -190,66 +190,38 @@ class PracticeDialog extends Component
         );
     }
 
-    public function moveRoutine(
-        int $routineId,
-        string $direction,
-    ): void {
+
+    public function sortRoutine(int $itemId, int $position): void
+    {
         Gate::authorize('use-pro');
 
-        abort_unless(
-            in_array($direction, ['up', 'down'], true),
-            422
-        );
-
-        $user = Auth::user();
-
-        DB::transaction(function () use (
-            $user,
-            $routineId,
-            $direction
-        ) {
-            /*
-            * Buscamos exclusivamente entre las rutinas
-            * pertenecientes al usuario.
-            */
-            $routines = $user->practiceRoutines()
+        DB::transaction(function () use ($itemId, $position): void {
+            $items = Auth::user()->practiceRoutines()
                 ->orderBy('position')
                 ->orderBy('id')
                 ->lockForUpdate()
                 ->get();
 
-            $currentIndex = $routines->search(
-                fn ($routine) =>
-                    (int) $routine->id === $routineId
+            $currentIndex = $items->search(
+                fn ($item) => (int) $item->id === $itemId
             );
 
             abort_if($currentIndex === false, 404);
+            abort_unless($position >= 0 && $position < $items->count(), 422);
 
-            $targetIndex = $direction === 'up'
-                ? $currentIndex - 1
-                : $currentIndex + 1;
-
-            /*
-            * Si ya está hasta arriba o hasta abajo,
-            * no hacemos nada.
-            */
-            if (! $routines->has($targetIndex)) {
+            if ($currentIndex === $position) {
                 return;
             }
 
-            $currentRoutine = $routines[$currentIndex];
-            $targetRoutine = $routines[$targetIndex];
+            $moved = $items->splice($currentIndex, 1)->first();
+            $items->splice($position, 0, [$moved]);
 
-            $currentPosition = $currentRoutine->position;
-
-            $currentRoutine->position =
-                $targetRoutine->position;
-
-            $targetRoutine->position =
-                $currentPosition;
-
-            $currentRoutine->save();
-            $targetRoutine->save();
+            foreach ($items as $index => $item) {
+                if ((int) $item->position !== $index + 1) {
+                    $item->position = $index + 1;
+                    $item->save();
+                }
+            }
         });
 
         $this->refreshRoutines();
@@ -595,72 +567,39 @@ class PracticeDialog extends Component
         $this->refreshPlaylists();
     }
 
-    public function movePlaylist(
-        int $playlistId,
-        string $direction,
-    ): void {
+
+    public function sortPlaylist(int $itemId, int $position): void
+    {
         Gate::authorize('use-pro');
 
-        abort_unless(
-            in_array($direction, ['up', 'down'], true),
-            422
-        );
+        DB::transaction(function () use ($itemId, $position): void {
+            $items = Auth::user()->practicePlaylists()
+                ->orderBy('position')
+                ->orderBy('id')
+                ->lockForUpdate()
+                ->get();
 
-        $user = Auth::user();
+            $currentIndex = $items->search(
+                fn ($item) => (int) $item->id === $itemId
+            );
 
-        $wasMoved = DB::transaction(
-            function () use (
-                $user,
-                $playlistId,
-                $direction,
-            ): bool {
-                $playlists = $user
-                    ->practicePlaylists()
-                    ->orderBy('position')
-                    ->orderBy('id')
-                    ->lockForUpdate()
-                    ->get();
+            abort_if($currentIndex === false, 404);
+            abort_unless($position >= 0 && $position < $items->count(), 422);
 
-                $currentIndex = $playlists->search(
-                    fn ($playlist) =>
-                        (int) $playlist->id === $playlistId
-                );
-
-                abort_if($currentIndex === false, 404);
-
-                $targetIndex = $direction === 'up'
-                    ? $currentIndex - 1
-                    : $currentIndex + 1;
-
-                if (! $playlists->has($targetIndex)) {
-                    return false;
-                }
-
-                $currentPlaylist =
-                    $playlists[$currentIndex];
-
-                $targetPlaylist =
-                    $playlists[$targetIndex];
-
-                $currentPosition =
-                    $currentPlaylist->position;
-
-                $currentPlaylist->position =
-                    $targetPlaylist->position;
-
-                $targetPlaylist->position =
-                    $currentPosition;
-
-                $currentPlaylist->save();
-                $targetPlaylist->save();
-
-                return true;
+            if ($currentIndex === $position) {
+                return;
             }
-        );
 
-        if (! $wasMoved) {
-            return;
-        }
+            $moved = $items->splice($currentIndex, 1)->first();
+            $items->splice($position, 0, [$moved]);
+
+            foreach ($items as $index => $item) {
+                if ((int) $item->position !== $index + 1) {
+                    $item->position = $index + 1;
+                    $item->save();
+                }
+            }
+        });
 
         $this->refreshPlaylists();
     }

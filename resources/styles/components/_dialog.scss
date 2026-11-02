@@ -134,32 +134,160 @@
     @include dialog-heading-copy;
   }
 
-  &__summary {
-    margin-block-end: $size-4;
+  &__content {
+    padding: $size-2;
   }
 
-  &__row {
-    display: flex;
+  &__item {
+    margin-block-end: $size-4;
 
-    .move-btns {
-      @include dialog-move-buttons;
-    }
+    border: 1px solid hsl(var(--neutral-950) / 0.2);
+    border-radius: $border-radius-3;
+    padding: $size-3;
 
-    .row-name {
-      width: 100%;
+    background-color: $color-neutral-000;
+
+    .routine-controls {
+      position: relative;
 
       display: flex;
+      align-items: center;
+      justify-content: center;
       flex-direction: column;
       gap: $size-2;
-    }
-  }
 
-  &__actions {
-    @include dialog-entity-actions;
+      .badge--default-routine {
+        position: absolute;
+        top: 0;
+      }
+
+      .move-btns {
+        flex: none;
+        width: 30px;
+        height: 44px;
+      }
+    }
+
+    .information {
+      display: flex;
+      align-items: center;
+      gap: $size-3;
+      padding-block: 0 $size-2;
+
+      .heading {
+        font-size: 18px;
+        font-weight: 500;
+      }
+    }
+
+    .actions {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      align-items: stretch;
+      gap: $size-3;
+
+      .button {
+        width: 100%;
+        min-width: 0;
+        padding: $size-2;
+        border: 1px solid hsl(var(--neutral-950) / 0.2);
+      }
+
+      label.button {
+        position: relative;
+        cursor: pointer;
+
+        input[type="radio"] {
+          position: absolute;
+          width: 1px;
+          height: 1px;
+          padding: 0;
+          margin: 0;
+          opacity: 0;
+          pointer-events: none;
+        }
+
+        &:has(input:focus-visible) {
+          outline: 2px solid currentColor;
+          outline-offset: 2px;
+        }
+
+        &:has(input:checked) {
+          background-color: hsl(var(--neutral-950) / 0.08);
+        }
+      }
+    }
+
+    .button[data-type="primary"] {
+      width: 100%;
+      padding: $size-4;
+      margin-block-start: $size-3;
+    }
   }
 
   &__rename {
     @include dialog-inline-rename;
+  }
+}
+
+/* Handles del indice: los controles de ejercicios permanecen intactos. */
+.routine-dialog__item,
+.playlist-dialog__item {
+  > div {
+    display: flex;
+    align-items: stretch;
+    gap: $size-3;
+  }
+
+  > div > section {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+.playlist-dialog__item {
+  .actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .information a {
+    display: flex;
+    flex-direction: column;
+    gap: $size-1;
+  }
+}
+
+.routine-dialog__item .move-btns,
+.playlist-dialog__item .move-btns {
+  height: 44px;
+  align-self: center;
+
+  flex: 0 0 30px;
+    
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  padding: $size-2;
+  
+  border: 1px solid hsl(var(--neutral-950) / 0.2);
+  border-radius: $border-radius-1;
+  color: $color-neutral-600;
+
+  background-color: hsl(var(--neutral-300));
+  
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+
+  &:active {
+    cursor: grabbing;
+    background-color: hsl(var(--neutral-950));
+  }
+
+  svg {
+    width: 20px;
+    height: 20px;
   }
 }
 
@@ -460,15 +588,18 @@
   /* ITEM */
   @include dialog-entity-index;
 
-  &__heading {
-    small {
-      color: hsl(var(--neutral-950) / 0.5);
-    }
 
-    .exercise-count {
-      display: block;
-      margin-block-start: $size-4;
-    }
+}
+
+/* Encabezado de rutinas ahora vive en PracticeDialog, antes de las pestañas. */
+.practice-dialog .routine-dialog__heading {
+  small {
+    color: hsl(var(--neutral-950) / 0.5);
+  }
+
+  .exercise-count {
+    display: block;
+    margin-block-start: $size-4;
   }
 }
 
@@ -484,6 +615,25 @@
     margin-block-start: $size-4;
 
     .exercise-item {
+      .drag-handle {
+        flex: 0 0 30px;
+        align-self: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 44px;
+        border: 1px solid hsl(var(--neutral-950) / 0.2);
+        border-radius: $border-radius-1;
+        color: $color-neutral-600;
+        cursor: grab;
+        touch-action: none;
+        user-select: none;
+
+        &:active { cursor: grabbing; }
+
+        svg { width: 20px; height: 20px; }
+      }
+
       display: flex;
       align-items: center;
       justify-content: space-between;

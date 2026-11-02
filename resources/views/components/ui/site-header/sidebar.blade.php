@@ -24,7 +24,7 @@
 
         @auth
             <div class="auth">
-                <a class="button" data-type="icon" href="{{ route('profile.edit') }}">
+                <a class="button" data-type="icon" href="{{ route('account.my-routines') }}">
                     <x-heroicon-o-user />
                     
                     <span>My Account</span>

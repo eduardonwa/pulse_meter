@@ -1,3 +1,4 @@
+
 @props([
     'routineOption',
     'activeRoutineId',
@@ -9,96 +10,87 @@
 
 <div {{ $attributes->class('routine-dialog__item') }}>
     @if (! $isRenaming)
-        <div class="routine-dialog__summary">
-            <div class="routine-dialog__row">
-                <div class="move-btns">
-                    <button
-                        type="button"
-                        class="button"
-                        data-type="icon"
-                        aria-label="Move {{ $routineOption['name'] }} up"
-                        wire:click="moveRoutine({{ $routineOption['id'] }}, 'up')"
-                        wire:loading.attr="disabled"
-                        wire:target="moveRoutine"
-                        @disabled($isFirst)
+        <div>
+            {{-- Routine controls --}}
+            <div class="routine-controls">
+                @if ($routineOption['is_default'])
+                    <span class="badge badge--default-routine">
+                        <x-heroicon-o-star />
+                    </span>
+                @endif
+
+                <div class="move-btns" wire:sort:handle aria-label="Drag to reorder {{ $routineOption['name'] }}">
+                    <x-heroicon-o-bars-3 />
+                </div>
+            </div>
+
+            <section>
+                {{-- Routine information --}}
+                <div class="information">
+                    <a href="{{ route('welcome', ['routine' => $routineOption['id']]) }}" wire:navigate
+                        @if ((int) $routineOption['id'] === (int) $activeRoutineId)
+                            aria-current="page"
+                        @endif
                     >
-                        <x-heroicon-o-chevron-up />
+                        <h2 class="heading">{{ $routineOption['name'] }}</h2>
+                    </a>
+                </div>
+
+                {{-- Quick actions --}}
+                <div class="actions">
+                    <button class="button" data-type="icon-text" type="button"
+                        aria-label="Rename {{ $routineOption['name'] }}"
+                        wire:click="startRenaming({{ $routineOption['id'] }})"
+                    >
+                        <x-heroicon-o-pencil-square />
+                        Rename
                     </button>
 
-                    <button
-                        type="button"
-                        class="button"
-                        data-type="icon"
-                        aria-label="Move {{ $routineOption['name'] }} down"
-                        wire:click="moveRoutine({{ $routineOption['id'] }}, 'down')"
+                    <label class="button" data-type="icon-text">
+                        <input
+                            type="radio"
+                            name="default-routine"
+                            value="{{ $routineOption['id'] }}"
+                            wire:click="setDefaultRoutine({{ $routineOption['id'] }})"
+                            wire:loading.attr="disabled"
+                            wire:target="setDefaultRoutine"
+                            @checked($routineOption['is_default'])
+                        >
+
+                        <x-heroicon-o-star />
+
+                        <span>Default</span>
+                    </label>
+
+                    <button class="button" data-type="icon-text" type="button"
+                        aria-label="Delete {{ $routineOption['name'] }}"
                         wire:loading.attr="disabled"
-                        wire:target="moveRoutine"
-                        @disabled($isLast)
+                        wire:target="deleteRoutine"
+                        @disabled(! $canDelete)
+                        @click.stop="openConfirmModal({
+                            title: 'Delete routine?',
+                            message: 'All exercises will be deleted. Are you sure?',
+                            confirmLabel: 'Delete',
+                            action: () => $wire.deleteRoutine(
+                                {{ $routineOption['id'] }}
+                            )
+                        })"
                     >
-                        <x-heroicon-o-chevron-down />
+                        <x-heroicon-o-trash />
+                        Delete
                     </button>
                 </div>
 
-                <a wire:navigate data-type="outline" href="{{ route('welcome', [ 'routine' => $routineOption['id'] ]) }}"
-                    @class([
-                        'button row-name',
-                        'is-selected' =>
-                            (int) $routineOption['id']
-                            === (int) $activeRoutineId,
-                    ])
-                    @if ((int) $routineOption['id'] === (int) $activeRoutineId)
-                        aria-current="page"
-                    @endif
-                >
-                    <strong> {{ $routineOption['name'] }} </strong>
-                </a>
-            </div>
-
-            <div class="routine-dialog__actions">
-                <button class="badge badge--manage" type="button"
+                {{-- Manage exercises --}}
+                <button class="button" data-type="primary" type="button"
                     wire:click="manageExercises({{ $routineOption['id'] }})"
                     wire:loading.attr="disabled"
                     wire:target="manageExercises"
                     aria-label="Manage exercises in {{ $routineOption['name'] }}"
                 >
-                    Manage
+                    Manage exercises
                 </button>
-
-                <label class="radio-field">
-                    <input type="radio" name="default-routine" value="{{ $routineOption['id'] }}"
-                        wire:click="setDefaultRoutine({{ $routineOption['id'] }})"
-                        wire:loading.attr="disabled"
-                        wire:target="setDefaultRoutine"
-                        @checked($routineOption['is_default'])
-                    >
-
-                    <span>Default</span>
-                </label>
-
-                <button class="button edit" type="button" data-type="icon"
-                    aria-label="Rename {{ $routineOption['name'] }}"
-                    wire:click="startRenaming( {{ $routineOption['id'] }} )"
-                >
-                    <x-heroicon-o-pencil-square />
-                </button>
-
-                <button class="button delete" type="button" data-type="icon"
-                    aria-label="Delete {{ $routineOption['name'] }}"
-                    wire:loading.attr="disabled"
-                    wire:target="deleteRoutine"
-                    @disabled(! $canDelete)
-                    @click.stop="openConfirmModal({
-                        title: 'Delete routine?',
-                        message: 'All exercises will be deleted. Are you sure?',
-                        confirmLabel: 'Delete',
-                        action: () => $wire.deleteRoutine(
-                            {{ $routineOption['id'] }}
-                        )
-                    })"
-                >
-                    <x-heroicon-o-trash />
-                </button>
-            </div>
+            </section>
         </div>
     @else
         <x-practice-dialog.routines.rename-form

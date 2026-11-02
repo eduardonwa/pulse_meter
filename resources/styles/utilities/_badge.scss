@@ -32,6 +32,20 @@
         cursor: pointer;
     }
 
+    &--default-routine {
+        padding: 6px;
+
+        background: hsl(var(--accent-200) / .4);
+        border-color: $color-accent-300;
+        color: $color-accent-900;
+
+        svg {
+            width: 18px;
+            height: 18px;
+            fill: $color-accent-900;
+        }
+    }
+
     &--starter-routine {
         color: $color-secondary-900;
         background-color: hsl(var(--secondary-200) / .2);
