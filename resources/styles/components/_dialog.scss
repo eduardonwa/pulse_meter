@@ -134,28 +134,68 @@
     @include dialog-heading-copy;
   }
 
-  &__summary {
+  &__item {
     margin-block-end: $size-4;
-  }
 
-  &__row {
-    display: flex;
+    border: 1px solid hsl(var(--neutral-950) / 0.2);
+    border-radius: $border-radius-3;
+    padding: $size-3;
 
-    .move-btns {
-      @include dialog-move-buttons;
-    }
-
-    .row-name {
-      width: 100%;
-
+    .information {
       display: flex;
-      flex-direction: column;
-      gap: $size-2;
-    }
-  }
+      align-items: center;
+      gap: $size-3;
+      padding-block: $size-2;
 
-  &__actions {
-    @include dialog-entity-actions;
+      .heading {
+        font-size: 18px;
+        font-weight: 500;
+      }
+    }
+
+    .actions {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      align-items: stretch;
+      gap: $size-3;
+
+      .button {
+        width: 100%;
+        min-width: 0;
+        padding: $size-2;
+        border: 1px solid hsl(var(--neutral-950) / 0.2);
+      }
+
+      label.button {
+        position: relative;
+        cursor: pointer;
+
+        input[type="radio"] {
+          position: absolute;
+          width: 1px;
+          height: 1px;
+          padding: 0;
+          margin: 0;
+          opacity: 0;
+          pointer-events: none;
+        }
+
+        &:has(input:focus-visible) {
+          outline: 2px solid currentColor;
+          outline-offset: 2px;
+        }
+
+        &:has(input:checked) {
+          background-color: hsl(var(--neutral-950) / 0.08);
+        }
+      }
+    }
+
+    .button[data-type="primary"] {
+      width: 100%;
+      padding: $size-4;
+      margin-block-start: $size-3;
+    }
   }
 
   &__rename {
