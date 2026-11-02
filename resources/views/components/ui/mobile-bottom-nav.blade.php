@@ -8,7 +8,7 @@
     <a href="{{ route('explore.index') }}"
         class="mobile-bottom-nav__link {{ request()->routeIs('explore.index') || request()->routeIs('routines.*') ? 'is-active' : '' }}"
         @if (request()->routeIs('explore.index') || request()->routeIs('routines.*')) aria-current="page" @endif>
-        <x-heroicon-o-compass width="24" height="24" />
+        <x-heroicon-o-squares-2x2 width="24" height="24" />
         <span>Explore</span>
     </a>
     <a href="{{ route('welcome', ['panel' => 'settings']) }}"
