@@ -190,6 +190,43 @@ class PracticeDialog extends Component
         );
     }
 
+
+    public function sortRoutine(int $itemId, int $position): void
+    {
+        Gate::authorize('use-pro');
+
+        DB::transaction(function () use ($itemId, $position): void {
+            $items = Auth::user()->practiceRoutines()
+                ->orderBy('position')
+                ->orderBy('id')
+                ->lockForUpdate()
+                ->get();
+
+            $currentIndex = $items->search(
+                fn ($item) => (int) $item->id === $itemId
+            );
+
+            abort_if($currentIndex === false, 404);
+            abort_unless($position >= 0 && $position < $items->count(), 422);
+
+            if ($currentIndex === $position) {
+                return;
+            }
+
+            $moved = $items->splice($currentIndex, 1)->first();
+            $items->splice($position, 0, [$moved]);
+
+            foreach ($items as $index => $item) {
+                if ((int) $item->position !== $index + 1) {
+                    $item->position = $index + 1;
+                    $item->save();
+                }
+            }
+        });
+
+        $this->refreshRoutines();
+    }
+
     public function moveRoutine(
         int $routineId,
         string $direction,
@@ -591,6 +628,43 @@ class PracticeDialog extends Component
     public function stopManagingPlaylist(): void
     {
         $this->managingPlaylistId = null;
+
+        $this->refreshPlaylists();
+    }
+
+
+    public function sortPlaylist(int $itemId, int $position): void
+    {
+        Gate::authorize('use-pro');
+
+        DB::transaction(function () use ($itemId, $position): void {
+            $items = Auth::user()->practicePlaylists()
+                ->orderBy('position')
+                ->orderBy('id')
+                ->lockForUpdate()
+                ->get();
+
+            $currentIndex = $items->search(
+                fn ($item) => (int) $item->id === $itemId
+            );
+
+            abort_if($currentIndex === false, 404);
+            abort_unless($position >= 0 && $position < $items->count(), 422);
+
+            if ($currentIndex === $position) {
+                return;
+            }
+
+            $moved = $items->splice($currentIndex, 1)->first();
+            $items->splice($position, 0, [$moved]);
+
+            foreach ($items as $index => $item) {
+                if ((int) $item->position !== $index + 1) {
+                    $item->position = $index + 1;
+                    $item->save();
+                }
+            }
+        });
 
         $this->refreshPlaylists();
     }
