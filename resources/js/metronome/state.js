@@ -141,6 +141,11 @@ export function state(practiceContext = null) {
             ?.ask_before_importing_free_exercises
         !== false
 
+    // Node.js tests have no window; only browser navigation uses URL panels.
+    const requestedPanel = typeof window === 'undefined'
+        ? null
+        : new URLSearchParams(window.location.search).get('panel')
+
     const defaultSessionMode =
         getDefaultSessionMode()
 
@@ -215,9 +220,9 @@ export function state(practiceContext = null) {
         localRoutineImportPreferenceBusy: false,
 
         // NAVIGATION
-        activeTab: new URLSearchParams(window.location.search).get('panel') === 'settings'
+        activeTab: requestedPanel === 'settings'
             ? 'settings'
-            : new URLSearchParams(window.location.search).get('panel') === 'creative' && practiceContext?.limits?.exercise_count > 10
+            : requestedPanel === 'creative' && maxSteps > DEFAULT_EXERCISE_COUNT_LIMIT
                 ? 'sessions'
                 : 'exercises',
 
