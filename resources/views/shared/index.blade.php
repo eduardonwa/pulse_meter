@@ -1,6 +1,23 @@
 <x-layouts.dorelog>
     <main class="account-page | container"
         x-data="{
+            confirmModal: { isOpen: false, title: '', message: '', confirmLabel: '' },
+            pendingUnshareForm: null,
+            openUnshareModal(event) {
+                this.pendingUnshareForm = event.currentTarget.closest('form');
+                this.confirmModal.title = 'Make this routine private?';
+                this.confirmModal.message = 'The shared link will no longer be accessible. Imported copies will not be affected.';
+                this.confirmModal.confirmLabel = 'Unshare';
+                this.confirmModal.isOpen = true;
+            },
+            closeConfirmModal() {
+                this.confirmModal.isOpen = false;
+                this.pendingUnshareForm = null;
+            },
+            confirmModalAction() {
+                if (!this.pendingUnshareForm) return;
+                this.pendingUnshareForm.submit();
+            },
             toast: { visible: false, message: '', type: 'success', timer: null },
             showToast(message) {
                 clearTimeout(this.toast.timer);
@@ -55,9 +72,10 @@
                         <form method="POST" action="{{ route('shared.toggle', $share) }}" style="display:inline;">
                             @csrf
                             @method('PATCH')
-                            <button class="button {{ $share->is_active ? 'unshare' : 'share' }}" data-type="icon-text" type="submit"
+                            <button class="button {{ $share->is_active ? 'unshare' : 'share' }}" data-type="icon-text"
+                                type="{{ $share->is_active ? 'button' : 'submit' }}"
                                 @if ($share->is_active)
-                                    onclick="return confirm('Make this routine private? Imported copies will not be affected.')"
+                                    @click="openUnshareModal($event)"
                                 @endif
                             >
                                 @if ($share->is_active)
@@ -105,7 +123,9 @@
                 <p>No imported shared routines yet.</p>
             @endforelse
         </section>
+        <x-windows.confirm-modal />
     </main>
+    
     <script>
         async function copySharedRoutineLink(url) {
             if (navigator.clipboard?.writeText) {
