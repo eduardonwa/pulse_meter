@@ -11,33 +11,9 @@
 <div {{ $attributes->class('routine-dialog__item') }}>
     @if (! $isRenaming)
         <div>
-            {{-- Move up / down --}}
-            <div>
-                <button
-                    type="button"
-                    class="button"
-                    data-type=""
-                    aria-label="Move {{ $routineOption['name'] }} up"
-                    wire:click="moveRoutine({{ $routineOption['id'] }}, 'up')"
-                    wire:loading.attr="disabled"
-                    wire:target="moveRoutine"
-                    @disabled($isFirst)
-                >
-                    <x-heroicon-o-chevron-up />
-                </button>
-
-                <button
-                    type="button"
-                    class="button"
-                    data-type=""
-                    aria-label="Move {{ $routineOption['name'] }} down"
-                    wire:click="moveRoutine({{ $routineOption['id'] }}, 'down')"
-                    wire:loading.attr="disabled"
-                    wire:target="moveRoutine"
-                    @disabled($isLast)
-                >
-                    <x-heroicon-o-chevron-down />
-                </button>
+            {{-- Drag handle --}}
+            <div class="move-btns" wire:sort:handle aria-label="Drag to reorder {{ $routineOption['name'] }}">
+                <x-heroicon-o-bars-3 />
             </div>
 
             <section>
