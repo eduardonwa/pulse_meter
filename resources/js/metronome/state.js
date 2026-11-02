@@ -215,7 +215,11 @@ export function state(practiceContext = null) {
         localRoutineImportPreferenceBusy: false,
 
         // NAVIGATION
-        activeTab: 'exercises',
+        activeTab: new URLSearchParams(window.location.search).get('panel') === 'settings'
+            ? 'settings'
+            : new URLSearchParams(window.location.search).get('panel') === 'creative' && practiceContext?.limits?.exercise_count > 10
+                ? 'sessions'
+                : 'exercises',
 
         // PICKING OPTIONS
         minutesOptions: [0, 1, 2, 3, 4, 5],
