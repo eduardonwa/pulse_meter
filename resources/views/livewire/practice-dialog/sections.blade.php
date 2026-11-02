@@ -1,25 +1,19 @@
 <nav class="practice-dialog__sections" aria-label="Practice sections">    
-    <button
-        type="button"
-        data-type="outline"
+    <button @class(['button', 'is-active' => $section === 'routines']) data-type="outline" type="button"
+        aria-pressed="{{ $section === 'routines' ? 'true' : 'false' }}"
         wire:click="showRoutines"
         wire:loading.attr="disabled"
         wire:target="showRoutines"
-        @class(['button', 'is-active' => $section === 'routines'])
-        aria-pressed="{{ $section === 'routines' ? 'true' : 'false' }}"
     >
         <x-heroicon-o-queue-list />
         Routines
     </button>
 
-    <button
-        type="button"
-        data-type="outline"
+    <button @class(['button', 'is-active' => $section === 'playlists']) data-type="outline" type="button"
+        aria-pressed="{{ $section === 'playlists' ? 'true' : 'false' }}"
         wire:click="showPlaylists"
         wire:loading.attr="disabled"
         wire:target="showPlaylists"
-        @class(['button', 'is-active' => $section === 'playlists'])
-        aria-pressed="{{ $section === 'playlists' ? 'true' : 'false' }}"
     >
         <x-heroicon-o-numbered-list />
         Playlists

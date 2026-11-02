@@ -27,15 +27,19 @@
             <h2 class="heading-3">Shared by me</h2>
 
             @forelse ($published as $share)
-                <div class="form-panel" style="margin-bottom: 1rem;">
+                <div class="shared-routines">
                     <strong>{{ $share->routine?->name }}</strong>
+                    
                     <p>{{ min(10, $share->routine?->steps->count() ?? 0) }} shared exercises · {{ $share->is_active ? 'Active' : 'Inactive' }}</p>
+                    
                     @if ($share->is_active)
                         <a class="button" data-type="outline" href="{{ $share->publicUrl(app()->getLocale()) }}">View</a>
                     @endif
+
                     @if ($share->is_active)
                         <button class="button" data-type="outline" type="button" onclick="copySharedRoutineLink(@js($share->publicUrl(app()->getLocale())))">Copy link</button>
                     @endif
+
                     <form method="POST" action="{{ route('shared.toggle', $share) }}" style="display:inline;">
                         @csrf
                         @method('PATCH')
@@ -61,6 +65,7 @@
 
         <section class="account-page__section">
             <h2 class="heading-3">Shared with me</h2>
+
             @forelse ($imported as $copy)
                 <div class="form-panel" style="margin-bottom: 1rem;">
                     <strong>{{ $copy->name }}</strong>
@@ -76,6 +81,7 @@
             @endforelse
         </section>
     </main>
+
     <script>
         async function copySharedRoutineLink(url) {
             if (navigator.clipboard?.writeText) {

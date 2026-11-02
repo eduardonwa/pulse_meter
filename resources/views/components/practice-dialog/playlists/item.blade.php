@@ -13,7 +13,7 @@
                 <x-heroicon-o-bars-3 />
             </div>
 
-            <section>
+            <section class="routine-content">
                 <div class="information">
                     <a wire:navigate
                         href="{{ route('welcome', ['playlist' => $playlistOption['id']]) }}"
@@ -25,9 +25,6 @@
                         <small>
                             {{ $playlistOption['items_count'] }}
                             {{ $playlistOption['items_count'] === 1 ? 'routine' : 'routines' }}
-                            @if ($playlistOption['starter_routine'])
-                                · Starter: {{ $playlistOption['starter_routine']['name'] }}
-                            @endif
                         </small>
                     </a>
                 </div>
@@ -57,12 +54,13 @@
                     </button>
                 </div>
 
-                <button class="button" data-type="primary" type="button"
+                <button class="button" data-type="primary" data-variant="icon" type="button"
                     wire:click="managePlaylist({{ $playlistOption['id'] }})"
                     wire:loading.attr="disabled"
                     wire:target="managePlaylist"
                     aria-label="Manage {{ $playlistOption['name'] }}"
                 >
+                    <x-heroicon-o-adjustments-horizontal />
                     Manage playlist
                 </button>
             </section>
