@@ -77,10 +77,6 @@
                                 @if ($share->is_active)
                                     @click="openUnshareModal($event)"
                                 @endif
-                            >is_active ? 'unshare' : 'share' }}" data-type="icon-text" type="submit"
-                                @if ($share->is_active)
-                                    onclick="return confirm('Make this routine private? Imported copies will not be affected.')"
-                                @endif
                             >
                                 @if ($share->is_active)
                                     <x-heroicon-o-lock-closed />
