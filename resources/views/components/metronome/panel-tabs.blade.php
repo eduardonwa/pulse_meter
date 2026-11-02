@@ -27,15 +27,6 @@
         Exercises
     </button>
 
-    <a
-        class="button | uppercase"
-        data-type="tab-btn"
-        href="{{ route('routines.index', ['locale' => app()->getLocale()]) }}"
-    >
-        <x-heroicon-o-queue-list width="24" height="24" />
-        Routines
-    </a>
-
     <button
         class="button | uppercase"
         data-type="tab-btn"
