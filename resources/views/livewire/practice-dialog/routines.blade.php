@@ -1,9 +1,5 @@
-@include('livewire.practice-dialog.sections')
-
 {{-- INDEX --}}
 <div class="routine-dialog">
-    <x-practice-dialog.routines.heading />
-
     <div class="dialog-shell__content routine-dialog__content" wire:sort="sortRoutine">
         @foreach ($routines as $routineOption)
             <x-practice-dialog.routines.item
