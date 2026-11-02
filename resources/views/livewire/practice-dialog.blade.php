@@ -59,6 +59,16 @@
                 <x-heroicon-o-x-circle />
             </button>
 
+            @if (in_array($screen, ['routines', 'playlists'], true))
+                @if ($screen === 'routines')
+                    <x-practice-dialog.routines.heading />
+                @else
+                    <x-practice-dialog.playlists.heading />
+                @endif
+
+                @include('livewire.practice-dialog.sections')
+            @endif
+
             @switch($screen)
                 @case('routines')
                     @include('livewire.practice-dialog.routines') {{-- INDEX --}}
