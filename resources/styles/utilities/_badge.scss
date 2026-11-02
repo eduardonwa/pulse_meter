@@ -122,4 +122,13 @@
         color: $color-neutral-100;
         border: 1px solid transparent;
     }
+
+    // CAN SHARE ROUTINE
+    &--shareable-routine {
+        padding: 6px;
+        
+        background: hsl(var(--primary-200) / .4);
+        border-color: $color-primary-500;
+        color: $color-primary-900;
+    }
 }

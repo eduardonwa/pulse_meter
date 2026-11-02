@@ -27,20 +27,49 @@
             <h2 class="heading-3">Shared by me</h2>
 
             @forelse ($published as $share)
-                <div class="form-panel" style="margin-bottom: 1rem;">
-                    <strong>{{ $share->routine?->name }}</strong>
-                    <p>{{ min(10, $share->routine?->steps->count() ?? 0) }} shared exercises · {{ $share->is_active ? 'Active' : 'Inactive' }}</p>
-                    @if ($share->is_active)
-                        <a class="button" data-type="outline" href="{{ $share->publicUrl(app()->getLocale()) }}">View</a>
-                    @endif
-                    @if ($share->is_active)
-                        <button class="button" data-type="outline" type="button" onclick="copySharedRoutineLink(@js($share->publicUrl(app()->getLocale())))">Copy link</button>
-                    @endif
-                    <form method="POST" action="{{ route('shared.toggle', $share) }}" style="display:inline;">
-                        @csrf
-                        @method('PATCH')
-                        <button class="button" data-type="outline" type="submit" @if ($share->is_active) onclick="return confirm('Deactivate this link? Imported copies will not be affected.')" @endif>{{ $share->is_active ? 'Deactivate' : 'Activate' }}</button>
-                    </form>
+                <div class="shared-routine | flow">
+                    <h2 class="shared-routine__name">
+                        {{ $share->routine?->name }}
+                        <span class="badge {{ $share->is_active ? 'badge--shareable-routine' : 'badge--neutral' }}">
+                            {{ $share->is_active ? 'Public' : 'Private' }}
+                        </span>
+                    </h2>
+
+                    <p class="shared-routine__exercises">{{ min(10, $share->routine?->steps->count() ?? 0) }} shared exercises</p>
+
+                    <div class="shared-routine__actions">
+                        @if ($share->is_active)
+                            <a class="button view" data-type="icon-text" href="{{ $share->publicUrl(app()->getLocale()) }}">
+                                <x-heroicon-o-eye />
+                                View
+                            </a>
+                        @endif
+    
+                        @if ($share->is_active)
+                            <button class="button copy" data-type="icon-text" type="button" onclick="copySharedRoutineLink(@js($share->publicUrl(app()->getLocale())))">
+                                <x-heroicon-o-clipboard />
+                                Copy link
+                            </button>
+                        @endif
+    
+                        <form method="POST" action="{{ route('shared.toggle', $share) }}" style="display:inline;">
+                            @csrf
+                            @method('PATCH')
+                            <button class="button {{ $share->is_active ? 'unshare' : 'share' }}" data-type="icon-text" type="submit"
+                                @if ($share->is_active)
+                                    onclick="return confirm('Make this routine private? Imported copies will not be affected.')"
+                                @endif
+                            >
+                                @if ($share->is_active)
+                                    <x-heroicon-o-lock-closed />
+                                @else
+                                    <x-heroicon-o-lock-open />
+                                @endif
+
+                                {{ $share->is_active ? 'Unshare' : 'Share' }}
+                            </button>
+                        </form>
+                    </div c>
                 </div>
             @empty
                 <p>You haven't shared any routines yet.</p>
@@ -63,7 +92,8 @@
             <h2 class="heading-3">Shared with me</h2>
             @forelse ($imported as $copy)
                 <div class="form-panel" style="margin-bottom: 1rem;">
-                    <strong>{{ $copy->name }}</strong>
+                    <h2>{{ $copy->name }}</h2>
+
                     <p>{{ $copy->steps()->count() }} exercises</p>
                     @if ($copy->importedFrom?->is_active)
                         <a class="button" data-type="outline" href="{{ $copy->importedFrom->publicUrl(app()->getLocale()) }}">View original</a>

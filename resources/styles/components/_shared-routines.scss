@@ -1,0 +1,52 @@
+@use "../abstracts" as *;
+
+.shared-routine {
+    margin-block-end: $size-4;
+
+    border: 1px solid hsl(var(--neutral-900) / .2);
+    border-radius: $border-radius-2;
+    background-color: hsl(var(--neutral-300) / .3);
+    padding: $size-3;
+
+    &__name {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: $size-2;
+
+        font-weight: 600;
+        font-size: $font-size-500;
+    }
+
+    &__actions {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+        gap: $size-2;
+
+        .view {
+            color: $color-primary-800;
+            background-color: hsl(var(--primary-700) / .1);
+        }
+
+        .copy {
+            color: $color-accent-800;
+            background-color: hsl(var(--accent-700) / .1);
+        }
+
+        .share {
+            color: $color-neutral-200;
+            background-color: hsl(var(--neutral-900));
+        }
+
+        .unshare {
+            background-color: hsl(var(--neutral-700) / .1);
+        }
+
+        .button {
+            outline: 1px solid;
+            padding: $size-1;
+            width: 100%;
+            padding-block: $size-2;
+        }
+    }
+}
