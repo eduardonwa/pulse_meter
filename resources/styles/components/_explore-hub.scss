@@ -18,13 +18,15 @@
         text-decoration: none;
         // Geometric repeating pattern, scoped to the card backing.
         --sz: 6px;
-        --r1: #673ab7;
-        --r2: #4c2b87;
-        --v1: #cfa5f1;
-        --v2: #aa79d5;
+        --r1: #{$color-neutral-700};
+        --r2: #{$color-neutral-900};
+
+        --v1: #{$color-neutral-300};
+        --v2: #{$color-neutral-600};
         --ts: 50% / calc(var(--sz) * 33) calc(var(--sz) * 28);
 
         background-color: var(--r1);
+        
         background:
             conic-gradient(from -296deg at 100% 59%, var(--v2) 0 133deg, #fff0 0 100%) var(--ts),
             conic-gradient(from -296deg at 85% 67%, var(--r2) 0 134.5deg, #fff0 0 100%) var(--ts),
@@ -73,22 +75,27 @@
         
         margin: $size-3 $size-3 0;
         
-        background: white;
-        border: 1px solid $color-neutral-400;
+        background: hsl(var(--neutral-900) / .9);
+        border: 1px solid transparent;
         border-radius: $border-radius-2;
         
         transition: transform 180ms ease;
+
+        color: $color-secondary-300;
     }
 
     &__card-fold {
         position: relative;
         z-index: 1;
+
         display: flex;
         align-items: center;
-        justify-content: space-between;
+        justify-content: flex-end;
         gap: $size-3;
+        
         min-height: 96px;
         margin-block-start: -20px;
+        
         padding: 36px $size-6 $size-4;
         background: transparent;
         border: 0;

@@ -10,7 +10,6 @@
                 </div>
 
                 <div class="explore-hub__card-fold">
-                    <x-heroicon-o-queue-list width="24" height="24" aria-hidden="true" />
                     <span class="explore-hub__card-action">
                         Browse routines
                         <x-heroicon-o-arrow-right width="18" height="18" aria-hidden="true" />
@@ -26,7 +25,6 @@
                     </div>
 
                     <div class="explore-hub__card-fold">
-                        <x-heroicon-o-sparkles width="24" height="24" aria-hidden="true" />
                         <span class="explore-hub__card-action">
                             Open tools
                             <x-heroicon-o-arrow-right width="18" height="18" aria-hidden="true" />
