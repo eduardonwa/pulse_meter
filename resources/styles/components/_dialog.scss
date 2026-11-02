@@ -41,11 +41,7 @@
     width: 100%;
   }
 
-  margin-block-end: $size-4;
-  padding: $size-3 $size-4;
-
-  border: 1px solid hsl(var(--neutral-950) / 0.2);
-  border-radius: $border-radius-1;
+  padding: $size-2;
 
   input {
     width: 100%;
@@ -57,6 +53,10 @@
     align-items: center;
     justify-content: center;
     gap: $size-2;
+
+    .button {
+      padding-block: $size-2;
+    }
   }
 }
 
@@ -164,7 +164,24 @@
       .move-btns {
         flex: none;
         width: 30px;
-        height: 44px;
+        height: 40px;
+      }
+    }
+
+    .routine-content {
+      display: grid;
+      gap: $size-3;
+
+      @include mq(medium) {
+        grid-template-columns: 1fr 1fr;
+
+        .button[data-type="icon"] {
+          grid-column: 1 / -1;
+        }
+
+        .button[data-type="primary"][data-variant="icon"] {
+          grid-column: 1 / -1;
+        }
       }
     }
 
@@ -174,9 +191,17 @@
       gap: $size-3;
       padding-block: 0 $size-2;
 
+      @include mq(medium) {
+        padding-block: 0;
+      }
+
       .heading {
         font-size: 18px;
         font-weight: 500;
+
+        @include mq(medium) {
+          font-size: 16px;
+        }
       }
     }
 
@@ -191,6 +216,12 @@
         min-width: 0;
         padding: $size-2;
         border: 1px solid hsl(var(--neutral-950) / 0.2);
+
+        @include mq(medium) {
+          padding: $size-1;
+          display: flex;
+          flex-direction: column;
+        }
       }
 
       label.button {
@@ -218,10 +249,9 @@
       }
     }
 
-    .button[data-type="primary"] {
+    .button[data-type="primary"][data-variant="icon"] {
       width: 100%;
-      padding: $size-4;
-      margin-block-start: $size-3;
+      padding: $size-2;
     }
   }
 
@@ -259,7 +289,7 @@
 
 .routine-dialog__item .move-btns,
 .playlist-dialog__item .move-btns {
-  height: 44px;
+  height: 40px;
   align-self: center;
 
   flex: 0 0 30px;
@@ -526,18 +556,18 @@
     grid-template-rows: auto auto;
     gap: $size-2;
 
-    padding: 1.5rem;
+    padding: 1rem;
     
     .button[data-type="outline"] {
       display: flex;
       align-items: center;
       gap: $size-4;
 
-      padding: 3px;
+      padding: 5px;
 
       svg {
-        width: 24px;
-        height: 24px;
+        width: 20px;
+        height: 20px;
       }
 
       &.is-active {

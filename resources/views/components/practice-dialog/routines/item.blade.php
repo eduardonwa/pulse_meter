@@ -24,7 +24,7 @@
                 </div>
             </div>
 
-            <section>
+            <section class="routine-content">
                 {{-- Routine information --}}
                 <div class="information">
                     <a href="{{ route('welcome', ['routine' => $routineOption['id']]) }}" wire:navigate
@@ -82,12 +82,13 @@
                 </div>
 
                 {{-- Manage exercises --}}
-                <button class="button" data-type="primary" type="button"
+                <button class="button" data-type="primary" data-variant="icon" type="button"
                     wire:click="manageExercises({{ $routineOption['id'] }})"
                     wire:loading.attr="disabled"
                     wire:target="manageExercises"
                     aria-label="Manage exercises in {{ $routineOption['name'] }}"
                 >
+                    <x-heroicon-o-adjustments-horizontal />
                     Manage exercises
                 </button>
             </section>

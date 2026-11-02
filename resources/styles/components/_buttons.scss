@@ -48,6 +48,23 @@
     }
   }
 
+  &[data-type="primary"][data-variant="icon"] {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: $size-2;
+
+    svg {
+      display: block;
+      
+      width: 24px;
+      height: 24px;
+      min-width: 24px;
+
+      flex-shrink: 0;
+    }
+  }
+
   &[data-type="secondary"] {
     text-transform: none;
     font-weight: normal;
