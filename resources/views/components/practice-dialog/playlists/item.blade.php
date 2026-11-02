@@ -10,32 +10,8 @@
     @if (! $isRenaming)
         <div class="playlist-dialog__summary">
             <div class="playlist-dialog__row">
-                <div class="move-btns">
-                    <button
-                        type="button"
-                        class="button"
-                        data-type="icon"
-                        aria-label="Move {{ $playlistOption['name'] }} up"
-                        wire:click="movePlaylist({{ $playlistOption['id'] }}, 'up')"
-                        wire:loading.attr="disabled"
-                        wire:target="movePlaylist"
-                        @disabled($isFirst)
-                    >
-                        <x-heroicon-o-chevron-up />
-                    </button>
-
-                    <button
-                        type="button"
-                        class="button"
-                        data-type="icon"
-                        aria-label="Move {{ $playlistOption['name'] }} down"
-                        wire:click="movePlaylist({{ $playlistOption['id'] }}, 'down')"
-                        wire:loading.attr="disabled"
-                        wire:target="movePlaylist"
-                        @disabled($isLast)
-                    >
-                        <x-heroicon-o-chevron-down />
-                    </button>
+                <div class="move-btns" wire:sort:handle aria-label="Drag to reorder {{ $playlistOption['name'] }}">
+                    <x-heroicon-o-bars-3 />
                 </div>
 
                 <a wire:navigate data-type="outline" href="{{ route('welcome', ['playlist' => $playlistOption['id']]) }}"
