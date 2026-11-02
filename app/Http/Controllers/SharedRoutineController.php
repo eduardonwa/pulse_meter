@@ -13,8 +13,7 @@ class SharedRoutineController extends Controller
         $user = $request->user();
         return view('shared.index', [
             'canPublish' => $user->hasPaidProAccess(),
-            'myRoutines' => $user->practiceRoutines()->with('sharedPublication')->orderBy('position')->get(),
-            'published' => SharedRoutine::where('user_id', $user->id)->with('routine.steps')->get(),
+            'myRoutines' => $user->practiceRoutines()->whereNull('shared_routine_id')->with(['sharedPublication', 'steps'])->orderBy('position')->get(),
             'imported' => $user->practiceRoutines()->whereNotNull('shared_routine_id')->with('importedFrom')->get(),
         ]);
     }
