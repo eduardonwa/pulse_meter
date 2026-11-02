@@ -69,4 +69,26 @@ class SharedRoutinesTest extends TestCase
         $this->assertDatabaseHas('practice_routines', ['id' => $copy->id, 'shared_routine_id' => null]);
         $this->assertDatabaseMissing('shared_routines', ['id' => $publication->id]);
     }
+    public function test_my_routines_groups_owned_routines_regardless_of_share_status(): void
+    {
+        $owner = User::factory()->create(['plan' => 'pro']);
+        $plain = $owner->practiceRoutines()->create(['name' => 'Never Shared', 'position' => 0, 'is_default' => true]);
+        $published = $owner->practiceRoutines()->create(['name' => 'Published Routine', 'position' => 1, 'is_default' => false]);
+        $disabled = $owner->practiceRoutines()->create(['name' => 'Previously Shared', 'position' => 2, 'is_default' => false]);
+
+        $this->actingAs($owner)->post(route('shared.store', $published))->assertRedirect();
+        $this->actingAs($owner)->post(route('shared.store', $disabled))->assertRedirect();
+        $this->actingAs($owner)->patch(route('shared.toggle', $disabled->sharedPublication))->assertRedirect();
+
+        $response = $this->actingAs($owner)->get(route('account.my-routines'));
+        $response->assertOk()
+            ->assertSee('My Routines')
+            ->assertSee('Imported Routines')
+            ->assertSee('Never Shared')
+            ->assertSee('Published Routine')
+            ->assertSee('Previously Shared')
+            ->assertDontSee('Shared by me')
+            ->assertDontSee('Share a routine');
+    }
+
 }
