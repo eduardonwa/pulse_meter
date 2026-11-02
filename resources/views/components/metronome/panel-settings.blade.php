@@ -68,19 +68,7 @@
         </div>
 
         <div class="group__body group__body--stacked">
-            <label class="group__body--stacked">
-                <span>Default session type</span>
-
-                <select x-model="defaultSessionMode" @change="changeDefaultSessionMode($event.target.value)">
-                    <option value="classic">Classic</option>
-
-                    @can('use-pro')
-                        <option value="creative">Creative</option>
-                    @endcan
-
-                    <option value="drill">Drill</option>
-                </select>
-            </label>
+            {{-- Default session type control hidden; routine playback preferences remain intact. --}}
 
             <label class="group__body--stacked">
                 <span>History</span>
