@@ -43,11 +43,7 @@
 
         {{-- links --}}
         <div class="links">
-            <a class="button display-none--on-desktop" data-type="icon" href="{{ route('chat.index') }}">
-                <x-heroicon-o-chat-bubble-left-right />
-                Chat
-            </a>
-
+            {{-- Chat navigation hidden while focusing on routines. --}}
             <a class="button display-none--on-desktop" data-type="icon" href="{{ route('blog.index', ['locale' => app()->getLocale()]) }}">
                 <x-heroicon-o-user-group />
                 Blog

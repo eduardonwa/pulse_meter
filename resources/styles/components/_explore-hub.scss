@@ -1,0 +1,131 @@
+@use "../abstracts" as *;
+
+.explore-hub {
+    padding-block: $size-8;
+
+    &__grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+        gap: $size-4;
+        align-items: stretch;
+        margin-block-start: $size-6;
+    }
+
+    &__card {
+        display: flex;
+        flex-direction: column;
+        color: inherit;
+        text-decoration: none;
+        // Geometric repeating pattern, scoped to the card backing.
+        --sz: 6px;
+        --r1: #{$color-neutral-700};
+        --r2: #{$color-neutral-900};
+
+        --v1: #{$color-neutral-300};
+        --v2: #{$color-neutral-600};
+        --ts: 50% / calc(var(--sz) * 33) calc(var(--sz) * 28);
+
+        background-color: var(--r1);
+        
+        background:
+            conic-gradient(from -296deg at 100% 59%, var(--v2) 0 133deg, #fff0 0 100%) var(--ts),
+            conic-gradient(from -296deg at 85% 67%, var(--r2) 0 134.5deg, #fff0 0 100%) var(--ts),
+            conic-gradient(from -296deg at 68% 77%, var(--v2) 0 137deg, #fff0 0 100%) var(--ts),
+            conic-gradient(from -296deg at 55% 85%, var(--r2) 0 150deg, #fff0 0 100%) var(--ts),
+            conic-gradient(from -248deg at 38% 77%, var(--v2) 0 97deg, #fff0 0 100%) var(--ts),
+            conic-gradient(from -248deg at 15% 66%, var(--r2) 0 95deg, #fff0 0 100%) var(--ts),
+            conic-gradient(from 207deg at 15% 66%, var(--v2) 0 84deg, var(--v1) 0 138deg, #fff0 0 100%) var(--ts),
+            conic-gradient(from 23deg at 85% 12%, var(--v2) 0 34deg, var(--v1) 0 136deg, #fff0 0 100%) var(--ts),
+            conic-gradient(from 22deg at 66% 27%, var(--r2) 0 34deg, var(--r1) 0 128deg, #fff0 0 100%) var(--ts),
+            conic-gradient(from 17deg at 50% 40%, var(--v2) 0 39deg, var(--v1) 0 133deg, #fff0 0 100%) var(--ts),
+            conic-gradient(from 31deg at 33% 26%, var(--r2) 0 94deg, var(--r1) 0 125deg, #fff0 0 100%) var(--ts),
+            conic-gradient(from -57deg at 19% 15%, var(--r2) 0 90deg, var(--v2) 0 181deg, var(--v1) 0 217deg, var(--r1) 0 360deg, #fff0 0 100%) var(--ts);
+        border: 1px solid $color-neutral-400;
+        border-radius: $border-radius-2;
+
+        &:hover,
+        &:focus-visible {
+            .explore-hub__card-main {
+                transform: translateY(-5px);
+            }
+
+            .explore-hub__card-action {
+                border-color: currentColor;
+            }
+        }
+
+        &:focus-visible {
+            outline: 2px solid currentColor;
+            outline-offset: 4px;
+            border-radius: $border-radius-2;
+        }
+    }
+
+    &__card-main {
+        position: relative;
+        z-index: 2;
+        
+        display: flex;
+        flex-direction: column;
+        gap: $size-3;
+        flex: 1;
+        
+        min-height: 144px;
+        padding: $size-6;
+        
+        margin: $size-3 $size-3 0;
+        
+        background: hsl(var(--neutral-900) / .9);
+        border: 1px solid transparent;
+        border-radius: $border-radius-2;
+        
+        transition: transform 180ms ease;
+
+        color: $color-secondary-300;
+    }
+
+    &__card-fold {
+        position: relative;
+        z-index: 1;
+
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: $size-3;
+        
+        min-height: 96px;
+        margin-block-start: -20px;
+        
+        padding: 36px $size-6 $size-4;
+        background: transparent;
+        border: 0;
+
+        > svg {
+            flex: 0 0 auto;
+        }
+    }
+
+    &__card-action {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: $size-2;
+        padding: $size-2 $size-3;
+        border: 1px solid $color-neutral-400;
+        border-radius: 999px;
+        background: white;
+        font-size: 14px;
+        font-weight: 600;
+        white-space: nowrap;
+
+        svg {
+            flex: 0 0 auto;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        &__card-main {
+            transition: none;
+        }
+    }
+}

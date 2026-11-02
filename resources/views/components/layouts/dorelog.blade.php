@@ -17,6 +17,8 @@
     <x-ui.site-header :user="$user" />
 
     {{ $slot }}
+
+    <x-ui.mobile-bottom-nav />
     
     @guest
         <section class="home" x-data="{ openSection: 'about' }">
