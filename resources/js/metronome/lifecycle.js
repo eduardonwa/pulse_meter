@@ -4,6 +4,9 @@ export function lifecycle() {
     return {
         // INITIALIZATION
         async init() {
+            if (this.activeTab === 'sessions') {
+                this.handleSessionModeChange('creative')
+            }
             if (this.usesLocalPersistence) {
                 this.loadFromLocalStorage()
 
