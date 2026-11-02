@@ -11,20 +11,22 @@
 <div {{ $attributes->class('routine-dialog__item') }}>
     @if (! $isRenaming)
         <div>
-            {{-- Drag handle --}}
-            <div class="move-btns" wire:sort:handle aria-label="Drag to reorder {{ $routineOption['name'] }}">
-                <x-heroicon-o-bars-3 />
+            {{-- Routine controls --}}
+            <div class="routine-controls">
+                @if ($routineOption['is_default'])
+                    <span class="badge badge--default-routine">
+                        <x-heroicon-o-star />
+                    </span>
+                @endif
+
+                <div class="move-btns" wire:sort:handle aria-label="Drag to reorder {{ $routineOption['name'] }}">
+                    <x-heroicon-o-bars-3 />
+                </div>
             </div>
 
             <section>
                 {{-- Routine information --}}
                 <div class="information">
-                    @if ($routineOption['is_default'])
-                        <span class="badge badge--default-routine">
-                            <x-heroicon-o-star />
-                        </span>
-                    @endif
-
                     <a href="{{ route('welcome', ['routine' => $routineOption['id']]) }}" wire:navigate
                         @if ((int) $routineOption['id'] === (int) $activeRoutineId)
                             aria-current="page"

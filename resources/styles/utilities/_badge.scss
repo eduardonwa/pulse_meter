@@ -33,6 +33,8 @@
     }
 
     &--default-routine {
+        padding: 6px;
+
         background: hsl(var(--accent-200) / .4);
         border-color: $color-accent-300;
         color: $color-accent-900;

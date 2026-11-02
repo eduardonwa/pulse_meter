@@ -147,6 +147,27 @@
 
     background-color: $color-neutral-000;
 
+    .routine-controls {
+      position: relative;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: $size-2;
+
+      .badge--default-routine {
+        position: absolute;
+        top: 0;
+      }
+
+      .move-btns {
+        flex: none;
+        width: 30px;
+        height: 44px;
+      }
+    }
+
     .information {
       display: flex;
       align-items: center;
@@ -238,11 +259,11 @@
 
 .routine-dialog__item .move-btns,
 .playlist-dialog__item .move-btns {
-  height: 55px;
+  height: 44px;
   align-self: center;
 
   flex: 0 0 30px;
-  
+    
   display: flex;
   align-items: center;
   justify-content: center;
