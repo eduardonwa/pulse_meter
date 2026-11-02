@@ -210,15 +210,30 @@
 }
 
 /* Handles del indice: los controles de ejercicios permanecen intactos. */
-.routine-dialog__item > div {
-  display: flex;
-  align-items: stretch;
-  gap: $size-3;
+.routine-dialog__item,
+.playlist-dialog__item {
+  > div {
+    display: flex;
+    align-items: stretch;
+    gap: $size-3;
+  }
+
+  > div > section {
+    flex: 1;
+    min-width: 0;
+  }
 }
 
-.routine-dialog__item > div > section {
-  flex: 1;
-  min-width: 0;
+.playlist-dialog__item {
+  .actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .information a {
+    display: flex;
+    flex-direction: column;
+    gap: $size-1;
+  }
 }
 
 .routine-dialog__item .move-btns,
