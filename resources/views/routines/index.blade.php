@@ -20,7 +20,6 @@
 
         <x-routines.drawer />
     </main>
-    <x-ui.mobile-bottom-nav />
 </x-layouts.dorelog>
 
 <script>
