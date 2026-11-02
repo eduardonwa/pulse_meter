@@ -49,5 +49,4 @@
             </a>
         @endforeach
     </section>
-    <x-ui.mobile-bottom-nav />
 </x-layouts.dorelog>
