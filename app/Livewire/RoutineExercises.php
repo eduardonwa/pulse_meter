@@ -7,6 +7,7 @@ use App\Services\ExerciseActionsService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
 
@@ -74,23 +75,44 @@ class RoutineExercises extends Component
             ->all();
     }
 
-    public function moveExercise(
-        int $exerciseId,
-        string $direction,
-    ): void {
+    public function sortExercise(int $exerciseId, int $position): void
+    {
         Gate::authorize('use-pro');
-
-        abort_unless(
-            in_array($direction, ['up', 'down'], true),
-            422
-        );
 
         $routine = Auth::user()
             ->practiceRoutines()
             ->whereKey($this->routineId)
             ->firstOrFail();
 
-        app(ExerciseActionsService::class)->move($routine, $exerciseId, $direction);
+        DB::transaction(function () use ($routine, $exerciseId, $position): void {
+            $exercises = $routine->steps()
+                ->lockForUpdate()
+                ->get();
+
+            $currentIndex = $exercises->search(
+                fn (PracticeRoutineStep $exercise) => (int) $exercise->id === $exerciseId
+            );
+
+            abort_if($currentIndex === false, 404);
+            abort_unless($position >= 0 && $position < $exercises->count(), 422);
+
+            if ($currentIndex === $position) {
+                return;
+            }
+
+            $moved = $exercises->splice($currentIndex, 1)->first();
+            $exercises->splice($position, 0, [$moved]);
+
+            // Positions are one-based, as used by duplicate() and delete().
+            foreach ($exercises as $index => $exercise) {
+                $newPosition = $index + 1;
+
+                if ((int) $exercise->position !== $newPosition) {
+                    $exercise->position = $newPosition;
+                    $exercise->save();
+                }
+            }
+        });
 
         $this->refreshExercises();
 
