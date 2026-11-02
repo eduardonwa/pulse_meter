@@ -38,6 +38,18 @@
             grid-template-columns: repeat(3, auto);
         }
 
+        .button {
+            padding: $size-1;
+            width: 100%;
+            padding-block: $size-2;
+            border-radius: $border-radius-2;
+
+            @include mq(medium) {
+                width: fit-content;
+                padding: $button-padding;
+            }
+        }
+
         .view {
             color: $color-primary-800;
             background-color: hsl(var(--primary-700) / .1);
@@ -61,7 +73,11 @@
         .share {
             color: $color-neutral-200;
             background-color: hsl(var(--neutral-900));
-            width: 200px !important;
+            padding-block: $size-3;
+
+            @include mq(medium) {
+                width: 200px !important;
+            }
 
             &:hover {
                 background-color: hsl(var(--neutral-800));
@@ -74,18 +90,6 @@
 
             &:hover {
                 background-color: hsl(var(--neutral-600) / .3);
-            }
-        }
-
-        .button {
-            padding: $size-1;
-            width: 100%;
-            padding-block: $size-2;
-            border-radius: $border-radius-2;
-
-            @include mq(medium) {
-                width: fit-content;
-                padding: $button-padding;
             }
         }
     }
