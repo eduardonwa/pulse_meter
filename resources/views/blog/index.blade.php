@@ -33,10 +33,7 @@
             </div>
         </div>
 
-        <a class="button posts__chat-link" href="{{ route('chat.index') }}">
-            <x-heroicon-o-chat-bubble-left-right aria-hidden="true" width="20" height="20" />
-            <span>{{ __('blog.chat_cta') }}</span>
-        </a>
+        {{-- Chat CTA hidden during navigation simplification. --}}
 
         @foreach ($posts as $post)
             <a class="posts__item" href="{{ route('blog.show', [
@@ -52,4 +49,5 @@
             </a>
         @endforeach
     </section>
+    <x-ui.mobile-bottom-nav />
 </x-layouts.dorelog>
