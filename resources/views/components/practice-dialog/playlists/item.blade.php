@@ -8,68 +8,64 @@
 
 <div {{ $attributes->class('playlist-dialog__item') }}>
     @if (! $isRenaming)
-        <div class="playlist-dialog__summary">
-            <div class="playlist-dialog__row">
-                <div class="move-btns" wire:sort:handle aria-label="Drag to reorder {{ $playlistOption['name'] }}">
-                    <x-heroicon-o-bars-3 />
-                </div>
-
-                <a wire:navigate data-type="outline" href="{{ route('welcome', ['playlist' => $playlistOption['id']]) }}"
-                    @class([
-                        'button row-name',
-                        'is-selected' => (int) $playlistOption['id'] === (int) $activePlaylistId,
-                    ])
-                    @if ((int) $playlistOption['id'] === (int) $activePlaylistId)
-                        aria-current="page"
-                    @endif
-                >
-                    <strong> {{ $playlistOption['name'] }} </strong>
-
-                    <small>
-                        {{ $playlistOption['items_count'] }}
-                        {{ $playlistOption['items_count'] === 1 ? 'routine' : 'routines' }}
-                        @if ($playlistOption['starter_routine'])
-                            · Starter: {{ $playlistOption['starter_routine']['name'] }}
-                        @endif
-                    </small>
-                </a>
+        <div>
+            <div class="move-btns" wire:sort:handle aria-label="Drag to reorder {{ $playlistOption['name'] }}">
+                <x-heroicon-o-bars-3 />
             </div>
 
-            <div class="playlist-dialog__actions">
-                <button
-                    class="badge badge--manage"
-                    type="button"
+            <section>
+                <div class="information">
+                    <a wire:navigate
+                        href="{{ route('welcome', ['playlist' => $playlistOption['id']]) }}"
+                        @if ((int) $playlistOption['id'] === (int) $activePlaylistId)
+                            aria-current="page"
+                        @endif
+                    >
+                        <h2 class="heading">{{ $playlistOption['name'] }}</h2>
+                        <small>
+                            {{ $playlistOption['items_count'] }}
+                            {{ $playlistOption['items_count'] === 1 ? 'routine' : 'routines' }}
+                            @if ($playlistOption['starter_routine'])
+                                · Starter: {{ $playlistOption['starter_routine']['name'] }}
+                            @endif
+                        </small>
+                    </a>
+                </div>
+
+                <div class="actions">
+                    <button class="button" data-type="icon-text" type="button"
+                        aria-label="Rename {{ $playlistOption['name'] }}"
+                        wire:click="startRenamingPlaylist({{ $playlistOption['id'] }})"
+                    >
+                        <x-heroicon-o-pencil-square />
+                        Rename
+                    </button>
+
+                    <button class="button" data-type="icon-text" type="button"
+                        aria-label="Delete {{ $playlistOption['name'] }}"
+                        wire:loading.attr="disabled"
+                        wire:target="deletePlaylist"
+                        @click.stop="openConfirmModal({
+                            title: 'Delete playlist?',
+                            message: 'This playlist will be deleted. Its routines will not be deleted.',
+                            confirmLabel: 'Delete',
+                            action: () => $wire.deletePlaylist({{ $playlistOption['id'] }})
+                        })"
+                    >
+                        <x-heroicon-o-trash />
+                        Delete
+                    </button>
+                </div>
+
+                <button class="button" data-type="primary" type="button"
                     wire:click="managePlaylist({{ $playlistOption['id'] }})"
                     wire:loading.attr="disabled"
                     wire:target="managePlaylist"
                     aria-label="Manage {{ $playlistOption['name'] }}"
                 >
-                    Manage
+                    Manage playlist
                 </button>
-                
-                <button class="button edit" type="button" data-type="icon" aria-label="Rename {{ $playlistOption['name'] }}"
-                    wire:click="startRenamingPlaylist({{ $playlistOption['id'] }})"
-                >
-                    <x-heroicon-o-pencil-square />
-                </button>
-
-                <button class="button delete" type="button" data-type="icon" aria-label="Delete {{ $playlistOption['name'] }}"
-                    wire:loading.attr="disabled"
-                    wire:target="deletePlaylist"
-                    @click.stop="
-                        openConfirmModal({
-                            title: 'Delete playlist?',
-                            message: 'This playlist will be deleted. Its routines will not be deleted.',
-                            confirmLabel: 'Delete',
-                            action: () => $wire.deletePlaylist(
-                                {{ $playlistOption['id'] }}
-                            ),
-                        })
-                    "
-                >
-                    <x-heroicon-o-trash />
-                </button>
-            </div>
+            </section>
         </div>
     @else
         <x-practice-dialog.playlists.rename-form
