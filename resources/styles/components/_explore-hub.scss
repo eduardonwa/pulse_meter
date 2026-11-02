@@ -7,26 +7,89 @@
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
         gap: $size-4;
-        
+        align-items: stretch;
         margin-block-start: $size-6;
     }
 
     &__card {
-        display: grid;
-        align-content: start;
-        justify-items: start;
+        display: flex;
+        flex-direction: column;
+        color: inherit;
+        text-decoration: none;
+
+        &:hover,
+        &:focus-visible {
+            .explore-hub__card-main {
+                transform: translateY(-5px);
+            }
+
+            .explore-hub__card-action {
+                border-color: currentColor;
+            }
+        }
+
+        &:focus-visible {
+            outline: 2px solid currentColor;
+            outline-offset: 4px;
+            border-radius: $border-radius-2;
+        }
+    }
+
+    &__card-main {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        flex-direction: column;
         gap: $size-3;
-        
+        flex: 1;
+        min-height: 220px;
         padding: $size-6;
-        
+        background: white;
         border: 1px solid $color-neutral-400;
         border-radius: $border-radius-2;
-        
-        text-decoration: none;
-        color: inherit;
+        transition: transform 180ms ease;
+    }
 
-        &:hover, &:focus-visible {
-            border-color: $color-primary-500;
+    &__card-fold {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: $size-3;
+        min-height: 96px;
+        margin-block-start: -20px;
+        padding: 36px $size-5 $size-4;
+        background: $color-neutral-200;
+        border: 1px solid $color-neutral-400;
+        border-radius: $border-radius-2;
+
+        > svg {
+            flex: 0 0 auto;
+        }
+    }
+
+    &__card-action {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: $size-2;
+        padding: $size-2 $size-3;
+        border: 1px solid $color-neutral-400;
+        border-radius: 999px;
+        background: white;
+        font-size: 14px;
+        font-weight: 600;
+        white-space: nowrap;
+
+        svg {
+            flex: 0 0 auto;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        &__card-main {
+            transition: none;
         }
     }
 }
