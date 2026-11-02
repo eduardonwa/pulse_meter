@@ -125,6 +125,7 @@
         </section>
         <x-windows.confirm-modal />
     </main>
+    
     <script>
         async function copySharedRoutineLink(url) {
             if (navigator.clipboard?.writeText) {
