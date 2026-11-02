@@ -49,5 +49,4 @@
             {!! $contentHtml !!}
         </div>
     </article>
-    <x-ui.mobile-bottom-nav />
 </x-layouts.dorelog>
