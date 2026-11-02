@@ -36,6 +36,12 @@
             padding-block-end: calc(5rem + env(safe-area-inset-bottom, 0px));
 
             .tabs {
+                display: none;
+            }
+
+            /* Original panel tabs are retained for desktop; mobile uses the shared navigation. */
+            /*
+            .tabs {
                 position: fixed;
                 inset-inline: 0;
                 bottom: 0;
