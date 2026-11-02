@@ -1,5 +1,96 @@
 @use "../abstracts" as *;
 
-.shared-routines {
+.shared-routine {
     margin-block-end: $size-4;
+
+    border: 1px solid hsl(var(--neutral-900) / .2);
+    border-radius: $border-radius-2;
+    background-color: hsl(var(--neutral-300) / .3);
+    padding: $size-3;
+
+    &__name {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: $size-2;
+
+        font-weight: 600;
+        font-size: $font-size-500;
+
+        @include mq(medium) {
+            font-size: $font-size-400;
+        }
+    }
+
+    &__exercises {
+        @include mq(medium) {
+            font-size: $font-size-300;
+        }
+    }
+
+    &__actions {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+        gap: $size-2;
+
+        @include mq(medium) {
+            justify-content: start;
+            grid-template-columns: repeat(3, auto);
+        }
+
+        .button {
+            padding: $size-1;
+            width: 100%;
+            padding-block: $size-2;
+            border-radius: $border-radius-2;
+
+            @include mq(medium) {
+                width: fit-content;
+                padding: $button-padding;
+            }
+        }
+
+        .view {
+            color: $color-primary-800;
+            background-color: hsl(var(--primary-700) / .1);
+            border: 1px solid $color-primary-700;
+            
+            &:hover {
+                background-color: hsl(var(--primary-600) / .3);
+            }
+        }
+
+        .copy {
+            color: $color-extra-800;
+            background-color: hsl(var(--extra-700) / .1);
+            border: 1px solid $color-extra-700;
+            
+            &:hover {
+                background-color: hsl(var(--extra-600) / .3);
+            }
+        }
+
+        .share {
+            color: $color-neutral-200;
+            background-color: hsl(var(--neutral-900));
+            padding-block: $size-3;
+
+            @include mq(medium) {
+                width: 200px !important;
+            }
+
+            &:hover {
+                background-color: hsl(var(--neutral-800));
+            }
+        }
+
+        .unshare {
+            background-color: hsl(var(--neutral-700) / .1);
+            border: 1px solid $color-neutral-700;
+
+            &:hover {
+                background-color: hsl(var(--neutral-600) / .3);
+            }
+        }
+    }
 }
