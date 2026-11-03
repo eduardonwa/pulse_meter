@@ -136,6 +136,10 @@
 
   &__content {
     padding: $size-2;
+
+    @include mq(medium) {
+      padding: $size-4;
+    }
   }
 
   &__item {
@@ -144,6 +148,7 @@
     border: 1px solid hsl(var(--neutral-950) / 0.2);
     border-radius: $border-radius-3;
     padding: $size-3;
+    padding-block: $size-4;
 
     background-color: $color-neutral-000;
 
@@ -215,7 +220,9 @@
         width: 100%;
         min-width: 0;
         padding: $size-2;
+        gap: $size-1;
         border: 1px solid hsl(var(--neutral-950) / 0.2);
+        font-size: 13px;
 
         @include mq(medium) {
           padding: $size-1;
@@ -252,72 +259,12 @@
     .button[data-type="primary"][data-variant="icon"] {
       width: 100%;
       padding: $size-2;
+      font-size: 13px;
     }
   }
 
   &__rename {
     @include dialog-inline-rename;
-  }
-}
-
-/* Handles del indice: los controles de ejercicios permanecen intactos. */
-.routine-dialog__item,
-.playlist-dialog__item {
-  > div {
-    display: flex;
-    align-items: stretch;
-    gap: $size-3;
-  }
-
-  > div > section {
-    flex: 1;
-    min-width: 0;
-  }
-}
-
-.playlist-dialog__item {
-  .actions {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .information a {
-    display: flex;
-    flex-direction: column;
-    gap: $size-1;
-  }
-}
-
-.routine-dialog__item .move-btns,
-.playlist-dialog__item .move-btns {
-  height: 40px;
-  align-self: center;
-
-  flex: 0 0 30px;
-    
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  
-  padding: $size-2;
-  
-  border: 1px solid hsl(var(--neutral-950) / 0.2);
-  border-radius: $border-radius-1;
-  color: $color-neutral-600;
-
-  background-color: hsl(var(--neutral-300));
-  
-  cursor: grab;
-  touch-action: none;
-  user-select: none;
-
-  &:active {
-    cursor: grabbing;
-    background-color: hsl(var(--neutral-950));
-  }
-
-  svg {
-    width: 20px;
-    height: 20px;
   }
 }
 
@@ -356,7 +303,7 @@
     justify-content: flex-end;
     gap: $size-3;
 
-    border-block-end: 1px solid hsl(var(--neutral-950) / 0.3);
+    border-block-end: 1px solid hsl(var(--neutral-950) / .1);
     
     // CLOSE
     .button[data-type="icon"] {
@@ -365,13 +312,6 @@
       color: $color-neutral-950;
       display: flex;
       justify-content: flex-end;
-    }
-
-    // NEW ACTION
-    .button[data-type="secondary"] {
-      @include mq(medium) {
-        width: 200px;
-      }
     }
 
     .heading {
@@ -416,6 +356,36 @@
   height: fit-content;
 }
 
+// ── ROUTINE ──
+.routine-dialog {
+  /* ITEM */
+  @include dialog-entity-index;
+
+  &__heading {
+    padding-block-start: $size-4;
+
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+
+    .button {
+      width: 100%;
+      max-width: none;
+    }
+  }
+}
+
+// ── PLAYLIST ──
+.playlist-dialog {
+  /* ITEM */
+  @include dialog-entity-index;
+
+  &__empty {
+    @include dialog-empty;
+  }
+}
+
+// ── PATTERN ──
 .pattern-dialog {
   &__heading {
     border-block-end: 1px solid transparent;
@@ -540,6 +510,7 @@
   }
 }
 
+// ── PRACTICE ──
 .practice-dialog {
   .close-btn {
     margin-block-start: $size-3;
@@ -583,6 +554,7 @@
   }
 }
 
+// ── RANDOMIZER SESSIONS ──
 .randomizer-sessions-dialog {
   .pattern-dialog__list {
     display: grid;
@@ -613,27 +585,7 @@
   }
 }
 
-/* INDEX */
-.routine-dialog {
-  /* ITEM */
-  @include dialog-entity-index;
-
-
-}
-
-/* Encabezado de rutinas ahora vive en PracticeDialog, antes de las pestañas. */
-.practice-dialog .routine-dialog__heading {
-  small {
-    color: hsl(var(--neutral-950) / 0.5);
-  }
-
-  .exercise-count {
-    display: block;
-    margin-block-start: $size-4;
-  }
-}
-
-/* ACCION MANAGE */
+// ── MANAGE EXERCISES ──
 .manage-exercises-dialog {
   @include dialog-inner-screen;
 
@@ -709,17 +661,7 @@
   }
 }
 
-/* INDEX */
-.playlist-dialog {
-  /* ITEM */
-  @include dialog-entity-index;
-
-  &__empty {
-    @include dialog-empty;
-  }
-}
-
-/* ACCION MANAGE */
+// ── MANAGE PLAYLIST ──
 .manage-playlist-dialog {
   @include dialog-inner-screen;
 
@@ -840,7 +782,7 @@
   }
 }
 
-/* LOCAL EXERCISES IMPORT  */
+// ── LOCAL EXERCISES ──
 .local-exercises-dialog {
   height: min(36dvh, 28rem);
 
@@ -896,5 +838,79 @@
     align-items: center;
     justify-content: center;
     gap: $size-4;
+  }
+}
+
+// ── ESTILOS COMPARTIDOS Y CONTEXTUALES ──
+/* Handles del indice: los controles de ejercicios permanecen intactos. */
+.routine-dialog__item,
+.playlist-dialog__item {
+  > div {
+    display: flex;
+    align-items: stretch;
+    gap: $size-3;
+  }
+
+  > div > section {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+.playlist-dialog__item {
+  .actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .information a {
+    display: flex;
+    flex-direction: column;
+    gap: $size-1;
+  }
+}
+
+.routine-dialog__item .move-btns,
+.playlist-dialog__item .move-btns {
+  height: 40px;
+  align-self: center;
+
+  flex: 0 0 30px;
+    
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  padding: $size-2;
+  
+  border: 1px solid hsl(var(--neutral-950) / 0.2);
+  border-radius: $border-radius-1;
+  color: $color-neutral-600;
+
+  background-color: hsl(var(--neutral-300) / .4);
+  
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+
+  &:active {
+    cursor: grabbing;
+    background-color: hsl(var(--neutral-950));
+  }
+
+  svg {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+/* Encabezado de rutinas ahora vive en PracticeDialog, antes de las pestañas. */
+.practice-dialog .routine-dialog__heading {
+  small {
+    color: hsl(var(--neutral-950) / 0.5);
+  }
+
+  .exercise-count {
+    display: block;
+    margin-block-start: $size-4;
   }
 }

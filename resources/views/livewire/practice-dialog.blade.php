@@ -66,7 +66,7 @@
                     <x-practice-dialog.playlists.heading />
                 @endif
 
-                @include('livewire.practice-dialog.sections')
+                {{-- @include('livewire.practice-dialog.sections') --}}
             @endif
 
             @switch($screen)
