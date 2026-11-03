@@ -146,7 +146,8 @@
     margin-block-end: $size-4;
 
     border: 1px solid hsl(var(--neutral-950) / 0.2);
-    border-radius: $border-radius-3;
+    border-radius: $border-radius-2;
+
     padding: $size-3;
     padding-block: $size-4;
 
@@ -260,6 +261,17 @@
       width: 100%;
       padding: $size-2;
       font-size: 13px;
+
+      background-color: hsl(var(--primary-700) / .1);
+      border: 1px solid hsl(var(--primary-700));
+      color: hsl(var(--primary-700));
+
+      border-radius: $border-radius-4;
+
+      &:hover {
+        background-color: hsl(var(--primary-700));
+        color: hsl(var(--primary-50));
+      }
     }
   }
 
@@ -600,18 +612,26 @@
       .drag-handle {
         flex: 0 0 30px;
         align-self: center;
+
         display: flex;
         align-items: center;
         justify-content: center;
-        min-height: 44px;
+
+        min-height: 40px;
+
         border: 1px solid hsl(var(--neutral-950) / 0.2);
         border-radius: $border-radius-1;
         color: $color-neutral-600;
+
         cursor: grab;
+
         touch-action: none;
         user-select: none;
 
-        &:active { cursor: grabbing; }
+        &:active {
+          cursor: grabbing;
+          background-color: $color-neutral-200;
+        }
 
         svg { width: 20px; height: 20px; }
       }
@@ -886,15 +906,13 @@
   border-radius: $border-radius-1;
   color: $color-neutral-600;
 
-  background-color: hsl(var(--neutral-300) / .4);
-  
   cursor: grab;
   touch-action: none;
   user-select: none;
 
   &:active {
     cursor: grabbing;
-    background-color: hsl(var(--neutral-950));
+    background-color: hsl(var(--neutral-200));
   }
 
   svg {
