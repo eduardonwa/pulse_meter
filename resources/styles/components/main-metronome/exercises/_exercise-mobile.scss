@@ -128,7 +128,27 @@
         }
     }
 
-    // Three visible values, with the selected BPM in the center.
+    &__bpm-wheel-container {
+        position: relative;
+        width: 84px;
+        height: 96px;
+    }
+
+    // Stationary BPM readout; only the surrounding options scroll.
+    &__bpm-centered-value {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        pointer-events: none;
+        color: $color-primary-950;
+        font-size: $font-size-800;
+        font-weight: 600;
+        line-height: 32px;
+        font-variant-numeric: tabular-nums;
+    }
+
+    // Three visible values; hide the scrolling number in the center band.
     // Scoped to the mobile exercise card; desktop pickers are unchanged.
     &__bpm-wheel.picker-column {
         width: 84px;
@@ -145,19 +165,27 @@
         scroll-snap-type: y mandatory;
         font-variant-numeric: tabular-nums;
 
+        // A clear center window prevents the scrolling value from
+        // appearing to slide up/down behind the stationary readout.
+        -webkit-mask-image: linear-gradient(
+            to bottom,
+            black 0%, black 31%,
+            transparent 34%, transparent 66%,
+            black 69%, black 100%
+        );
+        mask-image: linear-gradient(
+            to bottom,
+            black 0%, black 31%,
+            transparent 34%, transparent 66%,
+            black 69%, black 100%
+        );
+
         .picker-option {
             height: 32px;
             line-height: 32px;
             color: $color-neutral-600;
             opacity: .55;
             scroll-snap-align: center;
-
-            &.is-selected {
-                font-size: $font-size-800;
-                font-weight: 600;
-                color: $color-primary-950;
-                opacity: 1;
-            }
         }
 
         &:focus-visible {
