@@ -33,6 +33,7 @@
                     format="(value) => value"
                     after-change="updateExerciseBpm(index, value)"
                     hint="Scroll to adjust exercise BPM"
+                    :live-preview="true"
                 />
             </div>
         </div>
