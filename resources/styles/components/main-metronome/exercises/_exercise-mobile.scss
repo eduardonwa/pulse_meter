@@ -122,6 +122,7 @@
         &--bpm {
             grid-column: 2;
             grid-row: 1 / 3;
+            flex-direction: row;
             align-items: center;
             justify-content: center;
             gap: $size-1;
@@ -130,8 +131,14 @@
 
     &__bpm-wheel-container {
         position: relative;
-        width: 84px;
-        height: 96px;
+        width: 104px;
+        height: 160px;
+        flex: 0 0 104px;
+    }
+
+    &__bpm-unit {
+        flex: 0 0 auto;
+        color: $color-neutral-600;
     }
 
     // Stationary BPM readout; only the surrounding options scroll.
@@ -148,14 +155,14 @@
         font-variant-numeric: tabular-nums;
     }
 
-    // Three visible values; hide the scrolling number in the center band.
+    // Five visible positions provide more room for touch gestures.
     // Scoped to the mobile exercise card; desktop pickers are unchanged.
     &__bpm-wheel.picker-column {
-        width: 84px;
-        min-width: 84px;
-        max-width: 84px;
-        height: 96px;
-        padding-block: 32px;
+        width: 104px;
+        min-width: 104px;
+        max-width: 104px;
+        height: 160px;
+        padding-block: 64px;
         box-sizing: border-box;
 
         background: transparent;
@@ -169,15 +176,15 @@
         // appearing to slide up/down behind the stationary readout.
         -webkit-mask-image: linear-gradient(
             to bottom,
-            black 0%, black 31%,
-            transparent 34%, transparent 66%,
-            black 69%, black 100%
+            black 0%, black 39%,
+            transparent 40%, transparent 60%,
+            black 61%, black 100%
         );
         mask-image: linear-gradient(
             to bottom,
-            black 0%, black 31%,
-            transparent 34%, transparent 66%,
-            black 69%, black 100%
+            black 0%, black 39%,
+            transparent 40%, transparent 60%,
+            black 61%, black 100%
         );
 
         .picker-option {
