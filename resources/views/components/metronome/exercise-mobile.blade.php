@@ -25,7 +25,6 @@
             </div>
 
             <div class="mobile-exercise__metric mobile-exercise__metric--bpm">
-                <small>BPM</small>
                 <div
                     class="mobile-exercise__bpm-wheel-container"
                     x-data="{ displayBpm: Number(step.bpm) }"
@@ -47,6 +46,7 @@
                         x-text="displayBpm"
                     ></strong>
                 </div>
+                <small class="mobile-exercise__bpm-unit">BPM</small>
             </div>
         </div>
 
