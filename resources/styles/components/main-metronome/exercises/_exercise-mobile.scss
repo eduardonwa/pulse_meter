@@ -97,28 +97,30 @@
 
         border-block-end: 1px solid;
 
-        .button[data-type="icon"] {
-            width: 48px;
-            height: 48px;
+        gap: $size-2;
 
-            padding: $size-1;
-            border-radius: 50%;
-
-            background-color: hsl(var(--primary-200) / .5);
-            border: 1px solid hsl(var(--primary-800) / .2);
-            color: $color-primary-900;
+        label {
+            font-size: $font-size-300;
         }
 
-        &-controls {
-            display: grid;
-            grid-template-columns: 89px 80px 89px;
-            align-items: center;
-            justify-items: center;
-            gap: $size-2;
+        .tempo {
+            font-size: $font-size-800;
+            line-height: 1.2;
+            text-align: center;
+            font-variant-numeric: tabular-nums;
+        }
 
-            .tempo {
-                font-size: $font-size-800;
-                text-align: center;
+        &-range {
+            width: 100%;
+            min-height: 44px;
+            margin-block: $size-2 0;
+            accent-color: $color-primary-500;
+            cursor: pointer;
+            touch-action: pan-y;
+
+            &:focus-visible {
+                outline: 2px solid $color-primary-500;
+                outline-offset: 2px;
             }
         }
     }
