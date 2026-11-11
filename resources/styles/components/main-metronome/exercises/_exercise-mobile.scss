@@ -103,9 +103,7 @@
         align-items: flex-start;
         justify-content: center;
         gap: $size-1;
-        padding: $size-3;
-        border-radius: $border-radius-2;
-        background-color: hsl(var(--neutral-500) / .1);
+        padding: $size-2;
 
         strong {
             color: $color-primary-950;
@@ -124,13 +122,58 @@
         &--bpm {
             grid-column: 2;
             grid-row: 1 / 3;
-            align-items: center;
-            text-align: center;
 
-            .tempo {
-                font-size: $font-size-800;
-                line-height: 1.2;
-                font-variant-numeric: tabular-nums;
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+            gap: $size-3;
+        }
+    }
+
+    &__bpm-value {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: $size-1;
+
+        .tempo {
+            font-size: $font-size-800;
+            line-height: 1.2;
+            font-variant-numeric: tabular-nums;
+        }
+    }
+
+    &__bpm-slider {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: space-between;
+        gap: $size-1;
+        height: 112px;
+        flex: 0 0 36px;
+
+        svg {
+            width: 16px;
+            height: 16px;
+            flex: none;
+            pointer-events: none;
+            color: $color-primary-900;
+        }
+
+        input[type="range"] {
+            appearance: auto;
+            writing-mode: vertical-lr;
+            direction: rtl;
+            width: 28px;
+            height: 72px;
+            margin: 0;
+            accent-color: $color-primary-500;
+            touch-action: none;
+            cursor: pointer;
+
+            &:focus-visible {
+                outline: 2px solid $color-primary-500;
+                outline-offset: 2px;
             }
         }
     }
