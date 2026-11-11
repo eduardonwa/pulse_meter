@@ -146,8 +146,9 @@ export function numberPicker({
             const index = Math.round(scroller.scrollTop / optionHeight)
             const value = this.options[index]
 
-            if (value !== undefined) {
+            if (value !== undefined && this.previewValue !== Number(value)) {
                 this.previewValue = Number(value)
+                this.$dispatch('picker:preview', { value: this.previewValue })
             }
         },
 
