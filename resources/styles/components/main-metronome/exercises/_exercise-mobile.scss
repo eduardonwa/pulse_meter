@@ -87,58 +87,50 @@
         border: 1px solid hsl(var(--neutral-800) / 0.5);
     }
 
-    &__tempo {
-        padding-block: $size-4;
-
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        align-items: center;
-
-        border-block-end: 1px solid;
-
+    &__metrics {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr);
+        grid-template-rows: repeat(2, minmax(0, auto));
         gap: $size-2;
-
-        label {
-            font-size: $font-size-300;
-        }
-
-        .tempo {
-            font-size: $font-size-800;
-            line-height: 1.2;
-            text-align: center;
-            font-variant-numeric: tabular-nums;
-        }
-
-        &-range {
-            width: 100%;
-            min-height: 44px;
-            margin-block: $size-2 0;
-            accent-color: $color-primary-500;
-            cursor: pointer;
-            touch-action: pan-y;
-
-            &:focus-visible {
-                outline: 2px solid $color-primary-500;
-                outline-offset: 2px;
-            }
-        }
+        padding-block: $size-4;
+        border-block-end: 1px solid;
     }
 
-    &__stats {
-        padding-block: $size-4;
-
+    &__metric {
+        min-width: 0;
         display: flex;
-        justify-content: space-around;
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: center;
+        gap: $size-1;
+        padding: $size-3;
+        border-radius: $border-radius-2;
+        background-color: hsl(var(--neutral-500) / .1);
 
-        border-block-end: 1px solid;
-
-        div {
-            display: flex;
-            flex-direction: column;
-
-            strong {
+        strong {
             color: $color-primary-950;
+        }
+
+        &--duration {
+            grid-column: 1;
+            grid-row: 1;
+        }
+
+        &--meter {
+            grid-column: 1;
+            grid-row: 2;
+        }
+
+        &--bpm {
+            grid-column: 2;
+            grid-row: 1 / 3;
+            align-items: center;
+            text-align: center;
+
+            .tempo {
+                font-size: $font-size-800;
+                line-height: 1.2;
+                font-variant-numeric: tabular-nums;
             }
         }
     }
