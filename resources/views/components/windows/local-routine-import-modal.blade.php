@@ -20,19 +20,9 @@
     </header>
 
     <div class="dialog-shell__content local-exercises-dialog__content">
-        <p x-show="pendingLocalRoutineImport?.type === 'first_import'">
-            We found exercises you created before signing in.
-            Would you like to bring them into your account or start fresh?
-        </p>
-
-        <p x-show="pendingLocalRoutineImport?.type === 'update'">
-            Your Free exercises have changed.
-            Would you like to update your imported routine
-            with these changes?
-        </p>
-
         <p>
-            Other routines and playlists won't change.
+            You have Free exercises that aren't saved to your account. Would you like to import them?
+            <br> This may update your previously imported routine.
         </p>
 
         <label class="local-exercises-dialog__preference">
@@ -67,24 +57,13 @@
             </a>
         </div>
 
-        <p
-            role="alert"
-            x-show="localRoutineImportError"
-            x-text="localRoutineImportError"
-            x-cloak
-        ></p>
+        <p role="alert" x-show="localRoutineImportError" x-text="localRoutineImportError" x-cloak></p>
     </div>
 
     <footer class="local-exercises-dialog__actions">
-        <button
-            class="button"
-            data-type="primary"
-            type="button"
-            :disabled="isLocalRoutineImportBusy"
+        <button class="button" data-type="primary" type="button" :disabled="isLocalRoutineImportBusy"
             @click="
-                resolveLocalRoutineImport(
-                    'use_free'
-                ).then(result => {
+                resolveLocalRoutineImport('use_free').then(result => {
                     if (result === 'imported') {
                         window.location.reload()
                     }
@@ -92,13 +71,9 @@
             "
         >
             <span
-                x-text="
-                    isLocalRoutineImportBusy
-                        ? 'Importing...'
-                        : pendingLocalRoutineImport?.type === 'first_import'
-                            ? 'Keep my exercises'
-                            : 'Update from Free'
-                "
+                x-text="isLocalRoutineImportBusy
+                    ? 'Importing...'
+                    : 'Save exercises'"
             ></span>
         </button>
 
@@ -106,7 +81,7 @@
             @click="resolveLocalRoutineImport('keep_server')"
         >
             <span x-show="!isLocalRoutineImportBusy">
-                Start fresh
+                Ignore
             </span>
 
             <span x-show="isLocalRoutineImportBusy" x-cloak>

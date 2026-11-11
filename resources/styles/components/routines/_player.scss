@@ -17,6 +17,7 @@
     }
 
     &__controls {
+        display: none;
         border: 1px solid hsl(var(--neutral-950) / 0.2);
         border-radius: $border-radius-2;
         padding: $size-4;

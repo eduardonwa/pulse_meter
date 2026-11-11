@@ -7,14 +7,16 @@
 <div class="exercises" x-show="activeTab === 'exercises'" x-cloak>
     <article class="exercises__content">
         <header class="exercises__header">
+            <div class="exercises__routine-context">
+                <strong
+                    class="exercises__routine-name"
+                    x-text="activeRoutine?.name || 'Free Exercises'"
+                ></strong>
+            </div>
             @if ($usesServerPersistence && $routines->isNotEmpty())
                 <button class="button" data-type="icon-text" type="button" @click="$dispatch('open-practice-dialog')">
-                    <span x-text="practiceMode === 'playlist'
-                        ? activePlaylist?.name ?? ''
-                        : activeRoutine?.name ?? ''
-                    "></span>
-
-                    <x-heroicon-o-arrow-top-right-on-square />
+                    <span>Routines</span>
+                    <x-heroicon-o-chevron-right />
                 </button>
             @endif
         </header>

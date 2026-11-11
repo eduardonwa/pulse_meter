@@ -804,24 +804,25 @@
 
 // ── LOCAL EXERCISES ──
 .local-exercises-dialog {
-  height: min(36dvh, 28rem);
-
-  @include mq(medium) {
-    height: min(28dvh, 15rem);
-  }
-
+  height: fit-content;
+  min-height: 0;
+  max-height: calc(100dvh - 2rem);
+  
   &__heading {
     text-align: center;
     font-weight: 500;
-    border-block-end: 1px solid transparent;
+    border-block-end: 0;
     padding-block: $size-4 $size-2;
   }
 
   &__content {
+    flex: 0 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+
     font-size: 15px;
     text-align: center;
-    padding-block: 0;
-    padding-inline: $size-10;
+    padding: $size-2 $size-6;
 
     .exercises-found {
       font-weight: 600;
@@ -833,7 +834,7 @@
       align-items: center;
       justify-content: center;
       gap: $size-2;
-
+      margin-block-start: $size-4;
       cursor: pointer;
 
       input {
@@ -843,21 +844,20 @@
     }
 
     p + p {
-      margin-block: $size-4;
-
-      @include mq(medium) {
-        margin-block: $size-2;
-      }
+      margin-block-start: $size-3;
     }
   }
 
   &__actions {
-    padding-block: $size-4;
+    flex: 0 0 auto;
 
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: $size-4;
+    flex-wrap: wrap;
+    gap: $size-3;
+    
+    padding: $size-4;
   }
 }
 
