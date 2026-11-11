@@ -16,6 +16,7 @@ export function numberPicker({
         // PICKER STATE
         isSyncingScroll: false,
         hasSyncedInitialValue: false,
+        previewValue: null,
 
         // INITIALIZATION
         init() {
@@ -128,6 +129,28 @@ export function numberPicker({
             })
         },
 
+        // Preview the centered option immediately, without persisting on every scroll frame.
+        // Only enabled for the compact mobile exercise wheel.
+        previewFromScroll() {
+            if (
+                !this.hasSyncedInitialValue ||
+                this.isSyncingScroll ||
+                this.disabled()
+            ) {
+                return
+            }
+
+            const scroller = this.getScroller()
+            const optionHeight =
+                scroller.querySelector('.picker-option')?.offsetHeight ?? 44
+            const index = Math.round(scroller.scrollTop / optionHeight)
+            const value = this.options[index]
+
+            if (value !== undefined) {
+                this.previewValue = Number(value)
+            }
+        },
+
         syncFromScroll() {
             if (
                 !this.hasSyncedInitialValue ||
@@ -152,6 +175,9 @@ export function numberPicker({
             if (value === undefined) {
                 return
             }
+
+            // Commit only after scrolling settles; the preview handles styling.
+            this.previewValue = null
 
             if (Number(this.getValue()) === Number(value)) {
                 return
@@ -179,7 +205,7 @@ export function numberPicker({
         },
 
         isSelected(option) {
-            return Number(option) === Number(this.getValue())
+            return Number(option) === Number(this.previewValue ?? this.getValue())
         },
     }
 }
