@@ -1,6 +1,6 @@
 <div class="mobile-exercise" :class="{ 'mobile-exercise--open': mobileExpandedIndex === index }">
     <button type="button" class="mobile-exercise__summary" :aria-expanded="(mobileExpandedIndex === index).toString()"
-        @click="mobileExpandedIndex = mobileExpandedIndex === index ? null : index">
+        @click="mobileExpandedIndex = mobileExpandedIndex === index ? null : index; $nextTick(() => $dispatch('picker:sync'))">
                 
         <span class="mobile-exercise__heading">
             <strong class="name" x-text="step.name"></strong>
@@ -13,35 +13,40 @@
     
     {{-- CARD CONTENT --}}
     <div class="mobile-exercise__expanded" x-show="mobileExpandedIndex === index" x-cloak>
-        <div class="mobile-exercise__tempo">
-            <small>BPM</small>
-            
-            <div class="mobile-exercise__tempo-controls">
-                <button class="button" data-type="icon" type="button" aria-label="Decrease BPM"
-                    @click.stop="updateExerciseBpm(index, Math.max(30, Number(step.bpm) - 1))"
-                >
-                    <x-heroicon-o-minus />
-                </button>
-    
-                <strong class="tempo" x-text="step.bpm"></strong>
-    
-                <button class="button" data-type="icon" type="button" aria-label="Increase BPM"
-                    @click.stop="updateExerciseBpm(index, Math.min(400, Number(step.bpm) + 1))"
-                >
-                    <x-heroicon-o-plus />
-                </button>
-            </div>
-        </div>
-
-        <div class="mobile-exercise__stats">
-            <div>
+        <div class="mobile-exercise__metrics">
+            <div class="mobile-exercise__metric mobile-exercise__metric--duration">
                 <small>DURATION</small>
                 <strong x-text="getStepTimeLabel(step, index)"></strong>
             </div>
-            
-            <div>
+
+            <div class="mobile-exercise__metric mobile-exercise__metric--meter">
                 <small>METER</small>
                 <strong x-text="`${step.time_signature_numerator ?? 4}/${step.time_signature_denominator ?? 4}`"></strong>
+            </div>
+
+            <div class="mobile-exercise__metric mobile-exercise__metric--bpm">
+                <div
+                    class="mobile-exercise__bpm-wheel-container"
+                    x-data="{ displayBpm: Number(step.bpm) }"
+                    x-effect="displayBpm = Number(step.bpm)"
+                    @picker:preview.stop="displayBpm = Number($event.detail.value)"
+                >
+                    <x-inputs.number-picker
+                        class="mobile-exercise__bpm-wheel"
+                        options="bpmOptions"
+                        model="step.bpm"
+                        format="(value) => value"
+                        after-change="updateExerciseBpm(index, value)"
+                        hint="Scroll to adjust exercise BPM"
+                        :live-preview="true"
+                    />
+                    <strong
+                        class="mobile-exercise__bpm-centered-value"
+                        aria-hidden="true"
+                        x-text="displayBpm"
+                    ></strong>
+                </div>
+                <small class="mobile-exercise__bpm-unit">BPM</small>
             </div>
         </div>
 

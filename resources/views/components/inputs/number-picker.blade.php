@@ -9,6 +9,7 @@
     'decreaseLabel' => 'Decrease value',
     'increaseLabel' => 'Increase value',
     'hint' => null,
+    'livePreview' => false,
 ])
 
 @if ($controls)
@@ -103,6 +104,9 @@
         x-ref="scroller"
         @picker:sync.window="$nextTick(() => syncExternalValue())"
         @scroll.debounce.150ms="syncFromScroll()"
+        @if ($livePreview)
+            @scroll.throttle.16ms="previewFromScroll()"
+        @endif
     >
         <template x-for="option in options" :key="option">
             <div
