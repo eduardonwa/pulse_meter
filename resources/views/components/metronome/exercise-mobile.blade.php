@@ -26,15 +26,27 @@
 
             <div class="mobile-exercise__metric mobile-exercise__metric--bpm">
                 <small>BPM</small>
-                <x-inputs.number-picker
-                    class="mobile-exercise__bpm-wheel"
-                    options="bpmOptions"
-                    model="step.bpm"
-                    format="(value) => value"
-                    after-change="updateExerciseBpm(index, value)"
-                    hint="Scroll to adjust exercise BPM"
-                    :live-preview="true"
-                />
+                <div
+                    class="mobile-exercise__bpm-wheel-container"
+                    x-data="{ displayBpm: Number(step.bpm) }"
+                    x-effect="displayBpm = Number(step.bpm)"
+                    @picker:preview.stop="displayBpm = Number($event.detail.value)"
+                >
+                    <x-inputs.number-picker
+                        class="mobile-exercise__bpm-wheel"
+                        options="bpmOptions"
+                        model="step.bpm"
+                        format="(value) => value"
+                        after-change="updateExerciseBpm(index, value)"
+                        hint="Scroll to adjust exercise BPM"
+                        :live-preview="true"
+                    />
+                    <strong
+                        class="mobile-exercise__bpm-centered-value"
+                        aria-hidden="true"
+                        x-text="displayBpm"
+                    ></strong>
+                </div>
             </div>
         </div>
 
