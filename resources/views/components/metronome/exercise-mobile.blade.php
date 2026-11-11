@@ -13,36 +13,20 @@
     
     {{-- CARD CONTENT --}}
     <div class="mobile-exercise__expanded" x-show="mobileExpandedIndex === index" x-cloak>
-        <div class="mobile-exercise__tempo"
-            x-data="{ draftBpm: Number(step.bpm) }"
-            x-effect="if (document.activeElement !== $refs.bpmRange) draftBpm = Number(step.bpm)"
-        >
-            <label :for="'exercise-bpm-' + index">BPM</label>
-            <strong class="tempo" x-text="draftBpm"></strong>
-
-            <input
-                x-ref="bpmRange"
-                class="mobile-exercise__tempo-range"
-                :id="'exercise-bpm-' + index"
-                type="range"
-                min="30"
-                max="400"
-                step="1"
-                x-model.number="draftBpm"
-                @change="updateExerciseBpm(index, Number($event.target.value))"
-                :aria-label="'Tempo for ' + step.name + ' in BPM'"
-            >
-        </div>
-
-        <div class="mobile-exercise__stats">
-            <div>
+        <div class="mobile-exercise__metrics">
+            <div class="mobile-exercise__metric mobile-exercise__metric--duration">
                 <small>DURATION</small>
                 <strong x-text="getStepTimeLabel(step, index)"></strong>
             </div>
-            
-            <div>
+
+            <div class="mobile-exercise__metric mobile-exercise__metric--meter">
                 <small>METER</small>
                 <strong x-text="`${step.time_signature_numerator ?? 4}/${step.time_signature_denominator ?? 4}`"></strong>
+            </div>
+
+            <div class="mobile-exercise__metric mobile-exercise__metric--bpm">
+                <small>BPM</small>
+                <strong class="tempo" x-text="step.bpm"></strong>
             </div>
         </div>
 
