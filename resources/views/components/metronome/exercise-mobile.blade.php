@@ -1,6 +1,6 @@
 <div class="mobile-exercise" :class="{ 'mobile-exercise--open': mobileExpandedIndex === index }">
     <button type="button" class="mobile-exercise__summary" :aria-expanded="(mobileExpandedIndex === index).toString()"
-        @click="mobileExpandedIndex = mobileExpandedIndex === index ? null : index">
+        @click="mobileExpandedIndex = mobileExpandedIndex === index ? null : index; $nextTick(() => $dispatch('picker:sync'))">
                 
         <span class="mobile-exercise__heading">
             <strong class="name" x-text="step.name"></strong>
