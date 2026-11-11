@@ -24,9 +24,29 @@
                 <strong x-text="`${step.time_signature_numerator ?? 4}/${step.time_signature_denominator ?? 4}`"></strong>
             </div>
 
-            <div class="mobile-exercise__metric mobile-exercise__metric--bpm">
-                <small>BPM</small>
-                <strong class="tempo" x-text="step.bpm"></strong>
+            <div class="mobile-exercise__metric mobile-exercise__metric--bpm"
+                x-data="{ draftBpm: Number(step.bpm) }"
+                x-effect="if (document.activeElement !== $refs.bpmRange) draftBpm = Number(step.bpm)"
+            >
+                <div class="mobile-exercise__bpm-value">
+                    <small>BPM</small>
+                    <strong class="tempo" x-text="draftBpm"></strong>
+                </div>
+
+                <div class="mobile-exercise__bpm-slider">
+                    <x-heroicon-o-chevron-up aria-hidden="true" />
+                    <input
+                        x-ref="bpmRange"
+                        type="range"
+                        min="30"
+                        max="400"
+                        step="1"
+                        x-model.number="draftBpm"
+                        @change="updateExerciseBpm(index, Number($event.target.value))"
+                        :aria-label="'Tempo for ' + step.name + ' in BPM'"
+                    >
+                    <x-heroicon-o-chevron-down aria-hidden="true" />
+                </div>
             </div>
         </div>
 
