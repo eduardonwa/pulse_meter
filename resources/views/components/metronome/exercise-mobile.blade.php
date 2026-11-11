@@ -34,7 +34,14 @@
                 </div>
 
                 <div class="mobile-exercise__bpm-slider">
-                    <x-heroicon-o-chevron-up aria-hidden="true" />
+                    <button
+                        type="button"
+                        aria-label="Increase BPM by 1"
+                        :disabled="draftBpm >= 400"
+                        @click.stop="draftBpm = Math.min(400, Number(draftBpm) + 1); updateExerciseBpm(index, draftBpm)"
+                    >
+                        <x-heroicon-o-chevron-up aria-hidden="true" />
+                    </button>
                     <input
                         x-ref="bpmRange"
                         type="range"
@@ -45,7 +52,14 @@
                         @change="updateExerciseBpm(index, Number($event.target.value))"
                         :aria-label="'Tempo for ' + step.name + ' in BPM'"
                     >
-                    <x-heroicon-o-chevron-down aria-hidden="true" />
+                    <button
+                        type="button"
+                        aria-label="Decrease BPM by 1"
+                        :disabled="draftBpm <= 30"
+                        @click.stop="draftBpm = Math.max(30, Number(draftBpm) - 1); updateExerciseBpm(index, draftBpm)"
+                    >
+                        <x-heroicon-o-chevron-down aria-hidden="true" />
+                    </button>
                 </div>
             </div>
         </div>
