@@ -149,15 +149,38 @@
         align-items: center;
         justify-content: space-between;
         gap: $size-1;
-        height: 112px;
+        height: 132px;
         flex: 0 0 36px;
+
+        button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex: 0 0 28px;
+            width: 36px;
+            min-height: 28px;
+            padding: 0;
+            border: 0;
+            background: transparent;
+            color: $color-primary-900;
+            cursor: pointer;
+
+            &:disabled {
+                opacity: .35;
+                cursor: default;
+            }
+
+            &:focus-visible {
+                outline: 2px solid $color-primary-500;
+                outline-offset: 2px;
+            }
+        }
 
         svg {
             width: 16px;
             height: 16px;
             flex: none;
             pointer-events: none;
-            color: $color-primary-900;
         }
 
         input[type="range"] {
