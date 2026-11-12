@@ -52,13 +52,15 @@
         <div
             class="picker-column"
             x-ref="scroller"
+            @scroll.throttle.16ms="updateWindowFromScroll()"
             @scroll.debounce.150ms="syncFromScroll()"
             @if ($hint)
                 title="{{ $hint }}"
                 aria-label="{{ $hint }}"
             @endif
         >
-            <template x-for="option in options" :key="option">
+            <div class="picker-spacer" aria-hidden="true" :style="`height: ${topSpacerHeight}px; flex-shrink: 0`"></div>
+            <template x-for="option in visibleOptions" :key="option">
                 <div
                     class="picker-option"
                     :data-value="option"
@@ -67,6 +69,7 @@
                     :class="{ 'is-selected': isSelected(option) }"
                 ></div>
             </template>
+            <div class="picker-spacer" aria-hidden="true" :style="`height: ${bottomSpacerHeight}px; flex-shrink: 0`"></div>
         </div>
 
         <button
@@ -103,12 +106,14 @@
         "
         x-ref="scroller"
         @picker:sync.window="$nextTick(() => syncExternalValue())"
-        @scroll.debounce.150ms="syncFromScroll()"
+        @scroll.throttle.16ms="updateWindowFromScroll()"
+            @scroll.debounce.150ms="syncFromScroll()"
         @if ($livePreview)
             @scroll.throttle.16ms="previewFromScroll()"
         @endif
     >
-        <template x-for="option in options" :key="option">
+        <div class="picker-spacer" aria-hidden="true" :style="`height: ${topSpacerHeight}px; flex-shrink: 0`"></div>
+            <template x-for="option in visibleOptions" :key="option">
             <div
                 class="picker-option"
                 :data-value="option"
@@ -117,5 +122,6 @@
                 :class="{ 'is-selected': isSelected(option) }"
             ></div>
         </template>
+            <div class="picker-spacer" aria-hidden="true" :style="`height: ${bottomSpacerHeight}px; flex-shrink: 0`"></div>
     </div>
 @endif
