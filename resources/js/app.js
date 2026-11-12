@@ -8,9 +8,8 @@ import {
 } from './analytics/product-events'
 import { registerArticleSearch } from './article-search'
 
-import './metronome'
 import './trial-mode'
-import './alphatab-exercises'
+import { bootstrap } from './bootstrap.js'
 
 window.Alpine = Alpine
 
@@ -18,4 +17,17 @@ registerArticleSearch(Alpine)
 
 void initializeProductAnalytics()
 
-Livewire.start()
+// Keep a single entry script on every page. Practice modules must finish
+// registering their Alpine factories BEFORE Livewire initializes Alpine.
+void bootstrap({
+    needsPractice: Boolean(document.querySelector('meta[name="dorelog-practice"]')),
+    loadPractice: async () => {
+        await Promise.all([
+            import('./metronome'),
+            import('./alphatab-exercises'),
+        ])
+    },
+    startLivewire: () => Livewire.start(),
+}).catch(error => {
+    console.error('Dorelog failed to initialize:', error)
+})
