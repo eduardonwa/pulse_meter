@@ -16,7 +16,8 @@
             <span class="compact-beat-counter__tempo-unit">BPM</span>
         </span>
     </div>
-    <h2 class="current-beat" x-text="currentBeat"></h2>
+
+    <h2 class="current-beat" x-text="currentBeat">1</h2>
 
     <article class="beats">
         <template x-for="beat in getPlaybackBeatCount()" :key="`${metronome.mode}-${beat}`">
@@ -27,7 +28,7 @@
     <div class="tempo-control">
         <div class="tempo-display">
             <label for="bpm">
-                <span class="tempo-value" x-text="`${metronome.bpm}`"></span>
+                <span class="tempo-value" x-text="`${metronome.bpm}`">100</span>
                 <span class="tempo-unit | uppercase">bpm</span>
             </label>
         </div>
@@ -62,10 +63,9 @@
             :data-state="isPlaying ? 'stop' : 'start'"
             @click="toggle()"
         >
-            <span
-                class="play-label"
-                x-text="isPlaying ? 'Stop' : 'Start'"
-            ></span>
+            <span class="play-label" x-text="isPlaying ? 'Stop' : 'Start'">
+                Start
+            </span>
         </button>
     </div>
 </section>
