@@ -17,13 +17,29 @@ export function lifecycle() {
                         panel.style.removeProperty('pointer-events')
                     }
                     loading?.remove()
+
                     this.$root.dataset.practiceReady = 'true'
+
                     window.dispatchEvent(new Event('picker:sync'))
+
                     if (performance.getEntriesByName('dorelog:practice-bootstrap-start', 'mark').length) {
                         performance.mark('dorelog:practice-panel-ready')
                         performance.measure(
                             'dorelog:practice-initialization',
                             'dorelog:practice-bootstrap-start',
+                            'dorelog:practice-panel-ready'
+                        )
+                    }
+
+                    if (
+                        performance.getEntriesByName(
+                            'dorelog:livewire-start-returned',
+                            'mark'
+                        ).length
+                    ) {
+                        performance.measure(
+                            'dorelog:practice-panel-render',
+                            'dorelog:livewire-start-returned',
                             'dorelog:practice-panel-ready'
                         )
                     }
