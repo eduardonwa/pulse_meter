@@ -195,6 +195,13 @@ export function state(practiceContext = null) {
             practiceMode === 'routine'
             && !isTemplatePlayback,
 
+        // Viewing and playing tablatures remains available to everyone.
+        // Only authorized accounts may open the authoring tools.
+        canCreateTablatures:
+            practiceContext?.capabilities?.tablature_creation === true
+            && practiceMode === 'routine'
+            && !isTemplatePlayback,
+
         usesServerPersistence,
 
         // EXERCISE LIMITS
