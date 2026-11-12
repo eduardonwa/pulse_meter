@@ -4,6 +4,22 @@ export function lifecycle() {
     return {
         // INITIALIZATION
         async init() {
+            // Show the real panel only once Alpine has rendered its initial state.
+            // Do not wait for the optional server calls below.
+            this.$nextTick(() => {
+                requestAnimationFrame(() => {
+                    this.$root.dataset.practiceReady = 'true'
+                    if (performance.getEntriesByName('dorelog:practice-bootstrap-start', 'mark').length) {
+                        performance.mark('dorelog:practice-panel-ready')
+                        performance.measure(
+                            'dorelog:practice-initialization',
+                            'dorelog:practice-bootstrap-start',
+                            'dorelog:practice-panel-ready'
+                        )
+                    }
+                })
+            })
+
             if (this.activeTab === 'sessions') {
                 this.handleSessionModeChange('creative')
             }
