@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Models\User;
-use Illuminate\Auth\Middleware\Authorize;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -13,8 +12,7 @@ class PracticeRoutineStepCreateTest extends TestCase
 
     public function test_creating_custom_step_saves_user_alpha_tex(): void
     {
-        $this->withoutMiddleware(Authorize::class);
-        $user = User::factory()->create();
+        $user = User::factory()->create(['plan' => 'pro']);
         $routine = $user->practiceRoutines()->create([
             'name' => 'Test Routine', 'position' => 0, 'is_default' => true,
         ]);
@@ -38,8 +36,7 @@ class PracticeRoutineStepCreateTest extends TestCase
 
     public function test_creating_step_without_tablature_leaves_source_null(): void
     {
-        $this->withoutMiddleware(Authorize::class);
-        $user = User::factory()->create();
+        $user = User::factory()->create(['plan' => 'pro']);
         $routine = $user->practiceRoutines()->create([
             'name' => 'Test Routine', 'position' => 0, 'is_default' => true,
         ]);
