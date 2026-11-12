@@ -69,5 +69,9 @@ class AppServiceProvider extends ServiceProvider
             'use-paid-pro',
             fn (User $user): bool => $user->hasPaidProAccess(),
         );
+
+        Gate::define('viewPulse', function (User $user) {
+            return $user->is_admin;
+        });
     }
 }
