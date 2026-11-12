@@ -12,6 +12,9 @@ export function audioEngine() {
         accentBuffer: null,
         finishBuffer: null,
 
+        soundLoadingPromise: null,
+        soundLoadingProfile: null,
+
         defaultPlaybackPulse: {
             timeSignature: {
                 numerator: 4,
@@ -62,9 +65,50 @@ export function audioEngine() {
                 return
             }
 
-            this.clickBuffer = await this.loadAudioBuffer(profile.click)
-            this.accentBuffer = await this.loadAudioBuffer(profile.accent)
-            this.finishBuffer = await this.loadAudioBuffer(profile.finish)
+            if (this.soundLoadingPromise && this.soundLoadingProfile === profile) {
+                return this.soundLoadingPromise
+            }
+
+            const paths = [
+                profile.click,
+                profile.accent,
+                profile.finish,
+            ]
+
+            const uniquePaths = [...new Set(paths)]
+
+            const loading = (async () => {
+                const buffers = await Promise.all(
+                    uniquePaths.map(path => this.loadAudioBuffer(path))
+                )
+
+                const buffersByPath = new Map(
+                    uniquePaths.map((path, index) => [path, buffers[index]])
+                )
+
+                if (
+                    this.currentDawProfile !== profile ||
+                    this.soundLoadingPromise !== loading
+                ) {
+                    return
+                }
+
+                this.clickBuffer = buffersByPath.get(profile.click)
+                this.accentBuffer = buffersByPath.get(profile.accent)
+                this.finishBuffer = buffersByPath.get(profile.finish)
+            })()
+
+            this.soundLoadingPromise = loading
+            this.soundLoadingProfile = profile
+
+            try {
+                await loading
+            } finally {
+                if (this.soundLoadingPromise === loading) {
+                    this.soundLoadingPromise = null
+                    this.soundLoadingProfile = null
+                }
+            }
         },
 
         // BUFFER PLAYBACK
