@@ -1,15 +1,17 @@
 @font-face {
   font-family: "Inter";
   font-weight: 100 900;
+  font-style: normal;
   font-display: swap;
-  src: url("/public/fonts/Inter-VariableFont_opsz,wght.woff2") format("woff2"),
-    url("/public/fonts/Inter-VariableFont_opsz,wght.woff") format("woff");
+  src: url("/public/fonts/Inter-VariableFont-subset.woff2")
+    format("woff2");
 }
 
 @font-face {
   font-family: "Inter italica";
   font-weight: 100 900;
+  font-style: italic;
   font-display: swap;
-  src: url("/public/fonts/Inter-Italic-VariableFont_opsz,wght.woff2") format("woff2"),
-    url("/public/fonts/Inter-Italic-VariableFont_opsz,wght.woff") format("woff");
+  src: url("/public/fonts/Inter-Italic-VariableFont-subset.woff2")
+    format("woff2");
 }
