@@ -25,6 +25,47 @@ export function numberPicker({
                     this.syncExternalValue()
                 })
             })
+
+            // A picker inside x-show may be initialized while its height is 0.
+            // Restore its position once it becomes visible without relying on
+            // the parent component to dispatch picker:sync.
+            if (typeof ResizeObserver !== 'undefined') {
+                this.resizeObserver = new ResizeObserver(() => {
+                    const scroller = this.getScroller()
+
+                    if (scroller.clientHeight > 0 && !this.isSyncingScroll) {
+                        this.syncExternalValue()
+                    }
+                })
+
+                this.resizeObserver.observe(this.getScroller())
+            }
+
+            this.handlePageVisible = () => this.restoreVisiblePosition()
+            this.handleVisibilityChange = () => {
+                if (document.visibilityState === 'visible') {
+                    this.restoreVisiblePosition()
+                }
+            }
+
+            window.addEventListener('pageshow', this.handlePageVisible)
+            document.addEventListener('visibilitychange', this.handleVisibilityChange)
+        },
+
+        destroy() {
+            this.resizeObserver?.disconnect()
+            window.removeEventListener('pageshow', this.handlePageVisible)
+            document.removeEventListener('visibilitychange', this.handleVisibilityChange)
+        },
+
+        restoreVisiblePosition() {
+            this.$nextTick(() => {
+                requestAnimationFrame(() => {
+                    if (this.getScroller().clientHeight > 0) {
+                        this.syncExternalValue()
+                    }
+                })
+            })
         },
 
         // PICKER NAVIGATION
