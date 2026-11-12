@@ -1,4 +1,4 @@
-import { isTypingInField } from '../helpers'
+import { isTypingInField } from '../helpers.js'
 
 export function lifecycle() {
     return {
