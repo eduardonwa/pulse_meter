@@ -6,53 +6,60 @@ import test from 'node:test'
 const root = resolve(import.meta.dirname, '../..')
 const read = path => readFileSync(resolve(root, path), 'utf8')
 
-test('Laravel uses a single, stable Vite entry for practice and ordinary pages', () => {
+test('Laravel keeps a single application entry and marks practice pages', () => {
     const head = read('resources/views/components/head.blade.php')
     const app = read('resources/js/app.js')
-    const welcome = read('resources/views/welcome.blade.php')
-
     assert.match(head, /@vite\(\[\s*'resources\/styles\/main\.scss',\s*'resources\/js\/app\.js'\s*\]\)/)
-    assert.doesNotMatch(head, /practice\.js/)
-
-    // The static imports are evaluated before the module body calls Livewire.start().
-    // Keep both registrations as static dependencies of the one application entry.
-    assert.match(app, /import\s+['"]\.\/metronome['"]/)
-    assert.match(app, /import\s+['"]\.\/alphatab-exercises['"]/)
-    assert.match(app, /Livewire\.start\(\)/)
-    assert.match(welcome, /x-data="routinePlayer\(/)
+    for (const route of ['welcome', 'routines.show', 'shared.show']) {
+        assert.ok(head.includes(route), `Practice route not marked: ${route}`)
+    }
+    assert.match(head, /name="dorelog-practice"/)
+    assert.match(app, /needsPractice:\s*Boolean\(document\.querySelector/)
+    assert.match(app, /await Promise\.all\(/)
+    assert.match(app, /import\(['"]\.\/metronome['"]\)/)
+    assert.match(app, /import\(['"]\.\/alphatab-exercises['"]\)/)
+    assert.match(app, /startLivewire:\s*\(\)\s*=>\s*Livewire\.start\(\)/)
 })
 
-test('production Vite entry statically reaches practice Alpine registrations', () => {
+test('production build contains practice factories in awaited lazy chunks', () => {
     const manifestPath = resolve(root, 'public/build/manifest.json')
-    assert.ok(existsSync(manifestPath), 'Missing public/build/manifest.json — run npm run build first')
-
+    assert.ok(existsSync(manifestPath), 'Missing Vite manifest: run npm run build')
     const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'))
     const entry = manifest['resources/js/app.js']
-    assert.ok(entry?.isEntry, 'The Laravel app.js entry is missing from the Vite manifest')
+    assert.ok(entry?.isEntry, 'App entry is missing from Vite manifest')
 
-    const visited = new Set()
-    const javascript = []
-    const visit = key => {
-        if (visited.has(key)) return
-        visited.add(key)
+    const seen = new Set()
+    const staticCode = key => {
+        if (seen.has(key)) return ''
+        seen.add(key)
         const chunk = manifest[key]
-        assert.ok(chunk, `Missing Vite chunk: ${key}`)
-        assert.ok(chunk.file, `Missing output file for chunk: ${key}`)
-        const path = resolve(root, 'public/build', chunk.file)
-        assert.ok(existsSync(path), `Missing built asset: ${chunk.file}`)
-        if (chunk.file.endsWith('.js')) javascript.push(readFileSync(path, 'utf8'))
-        for (const imported of chunk.imports ?? []) visit(imported)
-        // Do not traverse dynamicImports: those are NOT guaranteed to finish
-        // before Livewire initializes Alpine.
+        assert.ok(chunk?.file, `Missing manifest chunk: ${key}`)
+        const file = resolve(root, 'public/build', chunk.file)
+        assert.ok(existsSync(file), `Missing output file: ${chunk.file}`)
+        return (chunk.file.endsWith('.js') ? readFileSync(file, 'utf8') : '')
+            + (chunk.imports ?? []).map(staticCode).join('\n')
     }
-    visit('resources/js/app.js')
 
-    const bundled = javascript.join('\n')
-    for (const name of ['routinePlayer', 'routineTemplateGuest', 'numberPicker', 'alphaTabExerciseControls']) {
-        assert.match(
-            bundled,
-            new RegExp(`(?:window|globalThis)\\.${name}\\s*=`),
-            `The production app entry does not statically register ${name} before Alpine starts`,
-        )
+    const entryCode = staticCode('resources/js/app.js')
+    const dynamic = entry.dynamicImports ?? []
+    const practiceChunks = [
+        'resources/js/metronome/index.js',
+        'resources/js/alphatab-exercises.js',
+    ]
+    for (const key of practiceChunks) {
+        assert.ok(dynamic.includes(key), `Practice module not a lazy dependency: ${key}`)
     }
+
+    const practiceCode = practiceChunks.map(key => {
+        seen.clear()
+        return staticCode(key)
+    }).join('\n')
+
+    for (const name of ['routinePlayer', 'routineTemplateGuest', 'numberPicker', 'alphaTabExerciseControls']) {
+        assert.match(practiceCode, new RegExp(`(?:window|globalThis)\\.${name}\\s*=`),
+            `Missing practice factory: ${name}`)
+    }
+    // This cannot prove runtime ordering; tests/JavaScript/bootstrap.test.js
+    // exercises the await before the Livewire startup callback.
+    assert.ok(entryCode, 'App entry output should not be empty')
 })
