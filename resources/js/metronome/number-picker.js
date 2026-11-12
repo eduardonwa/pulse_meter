@@ -18,8 +18,37 @@ export function numberPicker({
         hasSyncedInitialValue: false,
         previewValue: null,
 
+        // Mount only the options surrounding the current scroll position.
+        windowStart: 0,
+        windowSize: 31,
+        optionHeight: 44,
+
+        get visibleOptions() {
+            return this.options.slice(this.windowStart, this.windowStart + this.windowSize)
+        },
+        get topSpacerHeight() {
+            return this.windowStart * this.optionHeight
+        },
+        get bottomSpacerHeight() {
+            return Math.max(0, this.options.length - this.windowStart - this.windowSize) * this.optionHeight
+        },
+        updateWindowForIndex(index) {
+            const maxStart = Math.max(0, this.options.length - this.windowSize)
+            this.windowStart = Math.max(0, Math.min(maxStart, index - Math.floor(this.windowSize / 2)))
+        },
+        updateWindowFromScroll() {
+            const scroller = this.getScroller()
+            if (!scroller.clientHeight || this.isSyncingScroll) return
+            this.updateWindowForIndex(Math.round(scroller.scrollTop / this.optionHeight))
+        },
+        measureOptionHeight() {
+            const height = this.getScroller().querySelector('.picker-option')?.offsetHeight
+            if (height > 0) this.optionHeight = height
+        },
+
         // INITIALIZATION
         init() {
+            this.updateWindowForIndex(Math.max(0, this.getCurrentIndex()))
             this.$nextTick(() => {
                 requestAnimationFrame(() => {
                     this.syncExternalValue()
@@ -142,6 +171,7 @@ export function numberPicker({
                 return
             }
 
+            this.measureOptionHeight()
             this.scrollToIndex(index)
 
             setTimeout(() => {
@@ -157,12 +187,11 @@ export function numberPicker({
             }
 
             this.isSyncingScroll = true
+            this.updateWindowForIndex(index)
 
             requestAnimationFrame(() => {
-                const option = scroller.querySelector('.picker-option')
-                const optionHeight = option?.offsetHeight ?? 44
-
-                scroller.scrollTop = index * optionHeight
+                this.measureOptionHeight()
+                scroller.scrollTop = index * this.optionHeight
 
                 requestAnimationFrame(() => {
                     this.isSyncingScroll = false
@@ -182,9 +211,7 @@ export function numberPicker({
             }
 
             const scroller = this.getScroller()
-            const optionHeight =
-                scroller.querySelector('.picker-option')?.offsetHeight ?? 44
-            const index = Math.round(scroller.scrollTop / optionHeight)
+            const index = Math.round(scroller.scrollTop / this.optionHeight)
             const value = this.options[index]
 
             if (value !== undefined && this.previewValue !== Number(value)) {
@@ -208,10 +235,7 @@ export function numberPicker({
                 return
             }
 
-            const option = scroller.querySelector('.picker-option')
-            const optionHeight = option?.offsetHeight ?? 44
-
-            const index = Math.round(scroller.scrollTop / optionHeight)
+            const index = Math.round(scroller.scrollTop / this.optionHeight)
             const value = this.options[index]
 
             if (value === undefined) {
