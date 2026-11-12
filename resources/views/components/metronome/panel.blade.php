@@ -6,14 +6,14 @@
 
 <section class="metronome__panel">
     {{-- Static, accessible feedback before the practice JS chunks initialize Alpine. --}}
-    <div class="practice-loading" role="status" aria-live="polite">
+    <div class="practice-loading" role="status" aria-live="polite" data-practice-loading>
         <span class="practice-loading__title">Loading your exercises…</span>
         <div class="practice-loading__row" aria-hidden="true"></div>
         <div class="practice-loading__row" aria-hidden="true"></div>
         <div class="practice-loading__row" aria-hidden="true"></div>
     </div>
 
-    <div class="practice-panel-content">
+    <div class="practice-panel-content" data-practice-content style="visibility: hidden; height: 0; overflow: hidden; pointer-events: none;">
     <x-metronome.panel-tabs />
 
     <x-metronome.panel-sessions />
