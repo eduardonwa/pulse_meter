@@ -305,12 +305,15 @@ class WelcomeController extends Controller
         }
 
         /*
-         * Los presets están disponibles para todos.
+         * Los Pulse Presets solo se cargan para Pro/Trial.
+         * Guest y Free reciben una colección vacía.
          */
-        $pulsePresets = PulsePreset::query()
-            ->where('user_id', '=', null)
-            ->orderBy('id', 'asc')
-            ->get();
+        $pulsePresets = $usesServerPersistence
+            ? PulsePreset::query()
+                ->whereNull('user_id')
+                ->orderBy('id', 'asc')
+                ->get()
+            : collect();
 
         $practiceContext = [
             'mode' => $practiceMode,
