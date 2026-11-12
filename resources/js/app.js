@@ -8,9 +8,7 @@ import {
 } from './analytics/product-events'
 import { registerArticleSearch } from './article-search'
 
-import './metronome'
 import './trial-mode'
-import './alphatab-exercises'
 
 window.Alpine = Alpine
 
