@@ -13,8 +13,7 @@ class PracticeRoutineStepUpdateTest extends TestCase
 
     private function setupStep(string $source): array
     {
-        $this->withoutMiddleware(\Illuminate\Auth\Middleware\Authorize::class);
-        $user = User::factory()->create();
+        $user = User::factory()->create(['plan' => 'pro']);
         $routine = $user->practiceRoutines()->create([
             'name' => 'Test Routine', 'position' => 0, 'is_default' => true,
         ]);
