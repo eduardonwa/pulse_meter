@@ -19,6 +19,10 @@ void initializeProductAnalytics()
 
 // Keep a single entry script on every page. Practice modules must finish
 // registering their Alpine factories BEFORE Livewire initializes Alpine.
+if (document.querySelector('meta[name="dorelog-practice"]')) {
+    performance.mark('dorelog:practice-bootstrap-start')
+}
+
 void bootstrap({
     needsPractice: Boolean(document.querySelector('meta[name="dorelog-practice"]')),
     loadPractice: async () => {
