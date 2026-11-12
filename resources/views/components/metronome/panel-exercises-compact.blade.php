@@ -32,8 +32,10 @@
                         <x-heroicon-o-arrows-pointing-in x-show="viewFullscreen" />
                         <x-heroicon-o-arrows-pointing-out x-show="!viewFullscreen" />
                     </button>
-                    <button type="button" class="button" data-type="outline" x-show="viewFullscreen && step.tab_source === 'user'" x-cloak
+                    @can('use-pro')
+                    <button type="button" class="button" data-type="outline" x-show="canCreateTablatures && viewFullscreen && step.tab_source === 'user'" x-cloak
                         @click="openSavedTabEditor(index, $refs.exerciseViewDialog)">Edit tablature</button>
+                    @endcan
                     <button type="button" class="button" data-type="icon" aria-label="Close exercise" title="Close" @click="$refs.exerciseViewDialog.close()">
                         <x-heroicon-o-x-mark />
                     </button>
