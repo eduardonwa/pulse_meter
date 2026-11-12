@@ -119,6 +119,8 @@ export function exercises() {
             if (this.exerciseActionBusy || this.isPlaying || this.isWaitingForNextExercise || this.steps.length >= this.maxSteps) return;
             const source = this.steps[index];
             if (!source) return;
+            // A legacy local tablature remains playable, but Free cannot author copies.
+            if (this.hasAlphaTabPattern(source) && !this.canCreateTablatures) return;
 
             this.exerciseActionBusy = true;
             try {
