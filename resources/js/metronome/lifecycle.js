@@ -1,9 +1,35 @@
-import { isTypingInField } from '../helpers'
+import { isTypingInField } from '../helpers.js'
 
 export function lifecycle() {
     return {
         // INITIALIZATION
         async init() {
+            // Show the real panel only once Alpine has rendered its initial state.
+            // Do not wait for the optional server calls below.
+            this.$nextTick(() => {
+                requestAnimationFrame(() => {
+                    const panel = this.$root.querySelector('[data-practice-content]')
+                    const loading = this.$root.querySelector('[data-practice-loading]')
+                    if (panel) {
+                        panel.style.removeProperty('visibility')
+                        panel.style.removeProperty('height')
+                        panel.style.removeProperty('overflow')
+                        panel.style.removeProperty('pointer-events')
+                    }
+                    loading?.remove()
+                    this.$root.dataset.practiceReady = 'true'
+                    window.dispatchEvent(new Event('picker:sync'))
+                    if (performance.getEntriesByName('dorelog:practice-bootstrap-start', 'mark').length) {
+                        performance.mark('dorelog:practice-panel-ready')
+                        performance.measure(
+                            'dorelog:practice-initialization',
+                            'dorelog:practice-bootstrap-start',
+                            'dorelog:practice-panel-ready'
+                        )
+                    }
+                })
+            })
+
             if (this.activeTab === 'sessions') {
                 this.handleSessionModeChange('creative')
             }
