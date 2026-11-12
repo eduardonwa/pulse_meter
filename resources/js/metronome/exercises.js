@@ -296,6 +296,7 @@ export function exercises() {
         },
 
         openNewTabEditor() {
+            if (!this.canCreateTablatures) return;
             if (this.stepFormMode !== "create" || this.steps.length >= this.maxSteps) return;
             this.isStepFormOpen = false;
             this.$refs.stepDialog.close();
@@ -313,6 +314,7 @@ export function exercises() {
         },
 
         openSavedTabEditor(index, viewerDialog = null) {
+            if (!this.canCreateTablatures) return;
             const step = this.steps[index];
             if (!step || step.tab_source !== "user" || !step.alpha_tex) return;
             let parsed;
@@ -714,6 +716,7 @@ export function exercises() {
         },
 
         async saveNewTabExercise(closeAfterSave = true) {
+            if (!this.canCreateTablatures) return;
             if (this.tabEditorSaving || (this.tabEditorEditingIndex === null && this.steps.length >= this.maxSteps)) return;
             let alphaTex;
             try {
