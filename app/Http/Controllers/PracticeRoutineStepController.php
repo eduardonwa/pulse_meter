@@ -76,6 +76,13 @@ class PracticeRoutineStepController extends Controller
             'alpha_tex' => ['sometimes', 'nullable', 'string', 'max:65535'],
         ]);
 
+        // Only Pro (including active Trial) may author tablatures.
+        abort_if(
+            filled($validated['alpha_tex'] ?? null)
+                && ! $request->user()->hasProAccess(),
+            403,
+        );
+
         if (filled($validated['alpha_tex'] ?? null)) {
             $validated['tab_source'] = 'user';
         }
@@ -153,6 +160,13 @@ class PracticeRoutineStepController extends Controller
 
             'alpha_tex' => ['sometimes', 'nullable', 'string', 'max:65535'],
         ]);
+
+        // Editing or clearing tablature notation requires authoring access.
+        abort_if(
+            array_key_exists('alpha_tex', $validated)
+                && ! $request->user()->hasProAccess(),
+            403,
+        );
 
         if (array_key_exists('alpha_tex', $validated)) {
             // Template tablatures are read-only in the user-facing editor.

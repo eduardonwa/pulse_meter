@@ -119,6 +119,8 @@ export function exercises() {
             if (this.exerciseActionBusy || this.isPlaying || this.isWaitingForNextExercise || this.steps.length >= this.maxSteps) return;
             const source = this.steps[index];
             if (!source) return;
+            // A legacy local tablature remains playable, but Free cannot author copies.
+            if (this.hasAlphaTabPattern(source) && !this.canCreateTablatures) return;
 
             this.exerciseActionBusy = true;
             try {
@@ -296,6 +298,7 @@ export function exercises() {
         },
 
         openNewTabEditor() {
+            if (!this.canCreateTablatures) return;
             if (this.stepFormMode !== "create" || this.steps.length >= this.maxSteps) return;
             this.isStepFormOpen = false;
             this.$refs.stepDialog.close();
@@ -313,6 +316,7 @@ export function exercises() {
         },
 
         openSavedTabEditor(index, viewerDialog = null) {
+            if (!this.canCreateTablatures) return;
             const step = this.steps[index];
             if (!step || step.tab_source !== "user" || !step.alpha_tex) return;
             let parsed;
@@ -714,6 +718,7 @@ export function exercises() {
         },
 
         async saveNewTabExercise(closeAfterSave = true) {
+            if (!this.canCreateTablatures) return;
             if (this.tabEditorSaving || (this.tabEditorEditingIndex === null && this.steps.length >= this.maxSteps)) return;
             let alphaTex;
             try {

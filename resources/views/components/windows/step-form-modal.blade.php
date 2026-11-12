@@ -110,10 +110,12 @@
         </div>
 
         <div class="form-actions">
-            <button x-show="stepFormMode === 'create'" type="button" class="button" data-type="outline"
+            @can('use-pro')
+            <button x-show="stepFormMode === 'create' && canCreateTablatures" type="button" class="button" data-type="outline"
                 @click="openNewTabEditor()">
                 Create with tablature
             </button>
+            @endcan
             <button class="button" data-type="primary" type="submit"
                 x-text="stepFormMode === 'edit' ? 'Save changes' : 'Save'"
             ></button>
@@ -128,6 +130,7 @@
     </form>
 </dialog>
 {{-- Separate native dialog: the exercise does not exist until Save is confirmed. --}}
+@can('use-pro')
 <dialog class="dialog-shell dialog-shell--bottom-sheet mobile-exercise-view-dialog is-fullscreen"
     x-ref="tabEditorDialog"
     @alphatab:playback-state.window="if ($event.detail?.element === $refs.tabEditorPreview) tabPreviewPlaying = Boolean($event.detail.playing)"
@@ -229,3 +232,4 @@
         </div>
     </div>
 </dialog>
+@endcan

@@ -333,6 +333,10 @@ class WelcomeController extends Controller
 
             'groups' => $practiceGroups,
 
+            'capabilities' => [
+                'tablature_creation' => $user?->hasProAccess() ?? false,
+            ],
+
             'limits' => [
                 'exercise_count' =>
                     $user?->exerciseLimit()
