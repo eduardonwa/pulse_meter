@@ -68,11 +68,11 @@ test('production build contains practice factories in awaited lazy chunks', () =
     const lazyCode = [...lazyKeys].map(key => readChunk(key)).join('\n')
 
     for (const name of ['routinePlayer', 'routineTemplateGuest', 'numberPicker', 'alphaTabExerciseControls']) {
-        const factory = new RegExp(`(?:window|globalThis)\\\\.${name}\\\\s*=`)
+        const factory = new RegExp(String.raw`(?:window|globalThis)\.${name}\s*=`)
         assert.match(lazyCode, factory, `Missing lazy practice factory: ${name}`)
         assert.doesNotMatch(eagerCode, factory, `Practice factory is eager: ${name}`)
     }
     // This cannot prove runtime ordering; tests/JavaScript/bootstrap.test.js
     // exercises the await before the Livewire startup callback.
-    assert.ok(entryCode, 'App entry output should not be empty')
+    assert.ok(eagerCode, 'App entry output should not be empty')
 })
