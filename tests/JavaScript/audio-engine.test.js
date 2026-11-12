@@ -405,3 +405,230 @@ test(
         assert.equal(engine.currentSubdivision, 0)
     }
 )
+
+test('click sounds begin loading in parallel', async () => {
+    const engine = audioEngine()
+
+    const pending = [
+        createDeferredPromise(),
+        createDeferredPromise(),
+        createDeferredPromise(),
+    ]
+
+    const requested = []
+
+    engine.currentDawProfile = {
+        click: '/click.wav',
+        accent: '/accent.wav',
+        finish: '/finish.wav',
+    }
+
+    engine.loadAudioBuffer = path => {
+        requested.push(path)
+        return pending[requested.length - 1].promise
+    }
+
+    const loading = engine.loadClickSounds()
+
+    assert.deepEqual(requested, [
+        '/click.wav',
+        '/accent.wav',
+        '/finish.wav',
+    ])
+
+    pending.forEach(item => item.resolve({}))
+    await loading
+})
+
+test('shared audio files are loaded only once', async () => {
+    const engine = audioEngine()
+    const requested = []
+
+    const accentBuffer = { name: 'accent' }
+
+    engine.currentDawProfile = {
+        click: '/click.wav',
+        accent: '/accent.wav',
+        finish: '/accent.wav',
+    }
+
+    engine.loadAudioBuffer = async path => {
+        requested.push(path)
+
+        return path === '/accent.wav'
+            ? accentBuffer
+            : { name: 'click' }
+    }
+
+    await engine.loadClickSounds()
+
+    assert.deepEqual(requested, [
+        '/click.wav',
+        '/accent.wav',
+    ])
+
+    assert.strictEqual(
+        engine.finishBuffer,
+        engine.accentBuffer
+    )
+})
+
+test('an older profile load cannot overwrite a newer profile', async () => {
+    const engine = audioEngine()
+    const oldLoading = createDeferredPromise()
+
+    engine.currentDawProfile = {
+        click: '/old-click.wav',
+        accent: '/old-accent.wav',
+        finish: '/old-accent.wav',
+    }
+
+    engine.loadAudioBuffer = path => {
+        if (path.startsWith('/old-')) {
+            return oldLoading.promise.then(() => ({ path }))
+        }
+
+        return Promise.resolve({ path })
+    }
+
+    const firstLoad = engine.loadClickSounds()
+
+    engine.currentDawProfile = {
+        click: '/new-click.wav',
+        accent: '/new-accent.wav',
+        finish: '/new-accent.wav',
+    }
+
+    const secondLoad = engine.loadClickSounds()
+
+    await secondLoad
+
+    oldLoading.resolve()
+    await firstLoad
+
+    assert.equal(engine.clickBuffer.path, '/new-click.wav')
+    assert.equal(engine.accentBuffer.path, '/new-accent.wav')
+    assert.equal(engine.finishBuffer.path, '/new-accent.wav')
+})
+
+test('concurrent sound loads share the same request', async () => {
+    const engine = audioEngine()
+    const pending = createDeferredPromise()
+    const requested = []
+
+    engine.currentDawProfile = {
+        click: '/click.wav',
+        accent: '/accent.wav',
+        finish: '/accent.wav',
+    }
+
+    engine.loadAudioBuffer = path => {
+        requested.push(path)
+        return pending.promise.then(() => ({ path }))
+    }
+
+    const first = engine.loadClickSounds()
+    const second = engine.loadClickSounds()
+
+    assert.deepEqual(requested, [
+        '/click.wav',
+        '/accent.wav',
+    ])
+
+    pending.resolve()
+
+    await Promise.all([first, second])
+})
+
+test('failed sound loading can be retried', async () => {
+    const engine = audioEngine()
+    let attempts = 0
+
+    engine.currentDawProfile = {
+        click: '/click.wav',
+        accent: '/accent.wav',
+        finish: '/accent.wav',
+    }
+
+    engine.loadAudioBuffer = async path => {
+        attempts++
+
+        if (attempts <= 2) {
+            throw new Error('Network error')
+        }
+
+        return { path }
+    }
+
+    await assert.rejects(
+        engine.loadClickSounds(),
+        /Network error/
+    )
+
+    await engine.loadClickSounds()
+
+    assert.equal(engine.clickBuffer.path, '/click.wav')
+    assert.equal(engine.accentBuffer.path, '/accent.wav')
+    assert.equal(engine.soundLoadingPromise, null)
+})
+
+test('stale loading cannot overwrite the latest profile request', async () => {
+    const engine = audioEngine()
+
+    const ableton = {
+        click: '/ableton/click.wav',
+        accent: '/ableton/accent.wav',
+        finish: '/ableton/accent.wav',
+    }
+
+    const cubase = {
+        click: '/cubase/click.wav',
+        accent: '/cubase/accent.wav',
+        finish: '/cubase/accent.wav',
+    }
+
+    const first = createDeferredPromise()
+    const second = createDeferredPromise()
+    const third = createDeferredPromise()
+
+    let pending = first
+
+    engine.loadAudioBuffer = path => {
+        const request = pending
+
+        return request.promise.then(() => ({
+            path,
+            generation: pendingGeneration.get(request),
+        }))
+    }
+
+    const pendingGeneration = new Map([
+        [first, 1],
+        [second, 2],
+        [third, 3],
+    ])
+
+    engine.currentDawProfile = ableton
+    const firstLoad = engine.loadClickSounds()
+
+    pending = second
+    engine.currentDawProfile = cubase
+    const secondLoad = engine.loadClickSounds()
+
+    pending = third
+    engine.currentDawProfile = ableton
+    const thirdLoad = engine.loadClickSounds()
+
+    third.resolve()
+    await thirdLoad
+
+    second.resolve()
+    await secondLoad
+
+    first.resolve()
+    await firstLoad
+
+    assert.equal(engine.clickBuffer.generation, 3)
+    assert.equal(engine.accentBuffer.generation, 3)
+    assert.equal(engine.finishBuffer.generation, 3)
+})
