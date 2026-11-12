@@ -29,35 +29,48 @@ test('production build contains practice factories in awaited lazy chunks', () =
     assert.ok(entry?.isEntry, 'App entry is missing from Vite manifest')
 
     const seen = new Set()
-    const staticCode = key => {
-        if (seen.has(key)) return ''
-        seen.add(key)
+    const readChunk = key => {
         const chunk = manifest[key]
         assert.ok(chunk?.file, `Missing manifest chunk: ${key}`)
         const file = resolve(root, 'public/build', chunk.file)
         assert.ok(existsSync(file), `Missing output file: ${chunk.file}`)
-        return (chunk.file.endsWith('.js') ? readFileSync(file, 'utf8') : '')
-            + (chunk.imports ?? []).map(staticCode).join('\n')
+        return chunk.file.endsWith('.js') ? readFileSync(file, 'utf8') : ''
     }
 
-    const entryCode = staticCode('resources/js/app.js')
-    const dynamic = entry.dynamicImports ?? []
-    const practiceChunks = [
-        'resources/js/metronome/index.js',
-        'resources/js/alphatab-exercises.js',
-    ]
-    for (const key of practiceChunks) {
-        assert.ok(dynamic.includes(key), `Practice module not a lazy dependency: ${key}`)
+    const staticClosure = (key, visited = new Set()) => {
+        if (visited.has(key)) return ''
+        visited.add(key)
+        const chunk = manifest[key]
+        assert.ok(chunk, `Missing manifest chunk: ${key}`)
+        return readChunk(key)
+            + (chunk.imports ?? []).map(imported => staticClosure(imported, visited)).join('\n')
     }
 
-    const practiceCode = practiceChunks.map(key => {
-        seen.clear()
-        return staticCode(key)
-    }).join('\n')
+    // Rollup may consolidate a dynamic module into another lazy chunk.
+    // Inspect all reachable lazy chunks rather than requiring one manifest
+    // dynamicImports key per source file.
+    const lazyKeys = new Set()
+    const visitGraph = (key, isLazy = false) => {
+        const visitKey = `${key}:${isLazy}`
+        if (seen.has(visitKey)) return
+        seen.add(visitKey)
+        const chunk = manifest[key]
+        assert.ok(chunk, `Missing manifest chunk: ${key}`)
+        readChunk(key)
+        if (isLazy) lazyKeys.add(key)
+        for (const imported of chunk.imports ?? []) visitGraph(imported, isLazy)
+        for (const imported of chunk.dynamicImports ?? []) visitGraph(imported, true)
+    }
+    visitGraph('resources/js/app.js')
+
+    assert.ok(lazyKeys.size > 0, 'Practice must be loaded through dynamic imports')
+    const eagerCode = staticClosure('resources/js/app.js')
+    const lazyCode = [...lazyKeys].map(key => readChunk(key)).join('\n')
 
     for (const name of ['routinePlayer', 'routineTemplateGuest', 'numberPicker', 'alphaTabExerciseControls']) {
-        assert.match(practiceCode, new RegExp(`(?:window|globalThis)\\.${name}\\s*=`),
-            `Missing practice factory: ${name}`)
+        const factory = new RegExp(`(?:window|globalThis)\\\\.${name}\\\\s*=`)
+        assert.match(lazyCode, factory, `Missing lazy practice factory: ${name}`)
+        assert.doesNotMatch(eagerCode, factory, `Practice factory is eager: ${name}`)
     }
     // This cannot prove runtime ordering; tests/JavaScript/bootstrap.test.js
     // exercises the await before the Livewire startup callback.
