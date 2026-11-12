@@ -9,7 +9,21 @@ test('practice panel is marked ready after the first Alpine render without waiti
 
     let releasePatterns
     const patterns = new Promise(resolve => { releasePatterns = resolve })
-    const root = { dataset: {} }
+    const removed = []
+    const style = { removeProperty(name) { removed.push(name) } }
+    let loadingRemoved = false
+    const root = {
+        dataset: {},
+        querySelector(selector) {
+            if (selector === '[data-practice-content]') return { style }
+            if (selector === '[data-practice-loading]') return {
+                remove() { loadingRemoved = true },
+            }
+            return null
+        },
+    }
+    const originalWindow = globalThis.window
+    globalThis.window = new EventTarget()
     const session = Object.assign(lifecycle(), {
         $root: root,
         $nextTick(callback) { callback() },
@@ -27,10 +41,13 @@ test('practice panel is marked ready after the first Alpine render without waiti
     try {
         const initializing = session.init()
         assert.equal(root.dataset.practiceReady, 'true')
+        assert.equal(loadingRemoved, true)
+        assert.deepEqual(removed, ['visibility', 'height', 'overflow', 'pointer-events'])
         releasePatterns()
         await initializing
     } finally {
         globalThis.requestAnimationFrame = previousRaf
+        globalThis.window = originalWindow
     }
 })
 
@@ -40,6 +57,7 @@ test('server-rendered loading state is present before Alpine starts', () => {
         'utf8',
     )
     assert.match(markup, /class="practice-loading" role="status"/)
-    assert.match(markup, /class="practice-panel-content"/)
+    assert.match(markup, /data-practice-content style="visibility: hidden;/)
+    assert.match(markup, /data-practice-loading/)
     assert.match(markup, /Loading your exercises/)
 })
