@@ -46,7 +46,7 @@
     
     @vite([
         'resources/styles/main.scss',
-        request()->routeIs('welcome')
+        request()->routeIs('welcome', 'routines.show', 'shared.show')
             ? 'resources/js/practice.js'
             : 'resources/js/app.js',
     ])
