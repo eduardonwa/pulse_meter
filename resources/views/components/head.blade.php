@@ -44,12 +44,7 @@
     
     <style> [x-cloak] { display: none !important; } .subscription-icon { width: 89px; height: 89px; opacity: 0; } </style>
     
-    @vite([
-        'resources/styles/main.scss',
-        request()->routeIs('welcome', 'routines.show', 'shared.show')
-            ? 'resources/js/practice.js'
-            : 'resources/js/app.js',
-    ])
+    @vite(['resources/styles/main.scss', 'resources/js/app.js'])
 
     @livewireStyles
 </head>
