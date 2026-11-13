@@ -55,22 +55,22 @@
         </div>
 
         <div class="tempo-slider" :style="{ '--progress': (metronome.bpm - 30) / 370 * 100 }">
-                <div class="tempo-slider__track" aria-hidden="true">
-                    <div class="tempo-slider__active"></div>
-                    <div class="tempo-slider__inactive"></div>
-                </div>
-
-                <input class="tempo-range"
-                    type="range"
-                    id="bpm"
-                    min="30"
-                    max="400"
-                    step="1"
-                    value="100"
-                    x-model.number="metronome.bpm"
-                    @change="handleBpmChange()"
-                >
+            <div class="tempo-slider__track" aria-hidden="true">
+                <div class="tempo-slider__active"></div>
+                <div class="tempo-slider__inactive"></div>
             </div>
+
+            <input class="tempo-range"
+                type="range"
+                id="bpm"
+                min="30"
+                max="400"
+                step="1"
+                value="100"
+                x-model.number="metronome.bpm"
+                @change="handleBpmChange()"
+            >
+        </div>
 
         <div class="current-exercise-readout" x-show="activeTab === 'exercises' && activeExerciseIndex !== null">
             <span x-text="getActiveExerciseName()"></span>
