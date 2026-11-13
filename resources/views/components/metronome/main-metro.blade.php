@@ -29,13 +29,6 @@
     </article>
 
     <div class="tempo-control">
-        <div class="tempo-display">
-            <label for="bpm">
-                <span class="tempo-value" x-text="`${metronome.bpm}`">100</span>
-                <span class="tempo-unit | uppercase">bpm</span>
-            </label>
-        </div>
-
         <div class="tempo-adjustment">
             <button
                 type="button"
@@ -45,7 +38,23 @@
                 @click="adjustBpm(-1)"
             >−</button>
 
-            <div class="tempo-slider" :style="{ '--progress': (metronome.bpm - 30) / 370 * 100 }">
+            <div class="tempo-display">
+                <label for="bpm">
+                    <span class="tempo-value" x-text="`${metronome.bpm}`">100</span>
+                    <span class="tempo-unit uppercase">bpm</span>
+                </label>
+            </div>
+
+            <button
+                type="button"
+                class="tempo-step"
+                aria-label="Increase tempo by 1 BPM"
+                :disabled="metronome.bpm >= 400"
+                @click="adjustBpm(1)"
+            >+</button>
+        </div>
+
+        <div class="tempo-slider" :style="{ '--progress': (metronome.bpm - 30) / 370 * 100 }">
                 <div class="tempo-slider__track" aria-hidden="true">
                     <div class="tempo-slider__active"></div>
                     <div class="tempo-slider__inactive"></div>
@@ -62,15 +71,6 @@
                     @change="handleBpmChange()"
                 >
             </div>
-
-            <button
-                type="button"
-                class="tempo-step"
-                aria-label="Increase tempo by 1 BPM"
-                :disabled="metronome.bpm >= 400"
-                @click="adjustBpm(1)"
-            >+</button>
-        </div>
 
         <div class="current-exercise-readout" x-show="activeTab === 'exercises' && activeExerciseIndex !== null">
             <span x-text="getActiveExerciseName()"></span>
