@@ -17,18 +17,22 @@
 
         &__link {
             min-height: 3.5rem;
+            
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             gap: $size-1;
+            
             padding: $size-2;
+            
             color: $color-neutral-900;
-            font-size: 14px;
             text-decoration: none;
+            
+            font-size: 14px;
 
             &.is-active {
-                color: $color-primary-500;
+                color: $color-sol-600;
                 border-block-end: 2px solid currentColor;
             }
 

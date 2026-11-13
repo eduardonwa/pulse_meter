@@ -156,6 +156,7 @@
     height: 24px;
 
     svg {
+      stroke: $color-do-900;
       width: 24px;
       height: 24px;
     }
@@ -240,8 +241,10 @@
     display: flex;
     align-items: center;
 
-    background-color: $color-accent-400;
-    color: $color-accent-950;
+    background-color: hsl(var(--re-200) / .4);
+    border: 1px solid $color-re-400;
+    color: $color-re-800;
+
     font-weight: 600;
     font-size: $font-size-400;
 
