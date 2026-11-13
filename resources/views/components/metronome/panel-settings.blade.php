@@ -58,39 +58,11 @@
         </div>
     </div>
 
-    <div class="setting-option group">
-        <div class="group__header">
-            <h2 class="group__title">Sessions</h2>
-
-            <p class="group__hint">
-                Configure your session defaults and saved history
-            </p>
-        </div>
-
-        <div class="group__body group__body--stacked">
-            {{-- Default session type control hidden; routine playback preferences remain intact. --}}
-
-            <label class="group__body--stacked">
-                <span>History</span>
-                <button
-                    type="button"
-                    class="button"
-                    data-type="icon-text"
-                    @click="clearAllRecentSessions()"
-                >
-                    <x-heroicon-o-backspace />
-    
-                    Clear session
-                </button>
-            </label>
-        </div>
-    </div>
-
     <div class="setting-option group mobile-audio-help">
         <div class="group__header">
             <h2 class="group__title">No sound?</h2>
-            <p class="group__hint">
-                If the metronome goes silent after switching apps or tabs,
+            <p class="fs-300">
+                If the metronome goes silent after switching apps or tabs on your mobile device,
                 try reloading the page or restarting your browser.
             </p>
         </div>
@@ -99,22 +71,17 @@
     <div class="setting-option group">
         <div class="group__header">
             <h2 class="group__title">DANGER ZONE</h2>
-            <p class="group__hint">
+            <p class="fs-300">
                 These actions can't be undone
             </p>
         </div>
 
         <div class="group__body">
-            <button
-                type="button"
-                class="button"
-                data-type="danger-zone"
-                @click="requestClearAllAppStorage()"
-            >
+            <button type="button" class="button" data-type="danger-zone" @click="requestClearAllAppStorage()">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
                 </svg>
-                Reset app
+                Reset local settings and exercises
             </button>
         </div>
 

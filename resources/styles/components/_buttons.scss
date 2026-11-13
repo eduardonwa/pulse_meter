@@ -194,22 +194,35 @@
   // PLAY
   &[data-type="play-metronome"] {
     font-weight: normal;
+    
     width: 100%;
     height: 44px;
+    
     display: flex;
     align-items: center;
     justify-content: center;
-    background: $color-neutral-900;
+    
+    background: linear-gradient(#444751, #24262D);
     color: $color-neutral-100;
+    
     border-radius: $border-radius-2;
+    
     text-transform: uppercase;
 
     transition:
-      transform 250ms ease,
-      box-shadow 250ms ease;
+        translate 100ms ease-out,
+        box-shadow 100ms ease-out;
+
+    box-shadow:
+        inset 0 1px 0 #ffffff48,
+        inset 0 -2px 0 #0004,
+        0 1px 2px #0005,
+        0 8px 24px -6px #272C3760;
 
     &:active {
-      transform: scale(0.96);
+      // transform: scale(0.96);
+      translate: 0 1px;
+      box-shadow: inset 0 2px 4px #0002;
     }
 
     @include mq(medium) {

@@ -14,7 +14,7 @@
 
             <div class="group">
                 <h2 class="group__header">Reset app?</h2>
-                <p class="group__hint">
+                <p class="fs-300" style="color: hsl(0 0% 25%); font-weight: normal;">
                     This will delete your custom exercises and all recent sessions
                 </p>
             </div>

@@ -29,10 +29,9 @@
         .exercise-row {
             border-radius: $size-1;
 
-            background-color: rgba(232, 239, 245, 0.78);
-            border: 1px solid hsl(var(--neutral-800) / .2);
-
-            box-shadow: inset 0 2px 4px rgba(190, 205, 216, 0.18);
+            background-color: hsla(30, 9%, 91%, 0.521);
+            border: 1px solid hsl(var(--neutral-800) / 0.2);
+            box-shadow: inset 0 2px 4px hsl(25 8% 35% / 0.06);
 
             margin: $size-2;
             padding: $size-2;
@@ -113,34 +112,46 @@
             }
 
             &__play {
-                display: block;
+                display: flex;
+                align-items: center;
+                justify-content: center;
 
                 grid-area: play;
                 padding-inline: $size-1;
                 margin-block-end: $size-1;
 
-                .button {
-                    width: 100%;
-                    height: 100%;
+                .button[data-type="action-exercise"] {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+
+                    width: 46px;
+                    height: 46px;
                     
-                    background-color: $color-primary-400;
+                    background-color: transparent;
+                    border: 1px solid $color-do-300;
                     border-radius: $border-radius-1;
 
+                    transition: 
+                        background-color 100ms ease-out
+                        transform 100ms ease-out;
+                    
+                    &:hover {
+                        background: hsl(var(--do-100));
+                    }
+
                     &:active {
-                        transform: scale(0.96);
+                        background: hsl(var(--do-200));
+                        transform: scale(0.98);
                     }
 
                     svg {
-                        width: 55px;
-                        height: 55px;
+                        width: 28px;
+                        height: 28px;
 
                         stroke-width: 0;
                         
-                        fill: $color-primary-50;
-
-                        &:active {
-                            transform: scale(0.96);
-                        }
+                        fill: $color-do-500;
                     }
                 }
             }
@@ -237,10 +248,16 @@
             }
 
             &.is-active {
-                background-color: $color-accent-300;
+                background-color: hsl(var(--do-300) / .45);
+                border: 1px solid $color-do-300;
+
+                .exercise-row__play .button {
+                    background-color: $color-do-100;
+                    border-color: $color-do-400;
+                }
 
                 .pause-icon {
-                    color: $color-primary-50;
+                    color: transparent;
                     stroke-width: 2px;
                 }
             }

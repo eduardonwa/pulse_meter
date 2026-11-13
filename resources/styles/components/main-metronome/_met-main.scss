@@ -123,8 +123,8 @@
 
             font-size: $font-size-700;
             border-radius: 50%;
-            background: $color-primary-500;
-            color: $color-neutral-100;
+            background: hsl(var(--neutral-800) / .1);
+            color: hsl(var(--neutral-950) / .5);
 
             @include mq(medium) {
                 display: flex;
@@ -247,7 +247,7 @@
                 &__active {
                     left: 0;
                     width: max(0px, calc(var(--thumb-position) - var(--gap)));
-                    background: $color-primary-500;
+                    background: $color-do-400;
                     border-radius: 999px 6px 6px 999px;
                 }
 
@@ -300,8 +300,8 @@
 
                     background-color: transparent;
                     background-image: linear-gradient(
-                        $color-primary-500,
-                        $color-primary-500
+                        $color-do-400,
+                        $color-do-400
                     );
                     background-size: 4px calc(100% - 6px);
                     background-position: center;
@@ -320,8 +320,8 @@
 
                     background-color: transparent;
                     background-image: linear-gradient(
-                        $color-primary-500,
-                        $color-primary-500
+                        $color-do-400,
+                        $color-do-400
                     );
                     background-size: 4px calc(100% - 6px);
                     background-position: center;

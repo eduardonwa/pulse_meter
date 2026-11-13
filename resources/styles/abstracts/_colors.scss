@@ -66,96 +66,32 @@ $-clr-purple-800: 264 75% 17.5%;
 $-clr-purple-900: 264 75% 7.5%;
 $-clr-purple-950: 264 75% 3.75%;
 
-$-clr-orange-100: hsl(24 75% 95%);
-$-clr-orange-200: hsl(24 75% 82.5%);
-$-clr-orange-300: hsl(24 75% 70%);
-$-clr-orange-400: hsl(24 75% 60%);
-$-clr-orange-500: hsl(24 75% 50%);
-$-clr-orange-600: hsl(24 75% 40%);
-$-clr-orange-700: hsl(24 75% 30%);
-$-clr-orange-800: hsl(24 75% 17.5%);
-$-clr-orange-900: hsl(24 75% 7.5%);
-$-clr-yellow-100: hsl(48 75% 95%);
-$-clr-yellow-200: hsl(48 75% 82.5%);
-$-clr-yellow-300: hsl(48 75% 70%);
-$-clr-yellow-400: hsl(48 75% 60%);
-$-clr-yellow-500: hsl(48 75% 50%);
-$-clr-yellow-600: hsl(48 75% 40%);
-$-clr-yellow-700: hsl(48 75% 30%);
-$-clr-yellow-800: hsl(48 75% 17.5%);
-$-clr-yellow-900: hsl(48 75% 7.5%);
-$-clr-green-100: hsl(96 75% 95%);
-$-clr-green-200: hsl(96 75% 82.5%);
-$-clr-green-300: hsl(96 75% 70%);
-$-clr-green-400: hsl(96 75% 60%);
-$-clr-green-500: hsl(96 75% 50%);
-$-clr-green-600: hsl(96 75% 40%);
-$-clr-green-700: hsl(96 75% 30%);
-$-clr-green-800: hsl(96 75% 17.5%);
-$-clr-green-900: hsl(96 75% 7.5%);
-$-clr-lime-100: hsl(144 75% 95%);
-$-clr-lime-200: hsl(144 75% 82.5%);
-$-clr-lime-300: hsl(144 75% 70%);
-$-clr-lime-400: hsl(144 75% 60%);
-$-clr-lime-500: hsl(144 75% 50%);
-$-clr-lime-600: hsl(144 75% 40%);
-$-clr-lime-700: hsl(144 75% 30%);
-$-clr-lime-800: hsl(144 75% 17.5%);
-$-clr-lime-900: hsl(144 75% 7.5%);
-$-clr-turquoise-100: hsl(168 75% 95%);
-$-clr-turquoise-200: hsl(168 75% 82.5%);
-$-clr-turquoise-300: hsl(168 75% 70%);
-$-clr-turquoise-400: hsl(168 75% 60%);
-$-clr-turquoise-500: hsl(168 75% 50%);
-$-clr-turquoise-600: hsl(168 75% 40%);
-$-clr-turquoise-700: hsl(168 75% 30%);
-$-clr-turquoise-800: hsl(168 75% 17.5%);
-$-clr-turquoise-900: hsl(168 75% 7.5%);
-$-clr-cyan-100: hsl(192 75% 95%);
-$-clr-cyan-200: hsl(192 75% 82.5%);
-$-clr-cyan-300: hsl(192 75% 70%);
-$-clr-cyan-400: hsl(192 75% 60%);
-$-clr-cyan-500: hsl(192 75% 50%);
-$-clr-cyan-600: hsl(192 75% 40%);
-$-clr-cyan-700: hsl(192 75% 30%);
-$-clr-cyan-800: hsl(192 75% 17.5%);
-$-clr-cyan-900: hsl(192 75% 7.5%);
-$-clr-skyblue-100: hsl(216 75% 95%);
-$-clr-skyblue-200: hsl(216 75% 82.5%);
-$-clr-skyblue-300: hsl(216 75% 70%);
-$-clr-skyblue-400: hsl(216 75% 60%);
-$-clr-skyblue-500: hsl(216 75% 50%);
-$-clr-skyblue-600: hsl(216 75% 40%);
-$-clr-skyblue-700: hsl(216 75% 30%);
-$-clr-skyblue-800: hsl(216 75% 17.5%);
-$-clr-skyblue-900: hsl(216 75% 7.5%);
-$-clr-magenta-100: hsl(288 75% 95%);
-$-clr-magenta-200: hsl(288 75% 82.5%);
-$-clr-magenta-300: hsl(288 75% 70%);
-$-clr-magenta-400: hsl(288 75% 60%);
-$-clr-magenta-500: hsl(288 75% 50%);
-$-clr-magenta-600: hsl(288 75% 40%);
-$-clr-magenta-700: hsl(288 75% 30%);
-$-clr-magenta-800: hsl(288 75% 17.5%);
-$-clr-magenta-900: hsl(288 75% 7.5%);
-$-clr-pink-100: hsl(312 75% 95%);
-$-clr-pink-200: hsl(312 75% 82.5%);
-$-clr-pink-300: hsl(312 75% 70%);
-$-clr-pink-400: hsl(312 75% 60%);
-$-clr-pink-500: hsl(312 75% 50%);
-$-clr-pink-600: hsl(312 75% 40%);
-$-clr-pink-700: hsl(312 75% 30%);
-$-clr-pink-800: hsl(312 75% 17.5%);
-$-clr-pink-900: hsl(312 75% 7.5%);
-$-clr-deeppink-100: hsl(336 75% 95%);
-$-clr-deeppink-200: hsl(336 75% 82.5%);
-$-clr-deeppink-300: hsl(336 75% 70%);
-$-clr-deeppink-400: hsl(336 75% 60%);
-$-clr-deeppink-500: hsl(336 75% 50%);
-$-clr-deeppink-600: hsl(336 75% 40%);
-$-clr-deeppink-700: hsl(336 75% 30%);
-$-clr-deeppink-800: hsl(336 75% 17.5%);
-$-clr-deeppink-900: hsl(336 75% 7.5%);
+// DO — Terracotta / Deep Red
+$-clr-do-50: 8 30% 97%;
+$-clr-do-100: 8 30% 93%;
+$-clr-do-200: 8 30% 85%;
+$-clr-do-300: 8 32% 73%;
+$-clr-do-400: 8 35% 60%;
+$-clr-do-500: 8 35% 48%;
+$-clr-do-600: 5 34% 40%;
+$-clr-do-700: 2 31% 33%;
+$-clr-do-800: 2 30% 24%;
+$-clr-do-900: 2 28% 16%;
+$-clr-do-950: 2 26% 10%;
+
+// RE — Copper
+$-clr-re-50: 28 40% 97%;
+$-clr-re-100: 28 40% 93%;
+$-clr-re-200: 28 42% 84%;
+$-clr-re-300: 28 43% 72%;
+$-clr-re-400: 27 43% 62%;
+$-clr-re-500: 27 43% 54%;
+$-clr-re-600: 28 38% 44%;
+$-clr-re-700: 28 38% 34%;
+$-clr-re-800: 28 35% 24%;
+$-clr-re-900: 28 30% 16%;
+$-clr-re-950: 28 28% 10%;
+
 $-clr-red-100: hsl(0 75% 95%);
 $-clr-red-200: hsl(0 75% 82.5%);
 $-clr-red-300: hsl(0 75% 70%);
@@ -234,45 +170,31 @@ $light: (
     "900": $-clr-purple-900,
     "950": $-clr-purple-950,
   ),
-);
-
-$dark: (
-  "neutral": (
-    "000": $-clr-white,
-    "50": $-clr-neutral-50,
-    "100": $-clr-neutral-100,
-    "200": $-clr-neutral-200,
-    "300": $-clr-neutral-300,
-    "400": $-clr-neutral-400,
-    "500": $-clr-neutral-500,
-    "600": $-clr-neutral-600,
-    "700": $-clr-neutral-700,
-    "800": $-clr-neutral-800,
-    "900": $-clr-neutral-900,
-    "950": $-clr-neutral-950,
-    "1000": $-clr-black,
+  "do": (
+    "50": $-clr-do-50,
+    "100": $-clr-do-100,
+    "200": $-clr-do-200,
+    "300": $-clr-do-300,
+    "400": $-clr-do-400,
+    "500": $-clr-do-500,
+    "600": $-clr-do-600,
+    "700": $-clr-do-700,
+    "800": $-clr-do-800,
+    "900": $-clr-do-900,
+    "950": $-clr-do-950,
   ),
-  "accent": (
-    "900": $-clr-deeppink-900,
-    "800": $-clr-deeppink-800,
-    "700": $-clr-deeppink-700,
-    "600": $-clr-deeppink-600,
-    "500": $-clr-deeppink-500,
-    "400": $-clr-deeppink-400,
-    "300": $-clr-deeppink-300,
-    "200": $-clr-deeppink-200,
-    "100": $-clr-deeppink-100,
-  ),
-  "primary": (
-    "900": $-clr-skyblue-900,
-    "800": $-clr-skyblue-800,
-    "700": $-clr-skyblue-700,
-    "600": $-clr-skyblue-600,
-    "500": $-clr-skyblue-500,
-    "400": $-clr-skyblue-400,
-    "300": $-clr-skyblue-300,
-    "200": $-clr-skyblue-200,
-    "100": $-clr-skyblue-100,
+  "re": (
+    "50": $-clr-re-50,
+    "100": $-clr-re-100,
+    "200": $-clr-re-200,
+    "300": $-clr-re-300,
+    "400": $-clr-re-400,
+    "500": $-clr-re-500,
+    "600": $-clr-re-600,
+    "700": $-clr-re-700,
+    "800": $-clr-re-800,
+    "900": $-clr-re-900,
+    "950": $-clr-re-950,
   ),
 );
 
@@ -344,3 +266,29 @@ $color-extra-700: hsl(var(--extra-700));
 $color-extra-800: hsl(var(--extra-800));
 $color-extra-900: hsl(var(--extra-900));
 $color-extra-950: hsl(var(--extra-950));
+
+// DO — Terracotta / Deep Red
+$color-do-50: hsl(var(--do-50));
+$color-do-100: hsl(var(--do-100));
+$color-do-200: hsl(var(--do-200));
+$color-do-300: hsl(var(--do-300));
+$color-do-400: hsl(var(--do-400));
+$color-do-500: hsl(var(--do-500));
+$color-do-600: hsl(var(--do-600));
+$color-do-700: hsl(var(--do-700));
+$color-do-800: hsl(var(--do-800));
+$color-do-900: hsl(var(--do-900));
+$color-do-950: hsl(var(--do-950));
+
+// RE — Copper
+$color-re-50: hsl(var(--re-50));
+$color-re-100: hsl(var(--re-100));
+$color-re-200: hsl(var(--re-200));
+$color-re-300: hsl(var(--re-300));
+$color-re-400: hsl(var(--re-400));
+$color-re-500: hsl(var(--re-500));
+$color-re-600: hsl(var(--re-600));
+$color-re-700: hsl(var(--re-700));
+$color-re-800: hsl(var(--re-800));
+$color-re-900: hsl(var(--re-900));
+$color-re-950: hsl(var(--re-950));
