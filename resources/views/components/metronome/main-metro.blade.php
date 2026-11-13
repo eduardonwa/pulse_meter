@@ -36,21 +36,40 @@
             </label>
         </div>
 
-        <div class="tempo-slider" :style="{ '--progress': (metronome.bpm - 30) / 370 * 100 }">
-            <div class="tempo-slider__track" aria-hidden="true">
-                <div class="tempo-slider__active"></div>
-                <div class="tempo-slider__inactive"></div>
+        <div class="tempo-adjustment">
+            <button
+                type="button"
+                class="tempo-step"
+                aria-label="Decrease tempo by 1 BPM"
+                :disabled="metronome.bpm <= 30"
+                @click="adjustBpm(-1)"
+            >−</button>
+
+            <div class="tempo-slider" :style="{ '--progress': (metronome.bpm - 30) / 370 * 100 }">
+                <div class="tempo-slider__track" aria-hidden="true">
+                    <div class="tempo-slider__active"></div>
+                    <div class="tempo-slider__inactive"></div>
+                </div>
+
+                <input class="tempo-range"
+                    type="range"
+                    id="bpm"
+                    min="30"
+                    max="400"
+                    step="1"
+                    value="100"
+                    x-model.number="metronome.bpm"
+                    @change="handleBpmChange()"
+                >
             </div>
 
-            <input class="tempo-range"
-                type="range"
-                id="bpm"
-                min="30"
-                max="400"
-                value="100"
-                x-model.number="metronome.bpm"
-                @change="handleBpmChange()"
-            >
+            <button
+                type="button"
+                class="tempo-step"
+                aria-label="Increase tempo by 1 BPM"
+                :disabled="metronome.bpm >= 400"
+                @click="adjustBpm(1)"
+            >+</button>
         </div>
 
         <div class="current-exercise-readout" x-show="activeTab === 'exercises' && activeExerciseIndex !== null">
