@@ -12,12 +12,6 @@
             </template>
         </div>
         
-        <span class="compact-beat-counter__divider compact-beat-counter__divider--tempo" aria-hidden="true"></span>
-        
-        <span class="compact-beat-counter__tempo" aria-label="Tempo">
-            <span x-text="metronome.bpm"></span>
-            <span class="compact-beat-counter__tempo-unit">BPM</span>
-        </span>
     </div>
 
     <h2 class="current-beat" x-text="currentBeat">1</h2>
