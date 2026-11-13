@@ -2,6 +2,7 @@
     <div class="compact-beat-counter" aria-label="Current beat and measure beats">
         <span class="compact-beat-counter__current" x-text="currentBeat" aria-label="Current beat"></span>
         <span class="compact-beat-counter__divider" aria-hidden="true"></span>
+        
         <div class="compact-beat-counter__strip" x-ref="compactBeatStrip"
             x-effect="currentBeat; getPlaybackBeatCount(); $nextTick(() => scrollActiveBeatIntoView($refs.compactBeatStrip, currentBeat))">
             <template x-for="beat in getPlaybackBeatCount()" :key="`${metronome.mode}-${beat}`">
@@ -10,7 +11,9 @@
                     :aria-current="currentBeat === beat ? 'true' : null"></span>
             </template>
         </div>
+        
         <span class="compact-beat-counter__divider compact-beat-counter__divider--tempo" aria-hidden="true"></span>
+        
         <span class="compact-beat-counter__tempo" aria-label="Tempo">
             <span x-text="metronome.bpm"></span>
             <span class="compact-beat-counter__tempo-unit">BPM</span>
@@ -33,26 +36,27 @@
             </label>
         </div>
 
-        <input class="tempo-range"
-            type="range"
-            min="30"
-            max="400"
-            value="100"
-            x-model.number="metronome.bpm"
-            @change="handleBpmChange()"
-        >
+        <div class="tempo-slider" :style="{ '--progress': (metronome.bpm - 30) / 370 * 100 }">
+            <div class="tempo-slider__track" aria-hidden="true">
+                <div class="tempo-slider__active"></div>
+                <div class="tempo-slider__inactive"></div>
+            </div>
 
-        <div
-            class="current-exercise-readout"
-            x-show="activeTab === 'exercises' && activeExerciseIndex !== null"
-        >
+            <input class="tempo-range"
+                type="range"
+                id="bpm"
+                min="30"
+                max="400"
+                value="100"
+                x-model.number="metronome.bpm"
+                @change="handleBpmChange()"
+            >
+        </div>
+
+        <div class="current-exercise-readout" x-show="activeTab === 'exercises' && activeExerciseIndex !== null">
             <span x-text="getActiveExerciseName()"></span>
 
-            <span
-                class="current-exercise-readout__time"
-                :class="{ 'is-counting': isPlaying && steps[activeExerciseIndex]?.mode === 'drill' }"
-                x-text="getActiveExerciseTimeLabel()"
-            ></span>
+            <span class="current-exercise-readout__time" :class="{ 'is-counting': isPlaying && steps[activeExerciseIndex]?.mode === 'drill' }" x-text="getActiveExerciseTimeLabel()"></span>
         </div>
     </div>
 

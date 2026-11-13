@@ -1,32 +1,57 @@
+
 @use "../../abstracts" as *;
 
 @mixin styles {
     &__main {
-        // One compact metronome in the mobile layout, retained while scrolling routines.
-        @media screen and (max-width: 767px) {
-            position: sticky;
-            top: 0;
-            z-index: 20;
-            gap: $size-3;
-            padding: $size-3 $size-4;
-            background: $color-neutral-100;
-            border-block-end: 1px solid transparent;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+
+        position: sticky;
+        top: 0;
+        z-index: 20;
+
+        gap: $size-3;
+        padding: $size-3 $size-4;
+        background: $color-neutral-100;
+        border-block-end: 1px solid transparent;
+
+        &.is-scrolled {
+            border-block-end-color: $color-neutral-400;
+            box-shadow: $box-shadow-3;
+        }
+
+        @include mq(medium) {
+            position: static;
+            z-index: auto;
+
+            gap: $size-8;
+            padding: $size-4;
+            background: transparent;
+            border-block-end: 0;
 
             &.is-scrolled {
-                border-block-end-color: $color-neutral-400;
-                box-shadow: $box-shadow-3;
+                border-block-end-color: transparent;
+                box-shadow: none;
             }
         }
 
         .compact-beat-counter {
             display: flex;
             align-items: center;
+            align-self: stretch;
             gap: $size-3;
             min-width: 0;
-            padding: $size-3 $size-4;
-            background: $color-neutral-100;
-            border-block-end: 1px solid $color-neutral-400;
+            width: 100%;
+            padding: $size-2 0;
+            background: transparent;
+            border: 0;
             font-variant-numeric: tabular-nums;
+
+            @include mq(medium) {
+                display: none;
+            }
 
             &__current {
                 flex: 0 0 2rem;
@@ -52,7 +77,10 @@
                 overflow-y: hidden;
                 scrollbar-width: none;
                 scroll-behavior: auto;
-                &::-webkit-scrollbar { display: none; }
+
+                &::-webkit-scrollbar {
+                    display: none;
+                }
             }
 
             &__tempo {
@@ -74,27 +102,19 @@
             &__beat {
                 flex: 0 0 1.75rem;
                 text-align: center;
-                opacity: .5;
+                opacity: 0.5;
                 font-size: $font-size-500;
-                &.is-active { opacity: 1; font-weight: 700; color: $color-primary-500; }
+
+                &.is-active {
+                    opacity: 1;
+                    font-weight: 700;
+                    color: $color-primary-500;
+                }
             }
-
-            @include mq(medium) { display: none; }
-        }
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-direction: column;
-        gap: $size-8;
-        padding: $size-4;
-
-        @media screen and (max-width: 767px) {
-            gap: $size-3;
-            padding: $size-3 $size-4;
         }
 
         .current-beat {
-            display: flex;
+            display: none;
             align-items: center;
             justify-content: center;
 
@@ -105,27 +125,37 @@
             border-radius: 50%;
             background: $color-primary-500;
             color: $color-neutral-100;
+
+            @include mq(medium) {
+                display: flex;
+            }
         }
-        
+
         .beats {
-            display: flex;
+            display: none;
             flex-wrap: wrap;
             align-content: flex-start;
 
             gap: $size-10;
             padding: $size-2;
+
+            @include mq(medium) {
+                display: flex;
+            }
         }
-    
+
         .beat-mark {
-            flex-direction: row;
             display: flex;
+            flex-direction: row;
             align-items: center;
             justify-content: center;
+
             font-size: $font-size-500;
+            opacity: 0.55;
+
             transition:
                 transform 120ms ease-out,
                 opacity 120ms ease-out;
-            opacity: 0.55;
 
             &.is-active {
                 font-weight: 700;
@@ -133,23 +163,33 @@
                 opacity: 1;
             }
         }
-    
+
         .tempo-control {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: $size-2;
+            gap: $size-3;
             width: 100%;
-    
-            // NUMERO + BPM
+            margin-block: $size-2;
+
+            @include mq(medium) {
+                gap: $size-2;
+                margin-block: 0;
+            }
+
+            // Número + BPM
             .tempo-display {
-                display: flex;
+                display: none;
                 flex-direction: column;
                 align-items: center;
-                margin-block: $size-8;
+
+                @include mq(medium) {
+                    display: flex;
+                    margin-block: $size-8;
+                }
             }
-            
-            // NUMERO
+
+            // Número
             .tempo-value {
                 font-size: $font-size-900;
                 background: transparent;
@@ -161,73 +201,144 @@
                 font-weight: 400;
 
                 letter-spacing: 4px;
-    
+
                 inline-size: 4ch;
                 min-inline-size: 0;
                 line-height: 1;
             }
-    
+
             // BPM
             .tempo-unit {
                 font-size: $font-size-700;
                 font-weight: 400;
                 line-height: 1;
             }
-    
-            .tempo-range {
-                --track-height: 0.5rem;
-                --thumb-size: 1.5rem;
-    
+
+            .tempo-slider {
+                --progress: 0;
+                --gap: 6px;
+                --thumb-width: 24px;
+
+                --thumb-position: calc(
+                    var(--thumb-width) / 2 +
+                    (100% - var(--thumb-width)) * (var(--progress) / 100)
+                );
+
+                position: relative;
+                display: flex;
+                align-items: center;
                 width: 100%;
-    
+                height: 44px;
+
+                &__track {
+                    position: absolute;
+                    inset-inline: 0;
+                    height: 16px;
+                    pointer-events: none;
+                }
+
+                &__active,
+                &__inactive {
+                    position: absolute;
+                    top: 0;
+                    height: 100%;
+                }
+
+                &__active {
+                    left: 0;
+                    width: max(0px, calc(var(--thumb-position) - var(--gap)));
+                    background: $color-primary-500;
+                    border-radius: 999px 6px 6px 999px;
+                }
+
+                &__inactive {
+                    left: min(100%, calc(var(--thumb-position) + var(--gap)));
+                    right: 0;
+                    background: $color-neutral-300;
+                    border-radius: 6px 999px 999px 6px;
+                }
+            }
+
+            .tempo-range {
+                position: absolute;
+                inset: 0;
+                z-index: 1;
+
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+
                 appearance: none;
                 -webkit-appearance: none;
-    
+
                 background: transparent;
                 cursor: pointer;
-    
+
                 &:focus-visible {
-                    outline: 3px solid $color-primary-300;
-                    outline-offset: 0.35rem;
+                    outline: 2px solid $color-primary-300;
+                    outline-offset: 4px;
                 }
-    
-                // Chrome, Edge, Safari
+
                 &::-webkit-slider-runnable-track {
-                    height: var(--track-height);
-                    background: $color-neutral-200;
-                    border: 1px solid $color-neutral-1000;
-                    border-radius: 999rem;
+                    height: 16px;
+                    background: transparent;
+                    border: 0;
                 }
-    
+
+                &::-moz-range-track {
+                    background: transparent;
+                    border: 0;
+                }
+
                 &::-webkit-slider-thumb {
                     appearance: none;
                     -webkit-appearance: none;
-    
-                    width: var(--thumb-size);
-                    height: var(--thumb-size);
-    
-                    margin-top: calc((var(--track-height) - var(--thumb-size)) / 2);
-    
-                    background-color: $color-neutral-1000;
-                    border: 2px solid $color-primary-300;
-                    border-radius: 999rem;
+
+                    width: 24px;
+                    height: 44px;
+
+                    background-color: transparent;
+                    background-image: linear-gradient(
+                        $color-primary-500,
+                        $color-primary-500
+                    );
+                    background-size: 4px calc(100% - 6px);
+                    background-position: center;
+                    background-repeat: no-repeat;
+
+                    border: 0;
+                    border-radius: 0;
+                    box-shadow: none;
+                    
+                    margin-top: -14px;
                 }
-    
-                // Firefox
-                &::-moz-range-track {
-                    height: var(--track-height);
-                    background: $color-neutral-300;
-                    border: 1px solid $color-neutral-300;
-                    border-radius: 999rem;
-                }
-    
+
                 &::-moz-range-thumb {
-                    width: var(--thumb-size);
-                    height: var(--thumb-size);
-    
-                    background: $color-primary-500;
-                    border: 2px solid transparent;
-                    border-radius: 999rem;
+                    width: 24px;
+                    height: 44px;
+
+                    background-color: transparent;
+                    background-image: linear-gradient(
+                        $color-primary-500,
+                        $color-primary-500
+                    );
+                    background-size: 4px calc(100% - 6px);
+                    background-position: center;
+                    background-repeat: no-repeat;
+
+                    border: 0;
+                    border-radius: 0;
+                }
+
+                &:active::-webkit-slider-thumb {
+                    background-color: rgba(33, 150, 243, 0.15);
+                    border-radius: 999px;
+                }
+
+                &:active::-moz-range-thumb {
+                    background-color: rgba(33, 150, 243, 0.15);
+                    border-radius: 999px;
                 }
             }
         }
@@ -239,74 +350,11 @@
             gap: 1rem;
             font-variant-numeric: tabular-nums;
 
-            &__time { font-weight: 600; }
+            &__time {
+                font-weight: 600;
+            }
         }
 
         .play { width: 100%; }
-
-        // Override the base element styles AFTER their declarations.
-        // On mobile, the compact counter replaces both old beat displays.
-        @media screen and (max-width: 767px) {
-            .current-beat,
-            .beats {
-                display: none;
-            }
-
-            .tempo-control {
-                display: flex;
-                flex-direction: column;
-                width: 100%;
-                gap: $size-3;
-                margin-block: $size-2;
-
-                .tempo-display { display: none; }
-
-                .tempo-range {
-                    width: 100%;
-                    height: 24px;
-                    margin: 0;
-                    writing-mode: horizontal-tb;
-                    direction: ltr;
-                    touch-action: auto;
-                    --track-height: 3px;
-                    --thumb-size: 24px;
-
-                    &::-webkit-slider-runnable-track {
-                        height: var(--track-height);
-                        width: 100%;
-                        border: 0;
-                        border-radius: 2px;
-                    }
-
-                    &::-webkit-slider-thumb {
-                        margin-left: 0;
-                        margin-top: calc((var(--track-height) - var(--thumb-size)) / 2);
-                        border-width: 1px;
-                        border-radius: 50%;
-                    }
-
-                    &::-moz-range-track {
-                        height: var(--track-height);
-                        width: 100%;
-                        border: 0;
-                        border-radius: 2px;
-                    }
-
-                    &::-moz-range-thumb {
-                        border-width: 1px;
-                        border-radius: 50%;
-                    }
-                }
-            }
-
-            .compact-beat-counter {
-                align-self: stretch;
-                width: 100%;
-                padding: $size-2 0;
-                background: transparent;
-                border: 0;
-            }
-
-        }
     }
 }
