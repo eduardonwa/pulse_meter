@@ -247,13 +247,23 @@
             }
         }
 
+        &__playback {
+            @include mq(large) {
+                grid-column: 1;
+                grid-row: 3;
+                border-block-start: var(--border);
+            }
+        }
+
         &__transport {
             display: none;
 
             @include mq(large) {
                 grid-column: 2 / 4;
+                grid-row: 3;
                 display: block;
                 min-width: 0;
+                border-block-start: var(--border);
                 border-inline-start: var(--border);
             }
 
