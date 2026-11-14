@@ -92,6 +92,9 @@ select {
   height: fit-content;
 
   .heading {
+    margin-block: $size-3;
+    display: flex;
+    
     .button {
       padding: 0;
       display: block;
@@ -108,8 +111,9 @@ select {
   }
 
   .exercise-form-label {
-    font-weight: 400;
-    font-size: 14px;
+    font-weight: 500;
+    font-size: 15px;
+    color: $color-neutral-900;
   }
 
   .exercise-name-wrapper {
@@ -165,23 +169,27 @@ select {
 
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    justify-content: start;
+    align-items: start;
+    gap: $size-4;
+
+    @include mq(medium) {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      column-gap: $size-8;
+    }
 
     .exercise-type-wrapper,
+    .exercise-length-wrapper,
     .exercise-time-signature-wrapper {
       display: flex;
       flex-direction: column;
+      align-items: flex-start;
+      justify-content: flex-start;
       gap: $size-4;
-      
-      width: fit-content;
     }
 
     // TIMER DURATION
     .exercise-length-wrapper {
-      display: flex;
-      justify-content: space-between;
-      flex-direction: column;
-      gap: $size-4;
-      
       .length-inputs {
         display: flex;
         align-items: center;
@@ -196,8 +204,6 @@ select {
   
       .minutes,
       .seconds {
-        justify-self: end;
-        
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -215,10 +221,26 @@ select {
 
   .form-actions {
     display: flex;
-    align-items: center;
-    justify-content: space-evenly;
+    flex-direction: column;
+    gap: $size-3;
+
     padding-block-start: $size-8;
     width: 100%;
+
+    @include mq(medium) {
+      flex-direction: row;
+    }
+
+    .button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+    }
+
+    .button[data-type="primary"] {
+      padding: $size-3;
+    }
   }
 }
 

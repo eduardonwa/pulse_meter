@@ -4,11 +4,13 @@
     max-width: min(340px, calc(100vw - 32px));
 
     color: $color-do-50;
-    background: $color-neutral-950;
+    background: #24262D;
 
     border-radius: 12px;
 
     box-shadow: 0 14px 40px rgb(0 0 0 / 30%);
+
+    font-family: $font-family-base;
 
     .driver-popover-title,
     .driver-popover-description,

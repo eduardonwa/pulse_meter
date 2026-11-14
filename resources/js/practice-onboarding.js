@@ -29,7 +29,7 @@ export const TOUR_COPY = [
     },
     {
         title: 'Oh, and one last thing!',
-        description: "Click these three dots to edit any exercise. That's it!",
+        description: "Click these three dots to edit any exercise.",
     },
     {
         title: "You're all set!",
