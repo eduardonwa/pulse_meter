@@ -41,7 +41,8 @@
                     <x-metronome.routine-playback-controls />
                 </x-metronome.controls-dropdown>
 
-                <ul class="routine__exercises" data-onboarding-exercise-list>
+                <ul class="routine__exercises" data-onboarding-exercise-list
+                    @dorelog:onboarding-mobile-state.window="mobileExpandedIndex = $event.detail.index; $nextTick(() => $dispatch('picker:sync'))">
                     <x-metronome.panel-exercises-compact />
                 </ul>
 
