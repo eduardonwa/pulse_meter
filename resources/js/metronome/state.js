@@ -232,11 +232,9 @@ export function state(practiceContext = null) {
         localRoutineImportPreferenceBusy: false,
 
         // NAVIGATION
-        activeTab: requestedPanel === 'settings'
-            ? 'settings'
-            : requestedPanel === 'creative' && canUseCreativeSessions
-                ? 'sessions'
-                : 'exercises',
+        activeTab: requestedPanel === 'creative' && canUseCreativeSessions
+            ? 'sessions'
+            : 'exercises',
 
         // PICKING OPTIONS
         minutesOptions: [0, 1, 2, 3, 4, 5],
