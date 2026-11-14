@@ -151,7 +151,7 @@ function startTour(root, storageKey) {
         showProgress: true,
         smoothScroll: true,
         allowClose: true,
-        overlayClickBehavior: 'close',
+        overlayClickBehavior: 'none',
         popoverClass: 'dorelog-onboarding',
         steps,
         onDestroyed() {
