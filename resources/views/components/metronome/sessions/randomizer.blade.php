@@ -122,7 +122,9 @@
             >
                 Pulse
             </button>
-        </div>            
+
+            <x-metronome.creative-transport variant="randomizer-desktop" />
+        </div>
     </div>
 
     <div class="creative-randomizer__controls">
