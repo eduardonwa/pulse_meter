@@ -97,13 +97,13 @@
     .creative-mode-selector {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        grid-template-rows: 89px;
+        grid-template-rows: 55px;
         gap: $size-3;
         margin-block-end: $size-4;
         
         @include mq(medium) {
             grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 50px));
-            grid-template-rows: 50px;
+            grid-template-rows: 55px;
         }
 
         .button {
