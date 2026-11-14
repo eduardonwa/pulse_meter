@@ -219,6 +219,9 @@ select { cursor: pointer; }
   // Uses the same number picker as the exercise list, in its compact form.
   .exercise-bpm-wrapper {
     .exercise-row__bpm {
+      grid-area: auto;
+      grid-column: 2;
+
       display: grid;
       grid-template-columns: 1fr 1.2fr 1fr;
       align-items: center;
