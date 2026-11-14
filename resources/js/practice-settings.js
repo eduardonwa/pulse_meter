@@ -43,6 +43,10 @@ export function registerPracticeSettings(Alpine) {
                 this.askBeforeImportingFreeExercises = enabled
             } catch (error) {
                 this.feedback = 'Could not save the import preference.'
+                this.$nextTick(() => {
+                    const checkbox = this.$root.querySelector('.free-exercise-import-field input')
+                    if (checkbox) checkbox.checked = this.askBeforeImportingFreeExercises
+                })
             } finally {
                 this.importPreferenceBusy = false
             }
