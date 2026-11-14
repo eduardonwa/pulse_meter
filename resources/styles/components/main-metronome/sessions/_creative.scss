@@ -233,37 +233,14 @@
 
         &__workspace {
             overflow: hidden;
+        }
 
+        // Keep the original vertical sequence: Beats, Editing, then Playback.
+        // Only the last row becomes a three-column layout on large screens.
+        &__playback-row {
             @include mq(large) {
                 display: grid;
                 grid-template-columns: repeat(3, minmax(0, 1fr));
-            }
-        }
-
-        &__beats,
-        &__editing {
-            @include mq(large) {
-                grid-column: 1 / -1;
-            }
-        }
-
-        &__beats {
-            @include mq(large) {
-                grid-row: 1;
-            }
-        }
-
-        &__editing {
-            @include mq(large) {
-                grid-row: 2;
-            }
-        }
-
-        &__playback {
-            @include mq(large) {
-                grid-column: 1;
-                grid-row: 3;
-                border-block-start: var(--border);
             }
         }
 
@@ -272,10 +249,8 @@
 
             @include mq(large) {
                 grid-column: 2 / 4;
-                grid-row: 3;
                 display: block;
                 min-width: 0;
-                border-block-start: var(--border);
                 border-inline-start: var(--border);
             }
 
