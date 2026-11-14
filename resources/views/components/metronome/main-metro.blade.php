@@ -23,15 +23,64 @@
     </article>
 
     <div class="tempo-control">
-        <div class="tempo-display" aria-label="Tempo">
-            <span class="tempo-value" x-text="metronome.bpm">100</span>
-            <span class="tempo-unit uppercase">bpm</span>
+        <div class="tempo-display">
+            <label for="bpm">
+                <span class="tempo-value" x-text="`${metronome.bpm}`">100</span>
+                <span class="tempo-unit uppercase">bpm</span>
+            </label>
         </div>
 
-        <div class="current-exercise-readout" x-show="activeTab === 'exercises' && activeExerciseIndex !== null">
+        <div
+            class="tempo-slider"
+            :style="{ '--progress': (metronome.bpm - 30) / 370 * 100 }"
+        >
+            <div class="tempo-slider__track" aria-hidden="true">
+                <div class="tempo-slider__active"></div>
+                <div class="tempo-slider__inactive"></div>
+            </div>
+
+            <input
+                class="tempo-range"
+                type="range"
+                id="bpm"
+                min="30"
+                max="400"
+                step="1"
+                value="100"
+                x-model.number="metronome.bpm"
+                @change="handleBpmChange()"
+            >
+        </div>
+
+        <div class="tempo-step-controls">
+            <button
+                type="button"
+                class="tempo-step"
+                aria-label="Decrease tempo by 1 BPM"
+                :disabled="metronome.bpm <= 30"
+                @click="adjustBpm(-1)"
+            >−</button>
+
+            <button
+                type="button"
+                class="tempo-step"
+                aria-label="Increase tempo by 1 BPM"
+                :disabled="metronome.bpm >= 400"
+                @click="adjustBpm(1)"
+            >+</button>
+        </div>
+
+        <div
+            class="current-exercise-readout"
+            x-show="activeTab === 'exercises' && activeExerciseIndex !== null"
+        >
             <span x-text="getActiveExerciseName()"></span>
 
-            <span class="current-exercise-readout__time" :class="{ 'is-counting': isPlaying && steps[activeExerciseIndex]?.mode === 'drill' }" x-text="getActiveExerciseTimeLabel()"></span>
+            <span
+                class="current-exercise-readout__time"
+                :class="{ 'is-counting': isPlaying && steps[activeExerciseIndex]?.mode === 'drill' }"
+                x-text="getActiveExerciseTimeLabel()"
+            ></span>
         </div>
     </div>
 
