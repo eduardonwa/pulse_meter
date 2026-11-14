@@ -30,6 +30,30 @@
             }
         }
 
+        &__actions {
+            display: flex;
+            align-items: center;
+            gap: $size-3;
+            flex: 0 0 auto;
+        }
+
+        &__start {
+            display: none;
+
+            @include mq(medium) {
+                display: block;
+            }
+
+            .button[data-type="play-metronome"] {
+                width: auto;
+                min-width: 148px;
+                height: 44px;
+                padding-inline: $size-4;
+                margin: 0;
+                white-space: nowrap;
+            }
+        }
+
         &__routine-context {
             display: flex;
             flex-direction: column;
