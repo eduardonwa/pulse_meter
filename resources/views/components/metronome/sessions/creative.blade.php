@@ -3,7 +3,9 @@
     x-show="metronome.mode === 'creative'"
     x-cloak
 >
-    <div class="play">
+    @include('components.metronome.sessions.creative-menu')
+
+    <div class="play mode-creative__sticky-play">
         <button
             class="button uppercase"
             data-type="play-metronome"
@@ -14,8 +16,6 @@
             <span x-text="isPlaying ? 'Stop' : 'Start'">Start</span>
         </button>
     </div>
-
-    @include('components.metronome.sessions.creative-menu')
 
     <div x-show="creativeMode === 'pulse-editor'" x-cloak>
         @include('components.metronome.sessions.pulse-editor')
