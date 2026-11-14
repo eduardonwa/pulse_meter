@@ -6,7 +6,7 @@
         "build": "vite build",
         "dev": "vite",
         "test:js": "node --test tests/JavaScript/*.test.js",
-    "test:build:practice": "npm run build && node --test tests/Build/practice-entry.test.js"
+        "test:build:practice": "npm run build && node --test tests/Build/practice-entry.test.js"
     },
     "devDependencies": {
         "@tailwindcss/vite": "^4.3.2",
@@ -18,6 +18,7 @@
     },
     "dependencies": {
         "@coderline/alphatab": "^1.8.4",
-        "@coderline/alphatab-vite": "^1.8.4"
+        "@coderline/alphatab-vite": "^1.8.4",
+        "driver.js": "1.4.0"
     }
 }

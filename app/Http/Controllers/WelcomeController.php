@@ -66,8 +66,8 @@ class WelcomeController extends Controller
                             [
                                 'name' => 'Alternate Picking',
                                 'bpm' => 100,
-                                'mode' => 'drill',
-                                'duration_seconds' => 5,
+                                'mode' => 'classic',
+                                'duration_seconds' => null,
                                 'position' => 0,
                                 'origin' => 'preset',
                             ],
@@ -75,16 +75,8 @@ class WelcomeController extends Controller
                                 'name' => 'Legato',
                                 'bpm' => 80,
                                 'mode' => 'drill',
-                                'duration_seconds' => 5,
-                                'position' => 1,
-                                'origin' => 'preset',
-                            ],
-                            [
-                                'name' => 'Sweep Picking',
-                                'bpm' => 90,
-                                'mode' => 'drill',
                                 'duration_seconds' => 60,
-                                'position' => 2,
+                                'position' => 1,
                                 'origin' => 'preset',
                             ],
                         ]);

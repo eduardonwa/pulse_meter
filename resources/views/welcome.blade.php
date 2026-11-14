@@ -68,6 +68,7 @@
     </header>
 
     <main class="metronome | container" data-type="wide" data-spacing="none"
+        data-onboarding-storage-key="dorelog:practice-onboarding:v1:{{ $user?->id ?? 'guest' }}"
         x-data="routinePlayer(
             @js($practiceContext),
             @js($pulsePresets)

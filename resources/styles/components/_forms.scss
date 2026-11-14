@@ -47,9 +47,7 @@ input[type="checkbox"] {
   height: 18px;
 }
 
-select {
-  cursor: pointer;
-}
+select { cursor: pointer; }
 
 .checkbox {
   display: flex;
@@ -86,15 +84,18 @@ select {
 .new-exercise-form {
   display: flex;
   flex-direction: column;
-  gap: $size-2;
+  gap: $size-4;
   padding: $size-4;
-
   height: fit-content;
 
   .heading {
+    display: flex;
+    align-items: center;
+    margin-block: $size-3;
+
     .button {
-      padding: 0;
       display: block;
+      padding: 0;
       margin-left: auto;
       border: 1px solid transparent;
       background: transparent;
@@ -108,117 +109,252 @@ select {
   }
 
   .exercise-form-label {
-    font-weight: 400;
-    font-size: 14px;
+    font-size: 15px;
+    font-weight: 500;
+    color: $color-neutral-900;
   }
 
   .exercise-name-wrapper {
-    margin-block: $size-4 $size-3;
     display: flex;
-    align-items: center;
-    gap: $size-4;
+    flex-direction: column;
+    align-items: stretch;
+    gap: $size-2;
+    min-width: 0;
 
     .name {
-      padding: $size-2;
       width: 100%;
-      font-size: $font-size-300;      
+      padding: $size-3;
+      font-size: $font-size-300;
       font-weight: normal;
       border: 1px solid $color-neutral-300;
     }
   }
 
-  // COLUMNS
-  .form-group {
-    display: grid;
-    gap: $size-4;
-
-    &.fields {
-      display: grid;
-      grid-template-areas:
-        "bpm"
-        "settings";
-      gap: $size-4;
-    }
-  }
-
-  // BPM
-  .exercise-bpm-wrapper {
-    padding-block-end: $size-4;
-    border-block-end: 1px solid hsl(var(--neutral-950) / .2);
-    display: flex;
-    align-items: center;
-    gap: $size-4;
-
-    .exercise-row__bpm {
-      width: 100%;
-      display: flex;
-      flex-direction: row;
-      align-items: center;
-      justify-content: space-around;
-      border-inline-end: 1px solid transparent;
-    }
-  }
-
+  // All non-text fields share a single compact, horizontal settings group.
   .exercise-settings {
-    padding-block-start: $size-4;
-    grid-area: settings;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid $color-neutral-200;
+    border-radius: $border-radius-1;
+    padding-inline: $size-3;
+  }
 
+  .exercise-setting-row {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr;
+    align-items: center;
+    gap: $size-2;
+
+    min-width: 0;
+    min-height: 72px;
+
+    padding-block: $size-3;
+
+    &:not(:last-child) {
+      border-block-end: 1px solid $color-neutral-200;
+    }
+
+    > .exercise-form-label {
+      flex: 0 1 auto;
+      min-width: 0;
+    }
+
+    > select,
+    .length-inputs {
+      width: 100%;
+      max-width: none;
+    }
+  }
+
+  // Two-choice pill toggle for exercise type.
+  .exercise-type-toggle {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: center;
+    gap: $size-1;
+    
+    width: 100%;
+    min-width: 0;
+    
+    padding: $size-1;
+    
+    border: 1px solid $color-neutral-300;
+    border-radius: $border-radius-1;
+    
+    background: $color-neutral-100;
 
-    .exercise-type-wrapper,
-    .exercise-time-signature-wrapper {
-      display: flex;
-      flex-direction: column;
-      gap: $size-4;
+    &__option {
+      display: grid;
+      place-items: center;
       
-      width: fit-content;
+      min-width: 0;
+      min-height: 40px;
+      
+      padding-inline: $size-1;
+      
+      border: 1px solid transparent;
+      border-radius: $border-radius-2;
+      
+      background: transparent;
+      color: $color-neutral-700;
+      
+      font: inherit;
+      font-size: $font-size-300;
+      
+      cursor: pointer;
+
+      &.is-active {
+        background: $color-neutral-800;
+        color: $color-neutral-50;
+        font-weight: 500;
+      }
+
+      &:focus-visible {
+        outline: 2px solid $color-neutral-700;
+        outline-offset: 2px;
+      }
     }
+  }
 
-    // TIMER DURATION
-    .exercise-length-wrapper {
-      display: flex;
-      justify-content: space-between;
-      flex-direction: column;
-      gap: $size-4;
-      
-      .length-inputs {
-        display: flex;
-        align-items: center;
-        gap: $size-2;
-  
-        .colon {
-          font-weight: normal;
-          text-align: center;
-          margin-block-end: $size-6;
+  // Uses the same number picker as the exercise list, in its compact form.
+  .exercise-bpm-wrapper {
+    .exercise-row__bpm {
+      display: grid;
+      grid-template-columns: 1fr 1.2fr 1fr;
+      align-items: center;
+      gap: 0;
+
+      width: 100%;
+      min-width: 0;
+
+      .number-picker__control {
+        width: 100%;
+        min-width: 0;
+        height: 44px;
+        padding: 0;
+
+        display: grid;
+        place-items: center;
+
+        background: $color-neutral-200;
+        border: 1px solid $color-neutral-300;
+        border-radius: 0;
+
+        &:first-child {
+          border-radius: $border-radius-1 0 0 $border-radius-1;
+          border-right: 0;
+        }
+
+        &:last-child {
+          border-radius: 0 $border-radius-1 $border-radius-1 0;
+          border-left: 0;
         }
       }
-  
-      .minutes,
-      .seconds {
-        justify-self: end;
-        
-        display: flex;
-        flex-direction: column;
-        align-items: center;
+
+      .picker-column {
+        width: 100%;
+        min-width: 0;
+        max-width: none;
+        height: 44px;
+
+        background: $color-neutral-50;
+        border: 1px solid $color-neutral-300;
+        border-radius: 0;
+      }
+    }
+  }
+
+  .exercise-length-wrapper {
+    .length-inputs {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      align-items: center;
+      gap: $size-2;
+
+      width: 100%;
+      min-width: 0;
+
+      .colon {
+        align-self: flex-start;
+        line-height: 44px;
+        font-weight: normal;
+      }
+    }
+
+    .minutes,
+    .seconds {
+      overflow: hidden;
+
+      background-color: $color-neutral-200;
+      border: 1px solid $color-neutral-300;
+      border-radius: $border-radius-1;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      
+      min-width: 0;
+      height: 44px;
+
+      font-size: $font-size-400;
+
+      .picker-column {
+        flex: 1;
+        width: 100%;
+        min-width: 0;
+        max-width: none;
+
+        background: $color-neutral-50;
+        border: 1px solid transparent;
+        border-inline-end: 1px solid $color-neutral-300;
+        border-radius: 0;
+      }
+
+      .picker-option {
         font-size: $font-size-400;
-  
-        .picker-option { font-size: $font-size-400; }
+        height: 44px;
+
+        border: 1px solid transparent;
+      }
+
+      .unit {
+        flex-shrink: 0;
         
-        .unit {
-          margin-inline-start: $size-1;
-          font-weight: normal;
-        }
+        font-weight: normal;
+        font-size: $font-size-300;
+        color: $color-neutral-600;
+        
+        background-color: transparent;
+        
+        padding-inline: $size-2;
+        margin-inline-end: 0;
       }
     }
+
+    .colon { display: none; }
   }
 
   .form-actions {
     display: flex;
-    align-items: center;
-    justify-content: space-evenly;
-    padding-block-start: $size-8;
+    flex-direction: column;
+    gap: $size-3;
+    padding-block-start: $size-4;
     width: 100%;
+
+    @include mq(medium) {
+      flex-direction: row;
+    }
+
+    .button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+    }
+
+    .button[data-type="primary"] {
+      padding: $size-3;
+    }
   }
 }
 

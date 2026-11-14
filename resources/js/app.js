@@ -31,6 +31,7 @@ void bootstrap({
         await Promise.all([
             import('./metronome'),
             import('./alphatab-exercises'),
+            import('./practice-onboarding.js'),
         ])
     },
     startLivewire: () => Livewire.start(),

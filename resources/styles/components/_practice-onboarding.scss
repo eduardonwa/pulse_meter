@@ -1,0 +1,83 @@
+@use "../abstracts" as *;
+
+.driver-popover.dorelog-onboarding {
+    max-width: min(340px, calc(100vw - 32px));
+
+    color: $color-do-50;
+    background: #24262D;
+
+    border-radius: 12px;
+
+    box-shadow: 0 14px 40px rgb(0 0 0 / 30%);
+
+    font-family: $font-family-base;
+
+    .driver-popover-title,
+    .driver-popover-description,
+    .driver-popover-progress-text {
+        color: inherit;
+    }
+
+    .driver-popover-description {
+        line-height: 1.55;
+    }
+
+    .driver-popover-next-btn,
+    .driver-popover-prev-btn {
+        border-radius: 6px;
+        box-shadow: none;
+        text-shadow: none;
+        font: inherit;
+        padding: 8px 12px;
+    }
+
+    .driver-popover-next-btn {
+        background: $color-re-400;
+        border: 1px solid $color-re-400;
+        color: $color-neutral-950;
+    }
+
+    .driver-popover-prev-btn {
+        color: $color-do-50;
+        background: transparent;
+        border: 1px solid $color-neutral-600;
+    }
+
+    .driver-popover-close-btn {
+        color: $color-do-50;
+    }
+
+    .dorelog-onboarding-decline {
+        padding: 8px 10px;
+        text-shadow: none;
+        color: $color-do-50;
+        background: transparent;
+        border: 0;
+
+        cursor: pointer;
+        font: inherit;
+
+        font-weight: 400;
+        white-space: nowrap;
+        margin-right: auto;
+    }
+
+    .driver-popover-footer {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .driver-popover-footer-buttons {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    button:focus-visible {
+        outline: 2px solid $color-re-400;
+        outline-offset: 3px;
+    }
+}
