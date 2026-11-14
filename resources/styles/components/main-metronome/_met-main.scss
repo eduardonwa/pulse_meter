@@ -235,5 +235,18 @@
         }
 
         .play { width: 100%; }
+
+        .play--routine-mobile {
+            display: block;
+            padding-inline: $size-1;
+
+            .button[data-type="play-metronome"] {
+                width: 100%;
+            }
+
+            @include mq(medium) {
+                display: none !important;
+            }
+        }
     }
 }
