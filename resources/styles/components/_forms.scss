@@ -168,6 +168,47 @@ select {
     }
   }
 
+  // Two-choice pill toggle for exercise type.
+  .exercise-type-toggle {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: center;
+    gap: $size-1;
+    width: 100%;
+    min-width: 0;
+    padding: $size-1;
+    border: 1px solid $color-neutral-300;
+    border-radius: 999px;
+    background: $color-neutral-200;
+
+    &__option {
+      display: grid;
+      place-items: center;
+      min-width: 0;
+      min-height: 40px;
+      padding-inline: $size-1;
+      border: 1px solid transparent;
+      border-radius: 999px;
+      background: transparent;
+      color: $color-neutral-700;
+      font: inherit;
+      font-size: $font-size-300;
+      cursor: pointer;
+
+      &.is-active {
+        background: $color-neutral-50;
+        border-color: $color-neutral-300;
+        color: $color-neutral-950;
+        font-weight: 500;
+      }
+
+      &:focus-visible {
+        outline: 2px solid $color-neutral-700;
+        outline-offset: 2px;
+      }
+    }
+  }
+
   // Uses the same number picker as the exercise list, in its compact form.
   .exercise-bpm-wrapper {
     .exercise-row__bpm {
