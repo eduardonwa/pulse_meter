@@ -22,7 +22,7 @@
                             <input type="checkbox"
                                 :checked="askBeforeImportingFreeExercises"
                                 :disabled="importPreferenceBusy"
-                                @change="setImportPreference($event.target.checked); $event.target.checked = askBeforeImportingFreeExercises">
+                                @change="setImportPreference($event.target.checked)">
                             <span>Ask before importing Free exercises after signing in</span>
                         </label>
                     @endif
