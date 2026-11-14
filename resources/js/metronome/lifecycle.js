@@ -19,6 +19,14 @@ export function lifecycle() {
                     loading?.remove()
 
                     this.$root.dataset.practiceReady = 'true'
+                    window.dispatchEvent(new CustomEvent('dorelog:practice-ready', {
+                        detail: {
+                            steps: this.steps.map(step => ({ name: step.name, mode: step.mode })),
+                            practiceMode: this.practiceMode,
+                            isPlaying: this.isPlaying,
+                            usesLocalPersistence: this.usesLocalPersistence,
+                        },
+                    }))
 
                     window.dispatchEvent(new Event('picker:sync'))
 
