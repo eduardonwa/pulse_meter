@@ -1,5 +1,4 @@
-<dialog
-    class="dialog-shell"
+<dialog class="dialog-shell dialog-shell--fit-content"
     data-variant="danger-dialog"
     x-ref="deletePatternDialog"
 >

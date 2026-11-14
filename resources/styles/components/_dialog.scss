@@ -321,9 +321,10 @@
     .button[data-type="icon"] {
       align-self: flex-end;
 
-      color: $color-neutral-950;
       display: flex;
       justify-content: flex-end;
+
+      svg { stroke: $color-neutral-800; }
     }
 
     .heading {
@@ -345,6 +346,12 @@
   &__list {
     min-height: 0;
   }
+}
+
+// Danger variant
+.dialog-shell[data-variant="danger-dialog"] {
+  align-items: center;
+  max-width: 400px;
 }
 
 // Opt-in layout for viewport-anchored dialogs.
@@ -507,10 +514,12 @@
 
       .button[data-type="icon"] {
         width: 21px;
-
+        
         display: flex;
         align-items: center;
         justify-content: flex-end;
+
+        svg { stroke: $color-neutral-800; }
       }
       
       @include dialog-edit-delete-colors;

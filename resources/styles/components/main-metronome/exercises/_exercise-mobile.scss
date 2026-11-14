@@ -308,7 +308,7 @@
 
         > button,
         .mobile-exercise-sheet__directions button {
-            text-align: left;
+            text-align: center;
             padding: 14px;
             min-height: 50px;
 
@@ -335,6 +335,8 @@
 
         .button {
             width: 100%;
+
+            svg { stroke: $color-neutral-800; }
         }
     }
 }
