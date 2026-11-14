@@ -100,7 +100,8 @@
             </div>
         </div>
         
-        <div class="creative-randomizer__playback" x-show="randomizerResult" x-cloak>
+        <div class="creative-randomizer__playback-row" x-show="randomizerResult" x-cloak>
+            <div class="creative-randomizer__playback">
             <h3 class="heading">Playback</h3>
             
             <button
@@ -123,10 +124,11 @@
                 Pulse
             </button>
 
-        </div>
+            </div>
 
-        <div class="creative-randomizer__transport" x-show="randomizerResult" x-cloak>
-            <x-metronome.creative-transport variant="randomizer-desktop" />
+            <div class="creative-randomizer__transport">
+                <x-metronome.creative-transport variant="randomizer-desktop" />
+            </div>
         </div>
     </div>
 
