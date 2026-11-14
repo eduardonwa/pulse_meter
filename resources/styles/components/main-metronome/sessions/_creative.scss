@@ -14,9 +14,9 @@
         width: 100vw;
         margin-inline: calc(50% - 50vw);
 
-        display: flex;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
         align-items: center;
-        justify-content: space-between;
         gap: $size-3;
         padding: $size-3;
         margin-block-end: $size-4;
@@ -27,12 +27,14 @@
             min-width: 0;
             display: flex;
             align-items: center;
+            justify-content: center;
             gap: $size-2;
         }
 
         &__bpm {
             min-width: 0;
-            width: 70px;
+            width: 92px;
+            max-width: 100%;
             height: 44px;
         }
 
@@ -42,7 +44,7 @@
         }
 
         > .button[data-type="play-metronome"] {
-            flex: 0 1 55%;
+            width: 100%;
             min-width: 0;
         }
 
@@ -55,10 +57,7 @@
             top: 0;
             width: 100%;
             margin-inline: 0;
-
-            > .button[data-type="play-metronome"] {
-                flex: 1;
-            }
+            grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
         }
 
         // On large screens only, dock the desktop instance in the editor grid.
@@ -69,7 +68,8 @@
 
             &--desktop {
                 grid-area: transport;
-                display: flex;
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
                 align-self: stretch;
                 position: static;
                 width: auto;
