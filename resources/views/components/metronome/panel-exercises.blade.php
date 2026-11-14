@@ -23,6 +23,18 @@
 
         <template x-if="practiceMode === 'routine'">
             <section class="routine">
+                <div class="routine__start">
+                    <button
+                        class="button uppercase"
+                        data-type="play-metronome"
+                        type="button"
+                        :disabled="steps.length === 0 && !isPlaying && !isWaitingForNextExercise"
+                        :data-state="isPlaying || isWaitingForNextExercise ? 'stop' : 'start'"
+                        @click="toggleRoutinePlayback()"
+                    >
+                        <span x-text="isPlaying || isWaitingForNextExercise ? 'Stop Routine' : 'Start Routine'">Start Routine</span>
+                    </button>
+                </div>
                 <x-metronome.controls-dropdown>
                     <x-metronome.routine-playback-controls />
                 </x-metronome.controls-dropdown>
