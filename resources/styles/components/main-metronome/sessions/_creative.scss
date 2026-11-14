@@ -43,9 +43,13 @@
             color: $color-neutral-700;
         }
 
-        > .button[data-type="play-metronome"] {
-            width: 100%;
+        &__play {
             min-width: 0;
+
+            > .button[data-type="play-metronome"] {
+                width: 100%;
+                min-width: 0;
+            }
         }
 
         &--desktop {
@@ -67,18 +71,25 @@
             }
 
             &--desktop {
-                grid-area: transport;
-                display: grid;
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-                align-self: stretch;
-                position: static;
-                width: auto;
-                margin-inline: 0;
-                padding: $size-4;
-                margin-block-end: 0;
-                border-block-end: var(--border);
-                border-inline-start: var(--border);
-                background: $color-neutral-100;
+                // Expose both controls as independent cells in time-signature.
+                display: contents;
+
+                .creative-transport__tempo {
+                    grid-area: tempo;
+                    padding: $size-4;
+                    border-block-end: var(--border);
+                    border-inline-end: var(--border);
+                    background: $color-neutral-100;
+                }
+
+                .creative-transport__play {
+                    grid-area: start;
+                    display: flex;
+                    align-items: center;
+                    padding: $size-4;
+                    border-block-end: var(--border);
+                    background: $color-neutral-100;
+                }
             }
         }
     }
@@ -296,7 +307,7 @@
                 "pattern     pattern        pattern"
                 "meter       current-meter  grouping"
                 "cue         structure      playback"
-                "subdivision subdivision    transport"
+                "subdivision tempo          start"
                 "actions     actions        actions";
         }
 
