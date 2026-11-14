@@ -11,6 +11,7 @@
             data-type="play-metronome"
             type="button"
             :data-state="isPlaying ? 'stop' : 'start'"
+            :disabled="creativeMode === 'randomizer' && !randomizerResult && !isPlaying"
             @click="toggle()"
         >
             <span x-text="isPlaying ? 'Stop' : 'Start'">Start</span>
