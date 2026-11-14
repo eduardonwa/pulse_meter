@@ -16,7 +16,9 @@
         "laravel/pulse": "^1.10",
         "laravel/socialite": "^5.29",
         "laravel/tinker": "^3.0",
-        "livewire/livewire": "^4.0"
+        "livewire/livewire": "^4.0",
+        "symfony/http-client": "^8.1",
+        "symfony/mailgun-mailer": "^8.1"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
