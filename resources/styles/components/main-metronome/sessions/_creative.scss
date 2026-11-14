@@ -247,6 +247,18 @@
             }
         }
 
+        &__beats {
+            @include mq(large) {
+                grid-row: 1;
+            }
+        }
+
+        &__editing {
+            @include mq(large) {
+                grid-row: 2;
+            }
+        }
+
         &__playback {
             @include mq(large) {
                 grid-column: 1;
