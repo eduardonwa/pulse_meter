@@ -1,5 +1,9 @@
 <div class="creative-randomizer" :class="{ 'has-result': randomizerResult }">
     <template x-if="randomizerResult">
+        <x-metronome.creative-transport variant="randomizer" />
+    </template>
+
+    <template x-if="randomizerResult">
         <div class="creative-randomizer__result">
             <span class="creative-randomizer__result-label">
                 Your result
