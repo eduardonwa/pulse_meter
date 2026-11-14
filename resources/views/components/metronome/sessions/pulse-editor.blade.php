@@ -1,4 +1,6 @@
 <div class="pulse-editor">
+    <x-metronome.creative-transport />
+
     <div class="time-signature">
         <div class="time-signature__pattern">
             <h2 class="heading">
