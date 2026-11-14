@@ -27,8 +27,13 @@
             z-index: auto;
 
             gap: $size-8;
+
             padding: $size-4;
+            padding-block-start: $size-8;
+            margin-block-start: $size-4;
+            
             background: transparent;
+            
             border-block-end: 0;
 
             &.is-scrolled {
