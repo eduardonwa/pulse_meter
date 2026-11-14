@@ -46,7 +46,7 @@ export function lifecycle() {
                 })
             })
 
-            if (this.activeTab === 'sessions') {
+            if (this.activeTab === 'sessions' && this.canUseCreativeSessions) {
                 this.handleSessionModeChange('creative')
             }
             if (this.usesLocalPersistence) {
@@ -208,6 +208,9 @@ export function lifecycle() {
 
         // NAVIGATION
         selectTab(tab) {
+            if (tab === 'sessions' && !this.canUseCreativeSessions) {
+                return
+            }
             const previousTab = this.activeTab
 
             this.activeTab = tab
