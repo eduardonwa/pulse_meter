@@ -13,13 +13,15 @@
         <span class="creative-transport__unit">BPM</span>
     </div>
 
-    <button
-        class="button uppercase"
+    <div class="creative-transport__play">
+        <button
+            class="button uppercase"
         data-type="play-metronome"
         type="button"
         :data-state="isPlaying ? 'stop' : 'start'"
         @click="toggle()"
     >
         <span x-text="isPlaying ? 'Stop' : 'Start'">Start</span>
-    </button>
+        </button>
+    </div>
 </div>
