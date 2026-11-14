@@ -6,6 +6,7 @@ use App\Filament\Resources\Users\Pages\ListUsers;
 use App\Models\User;
 use BackedEnum;
 use Filament\Resources\Resource;
+use Filament\Notifications\Notification;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
@@ -66,6 +67,12 @@ class UserResource extends Resource
                         $record->forceFill([
                             'creative_sessions_enabled' => $state,
                         ])->save();
+
+                        Notification::make()
+                            ->title($state ? 'Creative Sessions enabled' : 'Creative Sessions disabled')
+                            ->body("Saved for {$record->name}.")
+                            ->success()
+                            ->send();
                     }),
             ])
             ->defaultSort('name');
