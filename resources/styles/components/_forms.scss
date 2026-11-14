@@ -47,9 +47,7 @@ input[type="checkbox"] {
   height: 18px;
 }
 
-select {
-  cursor: pointer;
-}
+select { cursor: pointer; }
 
 .checkbox {
   display: flex;
@@ -174,31 +172,40 @@ select {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     align-items: center;
     gap: $size-1;
+    
     width: 100%;
     min-width: 0;
+    
     padding: $size-1;
+    
     border: 1px solid $color-neutral-300;
-    border-radius: 999px;
-    background: $color-neutral-200;
+    border-radius: $border-radius-1;
+    
+    background: $color-neutral-100;
 
     &__option {
       display: grid;
       place-items: center;
+      
       min-width: 0;
       min-height: 40px;
+      
       padding-inline: $size-1;
+      
       border: 1px solid transparent;
-      border-radius: 999px;
+      border-radius: $border-radius-2;
+      
       background: transparent;
       color: $color-neutral-700;
+      
       font: inherit;
       font-size: $font-size-300;
+      
       cursor: pointer;
 
       &.is-active {
-        background: $color-neutral-50;
-        border-color: $color-neutral-300;
-        color: $color-neutral-950;
+        background: $color-neutral-800;
+        color: $color-neutral-50;
         font-weight: 500;
       }
 
