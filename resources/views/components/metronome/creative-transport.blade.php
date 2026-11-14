@@ -1,0 +1,24 @@
+<div class="creative-transport" aria-label="Creative playback controls">
+    <div class="creative-transport__tempo">
+        <span class="creative-transport__label">Tempo</span>
+        <x-inputs.number-picker
+            class="creative-transport__bpm"
+            options="bpmOptions"
+            model="metronome.bpm"
+            after-change="handleCreativeBpmChange()"
+            hint="Scroll to change tempo"
+            :live-preview="true"
+        />
+        <span class="creative-transport__unit">BPM</span>
+    </div>
+
+    <button
+        class="button uppercase"
+        data-type="play-metronome"
+        type="button"
+        :data-state="isPlaying ? 'stop' : 'start'"
+        @click="toggle()"
+    >
+        <span x-text="isPlaying ? 'Stop' : 'Start'">Start</span>
+    </button>
+</div>
