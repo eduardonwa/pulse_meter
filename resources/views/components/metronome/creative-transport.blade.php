@@ -2,7 +2,6 @@
 
 <div class="creative-transport creative-transport--{{ $variant }}" aria-label="Creative playback controls">
     <div class="creative-transport__tempo">
-        <span class="creative-transport__label">Tempo</span>
         <x-inputs.number-picker
             class="creative-transport__bpm"
             options="bpmOptions"
