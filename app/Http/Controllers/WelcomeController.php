@@ -337,6 +337,7 @@ class WelcomeController extends Controller
             'groups' => $practiceGroups,
 
             'capabilities' => [
+                'creative_sessions' => $user?->canUseCreativeSessions() ?? false,
                 'tablature_creation' => $user?->hasProAccess() ?? false,
             ],
 
