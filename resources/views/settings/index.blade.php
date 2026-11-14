@@ -74,6 +74,7 @@
             @keydown.escape.window="showResetAppModal = false" @click.self="showResetAppModal = false" x-cloak>
             <div class="modal-panel" data-type="danger" @click.stop>
                 <div class="heading">
+                    <x-heroicon-o-exclamation-triangle />
                     <h2>Reset app?</h2>
                     <p class="fs-300">This will delete your locally stored exercises and recent sessions.</p>
                 </div>

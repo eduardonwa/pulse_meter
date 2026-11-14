@@ -129,6 +129,13 @@ export function playbackSession() {
         },
         
         // BPM UPDATES
+        handleCreativeBpmChange() {
+            // Creative tempo changes should update playback, not save a practice session.
+            if (this.isPlaying && this.metronome.mode === 'creative') {
+                this.restartMetronome()
+            }
+        },
+
         handleBpmChange() {
             clearTimeout(this.bpmChangeTimeoutId)
         

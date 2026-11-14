@@ -5,16 +5,127 @@
         width: 100%;
     }
 
+    .creative-transport {
+        position: sticky;
+        top: var(--creative-sticky-top, 0px);
+        z-index: 21;
+
+        // Full-bleed on mobile, even when Pulse Editor has page gutters.
+        width: 100vw;
+        margin-inline: calc(50% - 50vw);
+
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        align-items: center;
+        gap: $size-3;
+        padding: $size-3;
+        margin-block-end: $size-4;
+        background: $color-neutral-100;
+        border-block-end: 1px solid hsl(var(--neutral-950) / .1);
+
+        &__tempo {
+            min-width: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: $size-2;
+        }
+
+        &__bpm {
+            min-width: 0;
+            width: 92px;
+            max-width: 100%;
+            height: 44px;
+        }
+
+        &__unit {
+            font-size: 12px;
+            color: $color-neutral-700;
+        }
+
+        &__play {
+            min-width: 0;
+
+            > .button[data-type="play-metronome"] {
+                width: 100%;
+                min-width: 0;
+            }
+        }
+
+        &--desktop,
+        &--randomizer-desktop {
+            display: none;
+        }
+
+        &--randomizer {
+            margin-block-end: 0;
+        }
+
+        // Medium keeps the transport above the editor and sticky.
+        @include mq(medium) {
+            top: 0;
+            width: 100%;
+            margin-inline: 0;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+        }
+
+        // On large screens only, dock the desktop instance in the editor grid.
+        @include mq(large) {
+            &--randomizer {
+                display: none;
+            }
+
+            &--randomizer-desktop {
+                display: grid;
+                position: static;
+                width: 100%;
+                margin-inline: 0;
+                margin-block: $size-4 0;
+                padding: $size-3 0 0;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                background: transparent;
+                border-block-start: 1px solid hsl(var(--neutral-950) / .1);
+                border-block-end: 0;
+            }
+
+            &--mobile {
+                display: none;
+            }
+
+            &--desktop {
+                // Expose both controls as independent cells in time-signature.
+                display: contents;
+
+                .creative-transport__tempo {
+                    grid-area: tempo;
+                    padding: $size-4;
+                    border-block-end: var(--border);
+                    border-inline-end: var(--border);
+                    background: $color-neutral-100;
+                }
+
+                .creative-transport__play {
+                    grid-area: start;
+                    display: flex;
+                    align-items: center;
+                    padding: $size-4;
+                    border-block-end: var(--border);
+                    background: $color-neutral-100;
+                }
+            }
+        }
+    }
+
     .creative-mode-selector {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        grid-template-rows: 89px;
+        grid-template-rows: 55px;
         gap: $size-3;
         margin-block-end: $size-4;
         
         @include mq(medium) {
             grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 50px));
-            grid-template-rows: 50px;
+            grid-template-rows: 55px;
         }
 
         .button {
@@ -124,6 +235,52 @@
             overflow: hidden;
         }
 
+        // Keep the original vertical sequence: Beats, Editing, then Playback.
+        // Only the last row becomes a three-column layout on large screens.
+        &__playback-row {
+            @include mq(large) {
+                display: grid;
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+        }
+
+        &__transport {
+            display: none;
+
+            @include mq(large) {
+                grid-column: 2 / 4;
+                display: block;
+                min-width: 0;
+                border-inline-start: var(--border);
+            }
+
+            .creative-transport--randomizer-desktop {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+                background: $color-neutral-100;
+                border: 0;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                align-items: stretch;
+
+                .creative-transport__tempo,
+                .creative-transport__play {
+                    min-width: 0;
+                    padding: $size-4;
+                }
+
+                .creative-transport__tempo {
+                    border-inline-end: var(--border);
+                }
+
+                .creative-transport__play {
+                    display: flex;
+                    align-items: center;
+                }
+            }
+        }
+
         &__beats,
         &__editing,
         &__playback {
@@ -159,9 +316,24 @@
         &__controls,
         &__persistence {
             display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
+            flex-direction: column;
+            align-items: stretch;
             gap: $size-3;
+
+            .button {
+                width: 100%;
+            }
+
+            @include mq(medium) {
+                flex-direction: row;
+                align-items: center;
+                justify-content: center;
+                flex-wrap: wrap;
+
+                .button {
+                    width: auto;
+                }
+            }
         }
 
         &__playback,
@@ -213,7 +385,16 @@
                 "actions     actions        actions";
         }
 
-        > div {
+        @include mq(large) {
+            grid-template-areas:
+                "pattern     pattern        pattern"
+                "meter       current-meter  grouping"
+                "cue         structure      playback"
+                "subdivision tempo          start"
+                "actions     actions        actions";
+        }
+
+        > div:not(.creative-transport) {
             padding: $size-4;
 
             .heading {
@@ -376,7 +557,7 @@
             grid-area: subdivision;
 
             border-block-end: var(--border);
-            border-inline-end: 1px solid transparent;
+            border-inline-end: var(--border);
            
             .subdivision-selector {
                 width: 100%;
@@ -469,14 +650,20 @@
 
         &__actions {
             grid-area: actions;
+            width: 100%;
             margin-inline: auto;
-            display: flex;
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
             align-items: center;
-            gap: $size-4;
+            gap: $size-3;
 
-            @include mq(medium) {
-                margin-left: 0;
-                margin-inline: auto;
+            .button {
+                width: 100%;
+                min-width: 0;
+            }
+
+            @include mq(large) {
+                width: calc(100% / 3);
             }
         }
     }

@@ -90,7 +90,9 @@
                     <div class="mobile-exercise-sheet__list">
                         <button type="button" :disabled="steps.length >= maxSteps || exerciseActionBusy || isPlaying || isWaitingForNextExercise || (hasAlphaTabPattern(step) && !canCreateTablatures)"
                             @click="mobileOptionsOpen = false; duplicateMobileExercise(index)">Duplicate</button>
-                        <button type="button" :disabled="exerciseActionBusy || isPlaying || isWaitingForNextExercise" @click="mobileMoving = true">Move</button>
+
+                        <button type="button" data-mobile-move-done :disabled="exerciseActionBusy || isPlaying || isWaitingForNextExercise" @click="mobileMoving = true">Move</button>
+                        
                         <button type="button" class="mobile-exercise-sheet__danger" :disabled="steps.length <= 1"
                             @click="mobileOptionsOpen = false; mobileMoving = false; $nextTick(() => requestAnimationFrame(() => openDeleteStepModal(index)))">Delete</button>
                     </div>

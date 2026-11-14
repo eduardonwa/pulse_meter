@@ -1,5 +1,4 @@
-<div
-    class="modal-shell"
+<div class="modal-shell"
     x-show="showResetAppModal"
     x-trap.noscroll="showResetAppModal"
     x-transition

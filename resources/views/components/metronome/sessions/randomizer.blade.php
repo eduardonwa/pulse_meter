@@ -1,5 +1,9 @@
 <div class="creative-randomizer" :class="{ 'has-result': randomizerResult }">
     <template x-if="randomizerResult">
+        <x-metronome.creative-transport variant="randomizer" />
+    </template>
+
+    <template x-if="randomizerResult">
         <div class="creative-randomizer__result">
             <span class="creative-randomizer__result-label">
                 Your result
@@ -96,29 +100,36 @@
             </div>
         </div>
         
-        <div class="creative-randomizer__playback" x-show="randomizerResult" x-cloak>
-            <h3 class="heading">Playback</h3>
+        <div class="creative-randomizer__playback-row" x-show="randomizerResult" x-cloak>
+            <div class="creative-randomizer__playback">
+                <h3 class="heading">Playback</h3>
             
-            <button
-                class="button"
-                data-type="outline"
-                type="button"
-                @click="randomizerPlaybackMode = 'click'"
-                :class="{ 'is-selected': randomizerPlaybackMode === 'click' }"
-            >
-                Click
-            </button>
+                <button
+                    class="button"
+                    data-type="outline"
+                    type="button"
+                    @click="randomizerPlaybackMode = 'click'"
+                    :class="{ 'is-selected': randomizerPlaybackMode === 'click' }"
+                >
+                    Click
+                </button>
     
-            <button
-                class="button"
-                data-type="outline"
-                type="button"
-                @click="randomizerPlaybackMode = 'pulse'"
-                :class="{ 'is-selected': randomizerPlaybackMode === 'pulse' }"
-            >
-                Pulse
-            </button>
-        </div>            
+                <button
+                    class="button"
+                    data-type="outline"
+                    type="button"
+                    @click="randomizerPlaybackMode = 'pulse'"
+                    :class="{ 'is-selected': randomizerPlaybackMode === 'pulse' }"
+                >
+                    Pulse
+                </button>
+
+            </div>
+
+            <div class="creative-randomizer__transport">
+                <x-metronome.creative-transport variant="randomizer-desktop" />
+            </div>
+        </div>
     </div>
 
     <div class="creative-randomizer__controls">
