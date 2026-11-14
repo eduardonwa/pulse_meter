@@ -1,4 +1,4 @@
-<section class="metronome__main" x-data="{ showStickyDivider: window.scrollY >= 300 }" :class="{ 'is-scrolled': showStickyDivider }" @scroll.window="showStickyDivider = window.scrollY >= 300">
+<section class="metronome__main" x-show="activeTab !== 'settings'" x-cloak x-data="{ showStickyDivider: window.scrollY >= 300 }" :class="{ 'is-scrolled': showStickyDivider }" @scroll.window="showStickyDivider = window.scrollY >= 300">
     <div class="compact-beat-counter" aria-label="Current beat and measure beats">
         <span class="compact-beat-counter__current" x-text="currentBeat" aria-label="Current beat"></span>
         <span class="compact-beat-counter__divider" aria-hidden="true"></span>
@@ -12,12 +12,6 @@
             </template>
         </div>
         
-        <span class="compact-beat-counter__divider compact-beat-counter__divider--tempo" aria-hidden="true"></span>
-        
-        <span class="compact-beat-counter__tempo" aria-label="Tempo">
-            <span x-text="metronome.bpm"></span>
-            <span class="compact-beat-counter__tempo-unit">BPM</span>
-        </span>
     </div>
 
     <h2 class="current-beat" x-text="currentBeat">1</h2>
@@ -29,47 +23,35 @@
     </article>
 
     <div class="tempo-control">
-        <div class="tempo-display">
-            <label for="bpm">
-                <span class="tempo-value" x-text="`${metronome.bpm}`">100</span>
-                <span class="tempo-unit | uppercase">bpm</span>
-            </label>
+        <div class="tempo-display" aria-label="Tempo">
+            <span class="tempo-value" x-text="metronome.bpm">100</span>
+            <span class="tempo-unit uppercase">bpm</span>
         </div>
 
-        <div class="tempo-slider" :style="{ '--progress': (metronome.bpm - 30) / 370 * 100 }">
-            <div class="tempo-slider__track" aria-hidden="true">
-                <div class="tempo-slider__active"></div>
-                <div class="tempo-slider__inactive"></div>
-            </div>
-
-            <input class="tempo-range"
-                type="range"
-                id="bpm"
-                min="30"
-                max="400"
-                value="100"
-                x-model.number="metronome.bpm"
-                @change="handleBpmChange()"
-            >
-        </div>
-
-        <div class="current-exercise-readout" x-show="activeTab === 'exercises' && activeExerciseIndex !== null">
+        <div
+            class="current-exercise-readout"
+            x-show="activeTab === 'exercises' && activeExerciseIndex !== null"
+        >
             <span x-text="getActiveExerciseName()"></span>
 
-            <span class="current-exercise-readout__time" :class="{ 'is-counting': isPlaying && steps[activeExerciseIndex]?.mode === 'drill' }" x-text="getActiveExerciseTimeLabel()"></span>
+            <span
+                class="current-exercise-readout__time"
+                :class="{ 'is-counting': isPlaying && steps[activeExerciseIndex]?.mode === 'drill' }"
+                x-text="getActiveExerciseTimeLabel()"
+            ></span>
         </div>
     </div>
 
-    <div class="play">
+    <div class="play play--routine-mobile" x-show="activeTab === 'exercises' && practiceMode === 'routine'" x-cloak>
         <button
             class="button uppercase"
             data-type="play-metronome"
-            :data-state="isPlaying ? 'stop' : 'start'"
-            @click="toggle()"
+            type="button"
+            :disabled="steps.length === 0 && !isPlaying && !isWaitingForNextExercise"
+            :data-state="isPlaying || isWaitingForNextExercise ? 'stop' : 'start'"
+            @click="toggleRoutinePlayback()"
         >
-            <span class="play-label" x-text="isPlaying ? 'Stop' : 'Start'">
-                Start
-            </span>
+            <span x-text="isPlaying || isWaitingForNextExercise ? 'Stop Routine' : 'Start Routine'">Start Routine</span>
         </button>
     </div>
 </section>

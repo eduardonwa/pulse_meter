@@ -119,12 +119,18 @@
 
     &[data-type="danger"] {
         .heading {
-            color: $color-neutral-100;
             padding-block: $size-3;
+            margin-block-end: $size-3;
+
             font-size: $font-size-400;
             font-weight: 600;
+            
             text-align: center;
-            margin-block-end: $size-6;
+
+            .fs-300 {
+                margin-block-start: $size-2;
+                font-weight: normal;
+            }
 
             svg {
                 margin: auto;

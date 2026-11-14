@@ -1,6 +1,6 @@
 <header class="site-header" x-data="{ sidebar: false }">
     <div class="site-header__inner container" data-type="site-header">
-        <a href="/" class="wordmark" wire:navigate>dorelog</a>
+        <a href="{{ route('welcome') }}" class="wordmark">dorelog</a>
         
         <nav class="nav">
             @auth

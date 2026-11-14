@@ -26,6 +26,7 @@ use App\Http\Middleware\ProfileHomeRequest;
 use Illuminate\Support\Facades\Route;
 
 Route::view('/explore', 'explore.index')->name('explore.index');
+Route::view('/settings', 'settings.index')->name('settings.index');
 
 Route::get('/', [WelcomeController::class, 'index'])
     ->middleware(ProfileHomeRequest::class)

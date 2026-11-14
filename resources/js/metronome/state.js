@@ -146,6 +146,9 @@ export function state(practiceContext = null) {
         ? null
         : new URLSearchParams(window.location.search).get('panel')
 
+    const canUseCreativeSessions =
+        practiceContext?.capabilities?.creative_sessions === true
+
     const defaultSessionMode =
         getDefaultSessionMode()
 
@@ -173,6 +176,8 @@ export function state(practiceContext = null) {
 
     return {
         // PRACTICE MODE
+        canUseCreativeSessions,
+
         practiceMode,
 
         activeRoutine,
@@ -227,11 +232,9 @@ export function state(practiceContext = null) {
         localRoutineImportPreferenceBusy: false,
 
         // NAVIGATION
-        activeTab: requestedPanel === 'settings'
-            ? 'settings'
-            : requestedPanel === 'creative' && maxSteps > DEFAULT_EXERCISE_COUNT_LIMIT
-                ? 'sessions'
-                : 'exercises',
+        activeTab: requestedPanel === 'creative' && canUseCreativeSessions
+            ? 'sessions'
+            : 'exercises',
 
         // PICKING OPTIONS
         minutesOptions: [0, 1, 2, 3, 4, 5],

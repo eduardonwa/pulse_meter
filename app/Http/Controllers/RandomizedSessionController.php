@@ -12,6 +12,8 @@ class RandomizedSessionController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
+        abort_unless($request->user()->canUseCreativeSessions(), 403);
+
         $sessions = $request
             ->user()
             ->randomizedSessions()
@@ -27,6 +29,8 @@ class RandomizedSessionController extends Controller
     public function store(
         StoreRandomizedSessionRequest $request
     ): JsonResponse {
+        abort_unless($request->user()->canUseCreativeSessions(), 403);
+
         $position = $request
             ->user()
             ->randomizedSessions()
@@ -50,6 +54,8 @@ class RandomizedSessionController extends Controller
         UpdateRandomizedSessionRequest $request,
         RandomizedSession $randomizedSession
     ): JsonResponse {
+        abort_unless($request->user()->canUseCreativeSessions(), 403);
+
         $this->authorizeOwner($request, $randomizedSession);
 
         $randomizedSession->fill($request->validated());

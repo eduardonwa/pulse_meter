@@ -14,6 +14,10 @@ class WelcomeController extends Controller
         Request $request,
         PlaylistPlaybackBuilder $playlistPlaybackBuilder,
     ) {
+        if ($request->query('panel') === 'settings') {
+            return redirect()->route('settings.index');
+        }
+
         $user = $request->user();
 
         /*
@@ -337,6 +341,7 @@ class WelcomeController extends Controller
             'groups' => $practiceGroups,
 
             'capabilities' => [
+                'creative_sessions' => $user?->canUseCreativeSessions() ?? false,
                 'tablature_creation' => $user?->hasProAccess() ?? false,
             ],
 

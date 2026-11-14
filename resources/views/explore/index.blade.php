@@ -17,7 +17,7 @@
                 </div>
             </a>
 
-            @can('use-pro')
+            @if (auth()->user()?->canUseCreativeSessions())
                 <a class="explore-hub__card" href="{{ route('welcome', ['panel' => 'creative']) }}">
                     <div class="explore-hub__card-main">
                         <h2>Creative Tools</h2>
@@ -31,7 +31,7 @@
                         </span>
                     </div>
                 </a>
-            @endcan
+            @endif
         </div>
     </main>
 </x-layouts.dorelog>

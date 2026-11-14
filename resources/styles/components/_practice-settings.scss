@@ -1,0 +1,44 @@
+@use "../abstracts" as *;
+
+.practice-settings-page {
+    padding-block: $size-8 calc(6rem + env(safe-area-inset-bottom, 0px));
+
+    .settings {
+        display: flex;
+        flex-direction: column;
+        gap: $size-1;
+    }
+
+    .setting-option {
+        padding-block: $size-4;
+    }
+
+    .group {
+        display: grid;
+        gap: $size-3;
+        border-block-end: 1px solid;
+    }
+
+    .auto-advance-field,
+    .free-exercise-import-field {
+        display: flex;
+        align-items: center;
+        gap: $size-2;
+        font-weight: normal;
+        cursor: pointer;
+    }
+
+    .select-click-profile {
+        width: fit-content;
+        padding: $size-2;
+        border: 1px solid $color-neutral-400;
+        font-size: 14px;
+        cursor: pointer;
+    }
+
+    .mobile-audio-help {
+        @include mq(medium) {
+            display: none;
+        }
+    }
+}

@@ -44,7 +44,9 @@ export function exercises() {
         stepFormOpenedAt: null,
 
         // PLAYBACK FLOW
-        autoAdvance: true,
+        autoAdvance: typeof localStorage === 'undefined'
+            ? true
+            : localStorage.getItem('pulse_meter_auto_advance') !== 'false',
         isWaitingForNextExercise: false,
         nextExerciseIndex: null,
 
@@ -1415,6 +1417,20 @@ export function exercises() {
             this.stepFormMinutes = Math.floor(normalizedDuration / 60);
 
             this.stepFormSeconds = normalizedDuration % 60;
+        },
+
+        toggleRoutinePlayback() {
+            if (this.isPlaying || this.isWaitingForNextExercise) {
+                this.isWaitingForNextExercise = false;
+                this.nextExerciseIndex = null;
+                window.dispatchEvent(new Event("routine:exercise-clear-active"));
+                this.stop();
+                return;
+            }
+
+            if (this.steps.length > 0) {
+                this.startRoutineOver();
+            }
         },
 
         startRoutineOver() {

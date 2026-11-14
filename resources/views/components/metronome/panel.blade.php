@@ -20,6 +20,5 @@
 
     <x-metronome.panel-exercises />
 
-    <x-metronome.panel-settings />
     </div>
 </section>

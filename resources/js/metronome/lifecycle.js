@@ -46,7 +46,7 @@ export function lifecycle() {
                 })
             })
 
-            if (this.activeTab === 'sessions') {
+            if (this.activeTab === 'sessions' && this.canUseCreativeSessions) {
                 this.handleSessionModeChange('creative')
             }
             if (this.usesLocalPersistence) {
@@ -62,7 +62,9 @@ export function lifecycle() {
 
             if (this.usesServerPersistence) {
                 await this.loadPulsePatterns?.()
-                await this.loadRandomizedSessions?.()
+                if (this.canUseCreativeSessions) {
+                    await this.loadRandomizedSessions?.()
+                }
             }
 
             await this.restorePulseSource()
@@ -134,7 +136,11 @@ export function lifecycle() {
                 return
             }
 
-            this.toggle()
+            if (this.activeTab === 'sessions' && this.canUseCreativeSessions) {
+                this.toggle()
+            } else if (this.activeTab === 'exercises' && this.practiceMode === 'routine') {
+                this.toggleRoutinePlayback()
+            }
         },
 
         // COMPUTED STATE
@@ -204,6 +210,9 @@ export function lifecycle() {
 
         // NAVIGATION
         selectTab(tab) {
+            if (tab === 'sessions' && !this.canUseCreativeSessions) {
+                return
+            }
             const previousTab = this.activeTab
 
             this.activeTab = tab
