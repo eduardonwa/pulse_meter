@@ -134,7 +134,11 @@ export function lifecycle() {
                 return
             }
 
-            this.toggle()
+            if (this.activeTab === 'sessions' && this.canUseCreativeSessions) {
+                this.toggle()
+            } else if (this.practiceMode === 'routine') {
+                this.toggleRoutinePlayback()
+            }
         },
 
         // COMPUTED STATE
