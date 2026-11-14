@@ -26,6 +26,12 @@
                 <hr>
             </div>
 
+            {{-- Honeypot: visually hidden, but checked on the server. --}}
+            <div aria-hidden="true" style="position:absolute;left:-10000px;width:1px;height:1px;overflow:hidden;">
+                <label for="registration_website">Website (leave blank)</label>
+                <input id="registration_website" type="text" name="website" value="" tabindex="-1" autocomplete="off">
+            </div>
+
             <div class="form-group">
                 <label for="name">Username</label>
     
