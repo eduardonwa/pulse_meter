@@ -39,12 +39,18 @@ class RandomizedSessionAuthorizationTest extends TestCase
 
     private function proUser(): User
     {
-        return User::factory()->create(['plan' => 'pro']);
+        return User::factory()->create([
+            'plan' => 'pro',
+            'creative_sessions_enabled' => true,
+        ]);
     }
 
     private function trialUser(): User
     {
-        $user = User::factory()->create(['plan' => 'free']);
+        $user = User::factory()->create([
+            'plan' => 'free',
+            'creative_sessions_enabled' => true,
+        ]);
 
         $trial = new TrialEntitlement;
         $trial->forceFill([
