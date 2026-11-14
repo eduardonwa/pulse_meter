@@ -4,6 +4,20 @@ export function lifecycle() {
     return {
         // INITIALIZATION
         async init() {
+            // Keep the Creative transport directly beneath the mobile metronome header.
+            if (typeof ResizeObserver !== 'undefined') {
+                const header = this.$root.querySelector('.metronome__main')
+                if (header) {
+                    this.creativeHeaderObserver = new ResizeObserver(() => {
+                        this.$root.style.setProperty(
+                            '--creative-sticky-top',
+                            `${header.getBoundingClientRect().height}px`
+                        )
+                    })
+                    this.creativeHeaderObserver.observe(header)
+                }
+            }
+
             // Show the real panel only once Alpine has rendered its initial state.
             // Do not wait for the optional server calls below.
             this.$nextTick(() => {
@@ -92,6 +106,7 @@ export function lifecycle() {
         },
 
         destroy() {
+            this.creativeHeaderObserver?.disconnect()
             this.stop?.('navigation')
         },
 
