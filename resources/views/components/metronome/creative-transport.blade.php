@@ -16,12 +16,12 @@
     <div class="creative-transport__play">
         <button
             class="button uppercase"
-        data-type="play-metronome"
-        type="button"
-        :data-state="isPlaying ? 'stop' : 'start'"
-        @click="toggle()"
-    >
-        <span x-text="isPlaying ? 'Stop' : 'Start'">Start</span>
+            data-type="play-metronome"
+            type="button"
+            :data-state="isPlaying ? 'stop' : 'start'"
+            @click="toggle()"
+        >
+            <span x-text="isPlaying ? 'Stop' : 'Start'">Start</span>
         </button>
     </div>
 </div>
