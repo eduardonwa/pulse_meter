@@ -42,4 +42,16 @@
         </div>
     </div>
 
+    <div class="play play--routine-mobile" x-show="activeTab === 'exercises' && practiceMode === 'routine'" x-cloak>
+        <button
+            class="button uppercase"
+            data-type="play-metronome"
+            type="button"
+            :disabled="steps.length === 0 && !isPlaying && !isWaitingForNextExercise"
+            :data-state="isPlaying || isWaitingForNextExercise ? 'stop' : 'start'"
+            @click="toggleRoutinePlayback()"
+        >
+            <span x-text="isPlaying || isWaitingForNextExercise ? 'Stop Routine' : 'Start Routine'">Start Routine</span>
+        </button>
+    </div>
 </section>
