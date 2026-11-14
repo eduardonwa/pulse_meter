@@ -2,6 +2,15 @@
 
 @mixin styles {
     .routine {
+        &__start {
+            margin-inline: $size-3;
+            margin-block: $size-4;
+        }
+
+        &__start .button {
+            width: 100%;
+        }
+
         .routine-player__controls {
             margin-inline: $size-2;
 
