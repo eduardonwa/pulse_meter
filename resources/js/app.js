@@ -9,11 +9,13 @@ import {
 import { registerArticleSearch } from './article-search'
 
 import './trial-mode'
+import { registerPracticeSettings } from './practice-settings.js'
 import { bootstrap } from './bootstrap.js'
 
 window.Alpine = Alpine
 
 registerArticleSearch(Alpine)
+registerPracticeSettings(Alpine)
 
 void initializeProductAnalytics()
 
