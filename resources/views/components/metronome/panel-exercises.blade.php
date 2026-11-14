@@ -51,7 +51,7 @@
                 </div>
 
                 <div class="routine__footer">
-                    <button class="button" data-type="icon-text" type="button" :disabled="steps.length >= maxSteps" @click="openAddStepModal()">
+                    <button class="button" data-type="icon-text" type="button" data-onboarding-add-exercise :disabled="steps.length >= maxSteps" @click="openAddStepModal()">
                         <x-heroicon-o-plus-circle />
                         Add Exercise
                     </button>
