@@ -23,7 +23,7 @@
 
         <template x-if="practiceMode === 'routine'">
             <section class="routine">
-                <div class="routine__start">
+                <div class="routine__start routine__start--desktop">
                     <button
                         class="button uppercase"
                         data-type="play-metronome"
