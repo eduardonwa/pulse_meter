@@ -20,7 +20,7 @@
         gap: $size-3;
         padding: $size-3;
         margin-block-end: $size-4;
-        background: $color-neutral-50;
+        background: $color-neutral-100;
         border-block-end: 1px solid hsl(var(--neutral-950) / .1);
 
         &__tempo {
@@ -28,11 +28,6 @@
             display: flex;
             align-items: center;
             gap: $size-2;
-        }
-
-        &__label {
-            font-size: 13px;
-            color: $color-neutral-700;
         }
 
         &__bpm {
@@ -47,8 +42,8 @@
         }
 
         > .button[data-type="play-metronome"] {
-            flex: 1;
-            max-width: 220px;
+            flex: 0 1 55%;
+            min-width: 0;
         }
 
         &--desktop {
@@ -60,6 +55,10 @@
             top: 0;
             width: 100%;
             margin-inline: 0;
+
+            > .button[data-type="play-metronome"] {
+                flex: 1;
+            }
         }
 
         // On large screens only, dock the desktop instance in the editor grid.
@@ -79,11 +78,7 @@
                 margin-block-end: 0;
                 border-block-end: var(--border);
                 border-inline-start: var(--border);
-                background: transparent;
-
-                > .button[data-type="play-metronome"] {
-                    max-width: none;
-                }
+                background: $color-neutral-100;
             }
         }
     }
