@@ -3,36 +3,60 @@
 @mixin styles {
     .mode-creative {
         width: 100%;
+    }
 
-        display: flex;
-        flex-direction: column;
-
-        &__sticky-play {
+    .pulse-editor {
+        // The transport belongs to this tool rather than Creative's outer shell.
+        .creative-transport {
             position: sticky;
-            top: 0;
+            top: var(--creative-sticky-top, 0px);
             z-index: 21;
+        }
+    }
 
+    .creative-transport {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: $size-3;
+        padding: $size-3;
+        margin-block-end: $size-4;
+        background: $color-neutral-50;
+        border-block-end: 1px solid hsl(var(--neutral-950) / .1);
+
+        &__tempo {
+            min-width: 0;
             display: flex;
-            justify-content: center;
+            align-items: center;
+            gap: $size-2;
+        }
 
-            padding: $size-3;
-            margin-block-end: $size-4;
-            background: $color-neutral-50;
-            border-block-end: 1px solid hsl(var(--neutral-950) / .1);
+        &__label {
+            font-size: 13px;
+            color: $color-neutral-700;
+        }
 
-            .button[data-type="play-metronome"] {
-                width: 100%;
-            }
+        &__bpm {
+            min-width: 0;
+            width: 70px;
+            height: 44px;
+        }
 
-            @include mq(medium) {
-                position: static;
-                z-index: auto;
-                order: -1;
-                padding: 0;
-                margin-block-end: 0;
-                background: transparent;
-                border-block-end: 0;
-            }
+        &__unit {
+            font-size: 12px;
+            color: $color-neutral-700;
+        }
+
+        > .button[data-type="play-metronome"] {
+            flex: 1;
+            max-width: 220px;
+        }
+
+        @include mq(medium) {
+            position: static !important;
+            padding: 0;
+            border-block-end: 0;
+            background: transparent;
         }
     }
 
