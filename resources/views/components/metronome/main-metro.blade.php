@@ -42,16 +42,4 @@
         </div>
     </div>
 
-    <div class="play">
-        <button
-            class="button uppercase"
-            data-type="play-metronome"
-            :data-state="isPlaying ? 'stop' : 'start'"
-            @click="toggle()"
-        >
-            <span class="play-label" x-text="isPlaying ? 'Stop' : 'Start'">
-                Start
-            </span>
-        </button>
-    </div>
 </section>
