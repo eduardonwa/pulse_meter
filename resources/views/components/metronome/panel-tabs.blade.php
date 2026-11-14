@@ -1,5 +1,5 @@
 <article class="tabs">
-    @can('use-pro')
+    @if (auth()->user()?->canUseCreativeSessions())
     <button
         class="button | uppercase"
         data-type="tab-btn"
@@ -12,7 +12,7 @@
         </svg>
         Creative
     </button>
-    @endcan
+    @endif
 
     <button
         class="button | uppercase"
