@@ -62,7 +62,9 @@ export function lifecycle() {
 
             if (this.usesServerPersistence) {
                 await this.loadPulsePatterns?.()
-                await this.loadRandomizedSessions?.()
+                if (this.canUseCreativeSessions) {
+                    await this.loadRandomizedSessions?.()
+                }
             }
 
             await this.restorePulseSource()
@@ -136,7 +138,7 @@ export function lifecycle() {
 
             if (this.activeTab === 'sessions' && this.canUseCreativeSessions) {
                 this.toggle()
-            } else if (this.practiceMode === 'routine') {
+            } else if (this.activeTab === 'exercises' && this.practiceMode === 'routine') {
                 this.toggleRoutinePlayback()
             }
         },
