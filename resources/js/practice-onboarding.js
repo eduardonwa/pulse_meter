@@ -58,14 +58,6 @@ function hasSeen(key) {
     }
 }
 
-function hasExistingLocalRoutine() {
-    try {
-        return localStorage.getItem('pulse_meter_routine') !== null
-    } catch {
-        return true
-    }
-}
-
 function addDeclineButton(popover, tour) {
     const footer = popover.footer
     if (!footer || footer.querySelector('[data-onboarding-decline]')) return
@@ -132,7 +124,6 @@ window.addEventListener('dorelog:practice-ready', (event) => {
         || state.practiceMode !== 'routine'
         || state.isPlaying
         || !hasInitialExamples(state.steps)
-        || hasExistingLocalRoutine()
         || SELECTORS.some(selector => !root.querySelector(selector))) {
         return
     }
