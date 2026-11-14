@@ -23,13 +23,21 @@
         </header>
 
         <label class="exercise-name-wrapper">
-            <p class="exercise-form-label">Name</p>
+            <span class="exercise-form-label">Name</span>
             <input type="text" class="name" x-model="stepForm.name">
         </label>
 
-        <div class="form-group fields">
-            <label class="exercise-bpm-wrapper">
-                <p class="exercise-form-label">BPM</p>
+        <div class="exercise-settings" aria-label="Exercise settings">
+            <label class="exercise-type-wrapper exercise-setting-row">
+                <span class="exercise-form-label">Type</span>
+                <select x-model="stepForm.mode">
+                    <option value="drill">Drill</option>
+                    <option value="classic">Classic</option>
+                </select>
+            </label>
+
+            <div class="exercise-bpm-wrapper exercise-setting-row">
+                <span class="exercise-form-label">BPM</span>
 
                 <x-inputs.number-picker
                     class="exercise-row__bpm"
@@ -41,68 +49,54 @@
                     increase-label="Increase BPM"
                     hint="Scroll to change BPM"
                 />
-            </label>
+            </div>
 
-            <div class="exercise-settings-wrapper">
-                <div class="exercise-settings">
-                    <label class="exercise-type-wrapper">
-                        <p class="exercise-form-label">Type</p>
-                        <select x-model="stepForm.mode">
-                            <option value="drill">Drill</option>
-                            <option value="classic">Classic</option>
-                        </select>
-                    </label>
-    
-                    <div class="form-group" x-show="stepForm.mode === 'drill'">
-                        <label class="exercise-length-wrapper">
-                            <p class="exercise-form-label">Length</p>
-    
-                            <article class="length-inputs">
-                                <div class="minutes">
-                                    <x-inputs.number-picker
-                                        options="stepFormMinutesOptions"
-                                        model="stepFormMinutes"
-                                        after-change="
-                                            normalizeStepFormDuration();
-                                            $dispatch('picker:sync');
-                                        "
-                                    />
-                                    <span class="unit">m</span>
-                                </div>
-                                
-                                <span class="colon">:</span>
-                                
-                                <div class="seconds">
-                                    <x-inputs.number-picker
-                                        options="stepFormSecondsOptions"
-                                        model="stepFormSeconds"
-                                        format="(value) => String(value).padStart(2, '0')"
-                                        after-change="
-                                            normalizeStepFormDuration();
-                                            $dispatch('picker:sync');
-                                        "
-                                    />
-                                    <span class="unit">s</span>
-                                </div>
-                            </article>
-                        </label>
+            <div class="exercise-length-wrapper exercise-setting-row"
+                x-show="stepForm.mode === 'drill'" x-cloak>
+                <span class="exercise-form-label">Length</span>
+
+                <div class="length-inputs">
+                    <div class="minutes">
+                        <x-inputs.number-picker
+                            options="stepFormMinutesOptions"
+                            model="stepFormMinutes"
+                            after-change="
+                                normalizeStepFormDuration();
+                                $dispatch('picker:sync');
+                            "
+                        />
+                        <span class="unit">m</span>
                     </div>
-    
-                    <label class="exercise-time-signature-wrapper" x-cloak x-show=" stepFormMode === 'create' || !hasAlphaTabPattern(steps[stepFormIndex])">
-                        <p class="exercise-form-label">
-                            Time signature
-                        </p>
-    
-                        <select x-model.number="stepForm.time_signature_numerator">
-                            @foreach (range(2, 16) as $numerator)
-                                <option value="{{ $numerator }}">
-                                    {{ $numerator }}/4
-                                </option>
-                            @endforeach
-                        </select>
-                    </label>
+
+                    <span class="colon">:</span>
+
+                    <div class="seconds">
+                        <x-inputs.number-picker
+                            options="stepFormSecondsOptions"
+                            model="stepFormSeconds"
+                            format="(value) => String(value).padStart(2, '0')"
+                            after-change="
+                                normalizeStepFormDuration();
+                                $dispatch('picker:sync');
+                            "
+                        />
+                        <span class="unit">s</span>
+                    </div>
                 </div>
             </div>
+
+            <label class="exercise-time-signature-wrapper exercise-setting-row"
+                x-cloak x-show="stepFormMode === 'create' || !hasAlphaTabPattern(steps[stepFormIndex])">
+                <span class="exercise-form-label">Time signature</span>
+
+                <select x-model.number="stepForm.time_signature_numerator">
+                    @foreach (range(2, 16) as $numerator)
+                        <option value="{{ $numerator }}">
+                            {{ $numerator }}/4
+                        </option>
+                    @endforeach
+                </select>
+            </label>
         </div>
 
         <div class="form-actions">
