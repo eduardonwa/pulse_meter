@@ -41,7 +41,7 @@
                     <x-metronome.routine-playback-controls />
                 </x-metronome.controls-dropdown>
 
-                <ul class="routine__exercises">
+                <ul class="routine__exercises" data-onboarding-exercise-list>
                     <x-metronome.panel-exercises-compact />
                 </ul>
 
