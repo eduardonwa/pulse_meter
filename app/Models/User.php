@@ -48,6 +48,7 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'is_admin' => 'boolean',
+            'creative_sessions_enabled' => 'boolean',
             'ask_before_importing_free_exercises' => 'boolean',
         ];
     }
@@ -125,6 +126,12 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
             ->lifetimeEntitlement()
             ->whereNull('revoked_at')
             ->exists();
+    }
+
+    public function canUseCreativeSessions(): bool
+    {
+        return (bool) $this->creative_sessions_enabled
+            && $this->hasProAccess();
     }
 
     public function hasPaidProAccess(): bool
