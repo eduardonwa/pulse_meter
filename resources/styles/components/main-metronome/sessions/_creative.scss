@@ -248,9 +248,24 @@
         &__controls,
         &__persistence {
             display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
+            flex-direction: column;
+            align-items: stretch;
             gap: $size-3;
+
+            .button {
+                width: 100%;
+            }
+
+            @include mq(medium) {
+                flex-direction: row;
+                align-items: center;
+                justify-content: center;
+                flex-wrap: wrap;
+
+                .button {
+                    width: auto;
+                }
+            }
         }
 
         &__playback,
