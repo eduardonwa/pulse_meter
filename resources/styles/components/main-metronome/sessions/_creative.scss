@@ -474,7 +474,7 @@
             grid-area: subdivision;
 
             border-block-end: var(--border);
-            border-inline-end: 1px solid transparent;
+            border-inline-end: var(--border);
            
             .subdivision-selector {
                 width: 100%;
