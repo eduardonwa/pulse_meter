@@ -3,11 +3,6 @@
 .practice-settings-page {
     padding-block: $size-8 calc(6rem + env(safe-area-inset-bottom, 0px));
 
-    > h1 {
-        margin-inline: $size-4;
-        margin-block-end: $size-6;
-    }
-
     .settings {
         display: flex;
         flex-direction: column;
@@ -15,7 +10,7 @@
     }
 
     .setting-option {
-        padding: $size-4;
+        padding-block: $size-4;
     }
 
     .group {

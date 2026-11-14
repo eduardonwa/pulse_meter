@@ -15,6 +15,8 @@ use Filament\Tables\Table;
 
 class ContentQuestionResource extends Resource
 {
+    protected static bool $shouldRegisterNavigation = false;
+        
     protected static ?string $model = ContentQuestion::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedInbox;

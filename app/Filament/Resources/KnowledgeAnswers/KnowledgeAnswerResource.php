@@ -16,6 +16,8 @@ use Filament\Tables\Table;
 
 class KnowledgeAnswerResource extends Resource
 {
+    protected static bool $shouldRegisterNavigation = false;
+    
     protected static ?string $model = KnowledgeAnswer::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedChatBubbleLeftRight;

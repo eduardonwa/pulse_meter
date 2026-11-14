@@ -57,15 +57,19 @@
                     <h2 class="group__title">DANGER ZONE</h2>
                     <p class="fs-300">These actions can't be undone</p>
                 </div>
+
                 <div class="group__body">
                     <button type="button" class="button" data-type="danger-zone" @click="showResetAppModal = true">
+                        <x-heroicon-o-exclamation-triangle width="20" height="20" />
                         Reset local settings and exercises
                     </button>
                 </div>
             </div>
         </div>
-        <p role="status" aria-live="polite" x-text="feedback" x-show="feedback"></p>
 
+        <p role="status" aria-live="polite" x-text="feedback" x-show="feedback"></p>
+        
+        {{-- MODAL --}}
         <div class="modal-shell" x-show="showResetAppModal" x-trap.noscroll="showResetAppModal"
             @keydown.escape.window="showResetAppModal = false" @click.self="showResetAppModal = false" x-cloak>
             <div class="modal-panel" data-type="danger" @click.stop>
@@ -73,6 +77,7 @@
                     <h2>Reset app?</h2>
                     <p class="fs-300">This will delete your locally stored exercises and recent sessions.</p>
                 </div>
+
                 <div class="modal-panel__actions">
                     <button class="button" type="button" data-type="outline" @click="showResetAppModal = false">Cancel</button>
                     <button class="button" type="button" data-type="outline" data-variant="danger" @click="clearAllAppStorage()">Reset</button>
