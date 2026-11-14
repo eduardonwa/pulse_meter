@@ -28,13 +28,23 @@
         </label>
 
         <div class="exercise-settings" aria-label="Exercise settings">
-            <label class="exercise-type-wrapper exercise-setting-row">
-                <span class="exercise-form-label">Type</span>
-                <select x-model="stepForm.mode">
-                    <option value="drill">Drill</option>
-                    <option value="classic">Classic</option>
-                </select>
-            </label>
+            <div class="exercise-type-wrapper exercise-setting-row">
+                <span class="exercise-form-label" id="exercise-type-label">Type</span>
+                <div class="exercise-type-toggle" role="group" aria-labelledby="exercise-type-label">
+                    <button type="button" class="exercise-type-toggle__option"
+                        :class="{ 'is-active': stepForm.mode === 'classic' }"
+                        :aria-pressed="stepForm.mode === 'classic'"
+                        @click="stepForm.mode = 'classic'">
+                        Classic
+                    </button>
+                    <button type="button" class="exercise-type-toggle__option"
+                        :class="{ 'is-active': stepForm.mode === 'drill' }"
+                        :aria-pressed="stepForm.mode === 'drill'"
+                        @click="stepForm.mode = 'drill'">
+                        Drill
+                    </button>
+                </div>
+            </div>
 
             <div class="exercise-bpm-wrapper exercise-setting-row">
                 <span class="exercise-form-label">BPM</span>
