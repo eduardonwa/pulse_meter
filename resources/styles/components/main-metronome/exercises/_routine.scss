@@ -5,6 +5,14 @@
         &__start {
             margin-inline: $size-4;
             margin-block: $size-4;
+
+            &--desktop {
+                display: none;
+
+                @include mq(medium) {
+                    display: block;
+                }
+            }
         }
 
         // Preserve the charcoal metronome button appearance inside My Exercises.
