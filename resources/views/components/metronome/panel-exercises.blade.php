@@ -13,17 +13,8 @@
                     x-text="activeRoutine?.name || 'Free Exercises'"
                 ></strong>
             </div>
-            @if ($usesServerPersistence && $routines->isNotEmpty())
-                <button class="button" data-type="icon-text" type="button" @click="$dispatch('open-practice-dialog')">
-                    <span>Routines</span>
-                    <x-heroicon-o-chevron-right />
-                </button>
-            @endif
-        </header>
-
-        <template x-if="practiceMode === 'routine'">
-            <section class="routine">
-                <div class="routine__start routine__start--desktop">
+            <div class="exercises__actions">
+                <div class="exercises__start" x-show="practiceMode === 'routine'" x-cloak>
                     <button
                         class="button uppercase"
                         data-type="play-metronome"
@@ -35,6 +26,17 @@
                         <span x-text="isPlaying || isWaitingForNextExercise ? 'Stop Routine' : 'Start Routine'">Start Routine</span>
                     </button>
                 </div>
+                @if ($usesServerPersistence && $routines->isNotEmpty())
+                    <button class="button" data-type="icon-text" type="button" @click="$dispatch('open-practice-dialog')">
+                        <span>Routines</span>
+                        <x-heroicon-o-chevron-right />
+                    </button>
+                @endif
+            </div>
+        </header>
+
+        <template x-if="practiceMode === 'routine'">
+            <section class="routine">
                 <x-metronome.controls-dropdown>
                     <x-metronome.routine-playback-controls />
                 </x-metronome.controls-dropdown>
