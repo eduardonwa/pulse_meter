@@ -6,6 +6,7 @@ const SELECTORS = [
     '[data-onboarding-exercise-list]',
     '[data-onboarding-exercise="classic"]',
     '[data-onboarding-exercise="drill"]',
+    '[data-onboarding-exercise="classic"] .exercise-actions > button',
     '[data-onboarding-add-exercise]',
 ]
 
@@ -25,6 +26,10 @@ export const TOUR_COPY = [
     {
         title: 'Drill',
         description: 'This one works the same way, but adds a timer so you can practice for a set amount of time.',
+    },
+    {
+        title: 'Oh, and one last thing!',
+        description: "Click these three dots to edit any exercise. That's it!",
     },
     {
         title: "You're all set!",
@@ -59,8 +64,8 @@ function hasSeen(key) {
 }
 
 function addDeclineButton(popover, tour) {
-    const footer = popover.footer
-    if (!footer || footer.querySelector('[data-onboarding-decline]')) return
+    const footerButtons = popover.footerButtons
+    if (!footerButtons || footerButtons.querySelector('[data-onboarding-decline]')) return
 
     const button = document.createElement('button')
     button.type = 'button'
@@ -68,10 +73,17 @@ function addDeclineButton(popover, tour) {
     button.className = 'dorelog-onboarding-decline'
     button.dataset.onboardingDecline = ''
     button.addEventListener('click', () => tour.destroy())
-    footer.prepend(button)
+    footerButtons.prepend(button)
 }
 
 function startTour(root, storageKey) {
+    const isMobile = window.matchMedia('(max-width: 767px)').matches
+    const targets = SELECTORS.map((selector, index) =>
+        index === 3 && isMobile
+            ? '[data-onboarding-exercise="classic"] .mobile-exercise__summary'
+            : selector
+    )
+
     const steps = [
         {
             popover: {
@@ -84,13 +96,16 @@ function startTour(root, storageKey) {
             },
         },
         ...TOUR_COPY.slice(1).map((copy, index) => ({
-            element: root.querySelector(SELECTORS[index]),
+            element: root.querySelector(targets[index]),
             disableActiveInteraction: true,
             popover: {
                 ...copy,
+                ...(index === 3 && isMobile
+                    ? { description: "Open an exercise to find its Edit button and options. That's it!" }
+                    : {}),
                 side: index === 0 ? 'bottom' : 'top',
                 align: 'center',
-                ...(index === 3 ? { doneBtnText: 'Finish' } : {}),
+                ...(index === 4 ? { doneBtnText: 'Finish' } : {}),
             },
         })),
     ]
@@ -124,7 +139,8 @@ window.addEventListener('dorelog:practice-ready', (event) => {
         || state.practiceMode !== 'routine'
         || state.isPlaying
         || !hasInitialExamples(state.steps)
-        || SELECTORS.some(selector => !root.querySelector(selector))) {
+        || SELECTORS.filter((_, index) => index !== 3)
+            .some(selector => !root.querySelector(selector))) {
         return
     }
 
