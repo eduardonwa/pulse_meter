@@ -129,18 +129,6 @@ export function playbackSession() {
         },
         
         // BPM UPDATES
-        adjustBpm(step) {
-            const currentBpm = Number(this.metronome.bpm)
-            const nextBpm = Math.min(400, Math.max(30, currentBpm + step))
-
-            if (nextBpm === currentBpm) {
-                return
-            }
-
-            this.metronome.bpm = nextBpm
-            this.handleBpmChange()
-        },
-
         handleBpmChange() {
             clearTimeout(this.bpmChangeTimeoutId)
         
