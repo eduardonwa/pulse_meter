@@ -1,4 +1,6 @@
-<div class="creative-transport" aria-label="Creative playback controls">
+@props(['variant' => 'mobile'])
+
+<div class="creative-transport creative-transport--{{ $variant }}" aria-label="Creative playback controls">
     <div class="creative-transport__tempo">
         <span class="creative-transport__label">Tempo</span>
         <x-inputs.number-picker
