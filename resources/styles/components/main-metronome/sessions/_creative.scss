@@ -233,6 +233,54 @@
 
         &__workspace {
             overflow: hidden;
+
+            @include mq(large) {
+                display: grid;
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+        }
+
+        &__beats,
+        &__editing {
+            @include mq(large) {
+                grid-column: 1 / -1;
+            }
+        }
+
+        &__transport {
+            display: none;
+
+            @include mq(large) {
+                grid-column: 2 / 4;
+                display: block;
+                min-width: 0;
+                border-inline-start: var(--border);
+            }
+
+            .creative-transport--randomizer-desktop {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+                background: $color-neutral-100;
+                border: 0;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+
+                .creative-transport__tempo,
+                .creative-transport__play {
+                    min-width: 0;
+                    padding: $size-4;
+                }
+
+                .creative-transport__tempo {
+                    border-inline-end: var(--border);
+                }
+
+                .creative-transport__play {
+                    display: flex;
+                    align-items: center;
+                }
+            }
         }
 
         &__beats,
