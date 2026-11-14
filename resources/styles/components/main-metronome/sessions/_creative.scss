@@ -52,7 +52,8 @@
             }
         }
 
-        &--desktop {
+        &--desktop,
+        &--randomizer-desktop {
             display: none;
         }
 
@@ -71,10 +72,20 @@
         // On large screens only, dock the desktop instance in the editor grid.
         @include mq(large) {
             &--randomizer {
+                display: none;
+            }
+
+            &--randomizer-desktop {
+                display: grid;
                 position: static;
                 width: 100%;
                 margin-inline: 0;
+                margin-block: $size-4 0;
+                padding: $size-3 0 0;
                 grid-template-columns: repeat(2, minmax(0, 1fr));
+                background: transparent;
+                border-block-start: 1px solid hsl(var(--neutral-950) / .1);
+                border-block-end: 0;
             }
 
             &--mobile {
