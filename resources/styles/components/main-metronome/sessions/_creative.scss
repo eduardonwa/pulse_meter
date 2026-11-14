@@ -567,27 +567,20 @@
 
         &__actions {
             grid-area: actions;
+            width: 100%;
             margin-inline: auto;
-            display: flex;
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
             align-items: center;
-            gap: $size-4;
+            gap: $size-3;
 
-            @include mq(medium) {
-                margin-left: 0;
-                margin-inline: auto;
+            .button {
+                width: 100%;
+                min-width: 0;
             }
 
             @include mq(large) {
                 width: calc(100% / 3);
-                display: grid;
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-                gap: $size-3;
-                margin-inline: auto;
-
-                .button {
-                    width: 100%;
-                    min-width: 0;
-                }
             }
         }
     }
