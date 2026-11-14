@@ -76,11 +76,30 @@ function addDeclineButton(popover, tour) {
     footerButtons.prepend(button)
 }
 
+function setMobileExercise(index) {
+    window.dispatchEvent(new CustomEvent('dorelog:onboarding-mobile-state', {
+        detail: { index },
+    }))
+}
+
+// Let Alpine apply x-show before Driver.js measures the target's position.
+function advanceAfterMobileUpdate(tour, direction = 'next') {
+    requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+            if (direction === 'previous') {
+                tour.movePrevious()
+            } else {
+                tour.moveNext()
+            }
+        })
+    })
+}
+
 function startTour(root, storageKey) {
     const isMobile = window.matchMedia('(max-width: 767px)').matches
     const targets = SELECTORS.map((selector, index) =>
         index === 3 && isMobile
-            ? '[data-onboarding-exercise="classic"] .mobile-exercise__summary'
+            ? '[data-onboarding-exercise="classic"] button[aria-label="Edit exercise"]'
             : selector
     )
 
@@ -90,6 +109,12 @@ function startTour(root, storageKey) {
                 ...TOUR_COPY[0],
                 showButtons: ['next', 'close'],
                 nextBtnText: 'Take the tour',
+                ...(isMobile ? {
+                    onNextClick() {
+                        setMobileExercise(null)
+                        advanceAfterMobileUpdate(tour)
+                    },
+                } : {}),
                 onPopoverRender(popover) {
                     addDeclineButton(popover, tour)
                 },
@@ -101,8 +126,20 @@ function startTour(root, storageKey) {
             popover: {
                 ...copy,
                 ...(index === 3 && isMobile
-                    ? { description: "Open an exercise to find its Edit button and options. That's it!" }
+                    ? { description: 'Tap this button to edit any exercise.' }
                     : {}),
+                ...(index === 2 && isMobile ? {
+                    onNextClick() {
+                        setMobileExercise(0)
+                        advanceAfterMobileUpdate(tour)
+                    },
+                } : {}),
+                ...(index === 3 && isMobile ? {
+                    onPrevClick() {
+                        setMobileExercise(null)
+                        advanceAfterMobileUpdate(tour, 'previous')
+                    },
+                } : {}),
                 side: index === 0 ? 'bottom' : 'top',
                 align: 'center',
                 ...(index === 4 ? { doneBtnText: 'Finish' } : {}),
@@ -114,10 +151,11 @@ function startTour(root, storageKey) {
         showProgress: true,
         smoothScroll: true,
         allowClose: true,
-        overlayClickBehavior: 'close',
+        overlayClickBehavior: 'none',
         popoverClass: 'dorelog-onboarding',
         steps,
         onDestroyed() {
+            if (isMobile) setMobileExercise(0)
             markSeen(storageKey)
         },
     })
