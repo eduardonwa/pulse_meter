@@ -44,7 +44,9 @@ export function exercises() {
         stepFormOpenedAt: null,
 
         // PLAYBACK FLOW
-        autoAdvance: true,
+        autoAdvance: typeof localStorage === 'undefined'
+            ? true
+            : localStorage.getItem('pulse_meter_auto_advance') !== 'false',
         isWaitingForNextExercise: false,
         nextExerciseIndex: null,
 
