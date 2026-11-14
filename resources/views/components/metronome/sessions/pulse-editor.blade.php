@@ -1,6 +1,8 @@
 <div class="pulse-editor">
+    <x-metronome.creative-transport variant="mobile" />
+
     <div class="time-signature">
-        <x-metronome.creative-transport />
+        <x-metronome.creative-transport variant="desktop" />
 
         <div class="time-signature__pattern">
             <h2 class="heading">
