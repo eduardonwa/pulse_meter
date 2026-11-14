@@ -226,17 +226,20 @@
         align-items: center;
         justify-items: center;
         
-        button { width: 100%; }
+        button {
+            width: 100%;
+        }
         
         // EDIT, OPTIONS
         .button[data-type="icon"] {
-            border: 1px solid hsl(var(--neutral-900) / .1);
-
             width: 44px;
             height: 44px;
 
+            svg { stroke: $color-neutral-800; }
+
+            border: 1px solid hsl(var(--neutral-900) / .1);
+
             border-radius: 50%;
-            color: $color-primary-950;
             background-color: hsl(var(--neutral-500) / .1);
         }
     }
@@ -530,7 +533,12 @@
         gap: 1rem;
         margin-bottom: 1.5rem;
 
-        label { display: grid; gap: .375rem; font-weight: 600; }
+        label {
+            display: grid;
+            gap: .375rem;
+            font-weight: 600;
+        }
+        
         input, select {
             min-height: 44px;
             width: 100%;
@@ -542,8 +550,20 @@
         }
     }
 
-    &__actions { display: flex; flex-wrap: wrap; gap: .75rem; margin: 1rem 0; }
-    &__notes { display: flex; flex-wrap: wrap; gap: .5rem; margin: 1rem 0; }
+    &__actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .75rem;
+        margin: 1rem 0;
+    }
+
+    &__notes {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .5rem;
+        margin: 1rem 0;
+    }
+
     &__note {
         padding: .5rem .75rem;
         border: 1px solid hsl(var(--neutral-500) / .4);
@@ -563,6 +583,7 @@
     border-radius: .75rem;
     background: hsl(var(--neutral-500) / .065);
 }
+
 .tab-editor__system {
     display: flex;
     width: 100%;
@@ -572,6 +593,7 @@
     background: hsl(var(--neutral-100));
     border: 1px solid hsl(var(--neutral-500) / .16);
 }
+
 .tab-editor__string-labels {
     display: grid;
     grid-template-rows: repeat(6, 42px);
@@ -580,13 +602,16 @@
     width: 34px;
     padding-inline: .5rem;
 }
+
 .tab-editor__grid { flex: 1; min-width: 0; }
+
 .tab-editor__string-row {
     display: flex;
     height: 42px;
     align-items: center;
     background: linear-gradient(to bottom, transparent calc(50% - .5px), hsl(var(--neutral-500) / .55) 50%, transparent calc(50% + .5px));
 }
+
 .tab-editor__cell {
     width: 48px;
     height: 38px;
@@ -617,6 +642,7 @@
     margin-block: .5rem;
     color: hsl(var(--neutral-700));
 }
+
 .tab-editor__cell.is-measure-end {
     border-right: 3px solid hsl(var(--primary-800));
     border-top-right-radius: 0;
@@ -629,6 +655,7 @@
     gap: .5rem;
     margin-bottom: .75rem;
 }
+
 .tab-editor__measure-indicator {
     display: inline-flex;
     padding: .3rem .6rem;
@@ -636,9 +663,11 @@
     border: 1px solid hsl(var(--neutral-500) / .25);
     font-size: .85rem;
     background: hsl(var(--neutral-500) / .09);
+
     &[data-status="complete"] {
         border-color: hsl(var(--neutral-500) / .3);
     }
+
     &[data-status="incomplete"],
     &[data-status="overflow"] {
         border-color: hsl(35 90% 45% / .5);
@@ -651,6 +680,7 @@
     opacity: .8;
     margin-bottom: .5rem;
 }
+
 .tab-editor__cell.is-multi-selected {
     background: hsl(var(--primary-200));
     color: hsl(var(--primary-950));
