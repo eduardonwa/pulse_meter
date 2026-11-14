@@ -6,8 +6,6 @@
     }
 
     .creative-transport {
-        grid-area: transport;
-        align-self: start;
         position: sticky;
         top: var(--creative-sticky-top, 0px);
         z-index: 21;
@@ -53,7 +51,21 @@
             max-width: 220px;
         }
 
+        &--desktop {
+            display: none;
+        }
+
         @include mq(medium) {
+            &--mobile {
+                display: none;
+            }
+
+            &--desktop {
+                grid-area: transport;
+                display: flex;
+                align-self: stretch;
+            }
+
             position: static;
             width: auto;
             margin-inline: 0;
@@ -260,7 +272,6 @@
         grid-template-columns: max-content max-content minmax(0, 1fr);
         grid-template-areas: 
             "pattern     pattern     pattern"
-            "transport   transport   transport"
             "meter       meter       current-meter"
             "grouping    structure   subdivision"
             "cue         cue         cue"
