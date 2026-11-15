@@ -32,8 +32,8 @@
                 };
             @endphp
 
-            <li class="routine-player__exercise" x-data="{ ...alphaTabExerciseControls(), audioPreparing: false }"
-                @alphatab:loading-state.window="if ($event.detail.index === null || Number($event.detail.index) === {{ $loop->index }}) audioPreparing = Boolean($event.detail.loading)"
+            <li class="routine-player__exercise" x-data="alphaTabExerciseControls()"
+                @alphatab:loading-state.window="audioPreparing = Boolean($event.detail.loading) && Number($event.detail.index) === {{ $loop->index }}"
                 @routine:exercise-clear-active.window="clearActiveExercise()"
                 @routine:exercise-active.window="syncActiveExercise($event, {{ $loop->index }}, {{ $step->alpha_tex ? 'true' : 'false' }})"
             >
