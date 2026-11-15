@@ -4,6 +4,11 @@ export function lifecycle() {
     return {
         // INITIALIZATION
         async init() {
+            this.onAlphaTabPlaybackState = event => this.handleAlphaTabPlaybackState(event)
+            this.onAlphaTabPlaybackError = event => this.handleAlphaTabPlaybackError(event)
+            window.addEventListener('alphatab:playback-state', this.onAlphaTabPlaybackState)
+            window.addEventListener('alphatab:playback-error', this.onAlphaTabPlaybackError)
+
             // Keep the Creative transport directly beneath the mobile metronome header.
             if (typeof ResizeObserver !== 'undefined') {
                 const header = this.$root.querySelector('.metronome__main')
@@ -107,6 +112,8 @@ export function lifecycle() {
         },
 
         destroy() {
+            window.removeEventListener('alphatab:playback-state', this.onAlphaTabPlaybackState)
+            window.removeEventListener('alphatab:playback-error', this.onAlphaTabPlaybackError)
             this.creativeHeaderObserver?.disconnect()
             this.stop?.('navigation')
         },
