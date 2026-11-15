@@ -307,7 +307,12 @@ window.addEventListener('alphatab:start-exercise', async event => {
     const element = document.querySelector(
         `[data-alphatab][data-exercise-index="${index}"]`
     )
-    if (!element) return
+    if (!element) {
+        window.dispatchEvent(new CustomEvent('alphatab:playback-error', {
+            detail: { index },
+        }))
+        return
+    }
 
     const request = ++playbackGeneration
     notifyAudioPreparation(index, true)
