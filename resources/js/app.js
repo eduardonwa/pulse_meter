@@ -11,6 +11,7 @@ import { registerArticleSearch } from './article-search'
 import './trial-mode'
 import { registerPracticeSettings } from './practice-settings.js'
 import { bootstrap } from './bootstrap.js'
+import { loadPracticeModules } from './practice-module-loader.js'
 
 window.Alpine = Alpine
 
@@ -27,13 +28,14 @@ if (document.querySelector('meta[name="dorelog-practice"]')) {
 
 void bootstrap({
     needsPractice: Boolean(document.querySelector('meta[name="dorelog-practice"]')),
-    loadPractice: async () => {
-        await Promise.all([
-            import('./metronome'),
-            import('./alphatab-exercises'),
-            import('./practice-onboarding.js'),
-        ])
-    },
+    loadPractice: () => loadPracticeModules({
+        loadMetronome: () => import('./metronome'),
+        loadAlphaTab: () => import('./alphatab-exercises'),
+        // The onboarding tour is only used on the main Practice page.
+        loadOnboarding: document.querySelector('[data-onboarding-storage-key]')
+            ? () => import('./practice-onboarding.js')
+            : null,
+    }),
     startLivewire: () => Livewire.start(),
 }).catch(error => {
     console.error('Dorelog failed to initialize:', error)

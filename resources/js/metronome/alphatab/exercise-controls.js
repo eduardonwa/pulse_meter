@@ -6,6 +6,7 @@ export function alphaTabExerciseControls() {
         detailsOpen: false,
         hearing: false,
         scoreLoading: false,
+        audioPreparing: false,
         viewFullscreen: false,
 
         syncScoreRendered(event, element) {

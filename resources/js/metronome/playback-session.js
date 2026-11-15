@@ -4,6 +4,8 @@ export function playbackSession() {
         timerId: null,
         remaining: null,
         playbackSource: null,
+        pendingAlphaTabStart: null,
+        pendingAlphaTabTracking: null,
         
         // SESSION CONTROLS
         toggle() {
@@ -48,11 +50,17 @@ export function playbackSession() {
 
             this.isPlaying = true
 
+            // AlphaTab may need several seconds to initialize its SoundFont.
+            // Keep Stop available, but don't start timing or analytics yet.
+            this.pendingAlphaTabStart = useAlphaTab
+                ? { index: exerciseIndex, duration: normalizedDuration, mode }
+                : null
+
             if (!useAlphaTab) {
                 this.startMetronome(normalizedBpm)
             }
 
-            if (mode === 'drill' && normalizedDuration !== null) {
+            if (!useAlphaTab && mode === 'drill' && normalizedDuration !== null) {
                 this.startTimer(normalizedDuration)
             }
 
@@ -63,6 +71,36 @@ export function playbackSession() {
             }
         },
         
+        // Fired when AlphaTab confirms actual playback rather than when Start
+        // was pressed. Only the matching, still-active exercise may start timing.
+        handleAlphaTabPlaybackState(event) {
+            const pending = this.pendingAlphaTabStart
+            if (!pending || !event.detail?.playing) return
+
+            const index = Number(event.detail?.element?.dataset.exerciseIndex)
+            if (index !== pending.index
+                || this.activeExerciseIndex !== pending.index
+                || !this.isPlaying
+                || this.playbackSource !== 'exercise') return
+
+            this.pendingAlphaTabStart = null
+
+            if (pending.mode === 'drill' && pending.duration !== null) {
+                this.startTimer(pending.duration)
+            }
+
+            if (this.pendingAlphaTabTracking) {
+                this.beginPlaybackTracking(this.pendingAlphaTabTracking)
+                this.pendingAlphaTabTracking = null
+            }
+        },
+
+        handleAlphaTabPlaybackError(event) {
+            const pending = this.pendingAlphaTabStart
+            if (!pending || Number(event.detail?.index) !== pending.index) return
+            this.stop('audio_error')
+        },
+
         startMetronomeSession() {
             const mode = this.metronome.mode
 
@@ -124,6 +162,8 @@ export function playbackSession() {
             this.remaining = null
             this.activeExerciseIndex = null
             this.playbackSource = null
+            this.pendingAlphaTabStart = null
+            this.pendingAlphaTabTracking = null
 
             window.dispatchEvent(new Event('alphatab:stop'))
         },

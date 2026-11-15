@@ -321,6 +321,7 @@
         text-align: start;
         border: 1px solid transparent;
         background-color: rgba(232, 239, 245, 0.78);
+        color: $color-neutral-800;
 
         &:hover {
             background: hsl(var(--primary-500) / .08);

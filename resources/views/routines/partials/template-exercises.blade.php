@@ -33,6 +33,7 @@
             @endphp
 
             <li class="routine-player__exercise" x-data="alphaTabExerciseControls()"
+                @alphatab:loading-state.window="audioPreparing = Boolean($event.detail.loading) && Number($event.detail.index) === {{ $loop->index }}"
                 @routine:exercise-clear-active.window="clearActiveExercise()"
                 @routine:exercise-active.window="syncActiveExercise($event, {{ $loop->index }}, {{ $step->alpha_tex ? 'true' : 'false' }})"
             >
@@ -48,7 +49,7 @@
                         "
                     @elseif ($step->alpha_tex)
                         @click="
-                            hearing
+                            hearing || audioPreparing
                                 ? stopPlayback()
                                 : previewTemplateExercise(
                                     {{ $loop->index }},
@@ -162,12 +163,14 @@
                         <div class="routine-player__exercise-audio-controls" @alphatab:playback-state.window="syncPlaybackState($event, $refs.alphaTab)">
                             <button class="badge badge--neutral" type="button"
                                 @click="
-                                    hearing
+                                    audioPreparing
                                         ? stopPlayback()
-                                        : playPause($refs.alphaTab)
+                                        : hearing
+                                            ? stopPlayback()
+                                            : playPause($refs.alphaTab)
                                 "
                             >
-                                <span x-text="hearing ? 'Stop' : 'Preview'">Preview</span>
+                                <span x-text="audioPreparing ? 'Preparing audio…' : (hearing ? 'Stop' : 'Preview')">Preview</span>
                             </button>
 
                         </div>
