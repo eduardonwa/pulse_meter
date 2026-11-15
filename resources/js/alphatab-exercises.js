@@ -255,11 +255,18 @@ window.addEventListener('dorelog:practice-ready', event => {
     scheduleAlphaTabWarmup(document.querySelector('.metronome, .routine-player'))
 })
 
-// Guest template pages do not use routinePlayer.init(), so they do not emit
-// dorelog:practice-ready. Alpine is initialized by Livewire before this event.
+// Routine detail notation is server-rendered. Start preparing it as soon as
+// this module loads, while the rest of the Practice app is still bootstrapping.
+// No need to wait for Livewire or two animation frames.
+const routineDetailRoot = document.querySelector('.routine-player')
+if (routineDetailRoot) {
+    warmFirstAlphaTab(routineDetailRoot)
+}
+
+// Other pages may add notation later; keep a fallback after Livewire starts.
 window.addEventListener('livewire:initialized', () => {
     const root = document.querySelector('.routine-player')
-    if (root) scheduleAlphaTabWarmup(root)
+    if (root) warmFirstAlphaTab(root)
 })
 
 function encodeBase64(value) {
