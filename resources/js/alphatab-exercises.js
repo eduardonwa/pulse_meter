@@ -109,6 +109,12 @@ async function mountAlphaTab(element) {
         return await mountPromises.get(element)
     }
 
+    const startedAt = performance.now()
+    const timing = { index: element.dataset.exerciseIndex ?? null }
+    const mark = (name) => {
+        timing[name] = Math.round(performance.now() - startedAt)
+    }
+
     const mountPromise = (async () => {
         const encodedAlphaTex = element.dataset.alphaTex
         const bpm = Number(element.dataset.bpm ?? 100)
@@ -117,6 +123,7 @@ async function mountAlphaTab(element) {
         if (!encodedAlphaTex) return null
 
         const alphaTab = await getAlphaTab()
+        mark('moduleReadyMs')
         const pattern = decodeBase64(encodedAlphaTex)
 
         const api = new alphaTab.AlphaTabApi(element, {
@@ -144,6 +151,13 @@ async function mountAlphaTab(element) {
             },
         })
 
+        mark('apiCreatedMs')
+
+        api.soundFontLoad.on(args => {
+            if (args.total > 0) timing.soundFontProgress = Math.round(args.loaded / args.total * 100)
+        })
+        api.soundFontLoaded.on(() => mark('soundFontLoadedMs'))
+
         api.renderFinished.on(() => {
             element.dataset.alphaTabRendered = 'true'
             window.dispatchEvent(new CustomEvent('alphatab:rendered', {
@@ -168,12 +182,18 @@ async function mountAlphaTab(element) {
         })
 
         api.tex(applyMetadata(playbackAlphaTex(pattern), { bpm }))
+        mark('scoreSubmittedMs')
 
         instances.set(element, api)
         readyPromises.set(element, readyPromise)
         renderedBpms.set(element, bpm)
 
         await readyPromise
+        mark('playerReadyMs')
+        window.dispatchEvent(new CustomEvent('alphatab:timing', {
+            detail: { ...timing },
+        }))
+        console.info('[Dorelog AlphaTab] initialization', timing)
 
         return api
     })()
