@@ -67,36 +67,9 @@
             this.selectedRoutine = routine;
             this.drawerOpen = true;
 
-            // Download AlphaTab assets while the visitor reads the drawer.
-            // Actual score mounting happens on the destination page.
-            if (routine.steps?.some(step => step.hasAlphaTab)) {
-                this.preloadAlphaTabResources();
-            }
-
             this.$nextTick(() => {
                 this.$refs.closeButton?.focus();
             });
-        },
-
-        preloadAlphaTabResources() {
-            if (!document.querySelector('link[data-alphatab-engine-preload]')) {
-                const engine = document.createElement('link');
-                engine.rel = 'modulepreload';
-                engine.href = '/alphatab/alphaTab.mjs';
-                engine.crossOrigin = 'anonymous';
-                engine.dataset.alphatabEnginePreload = '';
-                document.head.appendChild(engine);
-            }
-
-            if (!document.querySelector('link[data-alphatab-soundfont-preload]')) {
-                const soundfont = document.createElement('link');
-                soundfont.rel = 'preload';
-                soundfont.as = 'fetch';
-                soundfont.href = '/soundfont/sonivox.sf2';
-                soundfont.crossOrigin = 'anonymous';
-                soundfont.dataset.alphatabSoundfontPreload = '';
-                document.head.appendChild(soundfont);
-            }
         },
 
         closeRoutine() {
