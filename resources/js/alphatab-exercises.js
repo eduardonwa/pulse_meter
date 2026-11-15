@@ -395,7 +395,13 @@ window.addEventListener('alphatab:start-exercise', async event => {
 
     try {
         const api = await mountAlphaTab(element)
-        if (!api || playbackGeneration !== request) return
+        if (playbackGeneration !== request) return
+        if (!api) {
+            window.dispatchEvent(new CustomEvent('alphatab:playback-error', {
+                detail: { index },
+            }))
+            return
+        }
 
         if (activeApi && activeApi !== api) activeApi.stop()
         activeApi = api
@@ -404,6 +410,11 @@ window.addEventListener('alphatab:start-exercise', async event => {
         api.play()
     } catch (error) {
         console.error('AlphaTab exercise could not start:', error)
+        if (playbackGeneration === request) {
+            window.dispatchEvent(new CustomEvent('alphatab:playback-error', {
+                detail: { index },
+            }))
+        }
     } finally {
         if (playbackGeneration === request) notifyAudioPreparation(index, false)
     }
