@@ -109,12 +109,6 @@ async function mountAlphaTab(element) {
         return await mountPromises.get(element)
     }
 
-    const startedAt = performance.now()
-    const timing = { index: element.dataset.exerciseIndex ?? null }
-    const mark = (name) => {
-        timing[name] = Math.round(performance.now() - startedAt)
-    }
-
     const mountPromise = (async () => {
         const encodedAlphaTex = element.dataset.alphaTex
         const bpm = Number(element.dataset.bpm ?? 100)
@@ -123,7 +117,6 @@ async function mountAlphaTab(element) {
         if (!encodedAlphaTex) return null
 
         const alphaTab = await getAlphaTab()
-        mark('moduleReadyMs')
         const pattern = decodeBase64(encodedAlphaTex)
 
         const api = new alphaTab.AlphaTabApi(element, {
@@ -151,13 +144,6 @@ async function mountAlphaTab(element) {
             },
         })
 
-        mark('apiCreatedMs')
-
-        api.soundFontLoad.on(args => {
-            if (args.total > 0) timing.soundFontProgress = Math.round(args.loaded / args.total * 100)
-        })
-        api.soundFontLoaded.on(() => mark('soundFontLoadedMs'))
-
         api.renderFinished.on(() => {
             element.dataset.alphaTabRendered = 'true'
             window.dispatchEvent(new CustomEvent('alphatab:rendered', {
@@ -182,18 +168,12 @@ async function mountAlphaTab(element) {
         })
 
         api.tex(applyMetadata(playbackAlphaTex(pattern), { bpm }))
-        mark('scoreSubmittedMs')
 
         instances.set(element, api)
         readyPromises.set(element, readyPromise)
         renderedBpms.set(element, bpm)
 
         await readyPromise
-        mark('playerReadyMs')
-        window.dispatchEvent(new CustomEvent('alphatab:timing', {
-            detail: { ...timing },
-        }))
-        console.info('[Dorelog AlphaTab] initialization', timing)
 
         return api
     })()
@@ -207,67 +187,6 @@ async function mountAlphaTab(element) {
     }
 }
 
-
-// Prepare the first playable pattern in the background. This does not call play()
-// or attempt to unlock audio: mobile browsers still require a user gesture.
-let warmupRoot = null
-let warmupScheduled = false
-
-function warmFirstAlphaTab(root) {
-    if (!root || !root.isConnected) return
-
-    const element = root.querySelector('[data-alphatab][data-alpha-tex]')
-    if (!element || !element.dataset.alphaTex) return
-
-    // Start downloading the engine and SoundFont without requiring a click.
-    // Browser resource caching should make these available to AlphaTabApi.
-    if (!document.querySelector('link[data-alphatab-soundfont-preload]')) {
-        const soundfont = document.createElement('link')
-        soundfont.rel = 'preload'
-        soundfont.as = 'fetch'
-        soundfont.href = '/soundfont/sonivox.sf2'
-        soundfont.crossOrigin = 'anonymous'
-        soundfont.dataset.alphatabSoundfontPreload = ''
-        document.head.appendChild(soundfont)
-    }
-
-    void mountAlphaTab(element).catch(error => {
-        console.warn('Could not prepare AlphaTab audio ahead of playback:', error)
-    })
-}
-
-function scheduleAlphaTabWarmup(root) {
-    if (!root || warmupScheduled && warmupRoot === root) return
-    warmupRoot = root
-    warmupScheduled = true
-
-    requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-            warmupScheduled = false
-            warmFirstAlphaTab(root)
-        })
-    })
-}
-
-// Practice emits this event after restoring locally saved exercises.
-window.addEventListener('dorelog:practice-ready', event => {
-    if (!event.detail?.steps?.some(step => step.hasAlphaTab)) return
-    scheduleAlphaTabWarmup(document.querySelector('.metronome, .routine-player'))
-})
-
-// Routine detail notation is server-rendered. Start preparing it as soon as
-// this module loads, while the rest of the Practice app is still bootstrapping.
-// No need to wait for Livewire or two animation frames.
-const routineDetailRoot = document.querySelector('.routine-player')
-if (routineDetailRoot) {
-    warmFirstAlphaTab(routineDetailRoot)
-}
-
-// Other pages may add notation later; keep a fallback after Livewire starts.
-window.addEventListener('livewire:initialized', () => {
-    const root = document.querySelector('.routine-player')
-    if (root) warmFirstAlphaTab(root)
-})
 
 function encodeBase64(value) {
     const bytes = new TextEncoder().encode(value)
