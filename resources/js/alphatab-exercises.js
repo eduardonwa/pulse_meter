@@ -273,46 +273,62 @@ window.addEventListener('alphatab:mount', async event => {
     await mountAlphaTab(event.detail?.element)
 })
 
+function notifyAudioPreparation(index, loading) {
+    window.dispatchEvent(new CustomEvent('alphatab:loading-state', {
+        detail: { index, loading },
+    }))
+}
+
 window.addEventListener('alphatab:play-pause', async event => {
-    const api = await mountAlphaTab(event.detail?.element)
+    const element = event.detail?.element
+    const index = Number(element?.dataset.exerciseIndex)
+    const request = ++playbackGeneration
+    notifyAudioPreparation(index, true)
 
-    if (!api) return
+    try {
+        const api = await mountAlphaTab(element)
+        if (!api || playbackGeneration !== request) return
 
-    if (activeApi && activeApi !== api) {
-        activeApi.stop()
+        if (activeApi && activeApi !== api) activeApi.stop()
+        activeApi = api
+        // Preview is always a single listen, regardless of exercise mode.
+        api.isLooping = false
+        api.playPause()
+    } catch (error) {
+        console.error('AlphaTab preview could not start:', error)
+    } finally {
+        if (playbackGeneration === request) notifyAudioPreparation(index, false)
     }
-
-    activeApi = api
-    // Preview is always a single listen, regardless of exercise mode.
-    api.isLooping = false
-    api.playPause()
 })
 
 window.addEventListener('alphatab:start-exercise', async event => {
     const index = Number(event.detail?.index)
-
     const element = document.querySelector(
         `[data-alphatab][data-exercise-index="${index}"]`
     )
-
     if (!element) return
 
-    const api = await mountAlphaTab(element)
+    const request = ++playbackGeneration
+    notifyAudioPreparation(index, true)
 
-    if (!api) return
+    try {
+        const api = await mountAlphaTab(element)
+        if (!api || playbackGeneration !== request) return
 
-    if (activeApi && activeApi !== api) {
-        activeApi.stop()
+        if (activeApi && activeApi !== api) activeApi.stop()
+        activeApi = api
+        // Routine playback repeats until the session stops.
+        api.isLooping = true
+        api.play()
+    } catch (error) {
+        console.error('AlphaTab exercise could not start:', error)
+    } finally {
+        if (playbackGeneration === request) notifyAudioPreparation(index, false)
     }
-
-    activeApi = api
-    // Routine playback repeats until the session stops (Drill timer or Classic stop).
-    api.isLooping = true
-
-    api.play()
 })
 
 window.addEventListener('alphatab:stop', () => {
+    notifyAudioPreparation(null, false)
     ++playbackGeneration
     activeApi?.stop()
     activeApi = null
