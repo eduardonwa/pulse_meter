@@ -1136,7 +1136,7 @@ export function exercises() {
             /*
              * Tracking específico del ejercicio.
              */
-            this.beginPlaybackTracking({
+            const tracking = {
                 source: "exercise",
 
                 metronome_mode: step.mode,
@@ -1149,7 +1149,13 @@ export function exercises() {
 
                 // Compatibilidad temporal
                 exercise_mode: step.mode,
-            });
+            };
+
+            if (this.hasAlphaTabPattern(step)) {
+                this.pendingAlphaTabTracking = tracking;
+            } else {
+                this.beginPlaybackTracking(tracking);
+            }
         },
 
         updateExerciseBpm(index, bpm) {
