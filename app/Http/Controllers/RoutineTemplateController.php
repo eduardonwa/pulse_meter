@@ -87,6 +87,7 @@ class RoutineTemplateController extends Controller
 
                             'bpm' => $step->bpm,
                             'mode' => $step->mode,
+                            'hasAlphaTab' => filled($step->alpha_tex),
                             'modeLabel' => (string) str($step->mode)->title(),
                             'durationSeconds' => $step->duration_seconds,
                         ];
