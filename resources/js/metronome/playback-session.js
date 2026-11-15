@@ -5,6 +5,7 @@ export function playbackSession() {
         remaining: null,
         playbackSource: null,
         pendingAlphaTabStart: null,
+        pendingAlphaTabTracking: null,
         
         // SESSION CONTROLS
         toggle() {
