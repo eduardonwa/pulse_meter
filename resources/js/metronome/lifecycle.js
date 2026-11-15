@@ -39,6 +39,7 @@ export function lifecycle() {
                             ? this.steps.map(step => ({
                                 name: step.name,
                                 mode: step.mode,
+                                hasAlphaTab: Boolean(step.alpha_tex?.trim()),
                             }))
                             : [],
                         practiceMode: this.practiceMode,
