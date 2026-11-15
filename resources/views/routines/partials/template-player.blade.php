@@ -28,6 +28,9 @@
             </button>
         @else
             <button class="routine-player__start button"
+                x-data="{ audioPreparingIndex: null }"
+                @alphatab:loading-state.window="audioPreparingIndex = $event.detail.loading ? $event.detail.index : null"
+                :aria-busy="(audioPreparingIndex !== null).toString()"
                 data-type="play-metronome"
                 type="button"
                 @click="
@@ -41,7 +44,7 @@
                 "
             >
                 <span
-                    x-text="isPlaying ? 'Stop' : 'Start'"
+                    x-text="audioPreparingIndex !== null ? 'Preparing audio…' : (isPlaying ? 'Stop' : 'Start')"
                 >
                     Start
                 </span>
