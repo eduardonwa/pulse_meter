@@ -187,6 +187,61 @@ async function mountAlphaTab(element) {
     }
 }
 
+
+// Prepare the first playable pattern in the background. This does not call play()
+// or attempt to unlock audio: mobile browsers still require a user gesture.
+let warmupRoot = null
+let warmupScheduled = false
+
+function warmFirstAlphaTab(root) {
+    if (!root || !root.isConnected) return
+
+    const element = root.querySelector('[data-alphatab][data-alpha-tex]')
+    if (!element || !element.dataset.alphaTex) return
+
+    // Start downloading the engine and SoundFont without requiring a click.
+    // Browser resource caching should make these available to AlphaTabApi.
+    if (!document.querySelector('link[data-alphatab-soundfont-preload]')) {
+        const soundfont = document.createElement('link')
+        soundfont.rel = 'preload'
+        soundfont.as = 'fetch'
+        soundfont.href = '/soundfont/sonivox.sf2'
+        soundfont.crossOrigin = 'anonymous'
+        soundfont.dataset.alphatabSoundfontPreload = ''
+        document.head.appendChild(soundfont)
+    }
+
+    void mountAlphaTab(element).catch(error => {
+        console.warn('Could not prepare AlphaTab audio ahead of playback:', error)
+    })
+}
+
+function scheduleAlphaTabWarmup(root) {
+    if (!root || warmupScheduled && warmupRoot === root) return
+    warmupRoot = root
+    warmupScheduled = true
+
+    requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+            warmupScheduled = false
+            warmFirstAlphaTab(root)
+        })
+    })
+}
+
+// Practice emits this event after restoring locally saved exercises.
+window.addEventListener('dorelog:practice-ready', event => {
+    if (!event.detail?.steps?.some(step => step.hasAlphaTab)) return
+    scheduleAlphaTabWarmup(document.querySelector('.metronome, .routine-player'))
+})
+
+// Guest template pages do not use routinePlayer.init(), so they do not emit
+// dorelog:practice-ready. Alpine is initialized by Livewire before this event.
+window.addEventListener('livewire:initialized', () => {
+    const root = document.querySelector('.routine-player')
+    if (root) scheduleAlphaTabWarmup(root)
+})
+
 function encodeBase64(value) {
     const bytes = new TextEncoder().encode(value)
 
