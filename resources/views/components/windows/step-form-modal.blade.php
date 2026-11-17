@@ -101,13 +101,13 @@
 
                 <div style="display: flex; gap: .5rem; align-items: center;">
                     <select x-model.number="stepForm.time_signature_numerator" aria-label="Beats per measure">
-                        @foreach (range(2, 16) as $numerator)
+                        @foreach (range(1, 16) as $numerator)
                             <option value="{{ $numerator }}">{{ $numerator }}</option>
                         @endforeach
                     </select>
                     <span>/</span>
                     <select x-model.number="stepForm.time_signature_denominator" aria-label="Beat note value">
-                        <option value="4">4</option><option value="8">8</option>
+                        <option value="2">2</option><option value="4">4</option><option value="8">8</option><option value="16">16</option>
                     </select>
                 </div>
             </label>
@@ -177,13 +177,13 @@
                     Time signature
                     <span style="display: flex; gap: .5rem; align-items: center;">
                         <select x-model.number="stepForm.time_signature_numerator" aria-label="Beats per measure">
-                            @foreach (range(2, 16) as $numerator)
+                            @foreach (range(1, 16) as $numerator)
                                 <option value="{{ $numerator }}">{{ $numerator }}</option>
                             @endforeach
                         </select>
                         <span>/</span>
                         <select x-model.number="stepForm.time_signature_denominator" aria-label="Beat note value">
-                            <option value="4">4</option><option value="8">8</option>
+                            <option value="2">2</option><option value="4">4</option><option value="8">8</option><option value="16">16</option>
                         </select>
                     </span>
                 </label>
