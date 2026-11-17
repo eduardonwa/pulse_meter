@@ -253,8 +253,10 @@
                 <x-metronome.count-in-toggle />
                 <button type="button" class="button" data-type="outline" :disabled="!tabUndoHistory.length"
                     @click="undoTabEditorChange()" title="Undo last edit (Ctrl+Z)">Undo</button>
+                <button type="button" class="button" data-type="outline" :disabled="!tabRedoHistory.length"
+                    @click="redoTabEditorChange()" title="Redo last edit (Ctrl+Shift+Z)">Redo</button>
                 <button type="button" class="button" data-type="outline" :disabled="!tabDraft.beats.length"
-                    @click="undoTabEditorNote()">Delete note</button>
+                    @click="undoTabEditorNote()">Delete selected notes</button>
             </div>
 
             <div class="tab-editor__preview" x-show="tabPreviewVisible" x-cloak><div x-ref="tabEditorPreview" data-alphatab></div></div>
