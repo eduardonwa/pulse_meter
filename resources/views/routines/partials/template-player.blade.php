@@ -18,7 +18,9 @@
             </span>
         </header>
 
-        <x-metronome.count-in-toggle />
+        <div x-show="steps.some(step => !!step.alpha_tex)" x-cloak>
+            <x-metronome.count-in-toggle />
+        </div>
 
         @if (in_array($viewerType, ['guest', 'free'], true))
             <button class="routine-player__start button"
