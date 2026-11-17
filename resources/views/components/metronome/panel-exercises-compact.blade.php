@@ -8,7 +8,7 @@
         }"
         @routine:exercise-clear-active.window="clearActiveExercise($event)"
         @alphatab:rendered.window="syncScoreRendered($event, $refs.alphaTab)"
-        @routine:exercise-active.window="syncActiveExercise($event, index, !!step.alpha_tex)"
+        @routine:exercise-active.window="syncActiveExercise($event, index, hasAlphaTabPattern(step))"
     >
         <x-metronome.exercise-desktop />
         <x-metronome.exercise-mobile />
@@ -35,7 +35,7 @@
                         <x-heroicon-o-arrows-pointing-out x-show="!viewFullscreen" />
                     </button>
                     @can('use-pro')
-                    <button type="button" class="button" data-type="outline" x-show="canCreateTablatures && viewFullscreen && step.tab_source === 'user'" x-cloak
+                    <button type="button" class="button" data-type="outline" x-show="canCreateTablatures && viewFullscreen && step.tab_source === 'user' && !!step.alpha_tex && !step.musicxml_source" x-cloak
                         @click="openSavedTabEditor(index, $refs.exerciseViewDialog)">Edit tablature</button>
                     @endcan
                     <button type="button" class="button" data-type="icon" aria-label="Close exercise" title="Close" @click="$refs.exerciseViewDialog.close()">
@@ -51,7 +51,7 @@
                     <span x-text="`${step.time_signature_numerator ?? 4}/${step.time_signature_denominator ?? 4}`"></span>
                 </div>
 
-                <div class="mobile-exercise-view-dialog__skeleton" x-show="step.alpha_tex && scoreLoading" x-cloak role="status" aria-label="Loading tablature">
+                <div class="mobile-exercise-view-dialog__skeleton" x-show="hasAlphaTabPattern(step) && scoreLoading" x-cloak role="status" aria-label="Loading tablature">
                     <div class="skeleton-line skeleton-line--heading"></div>
                     <div class="skeleton-line skeleton-line--staff"></div>
                     <div class="skeleton-line skeleton-line--staff"></div>
@@ -59,7 +59,7 @@
                     <span class="sr-only">Loading tablature</span>
                 </div>
 
-                <p x-show="!step.alpha_tex">This exercise has no tablature.</p>
+                <p x-show="!hasAlphaTabPattern(step)">This exercise has no tablature.</p>
                 
                 <div class="mobile-exercise-view-dialog__actions">
                     <button type="button" class="button" data-type="play-drill"
@@ -75,13 +75,14 @@
         </dialog>
 
         <!-- TAB / EXERCISE DETAILS -->
-        <template x-if="step.alpha_tex">
+        <template x-if="hasAlphaTabPattern(step)">
             <div class="exercise-row__details" x-ref="exerciseDetails">
                 <div class="exercise-row__notation" x-show="detailsOpen" x-cloak>
                     <div x-ref="alphaTab"
                         data-alphatab
                         :data-exercise-index="index"
-                        :data-alpha-tex="btoa(step.alpha_tex)"
+                        :data-alpha-tex="step.alpha_tex ? btoa(step.alpha_tex) : null"
+                        :data-musicxml="step.musicxml_source || null"
                         :data-bpm="step.bpm"
                     ></div>
 
