@@ -1,3 +1,4 @@
+import { parseMusicXmlTab } from "./alphatab/musicxml-import.js";
 import { createTabDraft, appendTabNote, serializeTabDraft, parseTabDraft, layoutTabMeasures, selectTabNoteIndices, changeSelectedTabDurations, clearTabNotes, shiftTabBreaks, updateTabBreaks, breaksForInsertedTabNote, tabBeatNotes, setTabBeatNote, removeTabNoteAtString, TAB_DURATIONS, TAB_STRINGS } from "./alphatab/tab-editor.js";
 
 export function exercises() {
@@ -8,6 +9,8 @@ export function exercises() {
         tabEditorSaving: false,
         tabPreviewPlaying: false,
         tabDraft: createTabDraft(),
+        tabMusicXmlImport: null,
+        tabMusicXmlSelectedSection: 0,
         tabStringNames: TAB_STRINGS,
         tabSelectedIndex: 0,
         tabInsertAtBar: false,
@@ -306,6 +309,8 @@ export function exercises() {
             this.$refs.stepDialog.close();
             this.tabEditorEditingIndex = null;
             this.tabDraft = createTabDraft();
+            this.tabMusicXmlImport = null;
+            this.tabMusicXmlSelectedSection = 0;
             this.tabSelectedIndex = 0;
             this.tabInsertAtBar = false;
             this.tabSelectedIndices = [];
@@ -359,12 +364,51 @@ export function exercises() {
             });
         },
 
+        async importTabMusicXml(event) {
+            const input = event.target;
+            const file = input.files?.[0];
+            input.value = '';
+            if (!file || !this.canCreateTablatures || this.tabEditorEditingIndex !== null) return;
+            if (!/\.(xml|musicxml)$/i.test(file.name) || file.size > 2_000_000) {
+                this.showToast?.('Choose an uncompressed .xml or .musicxml file under 2 MB', 'error');
+                return;
+            }
+            try {
+                const imported = parseMusicXmlTab(await file.text());
+                this.tabMusicXmlImport = imported;
+                this.tabMusicXmlSelectedSection = 0;
+            } catch (error) {
+                this.tabMusicXmlImport = null;
+                this.showToast?.(error.message, 'error');
+            }
+        },
+
+        applyTabMusicXmlSection() {
+            if (this.tabEditorEditingIndex !== null) return;
+            const imported = this.tabMusicXmlImport;
+            const section = imported?.sections[Number(this.tabMusicXmlSelectedSection)];
+            if (!section) return;
+            this.stopTabEditorPreview();
+            this.tabDraft = section.draft;
+            this.stepForm.name = imported.title.slice(0, 255);
+            this.stepForm.bpm = section.bpm;
+            this.stepForm.time_signature_numerator = section.numerator;
+            this.stepForm.time_signature_denominator = section.denominator;
+            this.tabSelectedIndex = section.draft.beats.length;
+            this.tabSelectedIndices = [];
+            this.tabSelectionAnchor = null;
+            this.tabInsertAtBar = false;
+            this.tabMusicXmlImport = null;
+            this.$nextTick(() => this.updateTabEditorWidth());
+        },
+
         closeNewTabEditor() {
             this.stopTabEditorPreview();
             this.finishPendingTabDigit(false);
             this.$refs.tabEditorDialog?.close();
             this.tabEditorOpen = false;
             this.tabEditorEditingIndex = null;
+            this.tabMusicXmlImport = null;
         },
 
         previewTabEditor() {
