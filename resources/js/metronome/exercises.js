@@ -10,6 +10,7 @@ export function exercises() {
         tabPreviewPlaying: false,
         tabPreviewVisible: false,
         tabUndoHistory: [],
+        tabRedoHistory: [],
         tabDraft: createTabDraft(),
         tabMusicXmlImport: null,
         tabMusicXmlSelectedSection: 0,
@@ -312,6 +313,7 @@ export function exercises() {
             this.tabEditorEditingIndex = null;
             this.tabDraft = createTabDraft();
             this.tabUndoHistory = [];
+            this.tabRedoHistory = [];
             this.tabPreviewVisible = false;
             this.tabMusicXmlImport = null;
             this.tabMusicXmlSelectedSection = 0;
@@ -340,6 +342,7 @@ export function exercises() {
             this.tabEditorEditingIndex = index;
             this.tabDraft = parsed.draft;
             this.tabUndoHistory = [];
+            this.tabRedoHistory = [];
             this.tabPreviewVisible = false;
             this.tabSelectedIndex = parsed.draft.beats.length;
             this.tabInsertAtBar = false;
@@ -416,6 +419,7 @@ export function exercises() {
             this.tabEditorOpen = false;
             this.tabPreviewVisible = false;
             this.tabUndoHistory = [];
+            this.tabRedoHistory = [];
             this.tabEditorEditingIndex = null;
             this.tabMusicXmlImport = null;
         },
@@ -641,26 +645,44 @@ export function exercises() {
             }
         },
 
-        recordTabEditorUndo() {
-            const snapshot = {
+        tabEditorSnapshot() {
+            return {
                 draft: JSON.parse(JSON.stringify(this.tabDraft)),
                 selectedIndex: this.tabSelectedIndex,
                 selectedIndices: [...this.tabSelectedIndices],
                 insertAtBar: this.tabInsertAtBar,
             };
-            this.tabUndoHistory = [...this.tabUndoHistory.slice(-49), snapshot];
+        },
+
+        restoreTabEditorSnapshot(snapshot) {
+            this.tabDraft = snapshot.draft;
+            this.tabSelectedIndex = snapshot.selectedIndex;
+            this.tabSelectedIndices = snapshot.selectedIndices;
+            this.tabInsertAtBar = snapshot.insertAtBar;
+            this.tabSelectionAnchor = snapshot.selectedIndices.at(-1) ?? null;
+        },
+
+        recordTabEditorUndo() {
+            this.tabUndoHistory = [...this.tabUndoHistory.slice(-49), this.tabEditorSnapshot()];
+            this.tabRedoHistory = [];
         },
 
         undoTabEditorChange() {
             if (!this.tabUndoHistory.length) return;
             this.finishPendingTabDigit(false);
             const last = this.tabUndoHistory.at(-1);
+            this.tabRedoHistory = [...this.tabRedoHistory.slice(-49), this.tabEditorSnapshot()];
             this.tabUndoHistory = this.tabUndoHistory.slice(0, -1);
-            this.tabDraft = last.draft;
-            this.tabSelectedIndex = last.selectedIndex;
-            this.tabSelectedIndices = last.selectedIndices;
-            this.tabInsertAtBar = last.insertAtBar;
-            this.tabSelectionAnchor = last.selectedIndices.at(-1) ?? null;
+            this.restoreTabEditorSnapshot(last);
+        },
+
+        redoTabEditorChange() {
+            if (!this.tabRedoHistory.length) return;
+            this.finishPendingTabDigit(false);
+            const next = this.tabRedoHistory.at(-1);
+            this.tabUndoHistory = [...this.tabUndoHistory.slice(-49), this.tabEditorSnapshot()];
+            this.tabRedoHistory = this.tabRedoHistory.slice(0, -1);
+            this.restoreTabEditorSnapshot(next);
         },
 
         changeTabEditorDuration(value) {
@@ -759,40 +781,55 @@ export function exercises() {
 
         clearTabEditorNote() {
             this.finishPendingTabDigit(false);
-            if (this.tabInsertAtBar || this.tabSelectedIndex >= this.tabDraft.beats.length) return;
-            const index = this.tabSelectedIndex;
+            if (this.tabInsertAtBar) return;
+            const indices = this.tabSelectedIndices.length
+                ? this.tabSelectedIndices
+                : [this.tabSelectedIndex];
+            const selected = new Set(indices.filter(index => index >= 0 && index < this.tabDraft.beats.length));
+            if (!selected.size) return;
+            const beats = this.tabDraft.beats.map((beat, index) =>
+                selected.has(index) ? removeTabNoteAtString(beat, this.tabDraft.string) : beat);
+            if (beats.every((beat, index) => beat === this.tabDraft.beats[index])) return;
             this.recordTabEditorUndo();
-            this.tabDraft = {
-                ...this.tabDraft,
-                beats: this.tabDraft.beats.map((beat, at) =>
-                    at === index ? removeTabNoteAtString(beat, this.tabDraft.string) : beat),
-            };
+            this.tabDraft = { ...this.tabDraft, beats };
         },
 
+        // Delete removes selected beat positions; Backspace clears the current
+        // string in all selected beats, preserving their rhythmic space.
         undoTabEditorNote() {
-            if (!this.tabDraft.beats.length) return;
+            this.finishPendingTabDigit(false);
+            const length = this.tabDraft.beats.length;
+            const indices = this.tabSelectedIndices.length
+                ? this.tabSelectedIndices
+                : [Math.min(this.tabSelectedIndex, length - 1)];
+            const selected = [...new Set(indices.filter(index => index >= 0 && index < length))]
+                .sort((a, b) => b - a);
+            if (!selected.length) return;
             this.recordTabEditorUndo();
-            if (this.tabSelectedIndex < this.tabDraft.beats.length) {
-                const beats = this.tabDraft.beats.filter((_, i) => i !== this.tabSelectedIndex);
-                this.tabDraft = { ...this.tabDraft, beats, breaks: updateTabBreaks(this.tabDraft.breaks ?? [], this.tabSelectedIndex, 'delete', beats.length) };
-                this.tabSelectedIndex = Math.min(this.tabSelectedIndex, beats.length);
-                this.tabSelectedIndices = [];
-                this.tabSelectionAnchor = null;
-            } else {
-                this.tabDraft = { ...this.tabDraft, beats: this.tabDraft.beats.slice(0, -1), breaks: (this.tabDraft.breaks ?? []).filter(index => index < this.tabDraft.beats.length - 1) };
-                this.tabSelectedIndex = this.tabDraft.beats.length;
-                this.tabSelectedIndices = [];
-                this.tabSelectionAnchor = null;
+            const beats = [...this.tabDraft.beats];
+            let breaks = [...(this.tabDraft.breaks ?? [])];
+            for (const index of selected) {
+                beats.splice(index, 1);
+                breaks = updateTabBreaks(breaks, index, 'delete', beats.length);
             }
+            this.tabDraft = { ...this.tabDraft, beats, breaks };
+            this.tabSelectedIndex = Math.min(selected.at(-1), beats.length);
+            this.tabInsertAtBar = false;
+            this.tabSelectedIndices = [];
+            this.tabSelectionAnchor = null;
         },
 
         handleTabEditorKey(event) {
             const tag = event.target?.tagName;
             if (['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON'].includes(tag)) return;
-            if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'z' && !event.shiftKey) {
-                event.preventDefault();
-                this.undoTabEditorChange();
-                return;
+            if (event.ctrlKey || event.metaKey) {
+                const key = event.key.toLowerCase();
+                if (key === 'z' || (key === 'y' && !event.shiftKey)) {
+                    event.preventDefault();
+                    if (event.shiftKey || key === 'y') this.redoTabEditorChange();
+                    else this.undoTabEditorChange();
+                    return;
+                }
             }
             if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
                 event.preventDefault();
