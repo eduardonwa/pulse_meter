@@ -15,6 +15,7 @@ export function exercises() {
         tabMusicXmlImport: null,
         tabMusicXmlFullSource: null,
         tabMusicXmlFileName: '',
+        tabMusicXmlInitialBpm: null,
         tabFullMusicXml: null,
         tabMusicXmlSelectedSection: 0,
         tabStringNames: TAB_STRINGS,
@@ -321,6 +322,7 @@ export function exercises() {
             this.tabMusicXmlImport = null;
             this.tabMusicXmlFullSource = null;
             this.tabMusicXmlFileName = '';
+            this.tabMusicXmlInitialBpm = null;
             this.tabFullMusicXml = null;
             this.tabMusicXmlSelectedSection = 0;
             this.tabSelectedIndex = 0;
@@ -403,6 +405,10 @@ export function exercises() {
                     throw new Error('Invalid MusicXML score');
                 }
                 this.tabMusicXmlFullSource = xmlText;
+                const initialTempo = Number(document.querySelector('sound[tempo]')?.getAttribute('tempo') ??
+                    document.querySelector('metronome per-minute')?.textContent);
+                this.tabMusicXmlInitialBpm = Number.isFinite(initialTempo) && initialTempo >= 30 && initialTempo <= 400
+                    ? Math.round(initialTempo) : null;
                 this.tabMusicXmlFileName = file.name.replace(/\.(musicxml|xml)$/i, '');
                 try {
                     this.tabMusicXmlImport = parseMusicXmlTab(xmlText);
@@ -444,14 +450,12 @@ export function exercises() {
             this.recordTabEditorUndo();
             this.tabFullMusicXml = this.tabMusicXmlFullSource;
             this.tabDraft = createTabDraft();
-            const doc = new DOMParser().parseFromString(this.tabFullMusicXml, 'application/xml');
-            const tempo = Number(doc.querySelector('sound[tempo]')?.getAttribute('tempo') ??
-                doc.querySelector('metronome per-minute')?.textContent);
-            if (Number.isFinite(tempo) && tempo >= 30 && tempo <= 400) this.stepForm.bpm = Math.round(tempo);
+            if (this.tabMusicXmlInitialBpm) this.stepForm.bpm = this.tabMusicXmlInitialBpm;
             this.stepForm.name = (this.tabMusicXmlImport?.title || this.tabMusicXmlFileName || 'Imported score').slice(0, 255);
             this.tabSelectedIndices = [];
             this.tabMusicXmlImport = null;
             this.tabMusicXmlFullSource = null;
+            this.tabMusicXmlInitialBpm = null;
         },
 
         closeNewTabEditor() {
