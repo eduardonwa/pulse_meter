@@ -1,4 +1,4 @@
-import { createTabDraft, TAB_DURATIONS } from './tab-editor.js'
+import { createTabDraft, TAB_DURATIONS, tabBeatUnits } from './tab-editor.js'
 
 const SUPPORTED_DENOMINATORS = [2, 4, 8, 16]
 
@@ -22,15 +22,21 @@ function requiredPositiveInteger(number, label) {
 }
 
 function parseNote(note, divisions) {
-    if (child(note, 'time-modification') || children(note, 'dot').length) {
-        throw new Error('Dotted notes and tuplets are not supported yet')
+    const dots = children(note, 'dot')
+    if (dots.length > 1) throw new Error('Double-dotted notes are not supported yet')
+    const modification = child(note, 'time-modification')
+    const actual = modification ? Number(value(modification, 'actual-notes')) : null
+    const normal = modification ? Number(value(modification, 'normal-notes')) : null
+    if (modification && (actual !== 3 || normal !== 2)) {
+        throw new Error('Only 3:2 triplets are supported')
     }
     const durationTicks = requiredPositiveInteger(Number(value(note, 'duration')), 'note duration')
-    const duration = (4 * divisions) / durationTicks
+    const duration = 4 * divisions / durationTicks * (dots.length ? 1.5 : 1) * (modification ? 2 / 3 : 1)
     if (!TAB_DURATIONS.includes(duration)) {
         throw new Error('This MusicXML uses note lengths the tablature editor cannot represent yet')
     }
-    if (child(note, 'rest')) return { rest: true, duration, chord: false }
+    const rhythm = { ...(dots.length ? { dotted: true } : {}), ...(modification ? { tuplet: 3 } : {}) }
+    if (child(note, 'rest')) return { rest: true, duration, ...rhythm, chord: false }
     const technical = child(child(note, 'notations'), 'technical')
     const string = Number(value(technical, 'string'))
     const fret = Number(value(technical, 'fret'))
@@ -38,7 +44,7 @@ function parseNote(note, divisions) {
         !Number.isInteger(fret) || fret < 0 || fret > 24) {
         throw new Error('MusicXML must contain valid guitar string and fret positions (1–6, 0–24)')
     }
-    return { string, fret, duration, chord: Boolean(child(note, 'chord')) }
+    return { string, fret, duration, ...rhythm, chord: Boolean(child(note, 'chord')) }
 }
 
 function readMeasure(measure, divisions, signature) {
@@ -54,7 +60,7 @@ function readMeasure(measure, divisions, signature) {
         const note = parseNote(node, divisions)
         if (note.chord) {
             const previous = beats.at(-1)
-            if (!previous || previous.rest || previous.duration !== note.duration) {
+            if (!previous || previous.rest || previous.duration !== note.duration || Boolean(previous.dotted) !== Boolean(note.dotted) || previous.tuplet !== note.tuplet) {
                 throw new Error('MusicXML contains an unsupported chord')
             }
             const notes = previous.notes ?? [{ string: previous.string, fret: previous.fret }]
@@ -62,16 +68,27 @@ function readMeasure(measure, divisions, signature) {
                 throw new Error('Multiple notes on the same string cannot form a chord')
             }
             notes.push({ string: note.string, fret: note.fret })
-            beats[beats.length - 1] = { duration: note.duration, notes }
+            beats[beats.length - 1] = { duration: note.duration, ...(note.dotted ? { dotted: true } : {}), ...(note.tuplet === 3 ? { tuplet: 3 } : {}), notes }
         } else {
             const { chord, ...single } = note
             beats.push(single)
         }
     }
-    if (!beats.length) throw new Error('Empty measures are not supported yet')
-    const total = beats.reduce((sum, note) => sum + 16 / note.duration, 0)
     const capacity = signature.numerator * 16 / signature.denominator
-    if (total !== capacity) {
+    if (!beats.length) {
+        // An empty MusicXML measure is a full measure of silence. Expand into
+        // ordinary editable rests rather than creating an unsupported duration.
+        let remaining = capacity
+        for (const duration of TAB_DURATIONS) {
+            const units = 16 / duration
+            while (remaining >= units) {
+                beats.push({ rest: true, duration })
+                remaining -= units
+            }
+        }
+    }
+    const total = beats.reduce((sum, note) => sum + tabBeatUnits(note), 0)
+    if (Math.abs(total - capacity) > 1e-7) {
         throw new Error('Measure ' + measure.getAttribute('number') +
             ' has ' + total + ' sixteenth-note units but ' +
             signature.numerator + '/' + signature.denominator + ' requires ' + capacity)
