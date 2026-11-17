@@ -26,7 +26,7 @@ test('7/8 holds seven eighth notes per bar', () => {
 
 test('7/8 tablature round-trips through alphaTex and playback', () => {
     const alphaTex = serializeTabDraft(sevenEighthNotes, 7, 120, 8)
-    assert.match(alphaTex, /\\\\ts 7 8/)
+    assert.ok(alphaTex.includes(String.raw`\ts 7 8`))
     const parsed = parseTabDraft(alphaTex)
     assert.equal(parsed.numerator, 7)
     assert.equal(parsed.denominator, 8)
@@ -40,6 +40,6 @@ test('4/4 remains the default meter', () => {
         beats: Array.from({ length: 4 }, () => ({ fret: 0, string: 1, duration: 4 })),
     }
     const alphaTex = serializeTabDraft(draft)
-    assert.match(alphaTex, /\\\\ts 4 4/)
+    assert.ok(alphaTex.includes(String.raw`\ts 4 4`))
     assert.equal(parseTabDraft(alphaTex).denominator, 4)
 })
