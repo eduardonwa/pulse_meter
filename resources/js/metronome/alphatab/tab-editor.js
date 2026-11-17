@@ -91,10 +91,10 @@ export function breaksForInsertedTabNote(draft, index, duration, numerator = 4, 
     const capacity = Number(numerator) * 16 / Number(denominator);
     const nextLength = beats.length + 1;
     const shifted = updateTabBreaks(boundaries, index, 'insert', nextLength);
-    if (index === beats.length && used > 0 && used + size > capacity) {
+    if (index === beats.length && used > 0 && used + size > capacity + 1e-7) {
         return [...new Set([...shifted, index])].sort((a, b) => a - b);
     }
-    if (boundaries.includes(index) && used + size <= capacity) {
+    if (boundaries.includes(index) && used + size <= capacity + 1e-7) {
         // The inserted beat belongs to the previous measure, not the next.
         return [...new Set(shifted.map(value => value === index ? index + 1 : value))]
             .sort((a, b) => a - b);
