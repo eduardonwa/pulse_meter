@@ -643,7 +643,7 @@ export function exercises() {
 
         recordTabEditorUndo() {
             const snapshot = {
-                draft: structuredClone(this.tabDraft),
+                draft: JSON.parse(JSON.stringify(this.tabDraft)),
                 selectedIndex: this.tabSelectedIndex,
                 selectedIndices: [...this.tabSelectedIndices],
                 insertAtBar: this.tabInsertAtBar,
