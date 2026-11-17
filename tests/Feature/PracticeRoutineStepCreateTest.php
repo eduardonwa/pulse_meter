@@ -34,6 +34,46 @@ class PracticeRoutineStepCreateTest extends TestCase
         $this->assertSame('\\staff {tabs}' . "\n" . ':16 1.1 2.1 3.1 4.1', $step->alpha_tex);
     }
 
+    public function test_pro_can_save_full_musicxml_without_flattening_unsupported_notation(): void
+    {
+        $user = User::factory()->create(['plan' => 'pro']);
+        $routine = $user->practiceRoutines()->create([
+            'name' => 'Test Routine', 'position' => 0, 'is_default' => true,
+        ]);
+        $source = '<score-partwise><part><measure number="1"><note><notations><technical>'
+            . '<tap>1</tap></technical></notations></note></measure></part></score-partwise>';
+
+        $response = $this->actingAs($user)->postJson(
+            route('practice-routine-steps.store', ['practiceRoutine' => $routine]),
+            [
+                'name' => 'Whole score', 'bpm' => 120, 'mode' => 'classic',
+                'alpha_tex' => null, 'musicxml_source' => $source,
+            ],
+        );
+
+        $response->assertCreated()->assertJsonPath('tab_source', 'user')
+            ->assertJsonPath('musicxml_source', $source);
+        $step = $routine->steps()->firstOrFail();
+        $this->assertNull($step->alpha_tex);
+        $this->assertSame($source, $step->musicxml_source);
+    }
+
+    public function test_cannot_save_two_score_representations_together(): void
+    {
+        $user = User::factory()->create(['plan' => 'pro']);
+        $routine = $user->practiceRoutines()->create([
+            'name' => 'Test Routine', 'position' => 0, 'is_default' => true,
+        ]);
+        $this->actingAs($user)->postJson(
+            route('practice-routine-steps.store', ['practiceRoutine' => $routine]),
+            [
+                'name' => 'Two scores', 'bpm' => 120, 'mode' => 'classic',
+                'alpha_tex' => ':4 5.1',
+                'musicxml_source' => '<score-partwise/>',
+            ],
+        )->assertStatus(422);
+    }
+
     public function test_creating_step_without_tablature_leaves_source_null(): void
     {
         $user = User::factory()->create(['plan' => 'pro']);
