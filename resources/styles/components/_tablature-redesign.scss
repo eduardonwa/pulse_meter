@@ -2,9 +2,28 @@
 
 .tab-editor {
     padding-inline: 0;
-    display: grid;
-    grid-template-rows: auto auto auto minmax(0, 1fr) auto;
     min-height: 100dvh;
+
+    &__editor {
+        display: grid;
+        grid-template-rows: auto auto auto auto minmax(0, 1fr) auto;
+        min-height: 100dvh;
+    }
+
+    &__prototype-state {
+        display: grid;
+        place-content: center;
+        justify-items: center;
+        gap: $size-3;
+        min-height: 100dvh;
+    }
+
+    &__save-status {
+        padding-inline: $size-3;
+        font-size: 13px;
+
+        &:empty { display: none; }
+    }
     
     &__header {
         padding-inline: $size-4;
