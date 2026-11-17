@@ -2,6 +2,7 @@ import { Alpine } from '../../vendor/livewire/livewire/dist/livewire.esm'
 import { createTabDraft, TAB_STRINGS, serializeTabDraft, parseTabDraft } from './metronome/alphatab/tab-editor.js'
 import { tablatureEditorMethods } from './metronome/tablature-editor-controller.js'
 import { parseMusicXmlTab } from './metronome/alphatab/musicxml-import.js'
+import './alphatab-exercises.js'
 
 window.Alpine = Alpine
 
@@ -15,6 +16,55 @@ Alpine.data('tablatureRedesign', () => ({
     prototypeMessage: '',
     prototypeMessageType: 'success',
     prototypeSaved: null,
+    prototypePlaying: false,
+    prototypePlaybackLoading: false,
+    prototypePlaybackScore: null,
+    stopPrototypePlayback() {
+        const element = this.$refs.tabEditorPreview
+        if (element) window.dispatchEvent(new CustomEvent('alphatab:preview-draft', {
+            detail: { element, play: false },
+        }))
+        this.prototypePlaying = false
+        this.prototypePlaybackLoading = false
+        this.prototypePlaybackScore = null
+    },
+    syncPrototypePlayback(event) {
+        if (event.detail?.element !== this.$refs.tabEditorPreview) return
+        this.prototypePlaying = Boolean(event.detail.playing)
+        this.prototypePlaybackLoading = false
+    },
+    prototypePlaybackError(event) {
+        if (event.detail?.element !== this.$refs.tabEditorPreview) return
+        this.prototypePlaying = false
+        this.prototypePlaybackLoading = false
+        this.prototypePlaybackScore = null
+        this.prototypeMessageType = 'error'
+        this.prototypeMessage = event.detail.message || 'Unable to play this tablature.'
+    },
+    togglePrototypePlayback() {
+        if (this.prototypePlaybackLoading) return
+        const element = this.$refs.tabEditorPreview
+        if (!element) return
+        let alphaTex
+        try {
+            alphaTex = serializeTabDraft(this.tabDraft, this.stepForm.time_signature_numerator,
+                Number(this.stepForm.bpm), this.stepForm.time_signature_denominator)
+        } catch (error) {
+            this.prototypeMessageType = 'error'
+            this.prototypeMessage = error?.message || 'Unable to play this tablature.'
+            return
+        }
+        if (alphaTex === this.prototypePlaybackScore) {
+            window.dispatchEvent(new CustomEvent('alphatab:play-pause', { detail: { element } }))
+            return
+        }
+        this.prototypePlaybackLoading = true
+        this.prototypePlaybackScore = alphaTex
+        window.dispatchEvent(new CustomEvent('alphatab:preview-draft', {
+            detail: { element, alphaTex, bpm: Number(this.stepForm.bpm),
+                instrument: this.tabDraft.instrument, play: true },
+        }))
+    },
     prototypeMusicXmlImport: null,
     prototypeMusicXmlSelectedSection: 0,
     async importPrototypeMusicXml(event) {
@@ -47,6 +97,7 @@ Alpine.data('tablatureRedesign', () => ({
         const section = imported?.sections?.[Number(this.prototypeMusicXmlSelectedSection)]
         if (!section) return
         // Keep the last saved exercise untouched until the user explicitly saves.
+        this.stopPrototypePlayback()
         this.recordTabEditorUndo()
         this.tabDraft = JSON.parse(JSON.stringify(section.draft))
         this.stepForm.name = imported.title.slice(0, 255)
@@ -63,6 +114,7 @@ Alpine.data('tablatureRedesign', () => ({
         this.$nextTick(() => this.updateTabEditorWidth())
     },
     restorePrototypeSaved() {
+        this.stopPrototypePlayback()
         this.prototypeMusicXmlImport = null
         this.prototypeMusicXmlSelectedSection = 0
         if (this.prototypeSaved) {
@@ -119,7 +171,10 @@ Alpine.data('tablatureRedesign', () => ({
             this.stepForm.name = name
             this.prototypeMessageType = 'success'
             this.prototypeMessage = 'Saved in this browser (prototype only; not added to a routine).'
-            if (closeAfterSave) this.prototypeEditorOpen = false
+            if (closeAfterSave) {
+                this.stopPrototypePlayback()
+                this.prototypeEditorOpen = false
+            }
         } catch (error) {
             this.prototypeMessageType = 'error'
             this.prototypeMessage = error?.message || 'Unable to save exercise.'
