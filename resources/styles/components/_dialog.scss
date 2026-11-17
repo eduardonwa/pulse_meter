@@ -323,8 +323,6 @@
 
       display: flex;
       justify-content: flex-end;
-
-      svg { stroke: $color-neutral-800; }
     }
 
     .heading {
@@ -518,8 +516,6 @@
         display: flex;
         align-items: center;
         justify-content: flex-end;
-
-        svg { stroke: $color-neutral-800; }
       }
       
       @include dialog-edit-delete-colors;

@@ -149,6 +149,14 @@
             width: 100%;
             margin: 0;
             margin-block-start: auto;
+
+            &[data-type="outline"] {
+                color: $color-neutral-100;
+
+                &:hover, &:focus {
+                    color: $color-neutral-800;
+                }
+            }
         }
     }
 

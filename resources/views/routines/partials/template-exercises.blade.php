@@ -172,8 +172,6 @@
                             >
                                 <span x-text="audioPreparing ? 'Preparing audio…' : (hearing ? 'Stop' : 'Preview')">Preview</span>
                             </button>
-                            <x-metronome.count-in-toggle />
-
                         </div>
                     </div>
                 @endif
