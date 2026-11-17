@@ -28,7 +28,7 @@ async function getAlphaTab() {
 // The exercise BPM is the base tempo for native MusicXML scores. Relative
 // tempo changes remain in the score and playbackSpeed scales them together.
 function musicXmlFirstTempo(xml, fallback) {
-    const match = xml?.match(/<sound\\b[^>]*\\btempo\\s*=\\s*["'](\\d+(?:\\.\\d+)?)["']/i)
+    const match = xml?.match(/<sound\b[^>]*\btempo\s*=\s*["'](\d+(?:\.\d+)?)["']/i)
     const tempo = Number(match?.[1])
     return Number.isFinite(tempo) && tempo > 0 ? tempo : fallback
 }
