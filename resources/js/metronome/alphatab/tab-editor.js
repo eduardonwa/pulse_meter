@@ -87,20 +87,6 @@ export function breaksForInsertedTabNote(draft, index, duration, numerator = 4, 
     return shifted;
 }
 
-// Insert an editable rest at the requested position without overwriting notes
-// or introducing a barline. The user can then type a fret into that position.
-export function insertTabRestAt(draft, index, duration = draft.duration) {
-    if (!Number.isInteger(index) || index < 0 || index > draft.beats.length) {
-        throw new RangeError('Invalid insertion position');
-    }
-    const noteDuration = Number(duration);
-    if (!TAB_DURATIONS.includes(noteDuration)) throw new RangeError('Invalid duration');
-    const beats = [...draft.beats];
-    beats.splice(index, 0, { rest: true, duration: noteDuration });
-    const breaks = updateTabBreaks(draft.breaks ?? [], index, 'insert', beats.length);
-    return { ...draft, beats, breaks };
-}
-
 // Legacy beats contain one fret/string; chord beats contain several notes.
 export function tabBeatNotes(beat) {
     if (!beat || beat.rest) return [];
