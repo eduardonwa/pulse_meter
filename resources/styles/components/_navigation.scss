@@ -13,7 +13,12 @@
   position: relative;
 
   .button {
-    color: $color-neutral-100;
+    color: $color-neutral-50;
+  }
+  .toggle-btn {
+    svg {
+      stroke: $color-neutral-50;
+    }
   }
 
   a {

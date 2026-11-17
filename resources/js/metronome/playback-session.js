@@ -73,9 +73,9 @@ export function playbackSession() {
         
         // Fired when AlphaTab confirms actual playback rather than when Start
         // was pressed. Only the matching, still-active exercise may start timing.
-        handleAlphaTabPlaybackState(event) {
+        handleAlphaTabScoreStarted(event) {
             const pending = this.pendingAlphaTabStart
-            if (!pending || !event.detail?.playing) return
+            if (!pending) return
 
             const index = Number(event.detail?.element?.dataset.exerciseIndex)
             if (index !== pending.index

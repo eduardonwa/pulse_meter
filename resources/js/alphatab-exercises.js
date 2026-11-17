@@ -1,3 +1,4 @@
+import { isAlphaTabCountInEnabled } from './metronome/alphatab/count-in-preference.js'
 import { playbackAlphaTex } from './metronome/alphatab/tab-editor.js'
 let alphaTabModule = null
 let activeApi = null
@@ -9,6 +10,10 @@ const readyPromises = new WeakMap()
 const renderedBpms = new WeakMap()
 const playbackRequests = new WeakMap()
 let playbackGeneration = 0
+
+function configureCountIn(api) {
+    api.countInVolume = isAlphaTabCountInEnabled() ? 1 : 0
+}
 
 async function getAlphaTab() {
     if (!alphaTabModule) {
@@ -152,8 +157,19 @@ async function mountAlphaTab(element) {
         })
 
         api.metronomeVolume = 1
+        configureCountIn(api)
+
+        let waitingForScoreStart = false
+        api.playerPositionChanged.on(args => {
+            if (!waitingForScoreStart || args.currentTick < 0) return
+            waitingForScoreStart = false
+            window.dispatchEvent(new CustomEvent('alphatab:score-started', {
+                detail: { element },
+            }))
+        })
 
         api.playerStateChanged.on(args => {
+            waitingForScoreStart = args.state === alphaTab.synth.PlayerState.Playing
             dispatchPlaybackState(
                 element,
                 args.state,
@@ -267,6 +283,7 @@ window.addEventListener('alphatab:preview-draft', async event => {
     }
     api.playbackSpeed = 1
     api.isLooping = false
+    configureCountIn(api)
     api.play()
 })
 
@@ -294,6 +311,7 @@ window.addEventListener('alphatab:play-pause', async event => {
         activeApi = api
         // Preview is always a single listen, regardless of exercise mode.
         api.isLooping = false
+        configureCountIn(api)
         api.playPause()
     } catch (error) {
         console.error('AlphaTab preview could not start:', error)
@@ -331,6 +349,7 @@ window.addEventListener('alphatab:start-exercise', async event => {
         activeApi = api
         // Routine playback repeats until the session stops.
         api.isLooping = true
+        configureCountIn(api)
         api.play()
     } catch (error) {
         console.error('AlphaTab exercise could not start:', error)

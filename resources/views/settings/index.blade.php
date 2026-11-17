@@ -17,6 +17,10 @@
                         <input type="checkbox" :checked="autoAdvance" @change="setAutoAdvance($event.target.checked)">
                         <span>Auto-advance to next exercise</span>
                     </label>
+                    <label class="alphatab-count-in-field">
+                        <input type="checkbox" :checked="alphaTabCountIn" @change="setAlphaTabCountIn($event.target.checked)">
+                        <span>Count-in before tablature playback</span>
+                    </label>
                     @if (auth()->user()?->hasProAccess())
                         <label class="free-exercise-import-field">
                             <input type="checkbox"
