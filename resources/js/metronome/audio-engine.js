@@ -492,13 +492,13 @@ export function audioEngine() {
 
             const numerator =
                 Number.isInteger(requestedNumerator)
-                && requestedNumerator >= 2
+                && requestedNumerator >= 1
                 && requestedNumerator <= 16
                     ? requestedNumerator
                     : 4
 
             const requestedDenominator = Number(this.metronome.time_signature_denominator)
-            const denominator = [4, 8].includes(requestedDenominator) ? requestedDenominator : 4
+            const denominator = [2, 4, 8, 16].includes(requestedDenominator) ? requestedDenominator : 4
 
             return {
                 timeSignature: {
