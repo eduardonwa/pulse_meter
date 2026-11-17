@@ -251,11 +251,13 @@
                 <button type="button" class="button" data-type="primary" @click="addTabEditorNote()">Add note</button>
                 <button type="button" class="button" data-type="outline" :disabled="!tabDraft.beats.length" @click="previewTabEditor()" x-text="tabPreviewPlaying ? 'Stop' : 'Play'"></button>
                 <x-metronome.count-in-toggle />
+                <button type="button" class="button" data-type="outline" :disabled="!tabUndoHistory.length"
+                    @click="undoTabEditorChange()" title="Undo last edit (Ctrl+Z)">Undo</button>
                 <button type="button" class="button" data-type="outline" :disabled="!tabDraft.beats.length"
-                    @click="undoTabEditorNote()">Undo last note</button>
+                    @click="undoTabEditorNote()">Delete note</button>
             </div>
 
-            <div class="tab-editor__preview" x-show="tabPreviewPlaying" x-cloak><div x-ref="tabEditorPreview" data-alphatab></div></div>
+            <div class="tab-editor__preview" x-show="tabPreviewVisible" x-cloak><div x-ref="tabEditorPreview" data-alphatab></div></div>
                 <p x-text="`${tabDraft.beats.length} notes · ${stepForm.time_signature_numerator}/${stepForm.time_signature_denominator} · arrows navigate, 0-9 enter frets`"></p>
                 
                 <p class="tab-editor__selection-hint">
