@@ -77,7 +77,7 @@ test('MusicXML import separates meter changes and skips unsupported notes visibl
         [section.firstMeasure, section.lastMeasure, section.numerator, section.denominator]
     ), [[1, 2, 7, 8], [3, 3, 4, 4], [5, 5, 7, 8]])
     assert.equal(imported.warnings.length, 1)
-    assert.match(imported.warnings[0], /Measure 4: Dotted notes and tuplets/)
+    assert.match(imported.warnings[0], /Measure 4: Only 3:2 triplets/)
     const first = imported.sections[0]
     assert.equal(first.draft.beats.length, 14)
     assert.deepEqual(first.draft.breaks, [7])
@@ -90,4 +90,56 @@ test('MusicXML rejects entity declarations', () => {
         () => parseMusicXmlTab('<!DOCTYPE score-partwise [<!ENTITY x "abc">]>'),
         /custom entities/,
     )
+})
+
+test('MusicXML preserves dotted notes and three-to-two triplets', () => {
+    const score = el('score-partwise', [
+        el('part', [
+            el('measure', [
+                el('attributes', [el('divisions', '12'), el('time', [el('beats', '4'), el('beat-type', '4')])]),
+                el('note', [el('duration', '18'), el('dot'), el('notations', [el('technical', [el('string', '1'), el('fret', '5')])])]),
+                el('note', [el('duration', '6'), el('notations', [el('technical', [el('string', '1'), el('fret', '7')])])]),
+                ...[9, 10, 11].map(fret => el('note', [
+                    el('duration', '4'),
+                    el('time-modification', [el('actual-notes', '3'), el('normal-notes', '2')]),
+                    el('notations', [el('technical', [el('string', '1'), el('fret', String(fret))])]),
+                ])),
+                el('note', [el('duration', '12'), el('notations', [el('technical', [el('string', '1'), el('fret', '12')])])]),
+            ], { number: '1' }),
+        ]),
+    ])
+    const parser = { parseFromString() { return {
+        documentElement: score,
+        getElementsByTagName(name) { return score.getElementsByTagName(name) },
+    } } }
+    const imported = parseMusicXmlTab('<score-partwise/>', parser)
+    assert.equal(imported.warnings.length, 0)
+    const beats = imported.sections[0].draft.beats
+    assert.equal(beats[0].dotted, true)
+    assert.equal(beats[0].duration, 4)
+    assert.deepEqual(beats.slice(2, 5).map(beat => beat.tuplet), [3, 3, 3])
+    assert.ok(layoutTabMeasures(imported.sections[0].draft, 4, 4)[0].complete)
+    const tex = serializeTabDraft(imported.sections[0].draft, 4, 120, 4)
+    assert.match(tex, /\\{ d \\}/)
+    assert.match(tex, /\\{ tu 3 \\}/)
+})
+
+test('MusicXML converts a genuinely empty measure into editable rests', () => {
+    const score = el('score-partwise', [
+        el('part', [
+            measure(1, 7, 8, Array(7).fill(2)),
+            el('measure', [el('attributes', [el('time', [el('beats', '7'), el('beat-type', '8')])])], { number: '2' }),
+        ]),
+    ])
+    const parser = { parseFromString() { return {
+        documentElement: score,
+        getElementsByTagName(name) { return score.getElementsByTagName(name) },
+    } } }
+    const imported = parseMusicXmlTab('<score-partwise/>', parser)
+    assert.equal(imported.warnings.length, 0)
+    assert.equal(imported.sections.length, 1)
+    assert.equal(imported.sections[0].lastMeasure, 2)
+    const rests = imported.sections[0].draft.beats.slice(7)
+    assert.ok(rests.length > 0 && rests.every(beat => beat.rest))
+    assert.ok(layoutTabMeasures(imported.sections[0].draft, 7, 8).every(bar => bar.complete))
 })
