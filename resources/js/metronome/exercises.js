@@ -8,6 +8,8 @@ export function exercises() {
         tabEditorEditingIndex: null,
         tabEditorSaving: false,
         tabPreviewPlaying: false,
+        tabPreviewVisible: false,
+        tabUndoHistory: [],
         tabDraft: createTabDraft(),
         tabMusicXmlImport: null,
         tabMusicXmlSelectedSection: 0,
@@ -309,6 +311,8 @@ export function exercises() {
             this.$refs.stepDialog.close();
             this.tabEditorEditingIndex = null;
             this.tabDraft = createTabDraft();
+            this.tabUndoHistory = [];
+            this.tabPreviewVisible = false;
             this.tabMusicXmlImport = null;
             this.tabMusicXmlSelectedSection = 0;
             this.tabSelectedIndex = 0;
@@ -335,6 +339,8 @@ export function exercises() {
             }
             this.tabEditorEditingIndex = index;
             this.tabDraft = parsed.draft;
+            this.tabUndoHistory = [];
+            this.tabPreviewVisible = false;
             this.tabSelectedIndex = parsed.draft.beats.length;
             this.tabInsertAtBar = false;
             this.tabSelectedIndices = [];
@@ -389,6 +395,7 @@ export function exercises() {
             const section = imported?.sections[Number(this.tabMusicXmlSelectedSection)];
             if (!section) return;
             this.stopTabEditorPreview();
+            this.recordTabEditorUndo();
             this.tabDraft = section.draft;
             this.stepForm.name = imported.title.slice(0, 255);
             this.stepForm.bpm = section.bpm;
@@ -407,6 +414,8 @@ export function exercises() {
             this.finishPendingTabDigit(false);
             this.$refs.tabEditorDialog?.close();
             this.tabEditorOpen = false;
+            this.tabPreviewVisible = false;
+            this.tabUndoHistory = [];
             this.tabEditorEditingIndex = null;
             this.tabMusicXmlImport = null;
         },
@@ -425,10 +434,16 @@ export function exercises() {
             }
             const element = this.$refs.tabEditorPreview;
             if (!element) return;
+            this.tabPreviewVisible = true;
             this.tabPreviewPlaying = true;
-            window.dispatchEvent(new CustomEvent("alphatab:preview-draft", {
-                detail: { element, alphaTex, bpm: Number(this.stepForm.bpm), instrument: this.tabDraft.instrument, play: true },
-            }));
+            // alphaTab measures its container at mount. Let Alpine remove
+            // x-show's display:none before requesting the render.
+            this.$nextTick(() => {
+                if (!this.tabPreviewPlaying || !this.tabEditorOpen) return;
+                window.dispatchEvent(new CustomEvent("alphatab:preview-draft", {
+                    detail: { element, alphaTex, bpm: Number(this.stepForm.bpm), instrument: this.tabDraft.instrument, play: true },
+                }));
+            });
         },
 
         stopTabEditorPreview() {
@@ -595,6 +610,7 @@ export function exercises() {
             if (pending && this.tabSelectedIndex === pending.index) {
                 const fret = pending.digit * 10 + digit;
                 if (fret >= 10 && fret <= 24) {
+                    this.recordTabEditorUndo();
                     this.tabDraft = {
                         ...this.tabDraft,
                         beats: this.tabDraft.beats.map((note, index) =>
@@ -625,11 +641,34 @@ export function exercises() {
             }
         },
 
+        recordTabEditorUndo() {
+            const snapshot = {
+                draft: structuredClone(this.tabDraft),
+                selectedIndex: this.tabSelectedIndex,
+                selectedIndices: [...this.tabSelectedIndices],
+                insertAtBar: this.tabInsertAtBar,
+            };
+            this.tabUndoHistory = [...this.tabUndoHistory.slice(-49), snapshot];
+        },
+
+        undoTabEditorChange() {
+            if (!this.tabUndoHistory.length) return;
+            this.finishPendingTabDigit(false);
+            const last = this.tabUndoHistory.at(-1);
+            this.tabUndoHistory = this.tabUndoHistory.slice(0, -1);
+            this.tabDraft = last.draft;
+            this.tabSelectedIndex = last.selectedIndex;
+            this.tabSelectedIndices = last.selectedIndices;
+            this.tabInsertAtBar = last.insertAtBar;
+            this.tabSelectionAnchor = last.selectedIndices.at(-1) ?? null;
+        },
+
         changeTabEditorDuration(value) {
             const duration = Number(value);
             const selected = this.tabSelectedIndices.length
                 ? this.tabSelectedIndices
                 : (this.tabSelectedIndex < this.tabDraft.beats.length ? [this.tabSelectedIndex] : []);
+            if (selected.length) this.recordTabEditorUndo();
             this.tabDraft = {
                 ...this.tabDraft,
                 duration,
@@ -641,6 +680,7 @@ export function exercises() {
             const selected = this.tabSelectedIndices.length
                 ? this.tabSelectedIndices
                 : (this.tabSelectedIndex < this.tabDraft.beats.length ? [this.tabSelectedIndex] : []);
+            if (selected.length) this.recordTabEditorUndo();
             this.tabDraft = {
                 ...this.tabDraft,
                 ...changes,
@@ -665,6 +705,7 @@ export function exercises() {
             const breaks = beats.length > this.tabDraft.beats.length
                 ? breaksForInsertedTabNote(this.tabDraft, index, beat.duration, this.stepForm.time_signature_numerator, this.stepForm.time_signature_denominator)
                 : this.tabDraft.breaks;
+            this.recordTabEditorUndo();
             this.tabDraft = { ...this.tabDraft, beats, breaks };
             this.tabSelectedIndex = Math.min(beats.length, index + 1);
             this.tabInsertAtBar = false;
@@ -680,6 +721,7 @@ export function exercises() {
                 const occupiedBeat = beats[this.tabSelectedIndex];
                 if (!this.tabInsertAtBar && occupiedBeat && !occupiedBeat.rest &&
                     tabBeatNotes(occupiedBeat).some(note => note.string === this.tabDraft.string)) {
+                    this.recordTabEditorUndo();
                     beats[this.tabSelectedIndex] = setTabBeatNote(occupiedBeat, this.tabDraft.fret, this.tabDraft.string);
                     this.tabDraft = { ...this.tabDraft, beats };
                     this.tabSelectedIndices = [this.tabSelectedIndex];
@@ -691,6 +733,7 @@ export function exercises() {
                 const isChordEntry = current && !current.rest && !this.tabInsertAtBar &&
                     !tabBeatNotes(current).some(note => note.string === this.tabDraft.string);
                 if (isChordEntry) {
+                    this.recordTabEditorUndo();
                     beats[this.tabSelectedIndex] = setTabBeatNote(current, this.tabDraft.fret, this.tabDraft.string);
                     this.tabDraft = { ...this.tabDraft, beats };
                     this.tabSelectedIndices = [this.tabSelectedIndex];
@@ -698,6 +741,7 @@ export function exercises() {
                     return;
                 }
                 // Reuse a rest; otherwise insert at the caret without overwriting a note.
+                this.recordTabEditorUndo();
                 if (beats[this.tabSelectedIndex]?.rest && !this.tabInsertAtBar) {
                     beats[this.tabSelectedIndex] = next.beats.at(-1);
                 } else {
@@ -717,6 +761,7 @@ export function exercises() {
             this.finishPendingTabDigit(false);
             if (this.tabInsertAtBar || this.tabSelectedIndex >= this.tabDraft.beats.length) return;
             const index = this.tabSelectedIndex;
+            this.recordTabEditorUndo();
             this.tabDraft = {
                 ...this.tabDraft,
                 beats: this.tabDraft.beats.map((beat, at) =>
@@ -725,6 +770,8 @@ export function exercises() {
         },
 
         undoTabEditorNote() {
+            if (!this.tabDraft.beats.length) return;
+            this.recordTabEditorUndo();
             if (this.tabSelectedIndex < this.tabDraft.beats.length) {
                 const beats = this.tabDraft.beats.filter((_, i) => i !== this.tabSelectedIndex);
                 this.tabDraft = { ...this.tabDraft, beats, breaks: updateTabBreaks(this.tabDraft.breaks ?? [], this.tabSelectedIndex, 'delete', beats.length) };
@@ -742,6 +789,11 @@ export function exercises() {
         handleTabEditorKey(event) {
             const tag = event.target?.tagName;
             if (['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON'].includes(tag)) return;
+            if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'z' && !event.shiftKey) {
+                event.preventDefault();
+                this.undoTabEditorChange();
+                return;
+            }
             if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
                 event.preventDefault();
                 const delta = event.key === 'ArrowUp' ? -1 : 1;
