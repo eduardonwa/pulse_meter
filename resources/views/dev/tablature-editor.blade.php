@@ -17,7 +17,10 @@
         <div class="tab-editor__editor" x-show="prototypeEditorOpen" x-cloak>
         {{-- Exercise name and save actions --}}
         <header class="tab-editor__header">
-            <h2 class="exercise-name" x-text="stepForm.name || 'Untitled exercise'">Nombre del ejercicio</h2>
+            <div class="tab-editor__heading">
+                <h2 class="exercise-name" x-text="stepForm.name || 'Untitled exercise'">Nombre del ejercicio</h2>
+                <p class="tab-editor__save-status" role="status" aria-live="polite" x-text="prototypeMessage"></p>
+            </div>
 
             <div class="tab-editor__actions">
                 <button class="button save" data-type="icon-text" type="button" @click="savePrototypeExercise(false)" :disabled="prototypeSaving">
@@ -31,8 +34,6 @@
                 </button>
             </div>
         </header>
-
-        <p class="tab-editor__save-status" role="status" aria-live="polite" x-text="prototypeMessage"></p>
 
         {{-- import --}}
         <section class="tab-editor__import-bar" aria-label="Import options">
