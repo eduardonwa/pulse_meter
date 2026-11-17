@@ -543,7 +543,7 @@ export function exercises() {
                 string,
                 fret: tabBeatNotes(note).find(n => n.string === string)?.fret ?? 0,
                 duration: note?.duration ?? this.tabDraft.duration,
-                dotted: Boolean(note?.dotted ?? this.tabDraft.dotted),
+                dotted: note ? Boolean(note.dotted) : Boolean(this.tabDraft.dotted),
                 tuplet: note ? (note.tuplet ?? null) : this.tabDraft.tuplet,
             };
         },
