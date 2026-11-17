@@ -20,12 +20,14 @@ export function appendTabNote(draft, fret = draft.fret, string = draft.string) {
         beats: [...draft.beats, { fret: number, string: line, duration }],
     };
 }
-export function layoutTabMeasures(draft, numerator = 4) {
+export function layoutTabMeasures(draft, numerator = 4, denominator = 4) {
     const meter = Number(numerator);
     if (!Number.isInteger(meter) || meter < 2 || meter > 16) {
         throw new RangeError('Invalid time signature');
     }
-    const capacity = meter * 4;
+    const divisor = Number(denominator);
+    if (![4, 8].includes(divisor)) throw new RangeError('Invalid time signature denominator');
+    const capacity = meter * 16 / divisor;
     const measures = [];
     const boundaries = new Set(draft.breaks ?? []);
     let current = [];
@@ -64,14 +66,14 @@ export function updateTabBreaks(breaks, index, operation, length) {
 // When typing at a measure boundary, fill the preceding bar if its
 // remaining space fits the note; otherwise keep the new note in the next bar.
 // At the end of the score, automatically start a new measure when necessary.
-export function breaksForInsertedTabNote(draft, index, duration, numerator = 4) {
+export function breaksForInsertedTabNote(draft, index, duration, numerator = 4, denominator = 4) {
     const beats = draft.beats;
     const boundaries = draft.breaks ?? [];
     const previousBoundary = Math.max(0, ...boundaries.filter(value => value < index));
     const used = beats.slice(previousBoundary, index)
         .reduce((total, beat) => total + 16 / beat.duration, 0);
     const size = 16 / duration;
-    const capacity = Number(numerator) * 4;
+    const capacity = Number(numerator) * 16 / Number(denominator);
     const nextLength = beats.length + 1;
     const shifted = updateTabBreaks(boundaries, index, 'insert', nextLength);
     if (index === beats.length && used > 0 && used + size > capacity) {
@@ -102,11 +104,11 @@ export function setTabBeatNote(beat, fret, string) {
         : { duration: beat.duration, notes };
 }
 
-export function serializeTabDraft(draft, numerator = 4, bpm = 100) {
+export function serializeTabDraft(draft, numerator = 4, bpm = 100, denominator = 4) {
     if (!draft.beats.length) throw new RangeError('Add at least one note');
     const instrument = Number(draft.instrument ?? 25);
     if (!TAB_INSTRUMENTS.includes(instrument)) throw new RangeError('Invalid instrument');
-    const measures = layoutTabMeasures(draft, numerator);
+    const measures = layoutTabMeasures(draft, numerator, denominator);
     const body = measures.map(measure => measure.notes.map(beat => {
         const notes = tabBeatNotes(beat);
         const content = beat.rest ? 'r' : notes.length === 1
@@ -114,7 +116,7 @@ export function serializeTabDraft(draft, numerator = 4, bpm = 100) {
             : `(${notes.map(note => `${note.fret}.${note.string}`).join(' ')})`;
         return `:${beat.duration} ${content}`;
     }).join(' ')).join(' | ');
-    return `\\tempo ${Number(bpm)}\n\\instrument ${instrument}\n\\ts ${Number(numerator)} 4\n\\staff {tabs}\n.\n${body}`;
+    return `\\tempo ${Number(bpm)}\n\\instrument ${instrument}\n\\ts ${Number(numerator)} ${Number(denominator)}\n\\staff {tabs}\n.\n${body}`;
 }
 
 
@@ -130,11 +132,12 @@ export function parseTabDraft(alphaTex) {
     if (withInstrument && (!instrumentMatch || !TAB_INSTRUMENTS.includes(instrument))) throw new Error('Unsupported instrument');
     const content = withInstrument ? [lines[0], ...lines.slice(2)] : lines;
     const tempo = /^\\tempo\s+(\d+)$/.exec(lines[0]);
-    const meter = /^\\ts\s+(\d+)\s+4$/.exec(content[1]);
+    const meter = /^\\ts\s+(\d+)\s+(4|8)$/.exec(content[1]);
     if (!tempo || !meter || content[2] !== '\\staff {tabs}' || content[3] !== '.') {
         throw new Error('This tablature format cannot be edited here yet');
     }
     const numerator = Number(meter[1]);
+    const denominator = Number(meter[2]);
     const bpm = Number(tempo[1]);
     const beats = [];
     const breaks = [];
@@ -171,11 +174,11 @@ export function parseTabDraft(alphaTex) {
         }
     }
     const draft = { ...createTabDraft(), beats, instrument, breaks };
-    const canonical = serializeTabDraft(draft, numerator, bpm);
+    const canonical = serializeTabDraft(draft, numerator, bpm, denominator);
     if ((withInstrument ? canonical : canonical.replace(/^\\instrument 25\n/m, '')) !== lines.join('\n')) {
         throw new Error('This tablature has custom measure boundaries or notation and cannot be edited here yet');
     }
-    return { draft, numerator, bpm };
+    return { draft, numerator, denominator, bpm };
 }
 
 
@@ -222,12 +225,12 @@ export function removeTabNoteAtString(beat, string) {
 
 // Derive playable, meter-safe alphaTex without modifying saved tablature.
 // Once a beat overflows a bar, skip it and any later beats in that bar.
-export function serializeTabPlayback(draft, numerator = 4, bpm = 100) {
-    const measures = layoutTabMeasures(draft, numerator);
+export function serializeTabPlayback(draft, numerator = 4, bpm = 100, denominator = 4) {
+    const measures = layoutTabMeasures(draft, numerator, denominator);
     if (!measures.some(measure => measure.used > measure.capacity)) {
-        return serializeTabDraft(draft, numerator, bpm);
+        return serializeTabDraft(draft, numerator, bpm, denominator);
     }
-    const capacity = Number(numerator) * 4;
+    const capacity = Number(numerator) * 16 / Number(denominator);
     const beats = [];
     const breaks = [];
     for (const measure of measures) {
@@ -250,13 +253,13 @@ export function serializeTabPlayback(draft, numerator = 4, bpm = 100) {
             }
         }
     }
-    return serializeTabDraft({ ...draft, beats, breaks }, numerator, bpm);
+    return serializeTabDraft({ ...draft, beats, breaks }, numerator, bpm, denominator);
 }
 
 export function playbackAlphaTex(alphaTex) {
     try {
-        const { draft, numerator, bpm } = parseTabDraft(alphaTex);
-        return serializeTabPlayback(draft, numerator, bpm);
+        const { draft, numerator, denominator, bpm } = parseTabDraft(alphaTex);
+        return serializeTabPlayback(draft, numerator, bpm, denominator);
     } catch {
         // Advanced Filament scores are not part of our restricted editor format.
         return alphaTex;
