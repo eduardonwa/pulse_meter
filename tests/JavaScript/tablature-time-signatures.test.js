@@ -43,3 +43,31 @@ test('4/4 remains the default meter', () => {
     assert.ok(alphaTex.includes(String.raw`\ts 4 4`))
     assert.equal(parseTabDraft(alphaTex).denominator, 4)
 })
+
+test('Pulse Editor meter denominators round-trip through alphaTex', () => {
+    for (const denominator of [2, 4, 8, 16]) {
+        for (const numerator of [1, 3, 7, 16]) {
+            const draft = {
+                ...createTabDraft(),
+                beats: Array.from({ length: numerator }, () => ({
+                    fret: 0, string: 1, duration: denominator,
+                })),
+            }
+            const [measure] = layoutTabMeasures(draft, numerator, denominator)
+            assert.equal(measure.complete, true, `${numerator}/${denominator} should fit`)
+            const alphaTex = serializeTabDraft(draft, numerator, 120, denominator)
+            assert.ok(alphaTex.includes(String.raw`\ts ${numerator} ${denominator}`))
+            const parsed = parseTabDraft(alphaTex)
+            assert.equal(parsed.numerator, numerator)
+            assert.equal(parsed.denominator, denominator)
+            assert.equal(playbackAlphaTex(alphaTex), alphaTex)
+        }
+    }
+})
+
+test('invalid time signatures are rejected', () => {
+    const draft = { ...createTabDraft(), beats: [{ fret: 0, string: 1, duration: 16 }] }
+    for (const [numerator, denominator] of [[0, 4], [17, 4], [7, 3]]) {
+        assert.throws(() => serializeTabDraft(draft, numerator, 100, denominator), RangeError)
+    }
+})
