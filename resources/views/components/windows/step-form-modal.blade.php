@@ -139,6 +139,7 @@
 @can('use-pro')
     <dialog class="dialog-shell dialog-shell--bottom-sheet mobile-exercise-view-dialog is-fullscreen" x-ref="tabEditorDialog"
         @alphatab:playback-state.window="if ($event.detail?.element === $refs.tabEditorPreview) tabPreviewPlaying = Boolean($event.detail.playing)"
+        @alphatab:load-error.window="if ($event.detail?.element === $refs.tabEditorPreview) { tabPreviewPlaying = false; showToast?.($event.detail.message, 'error') }"
         @keydown="handleTabEditorKey($event)"
         @cancel.prevent="closeNewTabEditor()"
         @close="tabEditorOpen = false"
