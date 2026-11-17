@@ -1,4 +1,4 @@
-import { createTabDraft, appendTabNote, serializeTabDraft, parseTabDraft, layoutTabMeasures, selectTabNoteIndices, changeSelectedTabDurations, clearTabNotes, shiftTabBreaks, updateTabBreaks, breaksForInsertedTabNote, tabBeatNotes, setTabBeatNote, removeTabNoteAtString, TAB_DURATIONS, TAB_STRINGS } from "./alphatab/tab-editor.js";
+import { createTabDraft, appendTabNote, serializeTabDraft, parseTabDraft, layoutTabMeasures, selectTabNoteIndices, changeSelectedTabDurations, clearTabNotes, shiftTabBreaks, updateTabBreaks, breaksForInsertedTabNote, insertTabRestAt, tabBeatNotes, setTabBeatNote, removeTabNoteAtString, TAB_DURATIONS, TAB_STRINGS } from "./alphatab/tab-editor.js";
 
 export function exercises() {
     return {
@@ -437,6 +437,33 @@ export function exercises() {
             if (16 / this.tabDraft.duration > available) {
                 this.tabDraft = { ...this.tabDraft, duration: [1, 2, 4, 8, 16]
                     .find(duration => 16 / duration <= available) ?? 16 };
+            }
+        },
+
+        moveTabEditorCursor(delta) {
+            this.finishPendingTabDigit(false);
+            const index = Math.max(0, Math.min(
+                this.tabDraft.beats.length,
+                this.tabSelectedIndex + delta,
+            ));
+            this.selectTabEditorCell(index, this.tabDraft.string);
+        },
+
+        insertTabEditorPosition(after = false) {
+            if (!this.tabDraft.beats.length) return;
+            this.finishPendingTabDigit(false);
+            const target = after
+                ? Math.min(this.tabSelectedIndex + 1, this.tabDraft.beats.length)
+                : Math.min(this.tabSelectedIndex, this.tabDraft.beats.length);
+            try {
+                // Insert a rest so typing a fret replaces the rest, rather
+                // than modifying or adding a chord to the adjacent note.
+                this.tabDraft = insertTabRestAt(this.tabDraft, target);
+                this.selectTabEditorCell(target, this.tabDraft.string);
+                this.tabSelectedIndices = [target];
+                this.tabSelectionAnchor = target;
+            } catch (error) {
+                this.showToast?.(error.message, "error");
             }
         },
 
