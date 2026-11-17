@@ -9,7 +9,9 @@
     @vite(['resources/styles/main.scss', 'resources/js/tablature-editor-prototype.js'])
 </head>
 <body>
-    <main class="tab-editor" x-data="tablatureRedesign" x-init="loadPrototypeExercise()">
+    <main class="tab-editor" x-data="tablatureRedesign" x-init="loadPrototypeExercise()"
+        @alphatab:playback-state.window="syncPrototypePlayback($event)"
+        @alphatab:load-error.window="prototypePlaybackError($event)">
         <div class="tab-editor__prototype-state" x-show="!prototypeEditorOpen" x-cloak>
             <p x-text="prototypeSaved ? 'Exercise saved in this browser (prototype only).' : 'Editor closed without a saved exercise.'"></p>
             <button type="button" class="button" data-type="outline" @click="reopenPrototypeExercise()">Reopen editor</button>
@@ -271,25 +273,27 @@
             </section>
         </section>
 
+        {{-- Playback uses the existing alphaTab engine without replacing the editable grid. --}}
+        <div class="tab-editor__playback-host" x-ref="tabEditorPreview" data-alphatab data-admin-preview="true" aria-hidden="true"></div>
+
         {{-- playback controls --}}
         <footer class="tab-editor__transport"
             x-data="{
-                playing: false,
                 loop: false,
                 countIn: false,
                 metronome: false
             }"
         >
             <button class="button" data-type="icon" type="button"
-                :aria-label="playing ? 'Pause' : 'Play'"
-                :class="{ 'is-active': playing }"
-                @click="playing = !playing"
+                :aria-label="prototypePlaying ? 'Pause' : 'Play'"
+                :class="{ 'is-active': prototypePlaying }"
+                @click="togglePrototypePlayback()" :disabled="prototypePlaybackLoading"
             >
-                <template x-if="!playing">
+                <template x-if="!prototypePlaying">
                     <x-lucide-play height="50" width="50" />
                 </template>
 
-                <template x-if="playing">
+                <template x-if="prototypePlaying">
                     <x-lucide-pause height="50" width="50" />
                 </template>
             </button>
