@@ -57,7 +57,8 @@ class SharedRoutineController extends Controller
             'mode' => $s->mode, 'duration_seconds' => $s->duration_seconds,
             'time_signature_numerator' => $s->time_signature_numerator,
             'time_signature_denominator' => $s->time_signature_denominator,
-            'alpha_tex' => $s->alpha_tex, 'position' => $s->position,
+            'alpha_tex' => $s->alpha_tex, 'musicxml_source' => $s->musicxml_source,
+            'position' => $s->position,
             'origin' => $s->origin,
         ])->all();
         return view('shared.show', [
@@ -97,7 +98,8 @@ class SharedRoutineController extends Controller
                 'time_signature_numerator' => $s->time_signature_numerator,
                 'time_signature_denominator' => $s->time_signature_denominator,
                 'alpha_tex' => $s->alpha_tex,
-                'tab_source' => filled($s->alpha_tex) ? 'template' : null,
+                'musicxml_source' => $s->musicxml_source,
+                'tab_source' => filled($s->alpha_tex) || filled($s->musicxml_source) ? 'template' : null,
                 'position' => $i, 'origin' => 'custom',
             ])->all());
             return $copy;
