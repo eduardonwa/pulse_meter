@@ -1,10 +1,27 @@
-// A deliberately small, deterministic score model. More expressive alphaTex
-// (techniques, tuplets, voices) stays in Filament, not this editor.
+// A compact guitar tab model; advanced techniques and multiple voices remain unsupported.
 export const TAB_STRINGS = ['e', 'B', 'G', 'D', 'A', 'E'];
 export const TAB_DURATIONS = [1, 2, 4, 8, 16];
 export const TAB_INSTRUMENTS = [24, 25, 26, 27];
+
+export function tabBeatUnits(beat) {
+    const duration = Number(beat.duration);
+    if (!TAB_DURATIONS.includes(duration)) throw new RangeError('Invalid duration');
+    return (16 / duration) * (beat.dotted ? 1.5 : 1) * (beat.tuplet === 3 ? 2 / 3 : 1);
+}
+
+function tabRhythmProperties(beat) {
+    const properties = [];
+    if (beat.dotted) properties.push('d');
+    if (beat.tuplet === 3) properties.push('tu 3');
+    return properties.length ? ` { ${properties.join(' ')} }` : '';
+}
+
+export function changeSelectedTabRhythm(beats, indices, changes) {
+    const selected = new Set(indices);
+    return beats.map((beat, index) => selected.has(index) ? { ...beat, ...changes } : beat);
+}
 export function createTabDraft() {
-    return { beats: [], duration: 8, string: 1, fret: 0, instrument: 25, breaks: [] };
+    return { beats: [], duration: 8, dotted: false, tuplet: null, string: 1, fret: 0, instrument: 25, breaks: [] };
 }
 export function appendTabNote(draft, fret = draft.fret, string = draft.string) {
     const number = Number(fret);
@@ -17,7 +34,7 @@ export function appendTabNote(draft, fret = draft.fret, string = draft.string) {
     if (!TAB_DURATIONS.includes(duration)) throw new RangeError('Invalid duration');
     return {
         ...draft,
-        beats: [...draft.beats, { fret: number, string: line, duration }],
+        beats: [...draft.beats, { fret: number, string: line, duration, ...(draft.dotted ? { dotted: true } : {}), ...(draft.tuplet === 3 ? { tuplet: 3 } : {}) }],
     };
 }
 export function layoutTabMeasures(draft, numerator = 4, denominator = 4) {
@@ -34,17 +51,15 @@ export function layoutTabMeasures(draft, numerator = 4, denominator = 4) {
     let units = 0;
     for (const [index, beat] of draft.beats.entries()) {
         if (boundaries.has(index) && current.length) {
-            measures.push({ notes: current, endIndex: index - 1, complete: units === capacity, used: units, capacity, overflowBeforeIndex: null });
+            measures.push({ notes: current, endIndex: index - 1, complete: Math.abs(units - capacity) < 1e-7, used: units, capacity, overflowBeforeIndex: null });
             current = [];
             units = 0;
         }
-        const duration = Number(beat.duration);
-        if (!TAB_DURATIONS.includes(duration)) throw new RangeError('Invalid duration');
         current.push({ ...beat, index });
-        units += 16 / duration;
+        units += tabBeatUnits(beat);
     }
     if (current.length) {
-        measures.push({ notes: current, endIndex: draft.beats.length - 1, complete: units === capacity, used: units, capacity, overflowBeforeIndex: null });
+        measures.push({ notes: current, endIndex: draft.beats.length - 1, complete: Math.abs(units - capacity) < 1e-7, used: units, capacity, overflowBeforeIndex: null });
     }
     return measures;
 }
@@ -71,8 +86,8 @@ export function breaksForInsertedTabNote(draft, index, duration, numerator = 4, 
     const boundaries = draft.breaks ?? [];
     const previousBoundary = Math.max(0, ...boundaries.filter(value => value < index));
     const used = beats.slice(previousBoundary, index)
-        .reduce((total, beat) => total + 16 / beat.duration, 0);
-    const size = 16 / duration;
+        .reduce((total, beat) => total + tabBeatUnits(beat), 0);
+    const size = tabBeatUnits({ duration, dotted: draft.dotted, tuplet: draft.tuplet });
     const capacity = Number(numerator) * 16 / Number(denominator);
     const nextLength = beats.length + 1;
     const shifted = updateTabBreaks(boundaries, index, 'insert', nextLength);
@@ -100,8 +115,8 @@ export function setTabBeatNote(beat, fret, string) {
     notes.push({ fret, string });
     notes.sort((a, b) => a.string - b.string);
     return notes.length === 1
-        ? { duration: beat.duration, ...notes[0] }
-        : { duration: beat.duration, notes };
+        ? { ...beat, notes: undefined, ...notes[0] }
+        : { ...beat, notes, fret: undefined, string: undefined };
 }
 
 export function serializeTabDraft(draft, numerator = 4, bpm = 100, denominator = 4) {
@@ -114,7 +129,7 @@ export function serializeTabDraft(draft, numerator = 4, bpm = 100, denominator =
         const content = beat.rest ? 'r' : notes.length === 1
             ? `${notes[0].fret}.${notes[0].string}`
             : `(${notes.map(note => `${note.fret}.${note.string}`).join(' ')})`;
-        return `:${beat.duration} ${content}`;
+        return `:${beat.duration} ${content}${tabRhythmProperties(beat)}`;
     }).join(' ')).join(' | ');
     return `\\tempo ${Number(bpm)}\n\\instrument ${instrument}\n\\ts ${Number(numerator)} ${Number(denominator)}\n\\staff {tabs}\n.\n${body}`;
 }
@@ -143,18 +158,21 @@ export function parseTabDraft(alphaTex) {
     const breaks = [];
     for (const measure of content[4].split('|')) {
         if (beats.length) breaks.push(beats.length);
-        const tokens = measure.trim().match(/:\d+\s+(?:\((?:\d+\.\d+\s*){2,6}\)|\d+\.\d+|r)/g) ?? [];
+        const tokens = measure.trim().match(/:\d+\s+(?:\((?:\d+\.\d+\s*){2,6}\)|\d+\.\d+|r)(?:\s+\{\s*(?:d|tu 3)(?:\s+(?:d|tu 3))?\s*\})?/g) ?? [];
         if (!tokens.length || tokens.join(' ').replace(/\s+/g, ' ') !== measure.trim().replace(/\s+/g, ' ')) {
             throw new Error('This tablature contains unsupported notation');
         }
         for (const token of tokens) {
-            const match = /^:(\d+)\s+(.+)$/.exec(token);
+            const match = /^:(\d+)\s+(.+?)(?:\s+\{\s*(.*?)\s*\})?$/.exec(token);
             if (!match) throw new Error('Unsupported note');
             const duration = Number(match[1]);
             const body = match[2];
+            const effects = match[3]?.trim() ?? '';
+            if (!['', 'd', 'tu 3', 'd tu 3'].includes(effects)) throw new Error('Unsupported rhythm effects');
+            const rhythm = { ...(effects.includes('d') ? { dotted: true } : {}), ...(effects.includes('tu 3') ? { tuplet: 3 } : {}) };
             if (!TAB_DURATIONS.includes(duration)) throw new Error('Unsupported duration');
             if (body === 'r') {
-                beats.push({ rest: true, duration });
+                beats.push({ rest: true, duration, ...rhythm });
                 continue;
             }
             const raw = body.startsWith('(') && body.endsWith(')')
@@ -170,7 +188,7 @@ export function parseTabDraft(alphaTex) {
                 new Set(notes.map(note => note.string)).size !== notes.length) {
                 throw new Error('Invalid chord');
             }
-            beats.push(notes.length === 1 ? { ...notes[0], duration } : { notes, duration });
+            beats.push(notes.length === 1 ? { ...notes[0], duration, ...rhythm } : { notes, duration, ...rhythm });
         }
     }
     const draft = { ...createTabDraft(), beats, instrument, breaks };
@@ -206,7 +224,7 @@ export function clearTabNotes(beats, indices) {
 
     return beats.map((note, index) =>
         selected.has(index)
-            ? { rest: true, duration: note.duration }
+            ? { rest: true, duration: note.duration, ...(note.dotted ? { dotted: true } : {}), ...(note.tuplet === 3 ? { tuplet: 3 } : {}) }
             : note
     );
 }
@@ -218,9 +236,9 @@ export function removeTabNoteAtString(beat, string) {
     const notes = tabBeatNotes(beat);
     if (!notes.some(note => note.string === string)) return beat;
     const remaining = notes.filter(note => note.string !== string);
-    if (!remaining.length) return { rest: true, duration: beat.duration };
-    if (remaining.length === 1) return { ...remaining[0], duration: beat.duration };
-    return { notes: remaining, duration: beat.duration };
+    if (!remaining.length) return { rest: true, duration: beat.duration, ...(beat.dotted ? { dotted: true } : {}), ...(beat.tuplet === 3 ? { tuplet: 3 } : {}) };
+    if (remaining.length === 1) return { ...remaining[0], duration: beat.duration, ...(beat.dotted ? { dotted: true } : {}), ...(beat.tuplet === 3 ? { tuplet: 3 } : {}) };
+    return { notes: remaining, duration: beat.duration, ...(beat.dotted ? { dotted: true } : {}), ...(beat.tuplet === 3 ? { tuplet: 3 } : {}) };
 }
 
 // Derive playable, meter-safe alphaTex without modifying saved tablature.
@@ -237,14 +255,14 @@ export function serializeTabPlayback(draft, numerator = 4, bpm = 100, denominato
         if (beats.length) breaks.push(beats.length);
         let used = 0;
         for (const beat of measure.notes) {
-            const amount = 16 / beat.duration;
-            if (used + amount > capacity) break;
+            const amount = tabBeatUnits(beat);
+            if (used + amount > capacity + 1e-7) break;
             const { index, ...note } = beat;
             beats.push(note);
             used += amount;
         }
         // Fill remaining time with rests so the next bar starts on schedule.
-        let remaining = capacity - used;
+        let remaining = Math.max(0, Math.round((capacity - used) * 1e7) / 1e7);
         for (const duration of [1, 2, 4, 8, 16]) {
             const amount = 16 / duration;
             while (amount <= remaining) {
