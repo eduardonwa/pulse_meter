@@ -484,22 +484,19 @@ window.addEventListener('alphatab:set-bpm', async event => {
     // used the next time AlphaTab is mounted.
     if (!api) return
 
-    if (event.detail?.renderTempo) {
+    if (event.detail?.renderTempo && !element.dataset.musicxml) {
         const encodedAlphaTex = element.dataset.alphaTex
-
         if (!encodedAlphaTex) return
 
         api.stop()
         api.playbackSpeed = 1
-        if (element.dataset.musicxml) {
-            api.load(new TextEncoder().encode(element.dataset.musicxml))
-        } else if (encodedAlphaTex) {
-            api.tex(applyMetadata(playbackAlphaTex(decodeBase64(encodedAlphaTex)), { bpm }))
-        }
-
+        api.tex(applyMetadata(playbackAlphaTex(decodeBase64(encodedAlphaTex)), { bpm }))
         renderedBpms.set(element, bpm)
         return
     }
+
+    // MusicXML retains its native tempo map. Scale playback instead of
+    // re-importing the score or discarding its internal tempo changes.
 
     const renderedBpm = renderedBpms.get(element)
 
