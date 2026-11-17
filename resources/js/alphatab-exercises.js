@@ -116,13 +116,14 @@ async function mountAlphaTab(element) {
 
     const mountPromise = (async () => {
         const encodedAlphaTex = element.dataset.alphaTex
+        const encodedMusicXml = element.dataset.musicxml
         const bpm = Number(element.dataset.bpm ?? 100)
         const isAdminPreview = element.dataset.adminPreview === 'true'
 
-        if (!encodedAlphaTex) return null
+        if (!encodedAlphaTex && !encodedMusicXml) return null
 
         const alphaTab = await getAlphaTab()
-        const pattern = decodeBase64(encodedAlphaTex)
+        const pattern = encodedAlphaTex ? decodeBase64(encodedAlphaTex) : null
 
         const api = new alphaTab.AlphaTabApi(element, {
             core: {
@@ -183,7 +184,13 @@ async function mountAlphaTab(element) {
             })
         })
 
-        api.tex(applyMetadata(playbackAlphaTex(pattern), { bpm }))
+        if (encodedMusicXml) {
+            // Load the complete source into alphaTab's native MusicXML importer.
+            // Do not pass it through the limited Dorelog editor or alphaTex.
+            api.load(new TextEncoder().encode(decodeBase64(encodedMusicXml)))
+        } else {
+            api.tex(applyMetadata(playbackAlphaTex(pattern), { bpm }))
+        }
 
         instances.set(element, api)
         readyPromises.set(element, readyPromise)
@@ -253,7 +260,7 @@ window.addEventListener('alphatab:update', async event => {
 })
 
 window.addEventListener('alphatab:preview-draft', async event => {
-    const { element, alphaTex, bpm, play, instrument } = event.detail ?? {}
+    const { element, alphaTex, musicXml, bpm, play, instrument } = event.detail ?? {}
     if (!element) return
 
     if (!play) {
@@ -262,12 +269,20 @@ window.addEventListener('alphatab:preview-draft', async event => {
         return
     }
 
-    if (!alphaTex) return
+    if (!alphaTex && !musicXml) return
 
     const request = ++playbackGeneration
     playbackRequests.set(element, request)
-    const pattern = applyMetadata(playbackAlphaTex(alphaTex), { bpm: Number(bpm) || 100, instrument: Number(instrument ?? 25) })
-    element.dataset.alphaTex = encodeBase64(alphaTex)
+    const pattern = alphaTex
+        ? applyMetadata(playbackAlphaTex(alphaTex), { bpm: Number(bpm) || 100, instrument: Number(instrument ?? 25) })
+        : null
+    if (musicXml) {
+        element.dataset.musicxml = encodeBase64(musicXml)
+        delete element.dataset.alphaTex
+    } else {
+        element.dataset.alphaTex = encodeBase64(alphaTex)
+        delete element.dataset.musicxml
+    }
     element.dataset.bpm = String(Number(bpm) || 100)
 
     // Mount if needed, then replace the score on subsequent previews.
@@ -279,7 +294,8 @@ window.addEventListener('alphatab:preview-draft', async event => {
     activeApi = api
     if (alreadyMounted) {
         api.stop()
-        api.tex(pattern)
+        if (musicXml) api.load(new TextEncoder().encode(musicXml))
+        else api.tex(pattern)
     }
     api.playbackSpeed = 1
     api.isLooping = false
@@ -405,7 +421,11 @@ window.addEventListener('alphatab:set-bpm', async event => {
 
         api.stop()
         api.playbackSpeed = 1
-        api.tex(applyMetadata(playbackAlphaTex(decodeBase64(encodedAlphaTex)), { bpm }))
+        if (element.dataset.musicxml) {
+            api.load(new TextEncoder().encode(decodeBase64(element.dataset.musicxml)))
+        } else if (encodedAlphaTex) {
+            api.tex(applyMetadata(playbackAlphaTex(decodeBase64(encodedAlphaTex)), { bpm }))
+        }
 
         renderedBpms.set(element, bpm)
         return
