@@ -22,11 +22,11 @@ export function appendTabNote(draft, fret = draft.fret, string = draft.string) {
 }
 export function layoutTabMeasures(draft, numerator = 4, denominator = 4) {
     const meter = Number(numerator);
-    if (!Number.isInteger(meter) || meter < 2 || meter > 16) {
+    if (!Number.isInteger(meter) || meter < 1 || meter > 16) {
         throw new RangeError('Invalid time signature');
     }
     const divisor = Number(denominator);
-    if (![4, 8].includes(divisor)) throw new RangeError('Invalid time signature denominator');
+    if (![2, 4, 8, 16].includes(divisor)) throw new RangeError('Invalid time signature denominator');
     const capacity = meter * 16 / divisor;
     const measures = [];
     const boundaries = new Set(draft.breaks ?? []);
@@ -132,7 +132,7 @@ export function parseTabDraft(alphaTex) {
     if (withInstrument && (!instrumentMatch || !TAB_INSTRUMENTS.includes(instrument))) throw new Error('Unsupported instrument');
     const content = withInstrument ? [lines[0], ...lines.slice(2)] : lines;
     const tempo = /^\\tempo\s+(\d+)$/.exec(lines[0]);
-    const meter = /^\\ts\s+(\d+)\s+(4|8)$/.exec(content[1]);
+    const meter = /^\\ts\s+(\d+)\s+(2|4|8|16)$/.exec(content[1]);
     if (!tempo || !meter || content[2] !== '\\staff {tabs}' || content[3] !== '.') {
         throw new Error('This tablature format cannot be edited here yet');
     }
