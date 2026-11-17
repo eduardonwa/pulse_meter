@@ -230,6 +230,7 @@
             <div class="tab-editor__actions">
                 <button type="button" class="button" data-type="primary" @click="addTabEditorNote()">Add note</button>
                 <button type="button" class="button" data-type="outline" :disabled="!tabDraft.beats.length" @click="previewTabEditor()" x-text="tabPreviewPlaying ? 'Stop' : 'Play'"></button>
+                <x-metronome.count-in-toggle />
                 <button type="button" class="button" data-type="outline" :disabled="!tabDraft.beats.length"
                     @click="undoTabEditorNote()">Undo last note</button>
             </div>
