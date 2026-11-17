@@ -527,8 +527,8 @@ export function exercises() {
                 message: measure.complete
                     ? `Measure ${index + 1}: complete`
                     : measure.used > measure.capacity
-                        ? `Measure ${index + 1}: ${measure.used - measure.capacity} sixteenth-note units over limit`
-                        : `Measure ${index + 1}: ${measure.capacity - measure.used} sixteenth-note units remaining`,
+                        ? `Measure ${index + 1}: ${Number((measure.used - measure.capacity).toFixed(3))} sixteenth-note units over limit`
+                        : `Measure ${index + 1}: ${Number((measure.capacity - measure.used).toFixed(3))} sixteenth-note units remaining`,
             }));
         },
 
