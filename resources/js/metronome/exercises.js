@@ -448,10 +448,10 @@ export function exercises() {
             // Compute measure boundaries once per layout, not once per string cell.
             const measures = this.tabEditorMeasureLayout();
             const insertions = new Set(measures
-                .filter(measure => measure.used < measure.capacity)
+                .filter(measure => measure.used < measure.capacity - 1e-7)
                 .map(measure => measure.endIndex + 1));
             const measureEnds = new Set(measures
-                .filter(measure => measure.used >= measure.capacity)
+                .filter(measure => measure.used >= measure.capacity - 1e-7)
                 .map(measure => measure.endIndex));
             const columns = [];
             for (let index = 0; index <= this.tabDraft.beats.length; index++) {
