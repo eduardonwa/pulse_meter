@@ -505,6 +505,15 @@
         background: hsl(35 90% 45%);
     }
 
+    &__playback-host {
+        position: absolute;
+        width: 800px;
+        height: 1px;
+        overflow: hidden;
+        visibility: hidden;
+        pointer-events: none;
+    }
+
     &__transport {
         padding: $size-5 $size-12;
         background-color: $color-do-800;
