@@ -47,8 +47,26 @@ function parseNote(note, divisions) {
     return { string, fret, duration, ...rhythm, chord: Boolean(child(note, 'chord')) }
 }
 
+function fullMeasureRests(capacity) {
+    const rests = []
+    let remaining = capacity
+    for (const duration of TAB_DURATIONS) {
+        const units = 16 / duration
+        while (remaining >= units) {
+            rests.push({ rest: true, duration })
+            remaining -= units
+        }
+    }
+    return rests
+}
+
 function readMeasure(measure, divisions, signature) {
     const beats = []
+    const notes = children(measure, 'note')
+    const capacity = signature.numerator * 16 / signature.denominator
+    if (notes.length === 1 && child(notes[0], 'rest')?.getAttribute('measure') === 'yes') {
+        return fullMeasureRests(capacity)
+    }
     for (const node of Array.from(measure.children)) {
         if (['backup', 'forward'].includes(node.localName)) {
             throw new Error('Multiple voices and offsets are not supported yet')
@@ -74,19 +92,7 @@ function readMeasure(measure, divisions, signature) {
             beats.push(single)
         }
     }
-    const capacity = signature.numerator * 16 / signature.denominator
-    if (!beats.length) {
-        // An empty MusicXML measure is a full measure of silence. Expand into
-        // ordinary editable rests rather than creating an unsupported duration.
-        let remaining = capacity
-        for (const duration of TAB_DURATIONS) {
-            const units = 16 / duration
-            while (remaining >= units) {
-                beats.push({ rest: true, duration })
-                remaining -= units
-            }
-        }
-    }
+    if (!beats.length) beats.push(...fullMeasureRests(capacity))
     const total = beats.reduce((sum, note) => sum + tabBeatUnits(note), 0)
     if (Math.abs(total - capacity) > 1e-7) {
         throw new Error('Measure ' + measure.getAttribute('number') +
