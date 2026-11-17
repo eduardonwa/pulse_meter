@@ -116,11 +116,11 @@ async function mountAlphaTab(element) {
 
     const mountPromise = (async () => {
         const encodedAlphaTex = element.dataset.alphaTex
-        const encodedMusicXml = element.dataset.musicxml
+        const originalMusicXml = element.dataset.musicxml
         const bpm = Number(element.dataset.bpm ?? 100)
         const isAdminPreview = element.dataset.adminPreview === 'true'
 
-        if (!encodedAlphaTex && !encodedMusicXml) return null
+        if (!encodedAlphaTex && !originalMusicXml) return null
 
         const alphaTab = await getAlphaTab()
         const pattern = encodedAlphaTex ? decodeBase64(encodedAlphaTex) : null
@@ -184,10 +184,10 @@ async function mountAlphaTab(element) {
             })
         })
 
-        if (encodedMusicXml) {
+        if (originalMusicXml) {
             // Load the complete source into alphaTab's native MusicXML importer.
             // Do not pass it through the limited Dorelog editor or alphaTex.
-            api.load(new TextEncoder().encode(decodeBase64(encodedMusicXml)))
+            api.load(new TextEncoder().encode(originalMusicXml))
         } else {
             api.tex(applyMetadata(playbackAlphaTex(pattern), { bpm }))
         }
@@ -277,7 +277,7 @@ window.addEventListener('alphatab:preview-draft', async event => {
         ? applyMetadata(playbackAlphaTex(alphaTex), { bpm: Number(bpm) || 100, instrument: Number(instrument ?? 25) })
         : null
     if (musicXml) {
-        element.dataset.musicxml = encodeBase64(musicXml)
+        element.dataset.musicxml = musicXml
         delete element.dataset.alphaTex
     } else {
         element.dataset.alphaTex = encodeBase64(alphaTex)
@@ -422,7 +422,7 @@ window.addEventListener('alphatab:set-bpm', async event => {
         api.stop()
         api.playbackSpeed = 1
         if (element.dataset.musicxml) {
-            api.load(new TextEncoder().encode(decodeBase64(element.dataset.musicxml)))
+            api.load(new TextEncoder().encode(element.dataset.musicxml))
         } else if (encodedAlphaTex) {
             api.tex(applyMetadata(playbackAlphaTex(decodeBase64(encodedAlphaTex)), { bpm }))
         }
