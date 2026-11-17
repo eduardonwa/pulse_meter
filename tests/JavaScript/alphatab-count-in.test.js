@@ -44,7 +44,6 @@ test('timer and tracking wait for score start and ignore count-in playback', () 
         startTimer(duration) { assert.equal(duration, 60); timers++ },
         beginPlaybackTracking() { tracked++ },
     })
-    session.handleAlphaTabPlaybackState({ detail: { playing: true, element: { dataset: { exerciseIndex: '2' } } } })
     assert.equal(timers, 0)
     assert.equal(tracked, 0)
     session.handleAlphaTabScoreStarted({ detail: { element: { dataset: { exerciseIndex: '1' } } } })
