@@ -467,8 +467,22 @@
         overflow-y: auto;
         min-height: 0;
         flex: 1;
+        
         padding: 1rem 0rem max(1rem, env(safe-area-inset-bottom));
+        
         overscroll-behavior: contain;
+
+        scrollbar-width: thin;
+        scrollbar-color: #888 transparent;
+
+        &::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        &::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 10px;
+        }
     }
 
     &__facts {
@@ -536,6 +550,8 @@
 
 /* First-pass fullscreen tablature entry controls. */
 .tab-editor {
+    padding-inline:$size-4;
+    
     &__intro { margin-bottom: 1rem; }
 
     &__settings {
