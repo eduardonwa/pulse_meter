@@ -63,14 +63,14 @@ class PracticeRoutineStepController extends Controller
             'time_signature_numerator' => [
                 'sometimes',
                 'integer',
-                'min:2',
+                'min:1',
                 'max:16',
             ],
 
             'time_signature_denominator' => [
                 'sometimes',
                 'integer',
-                'in:4,8',
+                'in:2,4,8,16',
             ],
 
             'alpha_tex' => ['sometimes', 'nullable', 'string', 'max:65535'],
@@ -148,14 +148,14 @@ class PracticeRoutineStepController extends Controller
             'time_signature_numerator' => [
                 'sometimes',
                 'integer',
-                'min:2',
+                'min:1',
                 'max:16',
             ],
 
             'time_signature_denominator' => [
                 'sometimes',
                 'integer',
-                'in:4,8',
+                'in:2,4,8,16',
             ],
 
             'alpha_tex' => ['sometimes', 'nullable', 'string', 'max:65535'],
