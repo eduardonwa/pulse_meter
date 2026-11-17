@@ -787,8 +787,13 @@ export function exercises() {
                 : [this.tabSelectedIndex];
             const selected = new Set(indices.filter(index => index >= 0 && index < this.tabDraft.beats.length));
             if (!selected.size) return;
-            const beats = this.tabDraft.beats.map((beat, index) =>
-                selected.has(index) ? removeTabNoteAtString(beat, this.tabDraft.string) : beat);
+            // A multi-selection clears whole beats, regardless of which
+            // string was active when the range was selected. A single
+            // selection keeps the existing per-string Backspace behavior.
+            const beats = this.tabSelectedIndices.length > 1
+                ? clearTabNotes(this.tabDraft.beats, [...selected])
+                : this.tabDraft.beats.map((beat, index) =>
+                    selected.has(index) ? removeTabNoteAtString(beat, this.tabDraft.string) : beat);
             if (beats.every((beat, index) => beat === this.tabDraft.beats[index])) return;
             this.recordTabEditorUndo();
             this.tabDraft = { ...this.tabDraft, beats };
@@ -833,7 +838,9 @@ export function exercises() {
                     return;
                 }
             }
-            if (tag === 'BUTTON') return;
+            // Score cells are buttons for accessibility, but they must still
+            // accept Delete, Backspace and the existing tab keyboard controls.
+            if (tag === 'BUTTON' && !event.target?.classList?.contains('tab-editor__cell')) return;
             if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
                 event.preventDefault();
                 const delta = event.key === 'ArrowUp' ? -1 : 1;
