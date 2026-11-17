@@ -1,4 +1,4 @@
-import { createTabDraft, appendTabNote, serializeTabDraft, parseTabDraft, layoutTabMeasures, selectTabNoteIndices, changeSelectedTabDurations, clearTabNotes, shiftTabBreaks, updateTabBreaks, breaksForInsertedTabNote, tabBeatNotes, setTabBeatNote, removeTabNoteAtString, TAB_DURATIONS, TAB_STRINGS } from "./alphatab/tab-editor.js";
+import { createTabDraft, appendTabNote, serializeTabDraft, parseTabDraft, layoutTabMeasures, selectTabNoteIndices, changeSelectedTabDurations, clearTabNotes, updateTabBreaks, breaksForInsertedTabNote, tabBeatNotes, setTabBeatNote, removeTabNoteAtString, TAB_DURATIONS, TAB_STRINGS } from "./alphatab/tab-editor.js";
 
 export function exercises() {
     return {
@@ -446,27 +446,6 @@ export function exercises() {
 
         tabEditorMeasureLayout() {
             return layoutTabMeasures(this.tabDraft, this.stepForm.time_signature_numerator, this.stepForm.time_signature_denominator);
-        },
-
-        insertTabEditorBar() {
-            const at = this.tabSelectedIndex;
-            if (at <= 0 || at >= this.tabDraft.beats.length) return;
-
-            // Leave an editable rest before the bar, keeping the selected note
-            // in the following measure instead of relocating or overwriting it.
-            const previousBreak = Math.max(0, ...(this.tabDraft.breaks ?? []).filter(index => index < at));
-            const used = this.tabDraft.beats.slice(previousBreak, at)
-                .reduce((total, beat) => total + 16 / beat.duration, 0);
-            const remaining = this.stepForm.time_signature_numerator * 16 / this.stepForm.time_signature_denominator - used;
-            const duration = [1, 2, 4, 8, 16].find(value => 16 / value === remaining)
-                ?? Number(this.tabDraft.duration);
-            const beats = [...this.tabDraft.beats];
-            beats.splice(at, 0, { rest: true, duration });
-            const breaks = [...new Set([...shiftTabBreaks(this.tabDraft.breaks ?? [], at, 1), at + 1])]
-                .sort((a, b) => a - b);
-
-            this.tabDraft = { ...this.tabDraft, beats, breaks, duration };
-            this.selectTabEditorCell(at, this.tabDraft.string);
         },
 
         tabEditorMeasureEnd(index) {
