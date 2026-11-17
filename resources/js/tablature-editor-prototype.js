@@ -1,6 +1,7 @@
 import { Alpine } from '../../vendor/livewire/livewire/dist/livewire.esm'
 import { createTabDraft, TAB_STRINGS, serializeTabDraft, parseTabDraft } from './metronome/alphatab/tab-editor.js'
 import { tablatureEditorMethods } from './metronome/tablature-editor-controller.js'
+import { parseMusicXmlTab } from './metronome/alphatab/musicxml-import.js'
 
 window.Alpine = Alpine
 
@@ -14,7 +15,56 @@ Alpine.data('tablatureRedesign', () => ({
     prototypeMessage: '',
     prototypeMessageType: 'success',
     prototypeSaved: null,
+    prototypeMusicXmlImport: null,
+    prototypeMusicXmlSelectedSection: 0,
+    async importPrototypeMusicXml(event) {
+        const input = event.target
+        const file = input.files?.[0]
+        input.value = ''
+        if (!file) return
+        this.prototypeMusicXmlImport = null
+        if (!/\.(xml|musicxml)$/i.test(file.name) || file.size > 2_000_000) {
+            this.prototypeMessageType = 'error'
+            this.prototypeMessage = 'Choose an uncompressed .xml or .musicxml file under 2 MB.'
+            return
+        }
+        try {
+            const xml = await file.text()
+            const imported = parseMusicXmlTab(xml)
+            if (!imported.sections?.length) throw new Error('No editable tablature sections were found.')
+            this.prototypeMusicXmlImport = imported
+            this.prototypeMusicXmlSelectedSection = 0
+            this.prototypeMessageType = 'success'
+            this.prototypeMessage = 'Choose a MusicXML section to import.'
+        } catch (error) {
+            this.prototypeMessageType = 'error'
+            this.prototypeMessage = error?.message || 'Unable to import MusicXML.'
+            console.error('MusicXML import failed', error)
+        }
+    },
+    applyPrototypeMusicXmlSection() {
+        const imported = this.prototypeMusicXmlImport
+        const section = imported?.sections?.[Number(this.prototypeMusicXmlSelectedSection)]
+        if (!section) return
+        // Keep the last saved exercise untouched until the user explicitly saves.
+        this.recordTabEditorUndo()
+        this.tabDraft = JSON.parse(JSON.stringify(section.draft))
+        this.stepForm.name = imported.title.slice(0, 255)
+        this.stepForm.bpm = section.bpm
+        this.stepForm.time_signature_numerator = section.numerator
+        this.stepForm.time_signature_denominator = section.denominator
+        this.tabSelectedIndex = section.draft.beats.length
+        this.tabSelectedIndices = []
+        this.tabSelectionAnchor = null
+        this.tabInsertAtBar = false
+        this.prototypeMusicXmlImport = null
+        this.prototypeMessageType = 'success'
+        this.prototypeMessage = 'Imported editable MusicXML section. Save to keep it in this browser.'
+        this.$nextTick(() => this.updateTabEditorWidth())
+    },
     restorePrototypeSaved() {
+        this.prototypeMusicXmlImport = null
+        this.prototypeMusicXmlSelectedSection = 0
         if (this.prototypeSaved) {
             const parsed = parseTabDraft(this.prototypeSaved.alpha_tex)
             this.tabDraft = parsed.draft
