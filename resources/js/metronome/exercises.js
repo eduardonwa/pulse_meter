@@ -13,6 +13,9 @@ export function exercises() {
         tabRedoHistory: [],
         tabDraft: createTabDraft(),
         tabMusicXmlImport: null,
+        tabMusicXmlFullSource: null,
+        tabMusicXmlFileName: '',
+        tabFullMusicXml: null,
         tabMusicXmlSelectedSection: 0,
         tabStringNames: TAB_STRINGS,
         tabSelectedIndex: 0,
@@ -174,8 +177,8 @@ export function exercises() {
 
         hasAlphaTabPattern(step) {
             return (
-                typeof step?.alpha_tex === "string" &&
-                step.alpha_tex.trim() !== ""
+                (typeof step?.alpha_tex === "string" && step.alpha_tex.trim() !== "") ||
+                (typeof step?.musicxml_source === "string" && step.musicxml_source.trim() !== "")
             );
         },
 
@@ -316,6 +319,9 @@ export function exercises() {
             this.tabRedoHistory = [];
             this.tabPreviewVisible = false;
             this.tabMusicXmlImport = null;
+            this.tabMusicXmlFullSource = null;
+            this.tabMusicXmlFileName = '';
+            this.tabFullMusicXml = null;
             this.tabMusicXmlSelectedSection = 0;
             this.tabSelectedIndex = 0;
             this.tabInsertAtBar = false;
@@ -331,7 +337,7 @@ export function exercises() {
         openSavedTabEditor(index, viewerDialog = null) {
             if (!this.canCreateTablatures) return;
             const step = this.steps[index];
-            if (!step || step.tab_source !== "user" || !step.alpha_tex) return;
+            if (!step || step.tab_source !== "user" || !step.alpha_tex || step.musicxml_source) return;
             let parsed;
             try {
                 parsed = parseTabDraft(step.alpha_tex);
@@ -344,6 +350,7 @@ export function exercises() {
             this.tabUndoHistory = [];
             this.tabRedoHistory = [];
             this.tabPreviewVisible = false;
+            this.tabFullMusicXml = null;
             this.tabSelectedIndex = parsed.draft.beats.length;
             this.tabInsertAtBar = false;
             this.tabSelectedIndices = [];
@@ -383,11 +390,29 @@ export function exercises() {
                 return;
             }
             try {
-                const imported = parseMusicXmlTab(await file.text());
-                this.tabMusicXmlImport = imported;
+                const xmlText = await file.text();
+                // Full-score playback and limited editable imports are separate.
+                // A complex score can be played even when the simple editor
+                // rejects its notes, voices or time-signature changes.
+                if (/<!ENTITY|<!DOCTYPE[^>]*\[/i.test(xmlText)) {
+                    throw new Error('MusicXML with custom entities is not supported');
+                }
+                const document = new DOMParser().parseFromString(xmlText, 'application/xml');
+                if (document.getElementsByTagName('parsererror').length ||
+                    !['score-partwise', 'score-timewise'].includes(document.documentElement?.localName)) {
+                    throw new Error('Invalid MusicXML score');
+                }
+                this.tabMusicXmlFullSource = xmlText;
+                this.tabMusicXmlFileName = file.name.replace(/\.(musicxml|xml)$/i, '');
+                try {
+                    this.tabMusicXmlImport = parseMusicXmlTab(xmlText);
+                } catch {
+                    this.tabMusicXmlImport = null;
+                }
                 this.tabMusicXmlSelectedSection = 0;
             } catch (error) {
                 this.tabMusicXmlImport = null;
+                this.tabMusicXmlFullSource = null;
                 this.showToast?.(error.message, 'error');
             }
         },
@@ -400,6 +425,7 @@ export function exercises() {
             this.stopTabEditorPreview();
             this.recordTabEditorUndo();
             this.tabDraft = section.draft;
+            this.tabFullMusicXml = null;
             this.stepForm.name = imported.title.slice(0, 255);
             this.stepForm.bpm = section.bpm;
             this.stepForm.time_signature_numerator = section.numerator;
@@ -412,6 +438,18 @@ export function exercises() {
             this.$nextTick(() => this.updateTabEditorWidth());
         },
 
+        applyTabMusicXmlFullScore() {
+            if (!this.tabMusicXmlFullSource || this.tabEditorEditingIndex !== null) return;
+            this.stopTabEditorPreview();
+            this.recordTabEditorUndo();
+            this.tabFullMusicXml = this.tabMusicXmlFullSource;
+            this.tabDraft = createTabDraft();
+            this.stepForm.name = (this.tabMusicXmlImport?.title || this.tabMusicXmlFileName || 'Imported score').slice(0, 255);
+            this.tabSelectedIndices = [];
+            this.tabMusicXmlImport = null;
+            this.tabMusicXmlFullSource = null;
+        },
+
         closeNewTabEditor() {
             this.stopTabEditorPreview();
             this.finishPendingTabDigit(false);
@@ -422,6 +460,8 @@ export function exercises() {
             this.tabRedoHistory = [];
             this.tabEditorEditingIndex = null;
             this.tabMusicXmlImport = null;
+            this.tabMusicXmlFullSource = null;
+            this.tabFullMusicXml = null;
         },
 
         previewTabEditor() {
@@ -431,7 +471,7 @@ export function exercises() {
             }
             let alphaTex;
             try {
-                alphaTex = serializeTabDraft(this.tabDraft, this.stepForm.time_signature_numerator, this.stepForm.bpm, this.stepForm.time_signature_denominator);
+                alphaTex = this.tabFullMusicXml ? null : serializeTabDraft(this.tabDraft, this.stepForm.time_signature_numerator, this.stepForm.bpm, this.stepForm.time_signature_denominator);
             } catch (error) {
                 this.showToast?.(error.message, "error");
                 return;
@@ -445,7 +485,7 @@ export function exercises() {
             this.$nextTick(() => {
                 if (!this.tabPreviewPlaying || !this.tabEditorOpen) return;
                 window.dispatchEvent(new CustomEvent("alphatab:preview-draft", {
-                    detail: { element, alphaTex, bpm: Number(this.stepForm.bpm), instrument: this.tabDraft.instrument, play: true },
+                    detail: { element, alphaTex, musicXml: this.tabFullMusicXml, bpm: Number(this.stepForm.bpm), instrument: this.tabDraft.instrument, play: true },
                 }));
             });
         },
@@ -880,7 +920,7 @@ export function exercises() {
             if (this.tabEditorSaving || (this.tabEditorEditingIndex === null && this.steps.length >= this.maxSteps)) return;
             let alphaTex;
             try {
-                alphaTex = serializeTabDraft(
+                alphaTex = this.tabFullMusicXml ? null : serializeTabDraft(
                     this.tabDraft,
                     this.stepForm.time_signature_numerator,
                     this.stepForm.bpm,
@@ -892,7 +932,7 @@ export function exercises() {
             }
             this.tabEditorSaving = true;
             try {
-                const payload = { ...this.getStepFormPayload(), alpha_tex: alphaTex };
+                const payload = { ...this.getStepFormPayload(), alpha_tex: alphaTex, musicxml_source: this.tabFullMusicXml };
                 if (this.tabEditorEditingIndex !== null) {
                     const index = this.tabEditorEditingIndex;
                     const existing = this.steps[index];
