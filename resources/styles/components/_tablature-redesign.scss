@@ -254,6 +254,15 @@
     }
 
     // RHYTHM CONTROLS
+    // Keep both palettes together as the score grows and the page scrolls.
+    &__rhythm {
+        position: sticky;
+        top: 0;
+        z-index: 5;
+        align-self: start;
+        background: hsl(var(--neutral-100));
+    }
+
     //-PALETTE-
     &__palette-durations,
     &__palette-effects {
