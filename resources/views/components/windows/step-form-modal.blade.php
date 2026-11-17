@@ -153,14 +153,20 @@
         </header>
 
         <div class="mobile-exercise-view-dialog__content tab-editor">
-            <p class="tab-editor__intro">Add notes to your exercise. The score will be saved when you finish.</p>
+            <p class="tab-editor__intro" x-text="tabFullMusicXml ? 'Full MusicXML score · playback only. Original notation is preserved; edit it in Guitar Pro or another notation editor.' : 'Add notes to your exercise. The score will be saved when you finish.'"></p>
             <div class="tab-editor__import" x-show="tabEditorEditingIndex === null" x-cloak>
                 <label class="button" data-type="outline">
                     Import MusicXML
                     <input type="file" accept=".xml,.musicxml,application/xml,text/xml"
                         @change="importTabMusicXml($event)" style="display:none">
                 </label>
-                <small>From Guitar Pro, MuseScore or another notation editor. Notes, strings, frets and rhythm only.</small>
+                <small>Choose full-score playback to preserve all MusicXML notation, or an editable section for simple Dorelog tablature.</small>
+                <div x-show="tabMusicXmlFullSource" x-cloak>
+                    <button type="button" class="button" data-type="primary" @click="applyTabMusicXmlFullScore()">
+                        Import complete score · playback only
+                    </button>
+                    <small>Includes changes of time signature and notation outside the Dorelog editor. Playback and display depend on alphaTab's MusicXML compatibility.</small>
+                </div>
                 <div x-show="tabMusicXmlImport" x-cloak>
                     <p x-text="`${tabMusicXmlImport?.sections.length ?? 0} compatible section(s) found. Select one to import; changes of meter are separate exercises.`"></p>
                     <label>
@@ -203,7 +209,7 @@
                         max="400">
                 </label>
                 
-                <label>
+                <label x-show="!tabFullMusicXml" x-cloak>
                     Time signature
                     <span style="display: flex; gap: .5rem; align-items: center;">
                         <select x-model.number="stepForm.time_signature_numerator" aria-label="Beats per measure">
@@ -217,7 +223,7 @@
                         </select>
                     </span>
                 </label>
-                <label>
+                <label x-show="!tabFullMusicXml" x-cloak>
                     Instrument
                     <select x-model.number="tabDraft.instrument">
                         <option value="24">Nylon guitar</option>
@@ -227,7 +233,7 @@
                     </select>
                 </label>
 
-                <label>
+                <label x-show="!tabFullMusicXml" x-cloak>
                     String
                     <select x-model.number="tabDraft.string">
                         <template x-for="(name, i) in tabStringNames" :key="i">
@@ -236,7 +242,7 @@
                     </select>
                 </label>
 
-                <label>
+                <label x-show="!tabFullMusicXml" x-cloak>
                     Fret
                     <input
                         type="number"
@@ -248,33 +254,33 @@
             </div>
 
             <div class="tab-editor__actions">
-                <button type="button" class="button" data-type="primary" @click="addTabEditorNote()">Add note</button>
-                <button type="button" class="button" data-type="outline" :disabled="!tabDraft.beats.length" @click="previewTabEditor()" x-text="tabPreviewPlaying ? 'Stop' : 'Play'"></button>
+                <button x-show="!tabFullMusicXml" x-cloak type="button" class="button" data-type="primary" @click="addTabEditorNote()">Add note</button>
+                <button type="button" class="button" data-type="outline" :disabled="!tabDraft.beats.length && !tabFullMusicXml" @click="previewTabEditor()" x-text="tabPreviewPlaying ? 'Stop' : 'Play'"></button>
                 <x-metronome.count-in-toggle />
-                <button type="button" class="button" data-type="outline" :disabled="!tabUndoHistory.length"
+                <button x-show="!tabFullMusicXml" x-cloak type="button" class="button" data-type="outline" :disabled="!tabUndoHistory.length"
                     @click="undoTabEditorChange()" title="Undo last edit (Ctrl+Z)">Undo</button>
-                <button type="button" class="button" data-type="outline" :disabled="!tabRedoHistory.length"
+                <button x-show="!tabFullMusicXml" x-cloak type="button" class="button" data-type="outline" :disabled="!tabRedoHistory.length"
                     @click="redoTabEditorChange()" title="Redo last edit (Ctrl+Shift+Z)">Redo</button>
-                <button type="button" class="button" data-type="outline" :disabled="!tabDraft.beats.length"
+                <button x-show="!tabFullMusicXml" x-cloak type="button" class="button" data-type="outline" :disabled="!tabDraft.beats.length"
                     @click="undoTabEditorNote()">Delete selected notes</button>
             </div>
 
             <div class="tab-editor__preview" x-show="tabPreviewVisible" x-cloak><div x-ref="tabEditorPreview" data-alphatab></div></div>
-                <p x-text="`${tabDraft.beats.length} notes · ${stepForm.time_signature_numerator}/${stepForm.time_signature_denominator} · arrows navigate, 0-9 enter frets`"></p>
+                <p x-show="!tabFullMusicXml" x-cloak x-text="`${tabDraft.beats.length} notes · ${stepForm.time_signature_numerator}/${stepForm.time_signature_denominator} · arrows navigate, 0-9 enter frets`"></p>
                 
-                <p class="tab-editor__selection-hint">
+                <p x-show="!tabFullMusicXml" x-cloak class="tab-editor__selection-hint">
                     Drag to select a range · Shift + ←/→ extends selection · Shift + click selects a range · Ctrl/Cmd + click toggles notes · type 10–24 quickly for two-digit frets · Backspace clears to rest · Delete removes position.
                 </p>
                 
-                <p class="tab-editor__measure-status" x-text="tabEditorMeasureStatus()"></p>
+                <p x-show="!tabFullMusicXml" x-cloak class="tab-editor__measure-status" x-text="tabEditorMeasureStatus()"></p>
                 
-                <div class="tab-editor__measure-list" aria-live="polite">
+                <div x-show="!tabFullMusicXml" x-cloak class="tab-editor__measure-list" aria-live="polite">
                     <template x-for="measure in tabEditorMeasureWarnings()" :key="measure.number">
                         <span class="tab-editor__measure-indicator" :data-status="measure.status" :title="measure.message" x-text="measure.message"></span>
                     </template>
                 </div>
                 
-                <div class="tab-editor__workspace">
+                <div x-show="!tabFullMusicXml" x-cloak class="tab-editor__workspace">
                     <aside class="tab-editor__palette" aria-label="Tablature rhythm tools">
                         <h4>Rhythm</h4>
                         <div class="tab-editor__palette-durations" role="group" aria-label="Note duration">
@@ -355,10 +361,10 @@
                 
                 <div class="tab-editor__actions">
                     <button type="button" class="button" data-type="primary"
-                        :disabled="tabEditorSaving || !tabDraft.beats.length" @click="saveNewTabExercise(false)"
+                        :disabled="tabEditorSaving || (!tabDraft.beats.length && !tabFullMusicXml)" @click="saveNewTabExercise(false)"
                         x-text="tabEditorSaving ? 'Saving…' : 'Save'"></button>
                     <button type="button" class="button" data-type="outline"
-                        :disabled="tabEditorSaving || !tabDraft.beats.length" @click="saveNewTabExercise(true)">
+                        :disabled="tabEditorSaving || (!tabDraft.beats.length && !tabFullMusicXml)" @click="saveNewTabExercise(true)">
                         Save &amp; Close
                     </button>
                     <button type="button" class="button" data-type="outline" :disabled="tabEditorSaving"
