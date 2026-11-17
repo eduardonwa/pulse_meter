@@ -14,6 +14,9 @@
                 ></strong>
             </div>
             <div class="exercises__actions">
+                <div x-show="steps.some(step => !!step.alpha_tex)" x-cloak>
+                    <x-metronome.count-in-toggle />
+                </div>
                 <div class="exercises__start" x-show="practiceMode === 'routine'" x-cloak>
                     <button
                         class="button uppercase"
