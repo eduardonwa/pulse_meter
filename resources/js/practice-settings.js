@@ -1,3 +1,4 @@
+import { ALPHATAB_COUNT_IN_KEY, isAlphaTabCountInEnabled, setAlphaTabCountInEnabled } from './metronome/alphatab/count-in-preference.js'
 const AUTO_ADVANCE_KEY = 'pulse_meter_auto_advance'
 const CLICK_PROFILE_KEY = 'pulse_meter_daw_profile'
 const EXERCISES_KEY = 'pulse_meter_routine'
@@ -5,14 +6,34 @@ const RECENT_SESSIONS_KEY = 'pulse_meter_recent_sessions'
 const SESSION_MODE_KEY = 'pulse_meter_default_session_mode'
 
 export function registerPracticeSettings(Alpine) {
+    Alpine.data('alphaTabCountInControl', () => ({
+        enabled: isAlphaTabCountInEnabled(),
+        toggle() {
+            const next = !this.enabled
+            if (!setAlphaTabCountInEnabled(next)) return
+            this.enabled = next
+            window.dispatchEvent(new CustomEvent('alphatab:count-in-changed', {
+                detail: { enabled: next },
+            }))
+        },
+    }))
     Alpine.data('practiceSettings', ({ importPreferenceUrl = null, initialImportPreference = true } = {}) => ({
         autoAdvance: localStorage.getItem(AUTO_ADVANCE_KEY) !== 'false',
+        alphaTabCountIn: isAlphaTabCountInEnabled(),
         clickProfile: localStorage.getItem(CLICK_PROFILE_KEY) || 'cubase',
         askBeforeImportingFreeExercises: initialImportPreference,
         importPreferenceBusy: false,
         importPreferenceUrl,
         showResetAppModal: false,
         feedback: '',
+
+        setAlphaTabCountIn(enabled) {
+            if (!setAlphaTabCountInEnabled(enabled)) return
+            this.alphaTabCountIn = enabled
+            window.dispatchEvent(new CustomEvent('alphatab:count-in-changed', {
+                detail: { enabled },
+            }))
+        },
 
         setAutoAdvance(enabled) {
             this.autoAdvance = enabled
@@ -54,10 +75,14 @@ export function registerPracticeSettings(Alpine) {
 
         clearAllAppStorage() {
             // Mirror the previous local reset without touching server-side routines.
-            for (const key of [EXERCISES_KEY, RECENT_SESSIONS_KEY, SESSION_MODE_KEY, AUTO_ADVANCE_KEY]) {
+            for (const key of [EXERCISES_KEY, RECENT_SESSIONS_KEY, SESSION_MODE_KEY, AUTO_ADVANCE_KEY, ALPHATAB_COUNT_IN_KEY]) {
                 localStorage.removeItem(key)
             }
             this.autoAdvance = true
+            this.alphaTabCountIn = true
+            window.dispatchEvent(new CustomEvent('alphatab:count-in-changed', {
+                detail: { enabled: true },
+            }))
             this.showResetAppModal = false
             this.feedback = 'Local settings and exercises reset.'
         },

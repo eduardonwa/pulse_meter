@@ -478,6 +478,12 @@
         margin-bottom: 1rem;
     }
 
+    &__actions {
+        display: flex;
+        align-items: center;
+        gap: $size-4;
+    }
+
     .exercise-row__notation { display: block; }
 
     @include mq(extraLarge) {

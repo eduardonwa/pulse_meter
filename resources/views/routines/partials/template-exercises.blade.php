@@ -172,7 +172,6 @@
                             >
                                 <span x-text="audioPreparing ? 'Preparing audio…' : (hearing ? 'Stop' : 'Preview')">Preview</span>
                             </button>
-
                         </div>
                     </div>
                 @endif

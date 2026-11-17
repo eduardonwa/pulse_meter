@@ -446,13 +446,17 @@ export function exercises() {
 
         tabEditorDisplayColumns() {
             const measures = this.tabEditorMeasureLayout();
-            const insertions = new Set(measures.slice(0, -1)
+            const insertions = new Set(measures
                 .filter(measure => measure.used < measure.capacity)
                 .map(measure => measure.endIndex + 1));
             const columns = [];
             for (let index = 0; index <= this.tabDraft.beats.length; index++) {
                 if (insertions.has(index)) columns.push({ index, insertion: true });
-                columns.push({ index, insertion: false });
+                // The final insertion slot replaces the ordinary trailing
+                // slot, rather than creating two identical empty columns.
+                if (index !== this.tabDraft.beats.length || !insertions.has(index)) {
+                    columns.push({ index, insertion: false });
+                }
             }
             return columns;
         },
@@ -486,27 +490,6 @@ export function exercises() {
 
         tabEditorMeasureLayout() {
             return layoutTabMeasures(this.tabDraft, this.stepForm.time_signature_numerator, this.stepForm.time_signature_denominator);
-        },
-
-        insertTabEditorBar() {
-            const at = this.tabSelectedIndex;
-            if (at <= 0 || at >= this.tabDraft.beats.length) return;
-
-            // Leave an editable rest before the bar, keeping the selected note
-            // in the following measure instead of relocating or overwriting it.
-            const previousBreak = Math.max(0, ...(this.tabDraft.breaks ?? []).filter(index => index < at));
-            const used = this.tabDraft.beats.slice(previousBreak, at)
-                .reduce((total, beat) => total + 16 / beat.duration, 0);
-            const remaining = this.stepForm.time_signature_numerator * 16 / this.stepForm.time_signature_denominator - used;
-            const duration = [1, 2, 4, 8, 16].find(value => 16 / value === remaining)
-                ?? Number(this.tabDraft.duration);
-            const beats = [...this.tabDraft.beats];
-            beats.splice(at, 0, { rest: true, duration });
-            const breaks = [...new Set([...shiftTabBreaks(this.tabDraft.breaks ?? [], at, 1), at + 1])]
-                .sort((a, b) => a - b);
-
-            this.tabDraft = { ...this.tabDraft, beats, breaks, duration };
-            this.selectTabEditorCell(at, this.tabDraft.string);
         },
 
         tabEditorMeasureEnd(index) {
