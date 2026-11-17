@@ -85,9 +85,12 @@ export function parseMusicXmlTab(xmlText, parser = null) {
     if (typeof xmlText !== 'string' || xmlText.length > 2_000_000) {
         throw new Error('Choose a MusicXML file smaller than 2 MB')
     }
-    if (/<!DOCTYPE|<!ENTITY/i.test(xmlText)) {
-        throw new Error('MusicXML files with document type declarations are not supported')
+    // Guitar Pro exports an external MusicXML DTD. Drop that declaration before
+    // parsing, and reject entity definitions rather than resolving external data.
+    if (/<!ENTITY|<!DOCTYPE[^>]*\[/i.test(xmlText)) {
+        throw new Error('MusicXML with custom entities is not supported')
     }
+    xmlText = xmlText.replace(/<!DOCTYPE[^>]*>/i, '')
     const xmlParser = parser ?? (typeof DOMParser !== 'undefined' ? new DOMParser() : null)
     if (!xmlParser) throw new Error('XML parsing is unavailable in this browser')
     const document = xmlParser.parseFromString(xmlText, 'application/xml')
@@ -104,6 +107,7 @@ export function parseMusicXmlTab(xmlText, parser = null) {
     let divisions = 1
     let bpm = 100
     const sections = []
+    const warnings = []
     let active = null
     const measures = children(part, 'measure')
     for (const [i, measure] of measures.entries()) {
@@ -122,7 +126,14 @@ export function parseMusicXmlTab(xmlText, parser = null) {
             .find(node => node.hasAttribute('tempo'))?.getAttribute('tempo'))
         if (Number.isFinite(tempo) && tempo >= 30 && tempo <= 400) bpm = Math.round(tempo)
         const signature = { numerator, denominator }
-        const measureBeats = readMeasure(measure, divisions, signature)
+        let measureBeats
+        try {
+            measureBeats = readMeasure(measure, divisions, signature)
+        } catch (error) {
+            warnings.push('Measure ' + (i + 1) + ': ' + error.message)
+            active = null
+            continue
+        }
         if (!active || active.numerator !== numerator || active.denominator !== denominator) {
             active = { numerator, denominator, bpm, firstMeasure: i + 1, lastMeasure: i + 1,
                 draft: createTabDraft() }
@@ -135,5 +146,5 @@ export function parseMusicXmlTab(xmlText, parser = null) {
     if (!sections.length) throw new Error('No measures were found')
     const title = value(child(score, 'work'), 'work-title') ??
         value(score, 'movement-title') ?? 'Imported tablature'
-    return { title, sections }
+    return { title, sections, warnings }
 }
