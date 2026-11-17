@@ -230,7 +230,10 @@
             <div class="tab-editor__actions">
                 <button type="button" class="button" data-type="primary" @click="addTabEditorNote()">Add note</button>
                 <button type="button" class="button" data-type="outline" :disabled="!tabDraft.beats.length" @click="previewTabEditor()" x-text="tabPreviewPlaying ? 'Stop' : 'Play'"></button>
-                <button type="button" class="button" data-type="outline" :disabled="tabSelectedIndex <= 0 || tabSelectedIndex >= tabDraft.beats.length" @click="insertTabEditorBar()">Insert bar before selection</button>
+                <button type="button" class="button" data-type="outline" :disabled="tabSelectedIndex <= 0" @click="moveTabEditorCursor(-1)" aria-label="Previous position">← Previous</button>
+                <button type="button" class="button" data-type="outline" :disabled="tabSelectedIndex >= tabDraft.beats.length" @click="moveTabEditorCursor(1)" aria-label="Next position">Next →</button>
+                <button type="button" class="button" data-type="outline" :disabled="!tabDraft.beats.length" @click="insertTabEditorPosition(false)">Insert before</button>
+                <button type="button" class="button" data-type="outline" :disabled="!tabDraft.beats.length" @click="insertTabEditorPosition(true)">Insert after</button>
                 <button type="button" class="button" data-type="outline" :disabled="!tabDraft.beats.length"
                     @click="undoTabEditorNote()">Undo last note</button>
             </div>
@@ -239,7 +242,7 @@
                 <p x-text="`${tabDraft.beats.length} notes · ${stepForm.time_signature_numerator}/${stepForm.time_signature_denominator} · arrows navigate, 0-9 enter frets`"></p>
                 
                 <p class="tab-editor__selection-hint">
-                    Drag to select a range · Shift + ←/→ extends selection · Shift + click selects a range · Ctrl/Cmd + click toggles notes · type 10–24 quickly for two-digit frets · Backspace clears to rest · Delete removes position.
+                    Use Previous / Next or ←/→ to move. Insert before / after makes an editable space without overwriting notes. Shift + ←/→ extends selection · type 10–24 quickly for two-digit frets · Backspace clears to rest · Delete removes position.
                 </p>
                 
                 <p class="tab-editor__measure-status" x-text="tabEditorMeasureStatus()"></p>
