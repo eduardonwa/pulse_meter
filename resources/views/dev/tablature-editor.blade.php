@@ -38,9 +38,7 @@
         </section>
 
         {{-- main editing area --}}
-        <section class="tab-editor__workspace" aria-label="Tablature workspace"
-            x-data="tablatureRedesign"
-            x-init="$nextTick(() => updateTabEditorWidth())"
+        <section class="tab-editor__workspace" aria-label="Tablature workspace" x-data="tablatureRedesign" x-init="$nextTick(() => updateTabEditorWidth())"
             @keydown="handleTabEditorKey($event)"
             @resize.window="updateTabEditorWidth()"
             @pointerup.window="endTabDrag()"
@@ -48,75 +46,67 @@
         >
             <aside class="tab-editor__rhythm" aria-label="Rhythm tools">
                 <div class="tab-editor__palette-durations" role="group" aria-label="Note duration">
-                <template x-for="item in [
-                { duration: 1, name: 'Whole', symbol: '𝅝' },
-                { duration: 2, name: 'Half', symbol: '𝅗𝅥' },
-                { duration: 4, name: 'Quarter', symbol: '♩' },
-                { duration: 8, name: 'Eighth', symbol: '♫' },
-                { duration: 16, name: 'Sixteenth', symbol: '♬' },
-                ]" :key="item.duration">
-                <button type="button" class="tab-editor__palette-tool"
-                :class="{ 'is-active': tabDraft.duration === item.duration }"
-                :aria-pressed="(tabDraft.duration === item.duration).toString()"
-                :title="item.name"
-                @click="changeTabEditorDuration(item.duration)">
-                <span aria-hidden="true" x-text="item.symbol"></span>
-                <span x-text="item.name"></span>
-                </button>
-                </template>
+                    <template x-for="item in [
+                        { duration: 1, name: 'Whole', symbol: '𝅝' },
+                        { duration: 2, name: 'Half', symbol: '𝅗𝅥' },
+                        { duration: 4, name: 'Quarter', symbol: '♩' },
+                        { duration: 8, name: 'Eighth', symbol: '♫' },
+                        { duration: 16, name: 'Sixteenth', symbol: '♬' },
+                        ]" :key="item.duration"
+                    >
+                        <button type="button" class="tab-editor__palette-tool" :class="{ 'is-active': tabDraft.duration === item.duration }" :aria-pressed="(tabDraft.duration === item.duration).toString()" :title="item.name" @click="changeTabEditorDuration(item.duration)">
+                            <span aria-hidden="true" x-text="item.symbol"></span>
+                            <span x-text="item.name"></span>
+                        </button>
+                    </template>
                 </div>
+
                 <div class="tab-editor__palette-effects" role="group" aria-label="Rhythm modifiers">
-                <button type="button" class="tab-editor__palette-tool"
-                :class="{ 'is-active': tabDraft.dotted }"
-                :aria-pressed="Boolean(tabDraft.dotted).toString()"
-                @click="setTabEditorRhythm({ dotted: !tabDraft.dotted })"
-                title="Dotted duration: one and a half times the selected value">
-                <span aria-hidden="true">♩.</span> Dotted
-                </button>
-                <button type="button" class="tab-editor__palette-tool"
-                :class="{ 'is-active': tabDraft.tuplet === 3 }"
-                :aria-pressed="(tabDraft.tuplet === 3).toString()"
-                @click="setTabEditorRhythm({ tuplet: tabDraft.tuplet === 3 ? null : 3 })"
-                title="Triplet: three notes in the time of two">
-                <span aria-hidden="true">3:2</span> Triplet
-                </button>
-                <button type="button" class="tab-editor__palette-tool"
-                @click="addTabEditorRest()"
-                title="Insert or replace with a rest">
-                <span aria-hidden="true">𝄽</span> Rest
-                </button>
+                    <button type="button" class="tab-editor__palette-tool" :class="{ 'is-active': tabDraft.dotted }" :aria-pressed="Boolean(tabDraft.dotted).toString()" @click="setTabEditorRhythm({ dotted: !tabDraft.dotted })" title="Dotted duration: one and a half times the selected value">
+                        <span aria-hidden="true">♩.</span> Dotted
+                    </button>
+
+                    <button type="button" class="tab-editor__palette-tool" :class="{ 'is-active': tabDraft.tuplet === 3 }" :aria-pressed="(tabDraft.tuplet === 3).toString()" @click="setTabEditorRhythm({ tuplet: tabDraft.tuplet === 3 ? null : 3 })" title="Triplet: three notes in the time of two">
+                        <span aria-hidden="true">3:2</span> Triplet
+                    </button>
+
+                    <button type="button" class="tab-editor__palette-tool" @click="addTabEditorRest()" title="Insert or replace with a rest">
+                        <span aria-hidden="true">𝄽</span> Rest
+                    </button>
                 </div>
             </aside>
 
             <div class="tab-editor__score" x-ref="tabEditorScore" @pointerup.window="endTabDrag()" @pointercancel.window="endTabDrag()" @resize.window="updateTabEditorWidth()" tabindex="0" role="group" aria-label="Interactive six-string tablature">
-                    <template x-for="(system, systemIndex) in tabEditorSystems()" :key="systemIndex">
-                        <div class="tab-editor__system">
-                            <div class="tab-editor__string-labels">
-                                <template x-for="(name, stringIndex) in tabStringNames" :key="stringIndex">
-                                    <span x-text="name"></span>
-                                </template>
-                            </div>
-
-                            <div class="tab-editor__grid">
-                                <template x-for="(name, stringIndex) in tabStringNames" :key="stringIndex">
-                                    <div class="tab-editor__string-row">
-                                        <template x-for="column in system" :key="`${column.index}-${column.insertion}`">
-                                            <button type="button" class="tab-editor__cell"
-                                                :class="{ 'is-selected': tabSelectedIndex === column.index && tabDraft.string === stringIndex + 1 && tabInsertAtBar === column.insertion, 'is-measure-end': column.measureEnd, 'is-multi-selected': !column.insertion && tabSelectedIndices.includes(column.index) && column.index < tabDraft.beats.length, 'is-insertion': column.insertion }"
-                                                :aria-label="column.insertion ? `Insert note before next measure, string ${stringIndex + 1}` : `String ${stringIndex + 1}, position ${column.index + 1}`"
-                                                :aria-pressed="tabSelectedIndex === column.index && tabDraft.string === stringIndex + 1 && tabInsertAtBar === column.insertion"
-                                                @pointerdown="!column.insertion && startTabDrag(column.index, stringIndex + 1, $event)"
-                                                @pointerenter="!column.insertion && extendTabDrag(column.index)"
-                                                @click="column.insertion ? selectTabEditorInsertion(column.index, stringIndex + 1) : clickTabCell(column.index, stringIndex + 1, $event); $refs.tabEditorScoreFocus?.focus()"
-                                                x-text="column.insertion ? (stringIndex + 1 === tabDraft.string ? '+' : '·') : (tabEditorNoteAt(column.index, stringIndex + 1) ?? '·')">
-                                            </button>
-                                        </template>
-                                    </div>
-                                </template>
-                            </div>
+                <template x-for="(system, systemIndex) in tabEditorSystems()" :key="systemIndex">
+                    <div class="tab-editor__system">
+                        <div class="tab-editor__string-labels">
+                            <template x-for="(name, stringIndex) in tabStringNames" :key="stringIndex">
+                                <span x-text="name"></span>
+                            </template>
                         </div>
-                    </template>
-                </div>
+
+                        <div class="tab-editor__grid">
+                            <template x-for="(name, stringIndex) in tabStringNames" :key="stringIndex">
+                                <div class="tab-editor__string-row">
+                                    <template x-for="column in system" :key="`${column.index}-${column.insertion}`">
+                                        <button type="button" class="tab-editor__cell"
+                                            :class="{ 'is-selected': tabSelectedIndex === column.index && tabDraft.string === stringIndex + 1 && tabInsertAtBar === column.insertion, 'is-measure-end': column.measureEnd, 'is-multi-selected': !column.insertion && tabSelectedIndices.includes(column.index) && column.index < tabDraft.beats.length, 'is-insertion': column.insertion }"
+                                            :aria-label="column.insertion ? `Insert note before next measure, string ${stringIndex + 1}` : `String ${stringIndex + 1}, position ${column.index + 1}`"
+                                            :aria-pressed="tabSelectedIndex === column.index && tabDraft.string === stringIndex + 1 && tabInsertAtBar === column.insertion"
+                                            @pointerdown="!column.insertion && startTabDrag(column.index, stringIndex + 1, $event)"
+                                            @pointerenter="!column.insertion && extendTabDrag(column.index)"
+                                            @click="column.insertion ? selectTabEditorInsertion(column.index, stringIndex + 1) : clickTabCell(column.index, stringIndex + 1, $event); $refs.tabEditorScoreFocus?.focus()"
+                                            x-text="column.insertion ? (stringIndex + 1 === tabDraft.string ? '+' : '·') : (tabEditorNoteAt(column.index, stringIndex + 1) ?? '·')"
+                                        >
+                                        </button>
+                                    </template>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </template>
+            </div>
+            
             <span x-ref="tabEditorScoreFocus" class="sr-only" tabindex="-1">Tab keyboard controls</span>
         </section>
 
