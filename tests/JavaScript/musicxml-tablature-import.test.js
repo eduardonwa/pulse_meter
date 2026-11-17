@@ -120,8 +120,8 @@ test('MusicXML preserves dotted notes and three-to-two triplets', () => {
     assert.deepEqual(beats.slice(2, 5).map(beat => beat.tuplet), [3, 3, 3])
     assert.ok(layoutTabMeasures(imported.sections[0].draft, 4, 4)[0].complete)
     const tex = serializeTabDraft(imported.sections[0].draft, 4, 120, 4)
-    assert.match(tex, /\\{ d \\}/)
-    assert.match(tex, /\\{ tu 3 \\}/)
+    assert.ok(tex.includes('{ d }'))
+    assert.ok(tex.includes('{ tu 3 }'))
 })
 
 test('MusicXML converts a genuinely empty measure into editable rests', () => {
