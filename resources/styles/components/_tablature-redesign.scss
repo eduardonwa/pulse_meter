@@ -270,7 +270,7 @@
         gap: .25rem;
         grid-template-columns: repeat(2, minmax(0, 1fr));
 
-        @media (min-width: 800px) {
+        @include mq(medium) {
             grid-template-columns: 1fr;
         }
     }
@@ -524,13 +524,22 @@
     }
 
     &__transport {
+        position: sticky;
+        bottom: 0;
+        z-index: 30;
+
         padding: $size-5 $size-12;
         background-color: $color-do-800;
         
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: $size-4;
+
+        @supports (animation-timeline: scroll()) {
+            animation: transport-shrink linear both;
+            animation-timeline: scroll(root block);
+            animation-range: 0px 150px;
+        }
         
         .button {
             color: $color-do-50;
@@ -659,5 +668,15 @@
                 background-color: hsl(var(--do-500) / .2);
             }
         }
+    }
+}
+
+@keyframes transport-shrink {
+    from {
+        padding-block: 20px;
+    }
+
+    to {
+        padding-block: 8px;
     }
 }
