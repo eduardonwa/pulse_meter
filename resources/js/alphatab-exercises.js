@@ -312,9 +312,28 @@ window.addEventListener('alphatab:preview-draft', async event => {
     activeApi = api
     if (alreadyMounted) {
         api.stop()
-        if (musicXml) api.load(new TextEncoder().encode(musicXml))
-        else api.tex(pattern)
+        if (musicXml) {
+            // Native file loading is asynchronous. Never play the previous
+            // score while alphaTab is still importing the new MusicXML.
+            try {
+                await new Promise((resolve, reject) => {
+                    let offLoaded
+                    let offError
+                    const cleanup = () => { offLoaded?.(); offError?.() }
+                    offLoaded = api.midiLoaded.on(() => { cleanup(); resolve() })
+                    offError = api.error.on(error => { cleanup(); reject(error) })
+                    if (!api.load(new TextEncoder().encode(musicXml))) {
+                        cleanup()
+                        reject(new Error('alphaTab did not accept this MusicXML file'))
+                    }
+                })
+            } catch (error) {
+                console.error('alphaTab could not load the imported score:', error)
+                return
+            }
+        } else api.tex(pattern)
     }
+    if (playbackRequests.get(element) !== request || playbackGeneration !== request) return
     api.playbackSpeed = musicXml ? Number(bpm) / musicXmlFirstTempo(musicXml, Number(bpm) || 100) : 1
     api.isLooping = false
     configureCountIn(api)
