@@ -143,3 +143,23 @@ test('MusicXML converts a genuinely empty measure into editable rests', () => {
     assert.ok(rests.length > 0 && rests.every(beat => beat.rest))
     assert.ok(layoutTabMeasures(imported.sections[0].draft, 7, 8).every(bar => bar.complete))
 })
+
+test('MusicXML full-measure rest with nonstandard duration becomes editable rests', () => {
+    const score = el('score-partwise', [
+        el('part', [
+            measure(1, 7, 8, Array(7).fill(2)),
+            el('measure', [
+                el('attributes', [el('time', [el('beats', '7'), el('beat-type', '8')])]),
+                el('note', [el('rest', [], { measure: 'yes' }), el('duration', '14')]),
+            ], { number: '2' }),
+        ]),
+    ])
+    const parser = { parseFromString() { return {
+        documentElement: score,
+        getElementsByTagName(name) { return score.getElementsByTagName(name) },
+    } } }
+    const imported = parseMusicXmlTab('<score-partwise/>', parser)
+    assert.deepEqual(imported.warnings, [])
+    assert.equal(imported.sections[0].lastMeasure, 2)
+    assert.ok(layoutTabMeasures(imported.sections[0].draft, 7, 8).every(bar => bar.complete))
+})
