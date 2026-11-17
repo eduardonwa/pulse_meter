@@ -245,16 +245,6 @@
                         max="24">
                 </label>
 
-                <label>
-                    Duration
-                    <select x-model.number="tabDraft.duration" @change="changeTabEditorDuration($event.target.value)">
-                        <option value="4">Quarter</option>
-                        <option value="8">Eighth</option>
-                        <option value="16">Sixteenth</option>
-                        <option value="2">Half</option>
-                        <option value="1">Whole</option>
-                    </select>
-                </label>
             </div>
 
             <div class="tab-editor__actions">
@@ -280,6 +270,50 @@
                     </template>
                 </div>
                 
+                <div class="tab-editor__workspace">
+                    <aside class="tab-editor__palette" aria-label="Tablature rhythm tools">
+                        <h4>Rhythm</h4>
+                        <div class="tab-editor__palette-durations" role="group" aria-label="Note duration">
+                            <template x-for="item in [
+                                { duration: 1, name: 'Whole', symbol: '𝅝' },
+                                { duration: 2, name: 'Half', symbol: '𝅗𝅥' },
+                                { duration: 4, name: 'Quarter', symbol: '♩' },
+                                { duration: 8, name: 'Eighth', symbol: '♫' },
+                                { duration: 16, name: 'Sixteenth', symbol: '♬' },
+                            ]" :key="item.duration">
+                                <button type="button" class="tab-editor__palette-tool"
+                                    :class="{ 'is-active': tabDraft.duration === item.duration }"
+                                    :aria-pressed="(tabDraft.duration === item.duration).toString()"
+                                    :title="item.name"
+                                    @click="changeTabEditorDuration(item.duration)">
+                                    <span aria-hidden="true" x-text="item.symbol"></span>
+                                    <span x-text="item.name"></span>
+                                </button>
+                            </template>
+                        </div>
+                        <div class="tab-editor__palette-effects" role="group" aria-label="Rhythm modifiers">
+                            <button type="button" class="tab-editor__palette-tool"
+                                :class="{ 'is-active': tabDraft.dotted }"
+                                :aria-pressed="Boolean(tabDraft.dotted).toString()"
+                                @click="setTabEditorRhythm({ dotted: !tabDraft.dotted })"
+                                title="Dotted duration: one and a half times the selected value">
+                                <span aria-hidden="true">♩.</span> Dotted
+                            </button>
+                            <button type="button" class="tab-editor__palette-tool"
+                                :class="{ 'is-active': tabDraft.tuplet === 3 }"
+                                :aria-pressed="(tabDraft.tuplet === 3).toString()"
+                                @click="setTabEditorRhythm({ tuplet: tabDraft.tuplet === 3 ? null : 3 })"
+                                title="Triplet: three notes in the time of two">
+                                <span aria-hidden="true">3:2</span> Triplet
+                            </button>
+                            <button type="button" class="tab-editor__palette-tool"
+                                @click="addTabEditorRest()"
+                                title="Insert or replace with a rest">
+                                <span aria-hidden="true">𝄽</span> Rest
+                            </button>
+                        </div>
+                    </aside>
+                    <div class="tab-editor__canvas">
                 <div class="tab-editor__score" x-ref="tabEditorScore" @pointerup.window="endTabDrag()" @pointercancel.window="endTabDrag()" @resize.window="updateTabEditorWidth()" tabindex="0" role="group" aria-label="Interactive six-string tablature">
                     <template x-for="(system, systemIndex) in tabEditorSystems()" :key="systemIndex">
                         <div class="tab-editor__system">
@@ -310,6 +344,9 @@
                     </template>
                 </div>
                 
+                    </div>
+                </div>
+
                 <span x-ref="tabEditorScoreFocus" class="sr-only" tabindex="-1">Tab keyboard controls</span>
                 
                 <div class="tab-editor__actions">
