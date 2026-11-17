@@ -133,66 +133,6 @@ class WelcomeController extends Controller
 
                 $practiceQueue =
                     $playback['queue'];
-            } else {
-                /*
-                * ROUTINE MODE
-                */
-                if ($requestedRoutineId === null) {
-                    $routine = $defaultRoutine;
-                } else {
-                    $validatedRoutineId = filter_var(
-                        $requestedRoutineId,
-                        FILTER_VALIDATE_INT,
-                        [
-                            'options' => [
-                                'min_range' => 1,
-                            ],
-                        ]
-                    );
-
-                    abort_if(
-                        $validatedRoutineId === false,
-                        404
-                    );
-
-                    $routine = $user->practiceRoutines()
-                        ->whereKey($validatedRoutineId)
-                        ->firstOrFail();
-                }
-
-                $routine->load([
-                    'steps' => fn ($query) => $query
-                        ->orderBy('position')
-                        ->orderBy('id'),
-                ]);
-
-                $routinePayload = [
-                    'id' => $routine->id,
-                    'name' => $routine->name,
-                    'position' => $routine->position,
-                    'is_default' => (bool) $routine->is_default,
-
-                    'steps' => $routine->steps
-                        ->map(fn ($step) => [
-                            'id' => $step->id,
-
-                            'practice_routine_id' =>
-                                $step->practice_routine_id,
-
-                            'name' => $step->name,
-                            'bpm' => $step->bpm,
-                            'mode' => $step->mode,
-
-                            'duration_seconds' =>
-                                $step->duration_seconds,
-                            'alpha_tex' => $step->alpha_tex,
-                            'musicxml_source' => $step->musicxml_source,
-                            'tab_source' => $step->tab_source,
-                            'position' => $step->position,
-                            'origin' => $step->origin,
-                        ])
-                        ->values(),
-                ];
             }
 
             /*
@@ -263,8 +203,8 @@ class WelcomeController extends Controller
                         'mode' => $step->mode,
                         'duration_seconds' => $step->duration_seconds,
                         'alpha_tex' => $step->alpha_tex,
-                            'musicxml_source' => $step->musicxml_source,
-                            'tab_source' => $step->tab_source,
+                        'musicxml_source' => $step->musicxml_source,
+                        'tab_source' => $step->tab_source,
                         'position' => $step->position,
                         'origin' => $step->origin,
                     ])
