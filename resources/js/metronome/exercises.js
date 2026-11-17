@@ -821,7 +821,9 @@ export function exercises() {
 
         handleTabEditorKey(event) {
             const tag = event.target?.tagName;
-            if (['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON'].includes(tag)) return;
+            // Keep native text-field undo, but allow score undo even when a
+            // toolbar button has keyboard focus.
+            if (['INPUT', 'TEXTAREA', 'SELECT'].includes(tag)) return;
             if (event.ctrlKey || event.metaKey) {
                 const key = event.key.toLowerCase();
                 if (key === 'z' || (key === 'y' && !event.shiftKey)) {
@@ -831,6 +833,7 @@ export function exercises() {
                     return;
                 }
             }
+            if (tag === 'BUTTON') return;
             if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
                 event.preventDefault();
                 const delta = event.key === 'ArrowUp' ? -1 : 1;
