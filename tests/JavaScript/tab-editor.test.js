@@ -262,3 +262,35 @@ test('Backspace removes only the selected note in a chord', () => {
     assert.deepEqual(rest, { rest: true, duration: 4 });
     assert.equal(serializeTabDraft({ ...createTabDraft(), beats: [rest] }).includes(':4 r'), true);
 });
+
+test('dotted rhythms and triplets remain editable after an alphaTex round-trip', () => {
+    const draft = {
+        ...createTabDraft(),
+        beats: [
+            { fret: 5, string: 1, duration: 4, dotted: true },
+            { fret: 7, string: 1, duration: 8 },
+            ...[9, 10, 11].map(fret => ({ fret, string: 2, duration: 8, tuplet: 3 })),
+            { rest: true, duration: 4 },
+        ],
+    }
+    const bars = layoutTabMeasures(draft, 4, 4)
+    assert.equal(bars[0].complete, true)
+    const alphaTex = serializeTabDraft(draft, 4, 120)
+    assert.ok(alphaTex.includes('{ d }'))
+    assert.ok(alphaTex.includes('{ tu 3 }'))
+    const parsed = parseTabDraft(alphaTex)
+    assert.deepEqual(parsed.draft.beats, draft.beats)
+    assert.equal(serializeTabDraft(parsed.draft, 4, 120), alphaTex)
+    assert.equal(playbackAlphaTex(alphaTex), alphaTex)
+})
+
+test('editing a chord or clearing a string does not discard dotted/triplet rhythm', () => {
+    const first = { fret: 5, string: 1, duration: 8, dotted: true, tuplet: 3 }
+    const chord = setTabBeatNote(first, 7, 2)
+    assert.equal(chord.dotted, true)
+    assert.equal(chord.tuplet, 3)
+    const returned = removeTabNoteAtString(chord, 2)
+    assert.deepEqual(returned, first)
+    const rest = removeTabNoteAtString(returned, 1)
+    assert.deepEqual(rest, { rest: true, duration: 8, dotted: true, tuplet: 3 })
+})

@@ -9,7 +9,27 @@ const mountPromises = new WeakMap()
 const readyPromises = new WeakMap()
 const renderedBpms = new WeakMap()
 const playbackRequests = new WeakMap()
+const routineLoopModes = new WeakMap()
 let playbackGeneration = 0
+
+// Native alphaTab looping jumps straight to the first note. To repeat the
+// lead-in, finish each pass, then start playback again as a new pass.
+export function setExerciseLoopMode(api, enabled, countInEnabled = isAlphaTabCountInEnabled()) {
+    routineLoopModes.set(api, Boolean(enabled))
+    api.isLooping = Boolean(enabled) && !countInEnabled
+}
+
+export function restartExerciseWithCountIn(api, { isActive, schedule = callback => setTimeout(callback, 0) }) {
+    if (!routineLoopModes.get(api) || !isAlphaTabCountInEnabled() || !isActive()) return false
+    const request = playbackGeneration
+    schedule(() => {
+        if (playbackGeneration !== request || !isActive() || !routineLoopModes.get(api) || !isAlphaTabCountInEnabled()) return
+        api.stop()
+        configureCountIn(api)
+        api.play()
+    })
+    return true
+}
 
 function configureCountIn(api) {
     api.countInVolume = isAlphaTabCountInEnabled() ? 1 : 0
@@ -23,6 +43,14 @@ async function getAlphaTab() {
     }
 
     return alphaTabModule
+}
+
+// The exercise BPM is the base tempo for native MusicXML scores. Relative
+// tempo changes remain in the score and playbackSpeed scales them together.
+function musicXmlFirstTempo(xml, fallback) {
+    const match = xml?.match(/<sound\b[^>]*\btempo\s*=\s*["'](\d+(?:\.\d+)?)["']/i)
+    const tempo = Number(match?.[1])
+    return Number.isFinite(tempo) && tempo > 0 ? tempo : fallback
 }
 
 function decodeBase64(value) {
@@ -116,13 +144,14 @@ async function mountAlphaTab(element) {
 
     const mountPromise = (async () => {
         const encodedAlphaTex = element.dataset.alphaTex
+        const originalMusicXml = element.dataset.musicxml
         const bpm = Number(element.dataset.bpm ?? 100)
         const isAdminPreview = element.dataset.adminPreview === 'true'
 
-        if (!encodedAlphaTex) return null
+        if (!encodedAlphaTex && !originalMusicXml) return null
 
         const alphaTab = await getAlphaTab()
-        const pattern = decodeBase64(encodedAlphaTex)
+        const pattern = encodedAlphaTex ? decodeBase64(encodedAlphaTex) : null
 
         const api = new alphaTab.AlphaTabApi(element, {
             core: {
@@ -158,6 +187,9 @@ async function mountAlphaTab(element) {
 
         api.metronomeVolume = 1
         configureCountIn(api)
+        api.playerFinished.on(() => restartExerciseWithCountIn(api, {
+            isActive: () => activeApi === api,
+        }))
 
         let waitingForScoreStart = false
         api.playerPositionChanged.on(args => {
@@ -177,17 +209,27 @@ async function mountAlphaTab(element) {
             )
         })
 
-        const readyPromise = new Promise(resolve => {
-            api.playerReady.on(() => {
-                resolve()
+        const readyPromise = new Promise((resolve, reject) => {
+            api.playerReady.on(() => resolve())
+            api.error.on(error => {
+                window.dispatchEvent(new CustomEvent('alphatab:load-error', {
+                    detail: { element, message: error?.message ?? 'alphaTab could not load this score' },
+                }))
+                reject(error)
             })
         })
 
-        api.tex(applyMetadata(playbackAlphaTex(pattern), { bpm }))
+        if (originalMusicXml) {
+            // Load the complete source into alphaTab's native MusicXML importer.
+            // Do not pass it through the limited Dorelog editor or alphaTex.
+            api.load(new TextEncoder().encode(originalMusicXml))
+        } else {
+            api.tex(applyMetadata(playbackAlphaTex(pattern), { bpm }))
+        }
 
         instances.set(element, api)
         readyPromises.set(element, readyPromise)
-        renderedBpms.set(element, bpm)
+        renderedBpms.set(element, originalMusicXml ? musicXmlFirstTempo(originalMusicXml, bpm) : bpm)
 
         await readyPromise
 
@@ -253,7 +295,7 @@ window.addEventListener('alphatab:update', async event => {
 })
 
 window.addEventListener('alphatab:preview-draft', async event => {
-    const { element, alphaTex, bpm, play, instrument } = event.detail ?? {}
+    const { element, alphaTex, musicXml, bpm, play, instrument } = event.detail ?? {}
     if (!element) return
 
     if (!play) {
@@ -262,27 +304,61 @@ window.addEventListener('alphatab:preview-draft', async event => {
         return
     }
 
-    if (!alphaTex) return
+    if (!alphaTex && !musicXml) return
 
     const request = ++playbackGeneration
     playbackRequests.set(element, request)
-    const pattern = applyMetadata(playbackAlphaTex(alphaTex), { bpm: Number(bpm) || 100, instrument: Number(instrument ?? 25) })
-    element.dataset.alphaTex = encodeBase64(alphaTex)
+    const pattern = alphaTex
+        ? applyMetadata(playbackAlphaTex(alphaTex), { bpm: Number(bpm) || 100, instrument: Number(instrument ?? 25) })
+        : null
+    if (musicXml) {
+        element.dataset.musicxml = musicXml
+        delete element.dataset.alphaTex
+    } else {
+        element.dataset.alphaTex = encodeBase64(alphaTex)
+        delete element.dataset.musicxml
+    }
     element.dataset.bpm = String(Number(bpm) || 100)
 
     // Mount if needed, then replace the score on subsequent previews.
     const alreadyMounted = instances.has(element)
-    const api = await mountAlphaTab(element)
+    let api
+    try {
+        api = await mountAlphaTab(element)
+    } catch (error) {
+        console.error('alphaTab could not preview the imported score:', error)
+        return
+    }
     if (!api || !element.isConnected || playbackRequests.get(element) !== request || playbackGeneration !== request) return
 
     if (activeApi && activeApi !== api) activeApi.stop()
     activeApi = api
     if (alreadyMounted) {
         api.stop()
-        api.tex(pattern)
+        if (musicXml) {
+            // Native file loading is asynchronous. Never play the previous
+            // score while alphaTab is still importing the new MusicXML.
+            try {
+                await new Promise((resolve, reject) => {
+                    let offLoaded
+                    let offError
+                    const cleanup = () => { offLoaded?.(); offError?.() }
+                    offLoaded = api.midiLoaded.on(() => { cleanup(); resolve() })
+                    offError = api.error.on(error => { cleanup(); reject(error) })
+                    if (!api.load(new TextEncoder().encode(musicXml))) {
+                        cleanup()
+                        reject(new Error('alphaTab did not accept this MusicXML file'))
+                    }
+                })
+            } catch (error) {
+                console.error('alphaTab could not load the imported score:', error)
+                return
+            }
+        } else api.tex(pattern)
     }
-    api.playbackSpeed = 1
-    api.isLooping = false
+    if (playbackRequests.get(element) !== request || playbackGeneration !== request) return
+    api.playbackSpeed = musicXml ? Number(bpm) / musicXmlFirstTempo(musicXml, Number(bpm) || 100) : 1
+    setExerciseLoopMode(api, false)
     configureCountIn(api)
     api.play()
 })
@@ -310,7 +386,7 @@ window.addEventListener('alphatab:play-pause', async event => {
         if (activeApi && activeApi !== api) activeApi.stop()
         activeApi = api
         // Preview is always a single listen, regardless of exercise mode.
-        api.isLooping = false
+        setExerciseLoopMode(api, false)
         configureCountIn(api)
         api.playPause()
     } catch (error) {
@@ -347,8 +423,9 @@ window.addEventListener('alphatab:start-exercise', async event => {
 
         if (activeApi && activeApi !== api) activeApi.stop()
         activeApi = api
-        // Routine playback repeats until the session stops.
-        api.isLooping = true
+        // If count-in is enabled, restart each completed pass with a new
+        // count-in instead of alphaTab's seamless native loop.
+        setExerciseLoopMode(api, true)
         configureCountIn(api)
         api.play()
     } catch (error) {
@@ -366,6 +443,7 @@ window.addEventListener('alphatab:start-exercise', async event => {
 window.addEventListener('alphatab:stop', () => {
     notifyAudioPreparation(null, false)
     ++playbackGeneration
+    if (activeApi) setExerciseLoopMode(activeApi, false)
     activeApi?.stop()
     activeApi = null
 })
@@ -375,7 +453,15 @@ window.addEventListener('alphatab:toggle-loop', async event => {
 
     if (!api) return
 
-    api.isLooping = Boolean(event.detail?.enabled)
+    setExerciseLoopMode(api, Boolean(event.detail?.enabled))
+})
+
+window.addEventListener('alphatab:count-in-changed', () => {
+    if (!activeApi) return
+    configureCountIn(activeApi)
+    // Switching the setting during a routine also switches between
+    // counted restarts and native seamless looping at the next ending.
+    activeApi.isLooping = Boolean(routineLoopModes.get(activeApi)) && !isAlphaTabCountInEnabled()
 })
 
 window.addEventListener('alphatab:set-bpm', async event => {
@@ -405,7 +491,11 @@ window.addEventListener('alphatab:set-bpm', async event => {
 
         api.stop()
         api.playbackSpeed = 1
-        api.tex(applyMetadata(playbackAlphaTex(decodeBase64(encodedAlphaTex)), { bpm }))
+        if (element.dataset.musicxml) {
+            api.load(new TextEncoder().encode(element.dataset.musicxml))
+        } else if (encodedAlphaTex) {
+            api.tex(applyMetadata(playbackAlphaTex(decodeBase64(encodedAlphaTex)), { bpm }))
+        }
 
         renderedBpms.set(element, bpm)
         return

@@ -74,16 +74,22 @@ class PracticeRoutineStepController extends Controller
             ],
 
             'alpha_tex' => ['sometimes', 'nullable', 'string', 'max:65535'],
+            'musicxml_source' => ['sometimes', 'nullable', 'string', 'max:2000000'],
         ]);
 
         // Only Pro (including active Trial) may author tablatures.
         abort_if(
-            filled($validated['alpha_tex'] ?? null)
+            (filled($validated['alpha_tex'] ?? null) || filled($validated['musicxml_source'] ?? null))
                 && ! $request->user()->hasProAccess(),
             403,
         );
+        abort_if(
+            filled($validated['alpha_tex'] ?? null) && filled($validated['musicxml_source'] ?? null),
+            422,
+            'Import either editable alphaTex or original MusicXML, not both.',
+        );
 
-        if (filled($validated['alpha_tex'] ?? null)) {
+        if (filled($validated['alpha_tex'] ?? null) || filled($validated['musicxml_source'] ?? null)) {
             $validated['tab_source'] = 'user';
         }
 
@@ -159,19 +165,23 @@ class PracticeRoutineStepController extends Controller
             ],
 
             'alpha_tex' => ['sometimes', 'nullable', 'string', 'max:65535'],
+            'musicxml_source' => ['sometimes', 'nullable', 'string', 'max:2000000'],
         ]);
 
         // Editing or clearing tablature notation requires authoring access.
         abort_if(
-            array_key_exists('alpha_tex', $validated)
+            (array_key_exists('alpha_tex', $validated) || array_key_exists('musicxml_source', $validated))
                 && ! $request->user()->hasProAccess(),
             403,
         );
 
-        if (array_key_exists('alpha_tex', $validated)) {
+        if (array_key_exists('alpha_tex', $validated) || array_key_exists('musicxml_source', $validated)) {
             // Template tablatures are read-only in the user-facing editor.
             abort_if($practiceRoutineStep->tab_source === 'template', 403);
-            $validated['tab_source'] = filled($validated['alpha_tex']) ? 'user' : null;
+            $alphaTex = $validated['alpha_tex'] ?? (array_key_exists('alpha_tex', $validated) ? null : $practiceRoutineStep->alpha_tex);
+            $musicXml = $validated['musicxml_source'] ?? (array_key_exists('musicxml_source', $validated) ? null : $practiceRoutineStep->musicxml_source);
+            abort_if(filled($alphaTex) && filled($musicXml), 422, 'One score source per exercise.');
+            $validated['tab_source'] = filled($alphaTex) || filled($musicXml) ? 'user' : null;
         }
 
         if ($validated['mode'] === 'classic') {

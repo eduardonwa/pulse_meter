@@ -1,4 +1,5 @@
-import { createTabDraft, appendTabNote, serializeTabDraft, parseTabDraft, layoutTabMeasures, selectTabNoteIndices, changeSelectedTabDurations, clearTabNotes, updateTabBreaks, breaksForInsertedTabNote, tabBeatNotes, setTabBeatNote, removeTabNoteAtString, TAB_DURATIONS, TAB_STRINGS } from "./alphatab/tab-editor.js";
+import { parseMusicXmlTab } from "./alphatab/musicxml-import.js";
+import { createTabDraft, appendTabNote, serializeTabDraft, parseTabDraft, layoutTabMeasures, selectTabNoteIndices, changeSelectedTabDurations, changeSelectedTabRhythm, tabBeatUnits, clearTabNotes, updateTabBreaks, breaksForInsertedTabNote, tabBeatNotes, setTabBeatNote, removeTabNoteAtString, TAB_DURATIONS, TAB_STRINGS } from "./alphatab/tab-editor.js";
 
 export function exercises() {
     return {
@@ -7,7 +8,16 @@ export function exercises() {
         tabEditorEditingIndex: null,
         tabEditorSaving: false,
         tabPreviewPlaying: false,
+        tabPreviewVisible: false,
+        tabUndoHistory: [],
+        tabRedoHistory: [],
         tabDraft: createTabDraft(),
+        tabMusicXmlImport: null,
+        tabMusicXmlFullSource: null,
+        tabMusicXmlFileName: '',
+        tabMusicXmlInitialBpm: null,
+        tabFullMusicXml: null,
+        tabMusicXmlSelectedSection: 0,
         tabStringNames: TAB_STRINGS,
         tabSelectedIndex: 0,
         tabInsertAtBar: false,
@@ -168,8 +178,8 @@ export function exercises() {
 
         hasAlphaTabPattern(step) {
             return (
-                typeof step?.alpha_tex === "string" &&
-                step.alpha_tex.trim() !== ""
+                (typeof step?.alpha_tex === "string" && step.alpha_tex.trim() !== "") ||
+                (typeof step?.musicxml_source === "string" && step.musicxml_source.trim() !== "")
             );
         },
 
@@ -306,6 +316,15 @@ export function exercises() {
             this.$refs.stepDialog.close();
             this.tabEditorEditingIndex = null;
             this.tabDraft = createTabDraft();
+            this.tabUndoHistory = [];
+            this.tabRedoHistory = [];
+            this.tabPreviewVisible = false;
+            this.tabMusicXmlImport = null;
+            this.tabMusicXmlFullSource = null;
+            this.tabMusicXmlFileName = '';
+            this.tabMusicXmlInitialBpm = null;
+            this.tabFullMusicXml = null;
+            this.tabMusicXmlSelectedSection = 0;
             this.tabSelectedIndex = 0;
             this.tabInsertAtBar = false;
             this.tabSelectedIndices = [];
@@ -320,7 +339,7 @@ export function exercises() {
         openSavedTabEditor(index, viewerDialog = null) {
             if (!this.canCreateTablatures) return;
             const step = this.steps[index];
-            if (!step || step.tab_source !== "user" || !step.alpha_tex) return;
+            if (!step || step.tab_source !== "user" || !step.alpha_tex || step.musicxml_source) return;
             let parsed;
             try {
                 parsed = parseTabDraft(step.alpha_tex);
@@ -330,6 +349,10 @@ export function exercises() {
             }
             this.tabEditorEditingIndex = index;
             this.tabDraft = parsed.draft;
+            this.tabUndoHistory = [];
+            this.tabRedoHistory = [];
+            this.tabPreviewVisible = false;
+            this.tabFullMusicXml = null;
             this.tabSelectedIndex = parsed.draft.beats.length;
             this.tabInsertAtBar = false;
             this.tabSelectedIndices = [];
@@ -359,12 +382,94 @@ export function exercises() {
             });
         },
 
+        async importTabMusicXml(event) {
+            const input = event.target;
+            const file = input.files?.[0];
+            input.value = '';
+            if (!file || !this.canCreateTablatures || this.tabEditorEditingIndex !== null) return;
+            if (!/\.(xml|musicxml)$/i.test(file.name) || file.size > 2_000_000) {
+                this.showToast?.('Choose an uncompressed .xml or .musicxml file under 2 MB', 'error');
+                return;
+            }
+            try {
+                const xmlText = await file.text();
+                // Full-score playback and limited editable imports are separate.
+                // A complex score can be played even when the simple editor
+                // rejects its notes, voices or time-signature changes.
+                if (/<!ENTITY|<!DOCTYPE[^>]*\[/i.test(xmlText)) {
+                    throw new Error('MusicXML with custom entities is not supported');
+                }
+                const document = new DOMParser().parseFromString(xmlText, 'application/xml');
+                if (document.getElementsByTagName('parsererror').length ||
+                    !['score-partwise', 'score-timewise'].includes(document.documentElement?.localName)) {
+                    throw new Error('Invalid MusicXML score');
+                }
+                this.tabMusicXmlFullSource = xmlText;
+                const initialTempo = Number(document.querySelector('sound[tempo]')?.getAttribute('tempo') ??
+                    document.querySelector('metronome per-minute')?.textContent);
+                this.tabMusicXmlInitialBpm = Number.isFinite(initialTempo) && initialTempo >= 30 && initialTempo <= 400
+                    ? Math.round(initialTempo) : null;
+                this.tabMusicXmlFileName = file.name.replace(/\.(musicxml|xml)$/i, '');
+                try {
+                    this.tabMusicXmlImport = parseMusicXmlTab(xmlText);
+                } catch {
+                    this.tabMusicXmlImport = null;
+                }
+                this.tabMusicXmlSelectedSection = 0;
+            } catch (error) {
+                this.tabMusicXmlImport = null;
+                this.tabMusicXmlFullSource = null;
+                this.showToast?.(error.message, 'error');
+            }
+        },
+
+        applyTabMusicXmlSection() {
+            if (this.tabEditorEditingIndex !== null) return;
+            const imported = this.tabMusicXmlImport;
+            const section = imported?.sections[Number(this.tabMusicXmlSelectedSection)];
+            if (!section) return;
+            this.stopTabEditorPreview();
+            this.recordTabEditorUndo();
+            this.tabDraft = section.draft;
+            this.tabFullMusicXml = null;
+            this.stepForm.name = imported.title.slice(0, 255);
+            this.stepForm.bpm = section.bpm;
+            this.stepForm.time_signature_numerator = section.numerator;
+            this.stepForm.time_signature_denominator = section.denominator;
+            this.tabSelectedIndex = section.draft.beats.length;
+            this.tabSelectedIndices = [];
+            this.tabSelectionAnchor = null;
+            this.tabInsertAtBar = false;
+            this.tabMusicXmlImport = null;
+            this.$nextTick(() => this.updateTabEditorWidth());
+        },
+
+        applyTabMusicXmlFullScore() {
+            if (!this.tabMusicXmlFullSource || this.tabEditorEditingIndex !== null) return;
+            this.stopTabEditorPreview();
+            this.recordTabEditorUndo();
+            this.tabFullMusicXml = this.tabMusicXmlFullSource;
+            this.tabDraft = createTabDraft();
+            if (this.tabMusicXmlInitialBpm) this.stepForm.bpm = this.tabMusicXmlInitialBpm;
+            this.stepForm.name = (this.tabMusicXmlImport?.title || this.tabMusicXmlFileName || 'Imported score').slice(0, 255);
+            this.tabSelectedIndices = [];
+            this.tabMusicXmlImport = null;
+            this.tabMusicXmlFullSource = null;
+            this.tabMusicXmlInitialBpm = null;
+        },
+
         closeNewTabEditor() {
             this.stopTabEditorPreview();
             this.finishPendingTabDigit(false);
             this.$refs.tabEditorDialog?.close();
             this.tabEditorOpen = false;
+            this.tabPreviewVisible = false;
+            this.tabUndoHistory = [];
+            this.tabRedoHistory = [];
             this.tabEditorEditingIndex = null;
+            this.tabMusicXmlImport = null;
+            this.tabMusicXmlFullSource = null;
+            this.tabFullMusicXml = null;
         },
 
         previewTabEditor() {
@@ -374,17 +479,23 @@ export function exercises() {
             }
             let alphaTex;
             try {
-                alphaTex = serializeTabDraft(this.tabDraft, this.stepForm.time_signature_numerator, this.stepForm.bpm, this.stepForm.time_signature_denominator);
+                alphaTex = this.tabFullMusicXml ? null : serializeTabDraft(this.tabDraft, this.stepForm.time_signature_numerator, this.stepForm.bpm, this.stepForm.time_signature_denominator);
             } catch (error) {
                 this.showToast?.(error.message, "error");
                 return;
             }
             const element = this.$refs.tabEditorPreview;
             if (!element) return;
+            this.tabPreviewVisible = true;
             this.tabPreviewPlaying = true;
-            window.dispatchEvent(new CustomEvent("alphatab:preview-draft", {
-                detail: { element, alphaTex, bpm: Number(this.stepForm.bpm), instrument: this.tabDraft.instrument, play: true },
-            }));
+            // alphaTab measures its container at mount. Let Alpine remove
+            // x-show's display:none before requesting the render.
+            this.$nextTick(() => {
+                if (!this.tabPreviewPlaying || !this.tabEditorOpen) return;
+                window.dispatchEvent(new CustomEvent("alphatab:preview-draft", {
+                    detail: { element, alphaTex, musicXml: this.tabFullMusicXml, bpm: Number(this.stepForm.bpm), instrument: this.tabDraft.instrument, play: true },
+                }));
+            });
         },
 
         stopTabEditorPreview() {
@@ -401,17 +512,23 @@ export function exercises() {
         },
 
         tabEditorDisplayColumns() {
+            // Compute measure boundaries once per layout, not once per string cell.
             const measures = this.tabEditorMeasureLayout();
             const insertions = new Set(measures
-                .filter(measure => measure.used < measure.capacity)
+                .filter(measure => measure.used < measure.capacity - 1e-7)
                 .map(measure => measure.endIndex + 1));
+            const measureEnds = new Set(measures
+                .filter(measure => measure.used >= measure.capacity - 1e-7)
+                .map(measure => measure.endIndex));
             const columns = [];
             for (let index = 0; index <= this.tabDraft.beats.length; index++) {
-                if (insertions.has(index)) columns.push({ index, insertion: true });
-                // The final insertion slot replaces the ordinary trailing
-                // slot, rather than creating two identical empty columns.
+                if (insertions.has(index)) {
+                    columns.push({ index, insertion: true, measureEnd: true });
+                }
+                // An incomplete final measure has one insertion slot, not
+                // a second identical empty trailing column.
                 if (index !== this.tabDraft.beats.length || !insertions.has(index)) {
-                    columns.push({ index, insertion: false });
+                    columns.push({ index, insertion: false, measureEnd: measureEnds.has(index) });
                 }
             }
             return columns;
@@ -430,7 +547,7 @@ export function exercises() {
         selectTabEditorInsertion(index, string) {
             const previousBreak = Math.max(0, ...(this.tabDraft.breaks ?? []).filter(value => value < index));
             const used = this.tabDraft.beats.slice(previousBreak, index)
-                .reduce((total, beat) => total + 16 / beat.duration, 0);
+                .reduce((total, beat) => total + tabBeatUnits(beat), 0);
             const available = Number(this.stepForm.time_signature_numerator) * 16 / Number(this.stepForm.time_signature_denominator) - used;
             this.selectTabEditorCell(index, string);
             this.tabInsertAtBar = true;
@@ -438,7 +555,7 @@ export function exercises() {
             this.tabSelectionAnchor = null;
             // A virtual insertion point is not an existing note: choose a
             // duration that fits, without changing any saved note's duration.
-            if (16 / this.tabDraft.duration > available) {
+            if (tabBeatUnits(this.tabDraft) > available + 1e-7) {
                 this.tabDraft = { ...this.tabDraft, duration: [1, 2, 4, 8, 16]
                     .find(duration => 16 / duration <= available) ?? 16 };
             }
@@ -446,15 +563,6 @@ export function exercises() {
 
         tabEditorMeasureLayout() {
             return layoutTabMeasures(this.tabDraft, this.stepForm.time_signature_numerator, this.stepForm.time_signature_denominator);
-        },
-
-        tabEditorMeasureEnd(index) {
-            return this.tabEditorMeasureLayout().some(measure => measure.endIndex === index && measure.used >= measure.capacity);
-        },
-
-        tabEditorMeasureNumber(index) {
-            const measures = this.tabEditorMeasureLayout();
-            return measures.findIndex(measure => measure.notes.some(note => note.index === index)) + 1;
         },
 
         tabEditorMeasureStatus() {
@@ -471,13 +579,9 @@ export function exercises() {
                 message: measure.complete
                     ? `Measure ${index + 1}: complete`
                     : measure.used > measure.capacity
-                        ? `Measure ${index + 1}: ${measure.used - measure.capacity} sixteenth-note units over limit`
-                        : `Measure ${index + 1}: ${measure.capacity - measure.used} sixteenth-note units remaining`,
+                        ? `Measure ${index + 1}: ${Number((measure.used - measure.capacity).toFixed(3))} sixteenth-note units over limit`
+                        : `Measure ${index + 1}: ${Number((measure.capacity - measure.used).toFixed(3))} sixteenth-note units remaining`,
             }));
-        },
-
-        tabEditorColumns() {
-            return Math.max(1, this.tabDraft.beats.length + 1);
         },
 
         tabEditorNoteAt(index, string) {
@@ -506,6 +610,8 @@ export function exercises() {
                 string,
                 fret: tabBeatNotes(note).find(n => n.string === string)?.fret ?? 0,
                 duration: note?.duration ?? this.tabDraft.duration,
+                dotted: note ? Boolean(note.dotted) : Boolean(this.tabDraft.dotted),
+                tuplet: note ? (note.tuplet ?? null) : this.tabDraft.tuplet,
             };
         },
 
@@ -556,6 +662,7 @@ export function exercises() {
             if (pending && this.tabSelectedIndex === pending.index) {
                 const fret = pending.digit * 10 + digit;
                 if (fret >= 10 && fret <= 24) {
+                    this.recordTabEditorUndo();
                     this.tabDraft = {
                         ...this.tabDraft,
                         beats: this.tabDraft.beats.map((note, index) =>
@@ -586,16 +693,94 @@ export function exercises() {
             }
         },
 
+        tabEditorSnapshot() {
+            return {
+                draft: JSON.parse(JSON.stringify(this.tabDraft)),
+                selectedIndex: this.tabSelectedIndex,
+                selectedIndices: [...this.tabSelectedIndices],
+                insertAtBar: this.tabInsertAtBar,
+            };
+        },
+
+        restoreTabEditorSnapshot(snapshot) {
+            this.tabDraft = snapshot.draft;
+            this.tabSelectedIndex = snapshot.selectedIndex;
+            this.tabSelectedIndices = snapshot.selectedIndices;
+            this.tabInsertAtBar = snapshot.insertAtBar;
+            this.tabSelectionAnchor = snapshot.selectedIndices.at(-1) ?? null;
+        },
+
+        recordTabEditorUndo() {
+            this.tabUndoHistory = [...this.tabUndoHistory.slice(-49), this.tabEditorSnapshot()];
+            this.tabRedoHistory = [];
+        },
+
+        undoTabEditorChange() {
+            if (!this.tabUndoHistory.length) return;
+            this.finishPendingTabDigit(false);
+            const last = this.tabUndoHistory.at(-1);
+            this.tabRedoHistory = [...this.tabRedoHistory.slice(-49), this.tabEditorSnapshot()];
+            this.tabUndoHistory = this.tabUndoHistory.slice(0, -1);
+            this.restoreTabEditorSnapshot(last);
+        },
+
+        redoTabEditorChange() {
+            if (!this.tabRedoHistory.length) return;
+            this.finishPendingTabDigit(false);
+            const next = this.tabRedoHistory.at(-1);
+            this.tabUndoHistory = [...this.tabUndoHistory.slice(-49), this.tabEditorSnapshot()];
+            this.tabRedoHistory = this.tabRedoHistory.slice(0, -1);
+            this.restoreTabEditorSnapshot(next);
+        },
+
         changeTabEditorDuration(value) {
             const duration = Number(value);
             const selected = this.tabSelectedIndices.length
                 ? this.tabSelectedIndices
                 : (this.tabSelectedIndex < this.tabDraft.beats.length ? [this.tabSelectedIndex] : []);
+            if (selected.length) this.recordTabEditorUndo();
             this.tabDraft = {
                 ...this.tabDraft,
                 duration,
                 beats: changeSelectedTabDurations(this.tabDraft.beats, selected, duration),
             };
+        },
+
+        setTabEditorRhythm(changes) {
+            const selected = this.tabSelectedIndices.length
+                ? this.tabSelectedIndices
+                : (this.tabSelectedIndex < this.tabDraft.beats.length ? [this.tabSelectedIndex] : []);
+            if (selected.length) this.recordTabEditorUndo();
+            this.tabDraft = {
+                ...this.tabDraft,
+                ...changes,
+                beats: changeSelectedTabRhythm(this.tabDraft.beats, selected, changes),
+            };
+        },
+
+        addTabEditorRest() {
+            const beat = {
+                rest: true,
+                duration: this.tabDraft.duration,
+                ...(this.tabDraft.dotted ? { dotted: true } : {}),
+                ...(this.tabDraft.tuplet === 3 ? { tuplet: 3 } : {}),
+            };
+            const index = this.tabSelectedIndex;
+            const beats = [...this.tabDraft.beats];
+            if (index < beats.length && !this.tabInsertAtBar) {
+                beats[index] = beat;
+            } else {
+                beats.splice(index, 0, beat);
+            }
+            const breaks = beats.length > this.tabDraft.beats.length
+                ? breaksForInsertedTabNote(this.tabDraft, index, beat.duration, this.stepForm.time_signature_numerator, this.stepForm.time_signature_denominator)
+                : this.tabDraft.breaks;
+            this.recordTabEditorUndo();
+            this.tabDraft = { ...this.tabDraft, beats, breaks };
+            this.tabSelectedIndex = Math.min(beats.length, index + 1);
+            this.tabInsertAtBar = false;
+            this.tabSelectedIndices = [];
+            this.tabSelectionAnchor = null;
         },
 
         addTabEditorNote() {
@@ -606,6 +791,7 @@ export function exercises() {
                 const occupiedBeat = beats[this.tabSelectedIndex];
                 if (!this.tabInsertAtBar && occupiedBeat && !occupiedBeat.rest &&
                     tabBeatNotes(occupiedBeat).some(note => note.string === this.tabDraft.string)) {
+                    this.recordTabEditorUndo();
                     beats[this.tabSelectedIndex] = setTabBeatNote(occupiedBeat, this.tabDraft.fret, this.tabDraft.string);
                     this.tabDraft = { ...this.tabDraft, beats };
                     this.tabSelectedIndices = [this.tabSelectedIndex];
@@ -617,6 +803,7 @@ export function exercises() {
                 const isChordEntry = current && !current.rest && !this.tabInsertAtBar &&
                     !tabBeatNotes(current).some(note => note.string === this.tabDraft.string);
                 if (isChordEntry) {
+                    this.recordTabEditorUndo();
                     beats[this.tabSelectedIndex] = setTabBeatNote(current, this.tabDraft.fret, this.tabDraft.string);
                     this.tabDraft = { ...this.tabDraft, beats };
                     this.tabSelectedIndices = [this.tabSelectedIndex];
@@ -624,6 +811,7 @@ export function exercises() {
                     return;
                 }
                 // Reuse a rest; otherwise insert at the caret without overwriting a note.
+                this.recordTabEditorUndo();
                 if (beats[this.tabSelectedIndex]?.rest && !this.tabInsertAtBar) {
                     beats[this.tabSelectedIndex] = next.beats.at(-1);
                 } else {
@@ -641,33 +829,66 @@ export function exercises() {
 
         clearTabEditorNote() {
             this.finishPendingTabDigit(false);
-            if (this.tabInsertAtBar || this.tabSelectedIndex >= this.tabDraft.beats.length) return;
-            const index = this.tabSelectedIndex;
-            this.tabDraft = {
-                ...this.tabDraft,
-                beats: this.tabDraft.beats.map((beat, at) =>
-                    at === index ? removeTabNoteAtString(beat, this.tabDraft.string) : beat),
-            };
+            if (this.tabInsertAtBar) return;
+            const indices = this.tabSelectedIndices.length
+                ? this.tabSelectedIndices
+                : [this.tabSelectedIndex];
+            const selected = new Set(indices.filter(index => index >= 0 && index < this.tabDraft.beats.length));
+            if (!selected.size) return;
+            // A multi-selection clears whole beats, regardless of which
+            // string was active when the range was selected. A single
+            // selection keeps the existing per-string Backspace behavior.
+            const beats = this.tabSelectedIndices.length > 1
+                ? clearTabNotes(this.tabDraft.beats, [...selected])
+                : this.tabDraft.beats.map((beat, index) =>
+                    selected.has(index) ? removeTabNoteAtString(beat, this.tabDraft.string) : beat);
+            if (beats.every((beat, index) => beat === this.tabDraft.beats[index])) return;
+            this.recordTabEditorUndo();
+            this.tabDraft = { ...this.tabDraft, beats };
         },
 
+        // Delete removes selected beat positions; Backspace clears the current
+        // string in all selected beats, preserving their rhythmic space.
         undoTabEditorNote() {
-            if (this.tabSelectedIndex < this.tabDraft.beats.length) {
-                const beats = this.tabDraft.beats.filter((_, i) => i !== this.tabSelectedIndex);
-                this.tabDraft = { ...this.tabDraft, beats, breaks: updateTabBreaks(this.tabDraft.breaks ?? [], this.tabSelectedIndex, 'delete', beats.length) };
-                this.tabSelectedIndex = Math.min(this.tabSelectedIndex, beats.length);
-                this.tabSelectedIndices = [];
-                this.tabSelectionAnchor = null;
-            } else {
-                this.tabDraft = { ...this.tabDraft, beats: this.tabDraft.beats.slice(0, -1), breaks: (this.tabDraft.breaks ?? []).filter(index => index < this.tabDraft.beats.length - 1) };
-                this.tabSelectedIndex = this.tabDraft.beats.length;
-                this.tabSelectedIndices = [];
-                this.tabSelectionAnchor = null;
+            this.finishPendingTabDigit(false);
+            const length = this.tabDraft.beats.length;
+            const indices = this.tabSelectedIndices.length
+                ? this.tabSelectedIndices
+                : [Math.min(this.tabSelectedIndex, length - 1)];
+            const selected = [...new Set(indices.filter(index => index >= 0 && index < length))]
+                .sort((a, b) => b - a);
+            if (!selected.length) return;
+            this.recordTabEditorUndo();
+            const beats = [...this.tabDraft.beats];
+            let breaks = [...(this.tabDraft.breaks ?? [])];
+            for (const index of selected) {
+                beats.splice(index, 1);
+                breaks = updateTabBreaks(breaks, index, 'delete', beats.length);
             }
+            this.tabDraft = { ...this.tabDraft, beats, breaks };
+            this.tabSelectedIndex = Math.min(selected.at(-1), beats.length);
+            this.tabInsertAtBar = false;
+            this.tabSelectedIndices = [];
+            this.tabSelectionAnchor = null;
         },
 
         handleTabEditorKey(event) {
             const tag = event.target?.tagName;
-            if (['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON'].includes(tag)) return;
+            // Keep native text-field undo, but allow score undo even when a
+            // toolbar button has keyboard focus.
+            if (['INPUT', 'TEXTAREA', 'SELECT'].includes(tag)) return;
+            if (event.ctrlKey || event.metaKey) {
+                const key = event.key.toLowerCase();
+                if (key === 'z' || (key === 'y' && !event.shiftKey)) {
+                    event.preventDefault();
+                    if (event.shiftKey || key === 'y') this.redoTabEditorChange();
+                    else this.undoTabEditorChange();
+                    return;
+                }
+            }
+            // Score cells are buttons for accessibility, but they must still
+            // accept Delete, Backspace and the existing tab keyboard controls.
+            if (tag === 'BUTTON' && !event.target?.classList?.contains('tab-editor__cell')) return;
             if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
                 event.preventDefault();
                 const delta = event.key === 'ArrowUp' ? -1 : 1;
@@ -707,7 +928,7 @@ export function exercises() {
             if (this.tabEditorSaving || (this.tabEditorEditingIndex === null && this.steps.length >= this.maxSteps)) return;
             let alphaTex;
             try {
-                alphaTex = serializeTabDraft(
+                alphaTex = this.tabFullMusicXml ? null : serializeTabDraft(
                     this.tabDraft,
                     this.stepForm.time_signature_numerator,
                     this.stepForm.bpm,
@@ -719,7 +940,7 @@ export function exercises() {
             }
             this.tabEditorSaving = true;
             try {
-                const payload = { ...this.getStepFormPayload(), alpha_tex: alphaTex };
+                const payload = { ...this.getStepFormPayload(), alpha_tex: alphaTex, musicxml_source: this.tabFullMusicXml };
                 if (this.tabEditorEditingIndex !== null) {
                     const index = this.tabEditorEditingIndex;
                     const existing = this.steps[index];
