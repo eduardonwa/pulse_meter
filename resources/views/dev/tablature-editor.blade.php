@@ -9,23 +9,30 @@
     @vite(['resources/styles/main.scss', 'resources/js/tablature-editor-prototype.js'])
 </head>
 <body>
-    <main class="tab-editor" x-data="tablatureRedesign">
+    <main class="tab-editor" x-data="tablatureRedesign" x-init="loadPrototypeExercise()">
+        <div class="tab-editor__prototype-state" x-show="!prototypeEditorOpen" x-cloak>
+            <p x-text="prototypeSaved ? 'Exercise saved in this browser (prototype only).' : 'Editor closed without a saved exercise.'"></p>
+            <button type="button" class="button" data-type="outline" @click="reopenPrototypeExercise()">Reopen editor</button>
+        </div>
+        <div class="tab-editor__editor" x-show="prototypeEditorOpen" x-cloak>
         {{-- Exercise name and save actions --}}
         <header class="tab-editor__header">
             <h2 class="exercise-name" x-text="stepForm.name || 'Untitled exercise'">Nombre del ejercicio</h2>
 
             <div class="tab-editor__actions">
-                <button class="button save" data-type="icon-text" type="button">
+                <button class="button save" data-type="icon-text" type="button" @click="savePrototypeExercise(false)" :disabled="prototypeSaving">
                     <x-lucide-save /> Save
                 </button>
-                <button class="button save-close" data-type="icon-text" type="button">
+                <button class="button save-close" data-type="icon-text" type="button" @click="savePrototypeExercise(true)" :disabled="prototypeSaving">
                     <x-lucide-save-check /> Save and close
                 </button>
-                <button class="button" data-type="outline" type="button">
+                <button class="button" data-type="outline" type="button" @click="cancelPrototypeExercise()">
                     Cancel
                 </button>
             </div>
         </header>
+
+        <p class="tab-editor__save-status" role="status" aria-live="polite" x-text="prototypeMessage"></p>
 
         {{-- import --}}
         <section class="tab-editor__import-bar" aria-label="Import options">
@@ -278,6 +285,7 @@
                 </button>
             </div>
         </footer>
+        </div>
     </main>
 </body>
 </html>
