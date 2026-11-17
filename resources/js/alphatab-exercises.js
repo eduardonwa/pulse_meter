@@ -159,16 +159,17 @@ async function mountAlphaTab(element) {
         api.metronomeVolume = 1
         configureCountIn(api)
 
-        let transportPlaying = false
+        let waitingForScoreStart = false
         api.playerPositionChanged.on(args => {
-            if (!transportPlaying || args.currentTick < 0) return
+            if (!waitingForScoreStart || args.currentTick < 0) return
+            waitingForScoreStart = false
             window.dispatchEvent(new CustomEvent('alphatab:score-started', {
                 detail: { element },
             }))
         })
 
         api.playerStateChanged.on(args => {
-            transportPlaying = args.state === alphaTab.synth.PlayerState.Playing
+            waitingForScoreStart = args.state === alphaTab.synth.PlayerState.Playing
             dispatchPlaybackState(
                 element,
                 args.state,
