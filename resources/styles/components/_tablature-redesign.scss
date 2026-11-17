@@ -128,19 +128,29 @@
         z-index: 20;
         top: calc(100% + $size-2);
         right: 0;
+
         width: min(320px, calc(100vw - 2rem));
         max-height: min(65vh, 460px);
+        
         overflow-y: auto;
+        
         padding: $size-3;
+        
         border: 1px solid hsl(var(--neutral-800) / .2);
         border-radius: $border-radius-2;
         background: hsl(var(--neutral-100));
         box-shadow: 0 12px 28px hsl(var(--neutral-900) / .16);
 
+        strong {
+            font-size: 15px;
+            font-weight: 600;
+        }
+
         dl {
             display: grid;
             gap: $size-2;
             margin-block: $size-3 0;
+            font-size: 14px;
         }
 
         dl > div {

@@ -219,7 +219,7 @@
             </button>
 
             <div class="tab-editor__playback-options">
-                <button class="button" data-type="icon-text" type="button" aria-label="Loop"
+                <button class="button" data-type="icon-text" type="button" aria-label="Loop" title="Loop"
                     x-on:click="loop = !loop"
                     x-bind:class="{ 'is-active': loop }"
                     x-bind:aria-pressed="loop.toString()"
@@ -227,7 +227,7 @@
                     <x-lucide-repeat />
                 </button>
 
-                <button class="button" data-type="icon-text" type="button" aria-label="Count-in"
+                <button class="button" data-type="icon-text" type="button" aria-label="Count-in" title="Count-in"
                     x-on:click="countIn = !countIn"
                     x-bind:class="{ 'is-active': countIn }"
                     x-bind:aria-pressed="countIn.toString()"
@@ -235,7 +235,7 @@
                     <x-lucide-timer />
                 </button>
 
-                <button class="button" data-type="icon-text" type="button" aria-label="Metronome"
+                <button class="button" data-type="icon-text" type="button" aria-label="Metronome" title="Metronome"
                     x-on:click="metronome = !metronome"
                     x-bind:class="{ 'is-active': metronome }"
                     x-bind:aria-pressed="metronome.toString()"
