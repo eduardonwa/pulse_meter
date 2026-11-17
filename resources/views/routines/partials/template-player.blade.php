@@ -18,6 +18,8 @@
             </span>
         </header>
 
+        <x-metronome.count-in-toggle />
+
         @if (in_array($viewerType, ['guest', 'free'], true))
             <button class="routine-player__start button"
                 data-type="play-metronome"
