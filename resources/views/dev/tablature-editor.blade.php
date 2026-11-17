@@ -9,10 +9,10 @@
     @vite(['resources/styles/main.scss', 'resources/js/tablature-editor-prototype.js'])
 </head>
 <body>
-    <main class="tab-editor">
+    <main class="tab-editor" x-data="tablatureRedesign">
         {{-- Exercise name and save actions --}}
         <header class="tab-editor__header">
-            <h2 class="exercise-name">Nombre del ejercicio</h2>
+            <h2 class="exercise-name" x-text="stepForm.name || 'Untitled exercise'">Nombre del ejercicio</h2>
 
             <div class="tab-editor__actions">
                 <button class="button save" data-type="icon-text" type="button">
@@ -32,13 +32,98 @@
             <button class="button" data-type="secondary" data-variant="outline" type="button">Import MusicXML</button>
         </section>
 
-        {{-- shortcuts --}}
-        <section class="tab-editor__shortcuts-bar" aria-label="Editor shortcuts">
-            <button class="badge badge--neutral" type="button">Shortcuts</button>
+        {{-- Quick settings and additional exercise information --}}
+        <section class="tab-editor__utility-bar" aria-label="Exercise information"
+            x-data="{ infoOpen: false, shortcutsOpen: false }"
+        >
+            <div class="tab-editor__utility-row">
+                <div class="tab-editor__quick-settings">
+                    <label class="tab-editor__field">
+                        <span>BPM</span>
+                        <input type="number" min="30" max="400" x-model.number="stepForm.bpm">
+                    </label>
+
+                    <div class="tab-editor__field">
+                        <span>Time signature</span>
+                        <div class="tab-editor__time-signature">
+                            <select x-model.number="stepForm.time_signature_numerator" aria-label="Beats per measure">
+                                @foreach (range(1, 16) as $numerator)
+                                    <option value="{{ $numerator }}">{{ $numerator }}</option>
+                                @endforeach
+                            </select>
+                            <span aria-hidden="true">/</span>
+                            <select x-model.number="stepForm.time_signature_denominator" aria-label="Beat note value">
+                                <option value="2">2</option>
+                                <option value="4">4</option>
+                                <option value="8">8</option>
+                                <option value="16">16</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-editor__utility-actions">
+                    <button class="button" data-type="outline" type="button"
+                        aria-controls="tab-editor-info-panel"
+                        :aria-expanded="infoOpen.toString()"
+                        @click="infoOpen = !infoOpen; shortcutsOpen = false"
+                    >
+                        Info <x-lucide-chevron-down width="16" height="16" />
+                    </button>
+
+                    <div class="tab-editor__shortcuts">
+                        <button class="button" data-type="outline" type="button"
+                            aria-controls="tab-editor-shortcuts-panel"
+                            :aria-expanded="shortcutsOpen.toString()"
+                            @click="shortcutsOpen = !shortcutsOpen"
+                            @keydown.escape="shortcutsOpen = false"
+                        >
+                            <x-lucide-keyboard width="18" height="18" /> Shortcuts
+                        </button>
+
+                        <div id="tab-editor-shortcuts-panel" class="tab-editor__shortcuts-popover"
+                            x-show="shortcutsOpen" x-cloak @click.outside="shortcutsOpen = false"
+                            @keydown.escape.stop="shortcutsOpen = false"
+                        >
+                            <strong>Keyboard shortcuts</strong>
+                            <dl>
+                                <div><dt>Enter fret</dt><dd>0–9</dd></div>
+                                <div><dt>Navigate notes</dt><dd>← / →</dd></div>
+                                <div><dt>Change string</dt><dd>↑ / ↓</dd></div>
+                                <div><dt>Change duration</dt><dd>+ / −</dd></div>
+                                <div><dt>Extend selection</dt><dd>Shift + ← / →</dd></div>
+                                <div><dt>Undo</dt><dd>Ctrl/Cmd + Z</dd></div>
+                                <div><dt>Redo</dt><dd>Ctrl/Cmd + Shift + Z</dd></div>
+                                <div><dt>Clear note</dt><dd>Backspace</dd></div>
+                                <div><dt>Delete position</dt><dd>Delete</dd></div>
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-editor-info-panel" class="tab-editor__info-panel"
+                x-show="infoOpen" x-cloak
+            >
+                <label class="tab-editor__field">
+                    <span>Exercise name</span>
+                    <input type="text" x-model="stepForm.name" maxlength="255">
+                </label>
+
+                <label class="tab-editor__field">
+                    <span>Instrument</span>
+                    <select x-model.number="tabDraft.instrument">
+                        <option value="24">Nylon guitar</option>
+                        <option value="25">Steel guitar</option>
+                        <option value="26">Jazz guitar</option>
+                        <option value="27">Clean guitar</option>
+                    </select>
+                </label>
+            </div>
         </section>
 
         {{-- main editing area --}}
-        <section class="tab-editor__workspace" aria-label="Tablature workspace" x-data="tablatureRedesign" x-init="$nextTick(() => updateTabEditorWidth())"
+        <section class="tab-editor__workspace" aria-label="Tablature workspace" x-init="$nextTick(() => updateTabEditorWidth())"
             @keydown="handleTabEditorKey($event)"
             @resize.window="updateTabEditorWidth()"
             @pointerup.window="endTabDrag()"
