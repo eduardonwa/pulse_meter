@@ -74,8 +74,14 @@ export function playbackSession() {
         // Fired when AlphaTab confirms actual playback rather than when Start
         // was pressed. Only the matching, still-active exercise may start timing.
         handleAlphaTabPlaybackState(event) {
+            // The synth reports Playing during the count-in as well. Wait for
+            // the first score tick before starting the exercise timer.
+            if (event.detail?.playing) return
+        },
+
+        handleAlphaTabScoreStarted(event) {
             const pending = this.pendingAlphaTabStart
-            if (!pending || !event.detail?.playing) return
+            if (!pending) return
 
             const index = Number(event.detail?.element?.dataset.exerciseIndex)
             if (index !== pending.index
