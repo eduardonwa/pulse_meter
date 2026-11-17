@@ -447,6 +447,7 @@ export function exercises() {
                 this.tabSelectedIndex + delta,
             ));
             this.selectTabEditorCell(index, this.tabDraft.string);
+            this.$nextTick(() => this.$refs.tabEditorScoreFocus?.focus());
         },
 
         insertTabEditorPosition(after = false) {
@@ -462,6 +463,7 @@ export function exercises() {
                 this.selectTabEditorCell(target, this.tabDraft.string);
                 this.tabSelectedIndices = [target];
                 this.tabSelectionAnchor = target;
+                this.$nextTick(() => this.$refs.tabEditorScoreFocus?.focus());
             } catch (error) {
                 this.showToast?.(error.message, "error");
             }
