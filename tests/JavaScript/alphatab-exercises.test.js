@@ -112,3 +112,69 @@ test('stopping preview also stops an active routine session', async () => {
         global.window = previousWindow
     }
 })
+
+test('with count-in enabled, routine repeats manually instead of seamless looping', async () => {
+    const { setExerciseLoopMode, restartExerciseWithCountIn } = await import('../../resources/js/alphatab-exercises.js')
+    const { ALPHATAB_COUNT_IN_KEY } = await import('../../resources/js/metronome/alphatab/count-in-preference.js')
+    const previousStorage = global.localStorage
+    global.localStorage = { getItem: key => key === ALPHATAB_COUNT_IN_KEY ? 'true' : null }
+    try {
+        const calls = []
+        const api = {
+            isLooping: true, countInVolume: 0,
+            stop() { calls.push('stop') },
+            play() { calls.push('play') },
+        }
+        setExerciseLoopMode(api, true, true)
+        assert.equal(api.isLooping, false)
+        let callback
+        assert.equal(restartExerciseWithCountIn(api, {
+            isActive: () => true,
+            schedule: fn => { callback = fn },
+        }), true)
+        assert.deepEqual(calls, [])
+        callback()
+        assert.deepEqual(calls, ['stop', 'play'])
+        assert.equal(api.countInVolume, 1)
+    } finally {
+        global.localStorage = previousStorage
+    }
+})
+
+test('with count-in disabled, a routine uses native looping without manual restarts', async () => {
+    const { setExerciseLoopMode, restartExerciseWithCountIn } = await import('../../resources/js/alphatab-exercises.js')
+    const previousStorage = global.localStorage
+    global.localStorage = { getItem: () => 'false' }
+    try {
+        const api = { isLooping: false }
+        setExerciseLoopMode(api, true, false)
+        assert.equal(api.isLooping, true)
+        assert.equal(restartExerciseWithCountIn(api, { isActive: () => true }), false)
+        setExerciseLoopMode(api, false, false)
+        assert.equal(api.isLooping, false)
+    } finally {
+        global.localStorage = previousStorage
+    }
+})
+
+test('manual repeat is cancelled when an exercise is no longer active', async () => {
+    const { setExerciseLoopMode, restartExerciseWithCountIn } = await import('../../resources/js/alphatab-exercises.js')
+    const previousStorage = global.localStorage
+    global.localStorage = { getItem: () => 'true' }
+    try {
+        const calls = []
+        const api = { stop() { calls.push('stop') }, play() { calls.push('play') } }
+        setExerciseLoopMode(api, true, true)
+        let callback
+        let active = true
+        restartExerciseWithCountIn(api, {
+            isActive: () => active,
+            schedule: fn => { callback = fn },
+        })
+        active = false
+        callback()
+        assert.deepEqual(calls, [])
+    } finally {
+        global.localStorage = previousStorage
+    }
+})
