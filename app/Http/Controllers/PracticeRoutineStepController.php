@@ -70,7 +70,7 @@ class PracticeRoutineStepController extends Controller
             'time_signature_denominator' => [
                 'sometimes',
                 'integer',
-                'in:4',
+                'in:4,8',
             ],
 
             'alpha_tex' => ['sometimes', 'nullable', 'string', 'max:65535'],
@@ -155,7 +155,7 @@ class PracticeRoutineStepController extends Controller
             'time_signature_denominator' => [
                 'sometimes',
                 'integer',
-                'in:4',
+                'in:4,8',
             ],
 
             'alpha_tex' => ['sometimes', 'nullable', 'string', 'max:65535'],
