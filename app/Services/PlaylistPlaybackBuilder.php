@@ -160,6 +160,7 @@ class PlaylistPlaybackBuilder
                 'mode' => $step->mode,
                 'duration_seconds' => $step->duration_seconds,
                 'alpha_tex' => $step->alpha_tex,
+                            'musicxml_source' => $step->musicxml_source,
                 'position' => $step->position,
                 'origin' => $step->origin,
 
