@@ -68,7 +68,7 @@
                         :aria-expanded="infoOpen.toString()"
                         @click="infoOpen = !infoOpen; shortcutsOpen = false"
                     >
-                        Info <x-lucide-chevron-down width="16" height="16" />
+                        <x-lucide-info /> Info <x-lucide-chevron-down width="16" height="16" />
                     </button>
 
                     <div class="tab-editor__shortcuts">
@@ -87,10 +87,10 @@
                         >
                             <strong>Keyboard shortcuts</strong>
                             <dl>
-                                <div><dt>Enter fret</dt><dd>0–9</dd></div>
+                                <div><dt>Enter fret</dt><dd>0-9</dd></div>
                                 <div><dt>Navigate notes</dt><dd>← / →</dd></div>
                                 <div><dt>Change string</dt><dd>↑ / ↓</dd></div>
-                                <div><dt>Change duration</dt><dd>+ / −</dd></div>
+                                <div><dt>Change duration</dt><dd>+ / -</dd></div>
                                 <div><dt>Extend selection</dt><dd>Shift + ← / →</dd></div>
                                 <div><dt>Undo</dt><dd>Ctrl/Cmd + Z</dd></div>
                                 <div><dt>Redo</dt><dd>Ctrl/Cmd + Shift + Z</dd></div>
@@ -195,13 +195,8 @@
             <span x-ref="tabEditorScoreFocus" class="sr-only" tabindex="-1">Tab keyboard controls</span>
 
             {{-- Bottom-docked validation log. Uses the existing measure calculation. --}}
-            <section class="tab-editor__log" aria-label="Measure validation log"
-                x-data="{ logOpen: false }"
-            >
-                <div id="tab-editor-log-panel" class="tab-editor__log-panel"
-                    x-show="logOpen" x-cloak
-                    role="region" aria-label="Measure validation messages"
-                >
+            <section class="tab-editor__log" aria-label="Measure validation log" x-data="{ logOpen: false }">
+                <div id="tab-editor-log-panel" class="tab-editor__log-panel" x-show="logOpen" x-cloak role="region" aria-label="Measure validation messages">
                     <div class="tab-editor__log-summary" x-text="tabEditorMeasureStatus()"></div>
 
                     <ul class="tab-editor__log-messages">
@@ -216,13 +211,11 @@
                 </div>
 
                 <div class="tab-editor__log-bar">
-                    <button type="button" class="tab-editor__log-toggle"
-                        aria-controls="tab-editor-log-panel"
-                        :aria-expanded="logOpen.toString()"
-                        @click="logOpen = !logOpen"
-                    >
+                    <button type="button" class="tab-editor__log-toggle" aria-controls="tab-editor-log-panel" :aria-expanded="logOpen.toString()" @click="logOpen = !logOpen">
                         <x-lucide-square-terminal width="18" height="18" />
-                        <span>Log</span>
+                        
+                        <span class="fs-300">Log</span>
+                        
                         <span class="tab-editor__log-count"
                             x-show="tabEditorMeasureWarnings().some(measure => measure.status !== 'complete')"
                             x-text="tabEditorMeasureWarnings().filter(measure => measure.status !== 'complete').length"
