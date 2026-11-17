@@ -37,7 +37,41 @@
 
         {{-- import --}}
         <section class="tab-editor__import-bar" aria-label="Import options">
-            <button class="button" data-type="secondary" data-variant="outline" type="button">Import MusicXML</button>
+            <label class="button" data-type="secondary" data-variant="outline">
+                Import MusicXML
+                <input type="file" accept=".xml,.musicxml,application/xml,text/xml"
+                    @change="importPrototypeMusicXml($event)" class="sr-only">
+            </label>
+
+            <div class="tab-editor__import-panel" x-show="prototypeMusicXmlImport" x-cloak>
+                <p x-text="`${prototypeMusicXmlImport?.sections.length ?? 0} editable section(s) found. Select a section to replace the current unsaved score.`"></p>
+
+                <label class="tab-editor__field">
+                    <span>Section</span>
+                    <select x-model.number="prototypeMusicXmlSelectedSection">
+                        <template x-for="(section, index) in (prototypeMusicXmlImport?.sections ?? [])" :key="index">
+                            <option :value="index" x-text="`Measures ${section.firstMeasure}–${section.lastMeasure} · ${section.numerator}/${section.denominator}`"></option>
+                        </template>
+                    </select>
+                </label>
+
+                <div class="tab-editor__import-warnings" x-show="prototypeMusicXmlImport?.warnings.length" x-cloak>
+                    <p>These measures are not compatible with the simple tablature editor:</p>
+                    <ul>
+                        <template x-for="(warning, index) in (prototypeMusicXmlImport?.warnings ?? [])" :key="index">
+                            <li x-text="warning"></li>
+                        </template>
+                    </ul>
+                </div>
+
+                <div class="tab-editor__import-actions">
+                    <button class="button" data-type="primary" type="button"
+                        @click="applyPrototypeMusicXmlSection()">Use selected section</button>
+                    <button class="button" data-type="outline" type="button"
+                        @click="prototypeMusicXmlImport = null">Dismiss</button>
+                </div>
+                <small>Full-score MusicXML playback is not available in this standalone prototype. Only editable guitar tablature sections are imported.</small>
+            </div>
         </section>
 
         {{-- Quick settings and additional exercise information --}}
