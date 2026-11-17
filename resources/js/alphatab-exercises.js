@@ -25,6 +25,14 @@ async function getAlphaTab() {
     return alphaTabModule
 }
 
+// The exercise BPM is the base tempo for native MusicXML scores. Relative
+// tempo changes remain in the score and playbackSpeed scales them together.
+function musicXmlFirstTempo(xml, fallback) {
+    const match = xml?.match(/<sound\\b[^>]*\\btempo\\s*=\\s*["'](\\d+(?:\\.\\d+)?)["']/i)
+    const tempo = Number(match?.[1])
+    return Number.isFinite(tempo) && tempo > 0 ? tempo : fallback
+}
+
 function decodeBase64(value) {
     const binary = atob(value)
     const bytes = Uint8Array.from(binary, character => character.charCodeAt(0))
@@ -194,7 +202,7 @@ async function mountAlphaTab(element) {
 
         instances.set(element, api)
         readyPromises.set(element, readyPromise)
-        renderedBpms.set(element, bpm)
+        renderedBpms.set(element, originalMusicXml ? musicXmlFirstTempo(originalMusicXml, bpm) : bpm)
 
         await readyPromise
 
@@ -297,7 +305,7 @@ window.addEventListener('alphatab:preview-draft', async event => {
         if (musicXml) api.load(new TextEncoder().encode(musicXml))
         else api.tex(pattern)
     }
-    api.playbackSpeed = 1
+    api.playbackSpeed = musicXml ? Number(bpm) / musicXmlFirstTempo(musicXml, Number(bpm) || 100) : 1
     api.isLooping = false
     configureCountIn(api)
     api.play()
