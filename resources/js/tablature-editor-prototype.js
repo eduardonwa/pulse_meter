@@ -21,6 +21,7 @@ Alpine.data('tablatureRedesign', () => ({
     tabDigitPending: null,
     tabDigitTimer: null,
     stepForm: {
+        name: 'Untitled exercise',
         time_signature_numerator: 4,
         time_signature_denominator: 4,
         bpm: 100,
