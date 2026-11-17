@@ -4,10 +4,8 @@ export function lifecycle() {
     return {
         // INITIALIZATION
         async init() {
-            this.onAlphaTabPlaybackState = event => this.handleAlphaTabPlaybackState(event)
             this.onAlphaTabScoreStarted = event => this.handleAlphaTabScoreStarted(event)
             this.onAlphaTabPlaybackError = event => this.handleAlphaTabPlaybackError(event)
-            window.addEventListener('alphatab:playback-state', this.onAlphaTabPlaybackState)
             window.addEventListener('alphatab:score-started', this.onAlphaTabScoreStarted)
             window.addEventListener('alphatab:playback-error', this.onAlphaTabPlaybackError)
 
@@ -113,7 +111,6 @@ export function lifecycle() {
         },
 
         destroy() {
-            window.removeEventListener('alphatab:playback-state', this.onAlphaTabPlaybackState)
             window.removeEventListener('alphatab:score-started', this.onAlphaTabScoreStarted)
             window.removeEventListener('alphatab:playback-error', this.onAlphaTabPlaybackError)
             this.creativeHeaderObserver?.disconnect()
