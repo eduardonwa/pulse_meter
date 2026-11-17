@@ -1,5 +1,5 @@
 import { parseMusicXmlTab } from "./alphatab/musicxml-import.js";
-import { createTabDraft, appendTabNote, serializeTabDraft, parseTabDraft, layoutTabMeasures, selectTabNoteIndices, changeSelectedTabDurations, clearTabNotes, shiftTabBreaks, updateTabBreaks, breaksForInsertedTabNote, tabBeatNotes, setTabBeatNote, removeTabNoteAtString, TAB_DURATIONS, TAB_STRINGS } from "./alphatab/tab-editor.js";
+import { createTabDraft, appendTabNote, serializeTabDraft, parseTabDraft, layoutTabMeasures, selectTabNoteIndices, changeSelectedTabDurations, clearTabNotes, updateTabBreaks, breaksForInsertedTabNote, tabBeatNotes, setTabBeatNote, removeTabNoteAtString, TAB_DURATIONS, TAB_STRINGS } from "./alphatab/tab-editor.js";
 
 export function exercises() {
     return {
@@ -445,17 +445,23 @@ export function exercises() {
         },
 
         tabEditorDisplayColumns() {
+            // Compute measure boundaries once per layout, not once per string cell.
             const measures = this.tabEditorMeasureLayout();
             const insertions = new Set(measures
                 .filter(measure => measure.used < measure.capacity)
                 .map(measure => measure.endIndex + 1));
+            const measureEnds = new Set(measures
+                .filter(measure => measure.used >= measure.capacity)
+                .map(measure => measure.endIndex));
             const columns = [];
             for (let index = 0; index <= this.tabDraft.beats.length; index++) {
-                if (insertions.has(index)) columns.push({ index, insertion: true });
-                // The final insertion slot replaces the ordinary trailing
-                // slot, rather than creating two identical empty columns.
+                if (insertions.has(index)) {
+                    columns.push({ index, insertion: true, measureEnd: true });
+                }
+                // An incomplete final measure has one insertion slot, not
+                // a second identical empty trailing column.
                 if (index !== this.tabDraft.beats.length || !insertions.has(index)) {
-                    columns.push({ index, insertion: false });
+                    columns.push({ index, insertion: false, measureEnd: measureEnds.has(index) });
                 }
             }
             return columns;
@@ -492,15 +498,6 @@ export function exercises() {
             return layoutTabMeasures(this.tabDraft, this.stepForm.time_signature_numerator, this.stepForm.time_signature_denominator);
         },
 
-        tabEditorMeasureEnd(index) {
-            return this.tabEditorMeasureLayout().some(measure => measure.endIndex === index && measure.used >= measure.capacity);
-        },
-
-        tabEditorMeasureNumber(index) {
-            const measures = this.tabEditorMeasureLayout();
-            return measures.findIndex(measure => measure.notes.some(note => note.index === index)) + 1;
-        },
-
         tabEditorMeasureStatus() {
             const measures = this.tabEditorMeasureLayout();
             if (!measures.length) return 'Measure 1 · empty';
@@ -518,10 +515,6 @@ export function exercises() {
                         ? `Measure ${index + 1}: ${measure.used - measure.capacity} sixteenth-note units over limit`
                         : `Measure ${index + 1}: ${measure.capacity - measure.used} sixteenth-note units remaining`,
             }));
-        },
-
-        tabEditorColumns() {
-            return Math.max(1, this.tabDraft.beats.length + 1);
         },
 
         tabEditorNoteAt(index, string) {
