@@ -1,5 +1,5 @@
 import { parseMusicXmlTab } from "./alphatab/musicxml-import.js";
-import { createTabDraft, appendTabNote, serializeTabDraft, parseTabDraft, layoutTabMeasures, selectTabNoteIndices, changeSelectedTabDurations, clearTabNotes, updateTabBreaks, breaksForInsertedTabNote, tabBeatNotes, setTabBeatNote, removeTabNoteAtString, TAB_DURATIONS, TAB_STRINGS } from "./alphatab/tab-editor.js";
+import { createTabDraft, appendTabNote, serializeTabDraft, parseTabDraft, layoutTabMeasures, selectTabNoteIndices, changeSelectedTabDurations, changeSelectedTabRhythm, tabBeatUnits, clearTabNotes, updateTabBreaks, breaksForInsertedTabNote, tabBeatNotes, setTabBeatNote, removeTabNoteAtString, TAB_DURATIONS, TAB_STRINGS } from "./alphatab/tab-editor.js";
 
 export function exercises() {
     return {
@@ -480,7 +480,7 @@ export function exercises() {
         selectTabEditorInsertion(index, string) {
             const previousBreak = Math.max(0, ...(this.tabDraft.breaks ?? []).filter(value => value < index));
             const used = this.tabDraft.beats.slice(previousBreak, index)
-                .reduce((total, beat) => total + 16 / beat.duration, 0);
+                .reduce((total, beat) => total + tabBeatUnits(beat), 0);
             const available = Number(this.stepForm.time_signature_numerator) * 16 / Number(this.stepForm.time_signature_denominator) - used;
             this.selectTabEditorCell(index, string);
             this.tabInsertAtBar = true;
@@ -488,7 +488,7 @@ export function exercises() {
             this.tabSelectionAnchor = null;
             // A virtual insertion point is not an existing note: choose a
             // duration that fits, without changing any saved note's duration.
-            if (16 / this.tabDraft.duration > available) {
+            if (tabBeatUnits(this.tabDraft) > available + 1e-7) {
                 this.tabDraft = { ...this.tabDraft, duration: [1, 2, 4, 8, 16]
                     .find(duration => 16 / duration <= available) ?? 16 };
             }
@@ -543,6 +543,8 @@ export function exercises() {
                 string,
                 fret: tabBeatNotes(note).find(n => n.string === string)?.fret ?? 0,
                 duration: note?.duration ?? this.tabDraft.duration,
+                dotted: Boolean(note?.dotted ?? this.tabDraft.dotted),
+                tuplet: note ? (note.tuplet ?? null) : this.tabDraft.tuplet,
             };
         },
 
@@ -633,6 +635,41 @@ export function exercises() {
                 duration,
                 beats: changeSelectedTabDurations(this.tabDraft.beats, selected, duration),
             };
+        },
+
+        setTabEditorRhythm(changes) {
+            const selected = this.tabSelectedIndices.length
+                ? this.tabSelectedIndices
+                : (this.tabSelectedIndex < this.tabDraft.beats.length ? [this.tabSelectedIndex] : []);
+            this.tabDraft = {
+                ...this.tabDraft,
+                ...changes,
+                beats: changeSelectedTabRhythm(this.tabDraft.beats, selected, changes),
+            };
+        },
+
+        addTabEditorRest() {
+            const beat = {
+                rest: true,
+                duration: this.tabDraft.duration,
+                ...(this.tabDraft.dotted ? { dotted: true } : {}),
+                ...(this.tabDraft.tuplet === 3 ? { tuplet: 3 } : {}),
+            };
+            const index = this.tabSelectedIndex;
+            const beats = [...this.tabDraft.beats];
+            if (index < beats.length && !this.tabInsertAtBar) {
+                beats[index] = beat;
+            } else {
+                beats.splice(index, 0, beat);
+            }
+            const breaks = beats.length > this.tabDraft.beats.length
+                ? breaksForInsertedTabNote(this.tabDraft, index, beat.duration, this.stepForm.time_signature_numerator, this.stepForm.time_signature_denominator)
+                : this.tabDraft.breaks;
+            this.tabDraft = { ...this.tabDraft, beats, breaks };
+            this.tabSelectedIndex = Math.min(beats.length, index + 1);
+            this.tabInsertAtBar = false;
+            this.tabSelectedIndices = [];
+            this.tabSelectionAnchor = null;
         },
 
         addTabEditorNote() {
