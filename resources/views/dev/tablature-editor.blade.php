@@ -19,7 +19,7 @@
         <header class="tab-editor__header">
             <div class="tab-editor__heading">
                 <h2 class="exercise-name" x-text="stepForm.name || 'Untitled exercise'">Nombre del ejercicio</h2>
-                <p class="tab-editor__save-status" role="status" aria-live="polite" x-text="prototypeMessage"></p>
+                <p class="tab-editor__save-status" :class="`is-${prototypeMessageType}`" role="status" aria-live="polite" x-text="prototypeMessage"></p>
             </div>
 
             <div class="tab-editor__actions">

@@ -29,6 +29,15 @@
     &__save-status {
         margin: 0;
         font-size: 13px;
+        font-weight: 500;
+
+        &.is-error {
+            color: $color-re-600;
+        }
+
+        &.is-success {
+            color: $color-sol-600;
+        }
 
         &:empty { display: none; }
     }
@@ -359,7 +368,6 @@
             outline-offset: 2px;
         }
     }
-
 
     // Bottom-docked log: visible toggle, expandable diagnostics above it.
     &__log {

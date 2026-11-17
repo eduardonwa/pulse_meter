@@ -12,6 +12,7 @@ Alpine.data('tablatureRedesign', () => ({
     prototypeEditorOpen: true,
     prototypeSaving: false,
     prototypeMessage: '',
+    prototypeMessageType: 'success',
     prototypeSaved: null,
     restorePrototypeSaved() {
         if (this.prototypeSaved) {
@@ -43,8 +44,10 @@ Alpine.data('tablatureRedesign', () => ({
             if (typeof value.name !== 'string' || typeof value.alpha_tex !== 'string') throw new Error('Invalid saved exercise')
             this.prototypeSaved = value
             this.restorePrototypeSaved()
+            this.prototypeMessageType = 'success'
             this.prototypeMessage = 'Loaded saved prototype exercise from this browser.'
         } catch (error) {
+            this.prototypeMessageType = 'error'
             console.error('Could not load prototype exercise', error)
             this.prototypeMessage = 'Unable to load a previously saved prototype exercise.'
         }
@@ -64,9 +67,11 @@ Alpine.data('tablatureRedesign', () => ({
             window.localStorage.setItem(PROTOTYPE_EXERCISE_KEY, JSON.stringify(saved))
             this.prototypeSaved = saved
             this.stepForm.name = name
+            this.prototypeMessageType = 'success'
             this.prototypeMessage = 'Saved in this browser (prototype only; not added to a routine).'
             if (closeAfterSave) this.prototypeEditorOpen = false
         } catch (error) {
+            this.prototypeMessageType = 'error'
             this.prototypeMessage = error?.message || 'Unable to save exercise.'
             console.error('Prototype exercise save failed', error)
         } finally {
@@ -76,6 +81,7 @@ Alpine.data('tablatureRedesign', () => ({
     cancelPrototypeExercise() {
         // The standalone prototype has no routine state to return to.
         // Discard local unsaved changes, restoring the last successful save.
+        this.prototypeMessageType = 'success'
         if (!window.confirm('Discard changes since your last save and close the editor?')) return
         this.restorePrototypeSaved()
         this.prototypeEditorOpen = false
