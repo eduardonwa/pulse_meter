@@ -186,9 +186,13 @@ async function mountAlphaTab(element) {
             )
         })
 
-        const readyPromise = new Promise(resolve => {
-            api.playerReady.on(() => {
-                resolve()
+        const readyPromise = new Promise((resolve, reject) => {
+            api.playerReady.on(() => resolve())
+            api.error.on(error => {
+                window.dispatchEvent(new CustomEvent('alphatab:load-error', {
+                    detail: { element, message: error?.message ?? 'alphaTab could not load this score' },
+                }))
+                reject(error)
             })
         })
 
@@ -295,7 +299,13 @@ window.addEventListener('alphatab:preview-draft', async event => {
 
     // Mount if needed, then replace the score on subsequent previews.
     const alreadyMounted = instances.has(element)
-    const api = await mountAlphaTab(element)
+    let api
+    try {
+        api = await mountAlphaTab(element)
+    } catch (error) {
+        console.error('alphaTab could not preview the imported score:', error)
+        return
+    }
     if (!api || !element.isConnected || playbackRequests.get(element) !== request || playbackGeneration !== request) return
 
     if (activeApi && activeApi !== api) activeApi.stop()
