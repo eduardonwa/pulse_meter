@@ -9,7 +9,27 @@ const mountPromises = new WeakMap()
 const readyPromises = new WeakMap()
 const renderedBpms = new WeakMap()
 const playbackRequests = new WeakMap()
+const routineLoopModes = new WeakMap()
 let playbackGeneration = 0
+
+// Native alphaTab looping jumps straight to the first note. To repeat the
+// lead-in, finish each pass, then start playback again as a new pass.
+export function setExerciseLoopMode(api, enabled, countInEnabled = isAlphaTabCountInEnabled()) {
+    routineLoopModes.set(api, Boolean(enabled))
+    api.isLooping = Boolean(enabled) && !countInEnabled
+}
+
+export function restartExerciseWithCountIn(api, { isActive, schedule = callback => setTimeout(callback, 0) }) {
+    if (!routineLoopModes.get(api) || !isAlphaTabCountInEnabled() || !isActive()) return false
+    const request = playbackGeneration
+    schedule(() => {
+        if (playbackGeneration !== request || !isActive() || !routineLoopModes.get(api) || !isAlphaTabCountInEnabled()) return
+        api.stop()
+        configureCountIn(api)
+        api.play()
+    })
+    return true
+}
 
 function configureCountIn(api) {
     api.countInVolume = isAlphaTabCountInEnabled() ? 1 : 0
@@ -167,6 +187,9 @@ async function mountAlphaTab(element) {
 
         api.metronomeVolume = 1
         configureCountIn(api)
+        api.playerFinished.on(() => restartExerciseWithCountIn(api, {
+            isActive: () => activeApi === api,
+        }))
 
         let waitingForScoreStart = false
         api.playerPositionChanged.on(args => {
@@ -335,7 +358,7 @@ window.addEventListener('alphatab:preview-draft', async event => {
     }
     if (playbackRequests.get(element) !== request || playbackGeneration !== request) return
     api.playbackSpeed = musicXml ? Number(bpm) / musicXmlFirstTempo(musicXml, Number(bpm) || 100) : 1
-    api.isLooping = false
+    setExerciseLoopMode(api, false)
     configureCountIn(api)
     api.play()
 })
@@ -363,7 +386,7 @@ window.addEventListener('alphatab:play-pause', async event => {
         if (activeApi && activeApi !== api) activeApi.stop()
         activeApi = api
         // Preview is always a single listen, regardless of exercise mode.
-        api.isLooping = false
+        setExerciseLoopMode(api, false)
         configureCountIn(api)
         api.playPause()
     } catch (error) {
@@ -400,8 +423,9 @@ window.addEventListener('alphatab:start-exercise', async event => {
 
         if (activeApi && activeApi !== api) activeApi.stop()
         activeApi = api
-        // Routine playback repeats until the session stops.
-        api.isLooping = true
+        // If count-in is enabled, restart each completed pass with a new
+        // count-in instead of alphaTab's seamless native loop.
+        setExerciseLoopMode(api, true)
         configureCountIn(api)
         api.play()
     } catch (error) {
@@ -419,6 +443,7 @@ window.addEventListener('alphatab:start-exercise', async event => {
 window.addEventListener('alphatab:stop', () => {
     notifyAudioPreparation(null, false)
     ++playbackGeneration
+    if (activeApi) setExerciseLoopMode(activeApi, false)
     activeApi?.stop()
     activeApi = null
 })
@@ -428,7 +453,15 @@ window.addEventListener('alphatab:toggle-loop', async event => {
 
     if (!api) return
 
-    api.isLooping = Boolean(event.detail?.enabled)
+    setExerciseLoopMode(api, Boolean(event.detail?.enabled))
+})
+
+window.addEventListener('alphatab:count-in-changed', () => {
+    if (!activeApi) return
+    configureCountIn(activeApi)
+    // Switching the setting during a routine also switches between
+    // counted restarts and native seamless looping at the next ending.
+    activeApi.isLooping = Boolean(routineLoopModes.get(activeApi)) && !isAlphaTabCountInEnabled()
 })
 
 window.addEventListener('alphatab:set-bpm', async event => {
