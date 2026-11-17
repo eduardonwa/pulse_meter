@@ -114,9 +114,10 @@ export function setTabBeatNote(beat, fret, string) {
     const notes = tabBeatNotes(beat).filter(note => note.string !== string);
     notes.push({ fret, string });
     notes.sort((a, b) => a.string - b.string);
+    const { fret: _fret, string: _string, notes: _notes, ...rhythm } = beat;
     return notes.length === 1
-        ? { ...beat, notes: undefined, ...notes[0] }
-        : { ...beat, notes, fret: undefined, string: undefined };
+        ? { ...rhythm, ...notes[0] }
+        : { ...rhythm, notes };
 }
 
 export function serializeTabDraft(draft, numerator = 4, bpm = 100, denominator = 4) {
