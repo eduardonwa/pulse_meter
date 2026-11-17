@@ -467,21 +467,24 @@
         overflow-y: auto;
         min-height: 0;
         flex: 1;
-        padding: 1rem 1rem max(1rem, env(safe-area-inset-bottom));
+        padding: 1rem 0rem max(1rem, env(safe-area-inset-bottom));
         overscroll-behavior: contain;
     }
 
     &__facts {
         display: flex;
         flex-wrap: wrap;
-        gap: 1rem;
-        margin-bottom: 1rem;
+        gap: $size-4;
+
+        padding: $size-4;        
     }
 
     &__actions {
         display: flex;
         align-items: center;
         gap: $size-4;
+
+        padding: $size-4;
     }
 
     .exercise-row__notation { display: block; }
