@@ -56,6 +56,9 @@
                 </div>
                 <p x-show="!step.alpha_tex">This exercise has no tablature.</p>
                 <div class="mobile-exercise-view-dialog__actions">
+                    <template x-if="hasAlphaTabPattern(step)">
+                        <x-metronome.count-in-toggle />
+                    </template>
                     <button type="button" class="button" data-type="play-drill"
                         @click="activeExerciseIndex === index && isPlaying ? stop() : startExercise(index)"
                         x-text="activeExerciseIndex === index && isPlaying ? 'Stop' : 'Practice'"></button>
@@ -86,7 +89,7 @@
                                         Preview
                                     </span>
                                 </button>
-        
+                                <x-metronome.count-in-toggle />
                             </div>
                         </div>
                     </div>
