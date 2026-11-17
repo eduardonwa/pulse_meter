@@ -99,13 +99,17 @@
                 x-cloak x-show="stepFormMode === 'create' || !hasAlphaTabPattern(steps[stepFormIndex])">
                 <span class="exercise-form-label">Time signature</span>
 
-                <select x-model.number="stepForm.time_signature_numerator">
-                    @foreach (range(2, 16) as $numerator)
-                        <option value="{{ $numerator }}">
-                            {{ $numerator }}/4
-                        </option>
-                    @endforeach
-                </select>
+                <div style="display: flex; gap: .5rem; align-items: center;">
+                    <select x-model.number="stepForm.time_signature_numerator" aria-label="Beats per measure">
+                        @foreach (range(1, 16) as $numerator)
+                            <option value="{{ $numerator }}">{{ $numerator }}</option>
+                        @endforeach
+                    </select>
+                    <span>/</span>
+                    <select x-model.number="stepForm.time_signature_denominator" aria-label="Beat note value">
+                        <option value="2">2</option><option value="4">4</option><option value="8">8</option><option value="16">16</option>
+                    </select>
+                </div>
             </label>
         </div>
 
@@ -170,6 +174,20 @@
                 </label>
                 
                 <label>
+                    Time signature
+                    <span style="display: flex; gap: .5rem; align-items: center;">
+                        <select x-model.number="stepForm.time_signature_numerator" aria-label="Beats per measure">
+                            @foreach (range(1, 16) as $numerator)
+                                <option value="{{ $numerator }}">{{ $numerator }}</option>
+                            @endforeach
+                        </select>
+                        <span>/</span>
+                        <select x-model.number="stepForm.time_signature_denominator" aria-label="Beat note value">
+                            <option value="2">2</option><option value="4">4</option><option value="8">8</option><option value="16">16</option>
+                        </select>
+                    </span>
+                </label>
+                <label>
                     Instrument
                     <select x-model.number="tabDraft.instrument">
                         <option value="24">Nylon guitar</option>
@@ -218,7 +236,7 @@
             </div>
 
             <div class="tab-editor__preview" x-show="tabPreviewPlaying" x-cloak><div x-ref="tabEditorPreview" data-alphatab></div></div>
-                <p x-text="`${tabDraft.beats.length} notes · ${stepForm.time_signature_numerator}/4 · arrows navigate, 0-9 enter frets`"></p>
+                <p x-text="`${tabDraft.beats.length} notes · ${stepForm.time_signature_numerator}/${stepForm.time_signature_denominator} · arrows navigate, 0-9 enter frets`"></p>
                 
                 <p class="tab-editor__selection-hint">
                     Drag to select a range · Shift + ←/→ extends selection · Shift + click selects a range · Ctrl/Cmd + click toggles notes · type 10–24 quickly for two-digit frets · Backspace clears to rest · Delete removes position.
