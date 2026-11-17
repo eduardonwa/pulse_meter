@@ -111,3 +111,52 @@ test('Ctrl+Shift+Z and Ctrl+Y redo; a new edit clears redo history', () => {
     assert.equal(e.tabRedoHistory.length, 0)
     assert.equal(e.tabDraft.beats[0].duration, 16)
 })
+
+test('Delete from focused tablature cell removes all selected beats', () => {
+    const e = editor()
+    e.tabDraft.beats.push({ fret: 6, string: 1, duration: 4 })
+    e.tabSelectedIndices = [0, 2]
+    let prevented = false
+    e.handleTabEditorKey({
+        key: 'Delete',
+        ctrlKey: false,
+        metaKey: false,
+        target: { tagName: 'BUTTON', classList: { contains: name => name === 'tab-editor__cell' } },
+        preventDefault() { prevented = true },
+    })
+    assert.equal(prevented, true)
+    assert.deepEqual(e.tabDraft.beats.map(beat => beat.fret), [4])
+    e.undoTabEditorChange()
+    assert.deepEqual(e.tabDraft.beats.map(beat => beat.fret), [2, 4, 6])
+})
+
+test('Backspace from focused tablature cell clears every selected beat, including chords', () => {
+    const e = editor()
+    e.tabDraft.beats[0] = { duration: 4, notes: [{ fret: 2, string: 1 }, { fret: 5, string: 2 }] }
+    e.tabSelectedIndices = [0, 1]
+    let prevented = false
+    e.handleTabEditorKey({
+        key: 'Backspace',
+        target: { tagName: 'BUTTON', classList: { contains: name => name === 'tab-editor__cell' } },
+        preventDefault() { prevented = true },
+    })
+    assert.equal(prevented, true)
+    assert.deepEqual(e.tabDraft.beats, [
+        { rest: true, duration: 4 },
+        { rest: true, duration: 4 },
+    ])
+    e.undoTabEditorChange()
+    assert.equal(e.tabDraft.beats[0].notes.length, 2)
+    assert.equal(e.tabDraft.beats[1].fret, 4)
+})
+
+test('Delete does not trigger from other toolbar buttons', () => {
+    const e = editor()
+    e.tabSelectedIndices = [0, 1]
+    e.handleTabEditorKey({
+        key: 'Delete',
+        target: { tagName: 'BUTTON', classList: { contains: () => false } },
+        preventDefault() { throw new Error('Unexpected keyboard shortcut') },
+    })
+    assert.equal(e.tabDraft.beats.length, 2)
+})
