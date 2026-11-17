@@ -73,10 +73,11 @@
     align-items: center;
     justify-content: center;
     gap: $size-2;
-    padding: $size-3;
-    background: $color-accent-400;
 
-    &:hover { background: $color-accent-500; }
+    padding: $size-3;
+    background-color: $color-sol-400;
+
+    &:hover { background: $color-sol-500; }
     
     &:disabled {
       border: 1px solid $color-neutral-400;
@@ -88,6 +89,18 @@
     svg {
       width: 24px;
       height: 24px;
+    }
+  }
+
+  &[data-type="secondary"][data-variant="outline"] {
+    background: transparent;
+    border: 1px solid $color-sol-700;
+    color: $color-sol-700;
+
+    &:is(:hover, :focus) {
+      background-color: $color-sol-800;
+      border-color: $button-primary-background-hover;
+      color: $color-sol-100;
     }
   }
 
