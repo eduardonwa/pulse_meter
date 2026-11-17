@@ -13,9 +13,6 @@ Alpine.data('tablatureRedesign', () => ({
     prototypeSaving: false,
     prototypeMessage: '',
     prototypeSaved: null,
-    prototypeSnapshot() {
-        return JSON.stringify({ draft: this.tabDraft, stepForm: this.stepForm })
-    },
     restorePrototypeSaved() {
         if (this.prototypeSaved) {
             const parsed = parseTabDraft(this.prototypeSaved.alpha_tex)
