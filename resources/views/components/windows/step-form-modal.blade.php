@@ -154,6 +154,36 @@
 
         <div class="mobile-exercise-view-dialog__content tab-editor">
             <p class="tab-editor__intro">Add notes to your exercise. The score will be saved when you finish.</p>
+            <div class="tab-editor__import" x-show="tabEditorEditingIndex === null" x-cloak>
+                <label class="button" data-type="outline">
+                    Import MusicXML
+                    <input type="file" accept=".xml,.musicxml,application/xml,text/xml"
+                        @change="importTabMusicXml($event)" style="display:none">
+                </label>
+                <small>From Guitar Pro, MuseScore or another notation editor. Notes, strings, frets and rhythm only.</small>
+                <div x-show="tabMusicXmlImport" x-cloak>
+                    <p x-text="`${tabMusicXmlImport?.sections.length ?? 0} compatible section(s) found. Select one to import; changes of meter are separate exercises.`"></p>
+                    <label>
+                        Section
+                        <select x-model.number="tabMusicXmlSelectedSection">
+                            <template x-for="(section, index) in (tabMusicXmlImport?.sections ?? [])" :key="index">
+                                <option :value="index" x-text="`Measures ${section.firstMeasure}–${section.lastMeasure} · ${section.numerator}/${section.denominator}`"></option>
+                            </template>
+                        </select>
+                    </label>
+                    <div x-show="tabMusicXmlImport?.warnings.length" x-cloak>
+                        <p>Some measures cannot be imported with the current editor:</p>
+                        <ul>
+                            <template x-for="(warning, index) in (tabMusicXmlImport?.warnings ?? [])" :key="index">
+                                <li x-text="warning"></li>
+                            </template>
+                        </ul>
+                    </div>
+                    <button type="button" class="button" data-type="primary" @click="applyTabMusicXmlSection()">
+                        Use selected section
+                    </button>
+                </div>
+            </div>
             <div class="tab-editor__settings">
                 {{-- SETTINGS --}}
                 <label>
