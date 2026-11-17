@@ -444,6 +444,10 @@ export function exercises() {
             this.recordTabEditorUndo();
             this.tabFullMusicXml = this.tabMusicXmlFullSource;
             this.tabDraft = createTabDraft();
+            const doc = new DOMParser().parseFromString(this.tabFullMusicXml, 'application/xml');
+            const tempo = Number(doc.querySelector('sound[tempo]')?.getAttribute('tempo') ??
+                doc.querySelector('metronome per-minute')?.textContent);
+            if (Number.isFinite(tempo) && tempo >= 30 && tempo <= 400) this.stepForm.bpm = Math.round(tempo);
             this.stepForm.name = (this.tabMusicXmlImport?.title || this.tabMusicXmlFileName || 'Imported score').slice(0, 255);
             this.tabSelectedIndices = [];
             this.tabMusicXmlImport = null;
