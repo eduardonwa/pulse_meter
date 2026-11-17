@@ -209,7 +209,7 @@ export function exercises() {
                     this.stepForm.time_signature_numerator ?? 4,
                 ),
 
-                time_signature_denominator: 4,
+                time_signature_denominator: Number(this.stepForm.time_signature_denominator ?? 4),
 
                 mode: this.stepForm.mode,
 
@@ -338,7 +338,7 @@ export function exercises() {
                 name: step.name,
                 bpm: parsed.bpm,
                 time_signature_numerator: parsed.numerator,
-                time_signature_denominator: 4,
+                time_signature_denominator: parsed.denominator,
                 mode: step.mode,
                 duration_seconds: Number(step.duration_seconds ?? 60),
             };
@@ -374,7 +374,7 @@ export function exercises() {
             }
             let alphaTex;
             try {
-                alphaTex = serializeTabDraft(this.tabDraft, this.stepForm.time_signature_numerator, this.stepForm.bpm);
+                alphaTex = serializeTabDraft(this.tabDraft, this.stepForm.time_signature_numerator, this.stepForm.bpm, this.stepForm.time_signature_denominator);
             } catch (error) {
                 this.showToast?.(error.message, "error");
                 return;
@@ -427,7 +427,7 @@ export function exercises() {
             const previousBreak = Math.max(0, ...(this.tabDraft.breaks ?? []).filter(value => value < index));
             const used = this.tabDraft.beats.slice(previousBreak, index)
                 .reduce((total, beat) => total + 16 / beat.duration, 0);
-            const available = Number(this.stepForm.time_signature_numerator) * 4 - used;
+            const available = Number(this.stepForm.time_signature_numerator) * 16 / Number(this.stepForm.time_signature_denominator) - used;
             this.selectTabEditorCell(index, string);
             this.tabInsertAtBar = true;
             this.tabSelectedIndices = [];
@@ -441,7 +441,7 @@ export function exercises() {
         },
 
         tabEditorMeasureLayout() {
-            return layoutTabMeasures(this.tabDraft, this.stepForm.time_signature_numerator);
+            return layoutTabMeasures(this.tabDraft, this.stepForm.time_signature_numerator, this.stepForm.time_signature_denominator);
         },
 
         insertTabEditorBar() {
@@ -453,7 +453,7 @@ export function exercises() {
             const previousBreak = Math.max(0, ...(this.tabDraft.breaks ?? []).filter(index => index < at));
             const used = this.tabDraft.beats.slice(previousBreak, at)
                 .reduce((total, beat) => total + 16 / beat.duration, 0);
-            const remaining = this.stepForm.time_signature_numerator * 4 - used;
+            const remaining = this.stepForm.time_signature_numerator * 16 / this.stepForm.time_signature_denominator - used;
             const duration = [1, 2, 4, 8, 16].find(value => 16 / value === remaining)
                 ?? Number(this.tabDraft.duration);
             const beats = [...this.tabDraft.beats];
@@ -646,7 +646,7 @@ export function exercises() {
                 } else {
                     beats.splice(this.tabSelectedIndex, 0, next.beats.at(-1));
                 }
-                this.tabDraft = { ...next, beats, breaks: beats.length > this.tabDraft.beats.length ? breaksForInsertedTabNote(this.tabDraft, this.tabSelectedIndex, next.beats.at(-1).duration, this.stepForm.time_signature_numerator) : this.tabDraft.breaks };
+                this.tabDraft = { ...next, beats, breaks: beats.length > this.tabDraft.beats.length ? breaksForInsertedTabNote(this.tabDraft, this.tabSelectedIndex, next.beats.at(-1).duration, this.stepForm.time_signature_numerator, this.stepForm.time_signature_denominator) : this.tabDraft.breaks };
                 this.tabSelectedIndex = Math.min(beats.length, this.tabSelectedIndex + 1);
                 this.tabInsertAtBar = false;
                 this.tabSelectedIndices = [];
@@ -728,6 +728,7 @@ export function exercises() {
                     this.tabDraft,
                     this.stepForm.time_signature_numerator,
                     this.stepForm.bpm,
+                    this.stepForm.time_signature_denominator,
                 );
             } catch (error) {
                 this.showToast?.(error.message, "error");
