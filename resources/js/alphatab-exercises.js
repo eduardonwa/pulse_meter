@@ -193,6 +193,9 @@ async function mountAlphaTab(element) {
 
         let waitingForScoreStart = false
         api.playerPositionChanged.on(args => {
+            window.dispatchEvent(new CustomEvent('alphatab:playback-position', {
+                detail: { element, currentTime: args.currentTime, endTime: args.endTime },
+            }))
             if (!waitingForScoreStart || args.currentTick < 0) return
             waitingForScoreStart = false
             window.dispatchEvent(new CustomEvent('alphatab:score-started', {
@@ -210,7 +213,12 @@ async function mountAlphaTab(element) {
         })
 
         const readyPromise = new Promise((resolve, reject) => {
-            api.playerReady.on(() => resolve())
+            api.playerReady.on(() => {
+                window.dispatchEvent(new CustomEvent('alphatab:playback-position', {
+                    detail: { element, currentTime: api.timePosition, endTime: api.endTime },
+                }))
+                resolve()
+            })
             api.error.on(error => {
                 window.dispatchEvent(new CustomEvent('alphatab:load-error', {
                     detail: { element, message: error?.message ?? 'alphaTab could not load this score' },
@@ -516,4 +524,12 @@ window.addEventListener('alphatab:render', event => {
 
     syncScoreScrollContainer(api, element)
     api.render()
+})
+
+window.addEventListener('alphatab:seek', event => {
+    const element = event.detail?.element
+    const api = instances.get(element)
+    const percent = Number(event.detail?.percent)
+    if (!api || !Number.isFinite(percent) || !Number.isFinite(api.endTime) || api.endTime <= 0) return
+    api.timePosition = Math.max(0, Math.min(100, percent)) / 100 * api.endTime
 })
