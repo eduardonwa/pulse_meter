@@ -17,6 +17,20 @@ Alpine.data('tablatureRedesign', () => ({
     prototypeMessageType: 'success',
     prototypeSaved: null,
     prototypePlaying: false,
+    prototypeLoop: false,
+    prototypeCountIn: false,
+    prototypeMetronome: false,
+    prototypeTransportOptions() {
+        return { loop: this.prototypeLoop, countIn: this.prototypeCountIn, metronome: this.prototypeMetronome }
+    },
+    setPrototypeTransportOption(option) {
+        const key = { loop: 'prototypeLoop', countIn: 'prototypeCountIn', metronome: 'prototypeMetronome' }[option]
+        if (!key) return
+        this[key] = !this[key]
+        window.dispatchEvent(new CustomEvent('alphatab:editor-transport-options', {
+            detail: { element: this.$refs.tabEditorPreview, options: this.prototypeTransportOptions() },
+        }))
+    },
     prototypePlaybackLoading: false,
     prototypePlaybackScore: null,
     prototypePlayingBeatIndex: null,
@@ -127,7 +141,8 @@ Alpine.data('tablatureRedesign', () => ({
         this.prototypePlaybackScore = alphaTex
         window.dispatchEvent(new CustomEvent('alphatab:preview-draft', {
             detail: { element, alphaTex, bpm: Number(this.stepForm.bpm),
-                instrument: this.tabDraft.instrument, seekPercent, play: true },
+                instrument: this.tabDraft.instrument, seekPercent,
+                transportOptions: this.prototypeTransportOptions(), play: true },
         }))
     },
     prototypeMusicXmlImport: null,
