@@ -1,9 +1,9 @@
 @use "../../abstracts" as *;
 
-// Base styles for phones (up to 767px) will be defined here.
+.tab-editor {
+    // Mobile styles (base) go here.
 
-@include mq(medium) {
-    .tab-editor {
+    @include mq(medium) {
         min-height: 100dvh;
 
         &__editor {
@@ -71,21 +71,22 @@
             }
         }
     }
+}
 
-    .tab-editor-dialog {
-        position: fixed;
-        inset: 0;
-        // 100vw includes the vertical scrollbar; 100% keeps the right gutter visible.
-        width: 100%;
-        max-width: none;
-        height: 100dvh;
-        max-height: none;
-        margin: 0;
-        padding: 0;
-        border: 0;
-        background: hsl(var(--neutral-100));
-        color: inherit;
-        overflow: auto;
-        .tab-editor { min-height: 100dvh; }
-    }
+// Dialog frame shared by mobile and desktop.
+.tab-editor-dialog {
+    position: fixed;
+    inset: 0;
+    // 100vw includes the vertical scrollbar; 100% keeps the right gutter visible.
+    width: 100%;
+    max-width: none;
+    height: 100dvh;
+    max-height: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: hsl(var(--neutral-100));
+    color: inherit;
+    overflow: auto;
+    .tab-editor { min-height: 100dvh; }
 }
