@@ -1,3 +1,6 @@
+import { parseMusicXmlTab } from './alphatab/musicxml-import.js'
+import { serializeTabDraft, tabBeatUnits } from './alphatab/tab-editor.js'
+
 // Beta-only editor state. Leave global Practice controls and persistence untouched.
 export function tablatureRedesignBeta() {
     return {
@@ -9,6 +12,7 @@ export function tablatureRedesignBeta() {
     },
     prepareRedesignEditor() {
         this.prototypeMessage = ''
+        this.prototypeMessageType = 'success'
         this.prototypePlaying = false
         this.prototypePlaybackLoading = false
         this.prototypePlaybackScore = null
@@ -222,7 +226,7 @@ export function tablatureRedesignBeta() {
         this.tabInsertAtBar = false
         this.prototypeMusicXmlImport = null
         this.prototypeMessageType = 'success'
-        this.prototypeMessage = 'Imported editable MusicXML section. Save to keep it in this browser.'
+        this.prototypeMessage = 'Imported editable MusicXML section. Save to keep it in this routine.'
         this.$nextTick(() => this.updateTabEditorWidth())
     },
 
