@@ -1,8 +1,8 @@
 import { parseMusicXmlTab } from './alphatab/musicxml-import.js'
 import { serializeTabDraft, tabBeatUnits } from './alphatab/tab-editor.js'
 
-// Beta-only editor state. Leave global Practice controls and persistence untouched.
-export function tablatureRedesignBeta() {
+// Tab editor state. Leave global Practice controls and persistence untouched.
+export function tabEditor() {
     return {
     prototypeMessage: '',
     prototypeMessageType: 'success',
