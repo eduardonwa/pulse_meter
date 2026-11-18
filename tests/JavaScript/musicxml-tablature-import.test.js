@@ -163,3 +163,29 @@ test('MusicXML full-measure rest with nonstandard duration becomes editable rest
     assert.equal(imported.sections[0].lastMeasure, 2)
     assert.ok(layoutTabMeasures(imported.sections[0].draft, 7, 8).every(bar => bar.complete))
 })
+
+test('MusicXML with no editable measures explains that complete score playback remains available', () => {
+    const score = el('score-partwise', [
+        el('part', [
+            el('measure', [
+                el('attributes', [el('divisions', '4')]),
+                el('note', [
+                    el('duration', '4'),
+                    el('notations', [el('technical', [el('string', '1'), el('fret', '5')])]),
+                    el('time-modification', [
+                        el('actual-notes', '5'),
+                        el('normal-notes', '4'),
+                    ]),
+                ]),
+            ], { number: '1' }),
+        ]),
+    ])
+    const parser = { parseFromString() { return {
+        documentElement: score,
+        getElementsByTagName(name) { return score.getElementsByTagName(name) },
+    } } }
+    assert.throws(
+        () => parseMusicXmlTab('<score-partwise/>', parser),
+        /No compatible measures found for editing\. The full score is still available for playback\./,
+    )
+})
