@@ -32,6 +32,7 @@ export function tablatureEditorMethods() {
             this.tabSelectedIndices = [];
             this.tabSelectionAnchor = null;
             this.tabEditorOpen = true;
+            if (this.$refs.tabEditorDialog?.classList.contains('tab-editor-beta')) this.prepareRedesignEditor();
             this.$nextTick(() => {
                 this.$refs.tabEditorDialog?.showModal();
                 this.updateTabEditorWidth();
@@ -78,6 +79,7 @@ export function tablatureEditorMethods() {
             }
             viewerDialog?.close();
             this.tabEditorOpen = true;
+            if (this.$refs.tabEditorDialog?.classList.contains('tab-editor-beta')) this.prepareRedesignEditor();
             this.$nextTick(() => {
                 this.$refs.tabEditorDialog?.showModal();
                 this.updateTabEditorWidth();
@@ -161,7 +163,8 @@ export function tablatureEditorMethods() {
         },
 
         closeNewTabEditor() {
-            this.stopTabEditorPreview();
+            if (this.$refs.tabEditorDialog?.classList.contains('tab-editor-beta')) this.stopPrototypePlayback();
+            else this.stopTabEditorPreview();
             this.finishPendingTabDigit(false);
             this.$refs.tabEditorDialog?.close();
             this.tabEditorOpen = false;
