@@ -1,107 +1,100 @@
 @use "../../abstracts" as *;
 
 .tab-editor {
-    // Mobile styles go here.
     &__import-bar {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: $size-3;
+
+        min-width: 0;
         padding: $size-3;
+
+        .button {
+            width: fit-content;
+            margin-inline-start: auto;
+        }
     }
 
-    @include mq(medium) {
-        &__import-bar {
-            display: flex;
-            flex-direction: column;
-            align-items: stretch;
-            gap: $size-3;
+    &__import-panel {
+        display: grid;
+        gap: $size-3;
+        
+        width: 100%;
+        min-width: 0;
+        
+        padding: $size-3;
+        border: 1px solid hsl(var(--neutral-800) / .2);
+        border-radius: $border-radius-2;
+        background-color: $color-neutral-200;
+        
+        p { margin: 0; }
+        small { font-size: 12px; }
+    }
 
-            min-width: 0;
-            padding: $size-3;
+    &__import-result {
+        display: grid;
+        gap: $size-2;
+        min-width: 0;
+        font-size: 15px;
 
-            .button {
-                width: fit-content;
-                margin-inline-start: auto;
-            }
-        }
+        .verdict { font-weight: 600; }
+        .reasoning { font-weight: 400; }
+    }
 
-        &__import-panel {
-            display: grid;
-            gap: $size-3;
-            
-            width: 100%;
-            min-width: 0;
-            
-            padding: $size-3;
-            border: 1px solid hsl(var(--neutral-800) / .2);
-            border-radius: $border-radius-2;
-            background-color: $color-neutral-200;
-            
-            p { margin: 0; }
-            small { font-size: 12px; }
-        }
-
-        &__import-result {
-            display: grid;
-            gap: $size-2;
-            min-width: 0;
+    &__import-warnings {
+        border: 1px solid hsl(var(--neutral-800) / .2);
+        border-radius: $border-radius-2;
+        overflow: hidden;
+        background: hsl(var(--neutral-100) / .8);
+        
+        summary {
+            cursor: pointer;
             font-size: 15px;
-
-            .verdict { font-weight: 600; }
-            .reasoning { font-weight: 400; }
-        }
-
-        &__import-warnings {
-            border: 1px solid hsl(var(--neutral-800) / .2);
-            border-radius: $border-radius-2;
-            overflow: hidden;
-            background: hsl(var(--neutral-100) / .8);
-            
-            summary {
-                cursor: pointer;
-                font-size: 15px;
-                padding: $size-3;
-                list-style-position: inside;
-            }
-
-            &[open] summary {
-                border-bottom: 1px solid hsl(var(--neutral-800) / .2);
-            }
-        }
-
-        &__import-details {
             padding: $size-3;
-
-            display: grid;
-            gap: $size-3;
-            
-            p {
-                font-size: 15px;
-            }
-
-            > div {
-                display: grid;
-                gap: $size-2;
-
-                font-size: 14px;
-                
-                strong { font-weight: 500; }
-
-                ul {
-                    margin-block-start: 0;
-                    padding-inline-start: $size-6;
-                }
-            }
+            list-style-position: inside;
         }
 
-        &__import-actions {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            justify-self: stretch;
+        &[open] summary {
+            border-bottom: 1px solid hsl(var(--neutral-800) / .2);
+        }
+    }
+
+    &__import-details {
+        padding: $size-3;
+
+        display: grid;
+        gap: $size-3;
+        
+        p {
+            font-size: 15px;
+        }
+
+        > div {
+            display: grid;
             gap: $size-2;
 
-            > .button {
-                margin-inline: 0;
-                flex: 0 0 auto;
+            font-size: 14px;
+            
+            strong { font-weight: 500; }
+
+            ul {
+                margin-block-start: 0;
+                padding-inline-start: $size-6;
             }
+        }
+    }
+
+    &__import-actions {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        justify-self: stretch;
+        gap: $size-2;
+
+        > .button {
+            margin-inline: 0;
+            flex: 0 0 auto;
         }
     }
 }
