@@ -117,14 +117,14 @@ export function tablatureRedesignBeta() {
         this.prototypeProgress = this.prototypeCurrentMs / duration * 100
     },
     previewPrototypeSeek(value) {
-        if (!this.tabDraft.beats.length || this.prototypePlaybackLoading) return
+        if ((!this.tabDraft.beats.length && !this.tabFullMusicXml) || this.prototypePlaybackLoading) return
         const percent = Math.max(0, Math.min(100, Number(value) || 0))
         this.prototypeProgress = percent
         this.prototypeCurrentMs = percent / 100 * this.prototypeDurationMs
         this.showPrototypeBeatAtPercent(percent)
     },
     seekPrototypePlayback(value) {
-        if (!this.tabDraft.beats.length || this.prototypePlaybackLoading) return
+        if ((!this.tabDraft.beats.length && !this.tabFullMusicXml) || this.prototypePlaybackLoading) return
         this.previewPrototypeSeek(value)
         window.dispatchEvent(new CustomEvent('alphatab:seek', {
             detail: { element: this.$refs.tabEditorPreview, percent: this.prototypeProgress },
