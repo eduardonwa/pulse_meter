@@ -1,5 +1,5 @@
 import { tablatureEditorMethods } from "./tablature-editor-controller.js";
-import { tablatureRedesignBeta } from "./tablature-redesign-beta.js";
+import { tabEditor } from "./tab-editor.js";
 import { createTabDraft, TAB_STRINGS } from "./alphatab/tab-editor.js";
 
 export function exercises() {
@@ -304,7 +304,7 @@ export function exercises() {
         },
 
         ...tablatureEditorMethods(),
-        ...tablatureRedesignBeta(),
+        ...tabEditor(),
 
         // MODALS
         openAddStepModal() {
