@@ -676,8 +676,10 @@ export function tablatureEditorMethods() {
                         }));
                     });
                     if (closeAfterSave) {
+                        const isBeta = this.$refs.tabEditorDialog?.classList.contains('tab-editor-beta')
                         this.closeNewTabEditor();
                         this.resetStepForm();
+                        if (isBeta) this.showToast?.('Tablature saved', 'success');
                     } else {
                         this.showToast?.('Tablature saved', 'success');
                     }
@@ -704,8 +706,10 @@ export function tablatureEditorMethods() {
                     has_tablature: true,
                 });
                 if (closeAfterSave) {
+                    const isBeta = this.$refs.tabEditorDialog?.classList.contains('tab-editor-beta')
                     this.closeNewTabEditor();
                     this.resetStepForm();
+                    if (isBeta) this.showToast?.('Tablature saved', 'success');
                 } else {
                     this.showToast?.('Tablature saved', 'success');
                 }
