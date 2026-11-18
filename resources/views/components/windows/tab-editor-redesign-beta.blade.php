@@ -217,14 +217,13 @@
                         </div>
 
                         <div class="tab-editor__grid">
-                            {{-- Keep the playhead mounted per system so its transform can animate between beats. --}}
-                            <div class="tab-editor__playhead" aria-hidden="true"
-                                :class="{ 'is-visible': system.some(column => !column.insertion && column.index === prototypePlayingBeatIndex) }"
-                                :style="`transform: translate3d(${Math.max(0, system.findIndex(column => !column.insertion && column.index === prototypePlayingBeatIndex)) * 40}px, 0, 0)`"></div>
+                            {{-- A stable overlay; playback time moves it continuously between notes. --}}
+                            <div class="tab-editor__playhead" aria-hidden="true"></div>
                             <template x-for="(name, stringIndex) in tabStringNames" :key="stringIndex">
                                 <div class="tab-editor__string-row">
                                     <template x-for="column in system" :key="`${column.index}-${column.insertion}`">
                                         <button type="button" class="tab-editor__cell"
+                                            :data-playhead-beat="stringIndex === 0 && !column.insertion ? column.index : null"
                                             :class="{ 'is-selected': tabSelectedIndex === column.index && tabDraft.string === stringIndex + 1 && tabInsertAtBar === column.insertion, 'is-measure-end': column.measureEnd, 'is-multi-selected': !column.insertion && tabSelectedIndices.includes(column.index) && column.index < tabDraft.beats.length , 'is-insertion': column.insertion }"
                                             :aria-label="column.insertion ? `Insert note before next measure, string ${stringIndex + 1}` : `String ${stringIndex + 1}, position ${column.index + 1}`"
                                             :aria-pressed="tabSelectedIndex === column.index && tabDraft.string === stringIndex + 1 && tabInsertAtBar === column.insertion"
