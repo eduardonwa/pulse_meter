@@ -375,6 +375,14 @@
         border: 2px solid hsl(var(--sol-600));
         border-radius: .4rem;
         background: hsl(var(--sol-500) / .22);
+
+        // Animate movement between adjacent notes instead of snapping.
+        // Keep the transition short so fast sixteenth notes don't visibly lag.
+        transition: left 75ms linear;
+
+        @media (prefers-reduced-motion: reduce) {
+            transition: none;
+        }
     }
 
     &__string-row {
