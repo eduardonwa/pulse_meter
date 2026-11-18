@@ -7,6 +7,9 @@ import './alphatab-exercises.js'
 window.Alpine = Alpine
 
 const PROTOTYPE_EXERCISE_KEY = 'dorelog:tab-editor-prototype:exercise-v1'
+// The standalone prototype contains one exercise. Keep playback preferences
+// separate from both its saved score and Practice's global preferences.
+const PROTOTYPE_TRANSPORT_KEY = `${PROTOTYPE_EXERCISE_KEY}:transport-v1`
 
 // Standalone UI harness. The real editor still owns persistence, import and playback.
 Alpine.data('tablatureRedesign', () => ({
@@ -20,6 +23,26 @@ Alpine.data('tablatureRedesign', () => ({
     prototypeLoop: false,
     prototypeCountIn: false,
     prototypeMetronome: false,
+    loadPrototypeTransportOptions() {
+        try {
+            const stored = window.localStorage.getItem(PROTOTYPE_TRANSPORT_KEY)
+            if (!stored) return
+            const options = JSON.parse(stored)
+            if (!options || typeof options !== 'object' || Array.isArray(options)) return
+            if (typeof options.loop === 'boolean') this.prototypeLoop = options.loop
+            if (typeof options.countIn === 'boolean') this.prototypeCountIn = options.countIn
+            if (typeof options.metronome === 'boolean') this.prototypeMetronome = options.metronome
+        } catch (error) {
+            console.warn('Could not load prototype transport preferences', error)
+        }
+    },
+    savePrototypeTransportOptions() {
+        try {
+            window.localStorage.setItem(PROTOTYPE_TRANSPORT_KEY, JSON.stringify(this.prototypeTransportOptions()))
+        } catch (error) {
+            console.warn('Could not save prototype transport preferences', error)
+        }
+    },
     prototypeTransportOptions() {
         return { loop: this.prototypeLoop, countIn: this.prototypeCountIn, metronome: this.prototypeMetronome }
     },
@@ -27,6 +50,7 @@ Alpine.data('tablatureRedesign', () => ({
         const key = { loop: 'prototypeLoop', countIn: 'prototypeCountIn', metronome: 'prototypeMetronome' }[option]
         if (!key) return
         this[key] = !this[key]
+        this.savePrototypeTransportOptions()
         window.dispatchEvent(new CustomEvent('alphatab:editor-transport-options', {
             detail: { element: this.$refs.tabEditorPreview, options: this.prototypeTransportOptions() },
         }))
@@ -223,6 +247,7 @@ Alpine.data('tablatureRedesign', () => ({
         this.tabRedoHistory = []
     },
     loadPrototypeExercise() {
+        this.loadPrototypeTransportOptions()
         try {
             const stored = window.localStorage.getItem(PROTOTYPE_EXERCISE_KEY)
             if (!stored) return
