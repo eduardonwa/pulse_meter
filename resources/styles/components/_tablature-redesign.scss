@@ -378,7 +378,9 @@
         background: hsl(var(--sol-500) / .22);
         opacity: 0;
         will-change: transform;
-        transition: transform 90ms linear, opacity 90ms ease-out;
+        // JavaScript updates transform on every animation frame; a CSS transform
+        // transition would make the cursor lag behind each new position.
+        transition: opacity 90ms ease-out;
 
         &.is-visible { opacity: 1; }
 
