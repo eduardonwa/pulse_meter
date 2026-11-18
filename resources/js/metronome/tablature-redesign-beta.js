@@ -4,6 +4,8 @@ import { serializeTabDraft, tabBeatUnits } from './alphatab/tab-editor.js'
 // Beta-only editor state. Leave global Practice controls and persistence untouched.
 export function tablatureRedesignBeta() {
     return {
+    prototypeMessage: '',
+    prototypeMessageType: 'success',
     redesignTransportStorageKey() {
         const index = this.tabEditorEditingIndex
         const step = index === null ? null : this.steps[index]
