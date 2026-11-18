@@ -17,6 +17,19 @@
         padding-block: $size-2;
     }
 
+    // Log and transport stay together at the bottom of the scrolling dialog.
+    &__bottom-dock {
+        position: sticky;
+        bottom: 0;
+        z-index: 30;
+        grid-row: 5;
+        min-width: 0;
+    }
+
+    &__workspace {
+        grid-row: 4;
+    }
+
     &__playback-host {
         position: absolute;
         width: 100%;
@@ -52,6 +65,7 @@
 
         &__playback-host {
             &.is-full-score {
+                grid-row: 4;
                 position: relative;
                 width: 100%;
                 max-width: 100%;
