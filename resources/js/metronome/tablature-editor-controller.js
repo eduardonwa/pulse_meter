@@ -152,7 +152,9 @@ export function tablatureEditorMethods() {
             const measures = this.tabEditorMeasureLayout();
             if (!measures.length) return 'Measure 1 · empty';
             const invalid = measures.filter(measure => !measure.complete).length;
-            return `${measures.length} measure(s) · ${invalid} incomplete or overfull`;
+            return invalid === 0
+                ? `${measures.length} measure(s) · all complete`
+                : `${measures.length} measure(s) · ${invalid} incomplete or overfull`;
         },
 
         tabEditorMeasureWarnings() {
@@ -165,6 +167,10 @@ export function tablatureEditorMethods() {
                         ? `Measure ${index + 1}: ${Number((measure.used - measure.capacity).toFixed(3))} sixteenth-note units over limit`
                         : `Measure ${index + 1}: ${Number((measure.capacity - measure.used).toFixed(3))} sixteenth-note units remaining`,
             }));
+        },
+
+        tabEditorMeasureIssues() {
+            return this.tabEditorMeasureWarnings().filter(measure => measure.status !== 'complete');
         },
 
         tabEditorNoteAt(index, string) {
