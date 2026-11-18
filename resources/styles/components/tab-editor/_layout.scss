@@ -3,8 +3,6 @@
 .tab-editor {
     min-height: 100dvh;
 
-    min-height: 100dvh;
-
     &__editor {
         display: grid;
         grid-template-rows: auto auto auto minmax(0, 1fr) auto;
