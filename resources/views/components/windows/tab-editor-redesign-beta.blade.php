@@ -4,6 +4,7 @@
     @alphatab:playback-state.window="syncPrototypePlayback($event)"
     @alphatab:playback-position.window="syncPrototypePlaybackPosition($event)"
     @alphatab:played-beat.window="syncPrototypePlayedBeat($event)"
+    @alphatab:score-started.window="startPrototypeScorePlayhead($event)"
     @alphatab:playback-finished.window="finishPrototypePlayback($event)"
     @alphatab:load-error.window="prototypePlaybackError($event)">
     {{-- Display toasts inside the modal's top layer while it is open. --}}
