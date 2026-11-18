@@ -9,7 +9,20 @@ const mountPromises = new WeakMap()
 const readyPromises = new WeakMap()
 const renderedBpms = new WeakMap()
 const playbackRequests = new WeakMap()
+// Track the actual score loaded into an alphaTab instance, not just its dataset.
+const editorLoadedScores = new WeakMap()
 const routineLoopModes = new WeakMap()
+// Editor previews have independent, per-element transport controls.
+// Routine/practice preference functions remain unchanged.
+const editorPreviewOptions = new WeakMap()
+function applyEditorPreviewOptions(element, api) {
+    const options = editorPreviewOptions.get(element)
+    if (!options || !api) return false
+    api.countInVolume = options.countIn ? 1 : 0
+    api.metronomeVolume = options.metronome ? 1 : 0
+    api.isLooping = options.loop && !options.countIn
+    return true
+}
 let playbackGeneration = 0
 
 // Native alphaTab looping jumps straight to the first note. To repeat the
@@ -117,6 +130,17 @@ export function dispatchPlaybackState(
     )
 }
 
+// Resolve a seek position against the same MIDI beat map used by alphaTab.
+// Unlike elapsed-time estimates, this respects rests, dots and tuplets.
+function dispatchBeatAtTick(api, element, tick) {
+    if (!Number.isFinite(tick) || tick < 0) return
+    const beat = api.tickCache?.findBeat(new Set([0]), tick)?.currentBeat
+    if (!beat) return
+    window.dispatchEvent(new CustomEvent('alphatab:played-beat', {
+        detail: { element, measureIndex: beat.voice?.bar?.index, beatIndex: beat.index },
+    }))
+}
+
 function scoreScrollContainer(element) {
     return element.closest('.mobile-exercise-view-dialog__content') ?? 'html,body'
 }
@@ -160,6 +184,9 @@ async function mountAlphaTab(element) {
 
             display: {
                 staveProfile: 'Tab',
+                // Keep playback-only MusicXML scores within the editor viewport.
+                // Other Practice scores retain alphaTab's default page padding.
+                ...(isAdminPreview && originalMusicXml ? { padding: [16, 18] } : {}),
             },
 
             player: {
@@ -187,12 +214,46 @@ async function mountAlphaTab(element) {
 
         api.metronomeVolume = 1
         configureCountIn(api)
-        api.playerFinished.on(() => restartExerciseWithCountIn(api, {
-            isActive: () => activeApi === api,
-        }))
+        applyEditorPreviewOptions(element, api)
+        api.playerFinished.on(() => {
+            const editorOptions = editorPreviewOptions.get(element)
+            if (editorOptions?.loop && editorOptions.countIn && activeApi === api) {
+                const generation = playbackGeneration
+                // Native looping skips count-in. Restart a new pass to include it.
+                setTimeout(() => {
+                    if (generation !== playbackGeneration || activeApi !== api ||
+                        !editorPreviewOptions.get(element)?.loop || !editorPreviewOptions.get(element)?.countIn) return
+                    api.stop()
+                    applyEditorPreviewOptions(element, api)
+                    api.play()
+                }, 0)
+                return
+            }
+            if (!editorOptions?.loop) {
+                window.dispatchEvent(new CustomEvent('alphatab:playback-finished', {
+                    detail: { element },
+                }))
+            }
+            if (!editorOptions) restartExerciseWithCountIn(api, { isActive: () => activeApi === api })
+        })
+        // Editor UI has its own grid, so forward the actual alphaTab beat
+        // rather than estimating note positions from elapsed milliseconds.
+        api.playedBeatChanged.on(beat => {
+            window.dispatchEvent(new CustomEvent('alphatab:played-beat', {
+                detail: {
+                    element,
+                    measureIndex: beat?.voice?.bar?.index,
+                    beatIndex: beat?.index,
+                },
+            }))
+        })
 
         let waitingForScoreStart = false
         api.playerPositionChanged.on(args => {
+            window.dispatchEvent(new CustomEvent('alphatab:playback-position', {
+                detail: { element, currentTime: args.currentTime, endTime: args.endTime },
+            }))
+            if (args.isSeek) dispatchBeatAtTick(api, element, args.currentTick)
             if (!waitingForScoreStart || args.currentTick < 0) return
             waitingForScoreStart = false
             window.dispatchEvent(new CustomEvent('alphatab:score-started', {
@@ -210,7 +271,12 @@ async function mountAlphaTab(element) {
         })
 
         const readyPromise = new Promise((resolve, reject) => {
-            api.playerReady.on(() => resolve())
+            api.playerReady.on(() => {
+                window.dispatchEvent(new CustomEvent('alphatab:playback-position', {
+                    detail: { element, currentTime: api.timePosition, endTime: api.endTime },
+                }))
+                resolve()
+            })
             api.error.on(error => {
                 window.dispatchEvent(new CustomEvent('alphatab:load-error', {
                     detail: { element, message: error?.message ?? 'alphaTab could not load this score' },
@@ -232,6 +298,7 @@ async function mountAlphaTab(element) {
         renderedBpms.set(element, originalMusicXml ? musicXmlFirstTempo(originalMusicXml, bpm) : bpm)
 
         await readyPromise
+        if (isAdminPreview) editorLoadedScores.set(element, originalMusicXml ?? pattern)
 
         return api
     })()
@@ -295,14 +362,21 @@ window.addEventListener('alphatab:update', async event => {
 })
 
 window.addEventListener('alphatab:preview-draft', async event => {
-    const { element, alphaTex, musicXml, bpm, play, instrument } = event.detail ?? {}
+    const { element, alphaTex, musicXml, bpm, play, instrument, transportOptions, renderOnly } = event.detail ?? {}
     if (!element) return
 
-    if (!play) {
+    if (!play && !renderOnly) {
         playbackRequests.set(element, ++playbackGeneration)
-        instances.get(element)?.stop()
+        const api = instances.get(element)
+        api?.stop()
+        if (activeApi === api) activeApi = null
         return
     }
+    if (transportOptions) editorPreviewOptions.set(element, {
+        loop: Boolean(transportOptions.loop),
+        countIn: Boolean(transportOptions.countIn),
+        metronome: Boolean(transportOptions.metronome),
+    })
 
     if (!alphaTex && !musicXml) return
 
@@ -327,13 +401,16 @@ window.addEventListener('alphatab:preview-draft', async event => {
         api = await mountAlphaTab(element)
     } catch (error) {
         console.error('alphaTab could not preview the imported score:', error)
+        window.dispatchEvent(new CustomEvent('alphatab:load-error', {
+            detail: { element, message: error?.message ?? 'Could not load the score' },
+        }))
         return
     }
     if (!api || !element.isConnected || playbackRequests.get(element) !== request || playbackGeneration !== request) return
 
     if (activeApi && activeApi !== api) activeApi.stop()
     activeApi = api
-    if (alreadyMounted) {
+    if (alreadyMounted && editorLoadedScores.get(element) !== (musicXml ?? alphaTex)) {
         api.stop()
         if (musicXml) {
             // Native file loading is asynchronous. Never play the previous
@@ -352,14 +429,29 @@ window.addEventListener('alphatab:preview-draft', async event => {
                 })
             } catch (error) {
                 console.error('alphaTab could not load the imported score:', error)
+                window.dispatchEvent(new CustomEvent('alphatab:load-error', {
+                    detail: { element, message: error?.message ?? 'Could not load the MusicXML score' },
+                }))
                 return
             }
         } else api.tex(pattern)
+        editorLoadedScores.set(element, musicXml ?? alphaTex)
     }
     if (playbackRequests.get(element) !== request || playbackGeneration !== request) return
+    if (renderOnly) {
+        api.stop()
+        return
+    }
     api.playbackSpeed = musicXml ? Number(bpm) / musicXmlFirstTempo(musicXml, Number(bpm) || 100) : 1
-    setExerciseLoopMode(api, false)
-    configureCountIn(api)
+    if (!applyEditorPreviewOptions(element, api)) {
+        setExerciseLoopMode(api, false)
+        configureCountIn(api)
+    }
+    // A slider position chosen before the first Play must also affect audio.
+    const seekPercent = Number(event.detail?.seekPercent)
+    if (Number.isFinite(seekPercent) && seekPercent > 0 && Number.isFinite(api.endTime) && api.endTime > 0) {
+        api.timePosition = Math.min(100, Math.max(0, seekPercent)) / 100 * api.endTime
+    }
     api.play()
 })
 
@@ -385,9 +477,12 @@ window.addEventListener('alphatab:play-pause', async event => {
 
         if (activeApi && activeApi !== api) activeApi.stop()
         activeApi = api
-        // Preview is always a single listen, regardless of exercise mode.
-        setExerciseLoopMode(api, false)
-        configureCountIn(api)
+        // Routine viewers remain single-listen previews; the editor instead
+        // preserves its own transport options when pausing and resuming.
+        if (!applyEditorPreviewOptions(element, api)) {
+            setExerciseLoopMode(api, false)
+            configureCountIn(api)
+        }
         api.playPause()
     } catch (error) {
         console.error('AlphaTab preview could not start:', error)
@@ -516,4 +611,27 @@ window.addEventListener('alphatab:render', event => {
 
     syncScoreScrollContainer(api, element)
     api.render()
+})
+
+window.addEventListener('alphatab:seek', event => {
+    const element = event.detail?.element
+    const api = instances.get(element)
+    const percent = Number(event.detail?.percent)
+    if (!api || !Number.isFinite(percent) || !Number.isFinite(api.endTime) || api.endTime <= 0) return
+    const position = Math.max(0, Math.min(100, percent)) / 100 * api.endTime
+    // Seeking updates the playback position directly. Count-in is not
+    // restarted when seeking during its lead-in (known alphaTab limitation).
+    api.timePosition = position
+})
+
+// Update editor transport controls without changing Practice preferences.
+window.addEventListener('alphatab:editor-transport-options', event => {
+    const { element, options } = event.detail ?? {}
+    if (!element || !options) return
+    editorPreviewOptions.set(element, {
+        loop: Boolean(options.loop),
+        countIn: Boolean(options.countIn),
+        metronome: Boolean(options.metronome),
+    })
+    applyEditorPreviewOptions(element, instances.get(element))
 })

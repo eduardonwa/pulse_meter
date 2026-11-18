@@ -32,6 +32,7 @@ export function tablatureEditorMethods() {
             this.tabSelectedIndices = [];
             this.tabSelectionAnchor = null;
             this.tabEditorOpen = true;
+            if (this.$refs.tabEditorDialog?.classList.contains('tab-editor-beta')) this.prepareRedesignEditor();
             this.$nextTick(() => {
                 this.$refs.tabEditorDialog?.showModal();
                 this.updateTabEditorWidth();
@@ -78,6 +79,7 @@ export function tablatureEditorMethods() {
             }
             viewerDialog?.close();
             this.tabEditorOpen = true;
+            if (this.$refs.tabEditorDialog?.classList.contains('tab-editor-beta')) this.prepareRedesignEditor();
             this.$nextTick(() => {
                 this.$refs.tabEditorDialog?.showModal();
                 this.updateTabEditorWidth();
@@ -161,7 +163,8 @@ export function tablatureEditorMethods() {
         },
 
         closeNewTabEditor() {
-            this.stopTabEditorPreview();
+            if (this.$refs.tabEditorDialog?.classList.contains('tab-editor-beta')) this.stopPrototypePlayback();
+            else this.stopTabEditorPreview();
             this.finishPendingTabDigit(false);
             this.$refs.tabEditorDialog?.close();
             this.tabEditorOpen = false;
@@ -603,7 +606,14 @@ export function tablatureEditorMethods() {
             } else if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
                 event.preventDefault();
                 const delta = event.key === 'ArrowLeft' ? -1 : 1;
-                const index = Math.max(0, Math.min(this.tabDraft.beats.length, this.tabSelectedIndex + delta));
+                // Shift+Arrow selects existing beats only. The extra caret
+                // position after the final beat must not clear the selection
+                // when key repeat continues at the end of the score.
+                const lastIndex = this.tabDraft.beats.length - 1;
+                if (event.shiftKey && lastIndex < 0) return;
+                const maxIndex = event.shiftKey ? lastIndex : this.tabDraft.beats.length;
+                const index = Math.max(0, Math.min(maxIndex, this.tabSelectedIndex + delta));
+                if (event.shiftKey && index === this.tabSelectedIndex) return;
                 this.selectTabEditorCell(index, this.tabDraft.beats[index]?.string ?? this.tabDraft.string, event.shiftKey ? { shiftKey: true } : null);
             } else if (event.key === '+' || event.key === '=' || event.key === '-') {
                 event.preventDefault();
@@ -673,8 +683,10 @@ export function tablatureEditorMethods() {
                         }));
                     });
                     if (closeAfterSave) {
+                        const isBeta = this.$refs.tabEditorDialog?.classList.contains('tab-editor-beta')
                         this.closeNewTabEditor();
                         this.resetStepForm();
+                        if (isBeta) this.showToast?.('Tablature saved', 'success');
                     } else {
                         this.showToast?.('Tablature saved', 'success');
                     }
@@ -701,8 +713,10 @@ export function tablatureEditorMethods() {
                     has_tablature: true,
                 });
                 if (closeAfterSave) {
+                    const isBeta = this.$refs.tabEditorDialog?.classList.contains('tab-editor-beta')
                     this.closeNewTabEditor();
                     this.resetStepForm();
+                    if (isBeta) this.showToast?.('Tablature saved', 'success');
                 } else {
                     this.showToast?.('Tablature saved', 'success');
                 }

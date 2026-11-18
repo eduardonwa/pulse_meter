@@ -246,3 +246,11 @@ Route::post(
 )
     ->middleware(['auth', 'can:use-paid-pro'])
     ->name('routines.save-copy');
+
+// DEV ROUTES
+if (app()->environment('local')) {
+    Route::view(
+        '/dev/tablature-editor',
+        'dev.tablature-editor'
+    );
+}

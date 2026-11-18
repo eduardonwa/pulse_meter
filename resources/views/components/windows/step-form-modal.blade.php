@@ -137,6 +137,10 @@
 {{-- Separate native dialog: the exercise does not exist until Save is confirmed. --}}
 
 @can('use-pro')
+    {{-- The redesigned editor is the default. Keep the legacy dialog available only for temporary compatibility with full-score MusicXML imports. --}}
+    @if(!request()->boolean('tab_editor_legacy'))
+        @include('components.windows.tab-editor-redesign-beta')
+    @else
     <dialog class="dialog-shell dialog-shell--bottom-sheet mobile-exercise-view-dialog is-fullscreen" x-ref="tabEditorDialog"
         @alphatab:playback-state.window="if ($event.detail?.element === $refs.tabEditorPreview) tabPreviewPlaying = Boolean($event.detail.playing)"
         @alphatab:load-error.window="if ($event.detail?.element === $refs.tabEditorPreview) { tabPreviewPlaying = false; showToast?.($event.detail.message, 'error') }"
@@ -373,4 +377,5 @@
                 </div>
             </div>
     </dialog>
+    @endif
 @endcan
