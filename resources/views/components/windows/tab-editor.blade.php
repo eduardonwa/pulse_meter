@@ -100,10 +100,6 @@
                             Dismiss
                         </button>
                     </div>
-
-                    <small x-show="!canImportPrototypeMusicXmlForEditing()">
-                        Full-score import preserves the MusicXML source. Playback compatibility depends on alphaTab.
-                    </small>
                 </div>
             </section>
 

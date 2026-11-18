@@ -2,7 +2,6 @@
 
 .tab-editor {
     // Mobile styles (base) go here.
-
     @include mq(medium) {
         // Bottom-docked log: visible toggle, expandable diagnostics above it.
         &__log {

@@ -503,6 +503,15 @@
 
     .exercise-row__notation { display: block; }
 
+    .exercise-row__audio-controls {
+        padding: $size-4;
+        display: flex;
+
+        .badge {
+            margin-inline: auto;
+        }
+    }
+
     @include mq(extraLarge) {
         height: 60vh;
     }
