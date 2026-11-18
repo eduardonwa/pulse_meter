@@ -25,21 +25,16 @@ function editorStartTick(api, percent) {
 }
 
 function restartEditorCountIn(api, element, percent) {
-    const generation = playbackGeneration
-    const restart = { generation }
-    editorSeekRestarts.set(api, restart)
-    // Stop first; alphaTab documents stop() as moving the playback back to
-    // the beginning. Setting timePosition before play() would be overwritten.
+    const existing = editorSeekRestarts.get(api)
+    if (existing) {
+        existing.percent = percent
+        return
+    }
+    // A request is held until the synth acknowledges stop(). Configuring the
+    // range or replaying before that acknowledgement races with the old count-in.
+    editorSeekRestarts.set(api, { generation: playbackGeneration, percent })
+    editorCountInActive.set(api, false)
     api.stop()
-    api.playbackRange = { startTick: editorStartTick(api, percent), endTick: api.endTick }
-    applyEditorPreviewOptions(element, api)
-    // Do not call play() from inside alphaTab's current position event.
-    setTimeout(() => {
-        if (editorSeekRestarts.get(api) !== restart || playbackGeneration !== generation || activeApi !== api) return
-        editorSeekRestarts.delete(api)
-        editorCountInActive.set(api, false)
-        api.play()
-    }, 0)
 }
 
 
@@ -250,6 +245,7 @@ async function mountAlphaTab(element) {
                         !editorPreviewOptions.get(element)?.loop || !editorPreviewOptions.get(element)?.countIn) return
                     api.stop()
                     applyEditorPreviewOptions(element, api)
+                    editorCountInActive.set(api, true)
                     api.play()
                 }, 0)
                 return
@@ -264,6 +260,7 @@ async function mountAlphaTab(element) {
         // Editor UI has its own grid, so forward the actual alphaTab beat
         // rather than estimating note positions from elapsed milliseconds.
         api.playedBeatChanged.on(beat => {
+            if (editorPreviewOptions.has(element)) editorCountInActive.set(api, false)
             window.dispatchEvent(new CustomEvent('alphatab:played-beat', {
                 detail: {
                     element,
@@ -275,9 +272,9 @@ async function mountAlphaTab(element) {
 
         let waitingForScoreStart = false
         api.playerPositionChanged.on(args => {
-            // Ignore the stop/reset position while restarting the count-in.
+            // During count-in alphaTab may not emit position events at all.
+            // Track that phase from play() until the first actual score beat.
             if (editorSeekRestarts.has(api)) return
-            if (editorPreviewOptions.has(element)) editorCountInActive.set(api, args.currentTick < 0)
             window.dispatchEvent(new CustomEvent('alphatab:playback-position', {
                 detail: { element, currentTime: args.currentTime, endTime: args.endTime },
             }))
@@ -290,7 +287,19 @@ async function mountAlphaTab(element) {
         })
 
         api.playerStateChanged.on(args => {
-            if (editorSeekRestarts.has(api)) return
+            const restart = editorSeekRestarts.get(api)
+            if (restart) {
+                if (args.stopped && args.state === alphaTab.synth.PlayerState.Paused) {
+                    editorSeekRestarts.delete(api)
+                    if (restart.generation === playbackGeneration && activeApi === api) {
+                        api.playbackRange = { startTick: editorStartTick(api, restart.percent), endTick: api.endTick }
+                        applyEditorPreviewOptions(element, api)
+                        editorCountInActive.set(api, true)
+                        api.play()
+                    }
+                }
+                return
+            }
             waitingForScoreStart = args.state === alphaTab.synth.PlayerState.Playing
             dispatchPlaybackState(
                 element,
@@ -396,7 +405,10 @@ window.addEventListener('alphatab:preview-draft', async event => {
     if (!play) {
         playbackRequests.set(element, ++playbackGeneration)
         const api = instances.get(element)
-        if (api) editorSeekRestarts.delete(api)
+        if (api) {
+            editorSeekRestarts.delete(api)
+            editorCountInActive.set(api, false)
+        }
         api?.stop()
         if (activeApi === api) activeApi = null
         return
@@ -476,6 +488,7 @@ window.addEventListener('alphatab:preview-draft', async event => {
             api.timePosition = Math.min(100, Math.max(0, seekPercent)) / 100 * api.endTime
         }
     }
+    editorCountInActive.set(api, Boolean(editorPreviewOptions.get(element)?.countIn))
     api.play()
 })
 
@@ -507,6 +520,8 @@ window.addEventListener('alphatab:play-pause', async event => {
             setExerciseLoopMode(api, false)
             configureCountIn(api)
         }
+        const wasPlaying = api.playerState === (await getAlphaTab()).synth.PlayerState.Playing
+        editorCountInActive.set(api, !wasPlaying && Boolean(editorPreviewOptions.get(element)?.countIn))
         api.playPause()
     } catch (error) {
         console.error('AlphaTab preview could not start:', error)
@@ -564,6 +579,7 @@ window.addEventListener('alphatab:stop', () => {
     ++playbackGeneration
     if (activeApi) {
         editorSeekRestarts.delete(activeApi)
+        editorCountInActive.set(activeApi, false)
         setExerciseLoopMode(activeApi, false)
     }
     activeApi?.stop()
@@ -648,6 +664,10 @@ window.addEventListener('alphatab:seek', event => {
     const position = Math.max(0, Math.min(100, percent)) / 100 * api.endTime
     // Seeking during a count-in invalidates the old lead-in. Stop the
     // current pass and wait for the Paused state before starting a new one.
+    if (editorSeekRestarts.has(api)) {
+        editorSeekRestarts.get(api).percent = percent
+        return
+    }
     if (editorPreviewOptions.get(element)?.countIn && editorCountInActive.get(api) && activeApi === api) {
         restartEditorCountIn(api, element, percent)
         return
