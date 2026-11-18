@@ -1,4 +1,4 @@
-{{-- Opt-in real-routine editor; legacy editor remains the default. --}}
+{{-- Default real-routine editor; legacy available for compatibility. --}}
 <dialog class="tab-editor-beta" x-ref="tabEditorDialog"
     @cancel.prevent="closeNewTabEditor()" @close="tabEditorOpen = false"
     @alphatab:playback-state.window="syncPrototypePlayback($event)"
@@ -46,10 +46,10 @@
                     @change="importPrototypeMusicXml($event)" class="sr-only">
             </label>
 
-            <div class="tab-editor__import-panel" x-show="prototypeMusicXmlImport" x-cloak>
-                <p x-text="`${prototypeMusicXmlImport?.sections.length ?? 0} editable section(s) found. Select a section to replace the current unsaved score.`"></p>
+            <div class="tab-editor__import-panel" x-show="prototypeMusicXmlFullSource" x-cloak>
+                <p x-text="prototypeMusicXmlImport?.sections?.length ? `${prototypeMusicXmlImport.sections.length} editable section(s) found. Choose one, or keep the complete score for playback.` : `No editable sections found. You can still import the complete score for playback.`"></p>
 
-                <label class="tab-editor__field">
+                <label class="tab-editor__field" x-show="prototypeMusicXmlImport?.sections?.length">
                     <span>Section</span>
                     <select x-model.number="prototypeMusicXmlSelectedSection">
                         <template x-for="(section, index) in (prototypeMusicXmlImport?.sections ?? [])" :key="index">
@@ -69,11 +69,12 @@
 
                 <div class="tab-editor__import-actions">
                     <button class="button" data-type="primary" type="button"
-                        @click="applyPrototypeMusicXmlSection()">Use selected section</button>
+                        x-show="prototypeMusicXmlImport?.sections?.length" @click="applyPrototypeMusicXmlSection()">Use selected section</button>
+                    <button class="button" data-type="outline" type="button" @click="applyPrototypeMusicXmlFullScore()">Import complete score (playback only)</button>
                     <button class="button" data-type="outline" type="button"
-                        @click="prototypeMusicXmlImport = null">Dismiss</button>
+                        @click="prototypeMusicXmlImport = null; prototypeMusicXmlFullSource = null">Dismiss</button>
                 </div>
-                <small>Only editable guitar tablature sections can be imported in this editor.</small>
+                <small>Editable sections allow note changes. Full-score mode preserves the MusicXML source for playback; actual compatibility depends on alphaTab.</small>
             </div>
         </section>
 
@@ -168,7 +169,7 @@
         </section>
 
         {{-- main editing area --}}
-        <section class="tab-editor__workspace" aria-label="Tablature workspace" x-init="$nextTick(() => updateTabEditorWidth())"
+        <section class="tab-editor__workspace" x-show="!tabFullMusicXml" aria-label="Tablature workspace" x-init="$nextTick(() => updateTabEditorWidth())"
             @keydown="handleTabEditorKey($event)"
             @resize.window="updateTabEditorWidth()"
             @pointerup.window="endTabDrag()"
@@ -279,7 +280,7 @@
         </section>
 
         {{-- Playback uses the existing alphaTab engine without replacing the editable grid. --}}
-        <div class="tab-editor__playback-host" x-ref="tabEditorPreview" data-alphatab data-admin-preview="true" aria-hidden="true"></div>
+        <div class="tab-editor__playback-host" :class="{ 'is-full-score': tabFullMusicXml }" x-ref="tabEditorPreview" data-alphatab data-admin-preview="true" :aria-hidden="(!tabFullMusicXml).toString()"></div>
 
         {{-- playback controls --}}
         <footer class="tab-editor__transport">
@@ -305,7 +306,7 @@
                     <span class="tab-editor__progress-stop"></span>
                 </div>
                 <input class="tab-editor__progress-input" type="range" min="0" max="100" step="0.1"
-                    :value="prototypeProgress" :disabled="!tabDraft.beats.length || prototypePlaybackLoading"
+                    :value="prototypeProgress" :disabled="(!tabDraft.beats.length && !tabFullMusicXml) || prototypePlaybackLoading"
                     @input="previewPrototypeSeek($event.target.value)"
                     @change="seekPrototypePlayback($event.target.value)"
                     aria-label="Playback position" :aria-valuetext="`${Math.round(prototypeProgress)}% of tablature`">
