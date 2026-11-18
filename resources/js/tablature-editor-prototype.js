@@ -19,6 +19,27 @@ Alpine.data('tablatureRedesign', () => ({
     prototypePlaying: false,
     prototypePlaybackLoading: false,
     prototypePlaybackScore: null,
+    prototypeProgress: 0,
+    prototypeDurationMs: 0,
+    prototypeCurrentMs: 0,
+    syncPrototypePlaybackPosition(event) {
+        if (event.detail?.element !== this.$refs.tabEditorPreview) return
+        const duration = Number(event.detail.endTime)
+        const current = Number(event.detail.currentTime)
+        if (!Number.isFinite(duration) || duration <= 0 || !Number.isFinite(current)) return
+        this.prototypeDurationMs = duration
+        this.prototypeCurrentMs = Math.max(0, Math.min(duration, current))
+        this.prototypeProgress = this.prototypeCurrentMs / duration * 100
+    },
+    seekPrototypePlayback(value) {
+        if (this.prototypeDurationMs <= 0 || this.prototypePlaybackLoading) return
+        const percent = Math.max(0, Math.min(100, Number(value) || 0))
+        this.prototypeProgress = percent
+        this.prototypeCurrentMs = percent / 100 * this.prototypeDurationMs
+        window.dispatchEvent(new CustomEvent('alphatab:seek', {
+            detail: { element: this.$refs.tabEditorPreview, percent },
+        }))
+    },
     stopPrototypePlayback() {
         const element = this.$refs.tabEditorPreview
         if (element) window.dispatchEvent(new CustomEvent('alphatab:preview-draft', {
@@ -27,6 +48,9 @@ Alpine.data('tablatureRedesign', () => ({
         this.prototypePlaying = false
         this.prototypePlaybackLoading = false
         this.prototypePlaybackScore = null
+        this.prototypeProgress = 0
+        this.prototypeDurationMs = 0
+        this.prototypeCurrentMs = 0
     },
     syncPrototypePlayback(event) {
         if (event.detail?.element !== this.$refs.tabEditorPreview) return
@@ -59,6 +83,9 @@ Alpine.data('tablatureRedesign', () => ({
             return
         }
         this.prototypePlaybackLoading = true
+        this.prototypeProgress = 0
+        this.prototypeDurationMs = 0
+        this.prototypeCurrentMs = 0
         this.prototypePlaybackScore = alphaTex
         window.dispatchEvent(new CustomEvent('alphatab:preview-draft', {
             detail: { element, alphaTex, bpm: Number(this.stepForm.bpm),
