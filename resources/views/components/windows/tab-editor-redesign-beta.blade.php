@@ -217,10 +217,10 @@
                         </div>
 
                         <div class="tab-editor__grid">
-                            <template x-if="system.some(column => !column.insertion && column.index === prototypePlayingBeatIndex)">
-                                <div class="tab-editor__playhead" aria-hidden="true"
-                                    :style="`left: ${Math.max(0, system.findIndex(column => !column.insertion && column.index === prototypePlayingBeatIndex)) * 40}px`"></div>
-                            </template>
+                            {{-- Keep the playhead mounted per system so its transform can animate between beats. --}}
+                            <div class="tab-editor__playhead" aria-hidden="true"
+                                :class="{ 'is-visible': system.some(column => !column.insertion && column.index === prototypePlayingBeatIndex) }"
+                                :style="`transform: translate3d(${Math.max(0, system.findIndex(column => !column.insertion && column.index === prototypePlayingBeatIndex)) * 40}px, 0, 0)`"></div>
                             <template x-for="(name, stringIndex) in tabStringNames" :key="stringIndex">
                                 <div class="tab-editor__string-row">
                                     <template x-for="column in system" :key="`${column.index}-${column.insertion}`">
