@@ -13,6 +13,7 @@ const routineLoopModes = new WeakMap()
 // Editor previews have independent, per-element transport controls.
 // Routine/practice preference functions remain unchanged.
 const editorPreviewOptions = new WeakMap()
+const editorCountInActive = new WeakMap()
 
 function applyEditorPreviewOptions(element, api) {
     const options = editorPreviewOptions.get(element)
@@ -246,6 +247,7 @@ async function mountAlphaTab(element) {
 
         let waitingForScoreStart = false
         api.playerPositionChanged.on(args => {
+            if (editorPreviewOptions.has(element)) editorCountInActive.set(api, args.currentTick < 0)
             window.dispatchEvent(new CustomEvent('alphatab:playback-position', {
                 detail: { element, currentTime: args.currentTime, endTime: args.endTime },
             }))
@@ -602,7 +604,19 @@ window.addEventListener('alphatab:seek', event => {
     const api = instances.get(element)
     const percent = Number(event.detail?.percent)
     if (!api || !Number.isFinite(percent) || !Number.isFinite(api.endTime) || api.endTime <= 0) return
-    api.timePosition = Math.max(0, Math.min(100, percent)) / 100 * api.endTime
+    const position = Math.max(0, Math.min(100, percent)) / 100 * api.endTime
+    // Seeking inside the negative-tick count-in can strand the synthesizer in
+    // Playing without reaching the score. Restart a clean count-in from the
+    // requested position instead. Regular seeking retains pause/play state.
+    if (editorPreviewOptions.has(element) && editorCountInActive.get(api) && activeApi === api) {
+        api.stop()
+        editorCountInActive.set(api, false)
+        api.timePosition = position
+        applyEditorPreviewOptions(element, api)
+        api.play()
+        return
+    }
+    api.timePosition = position
     // The alphaTab position event refreshes the exact beat even while paused.
 })
 
