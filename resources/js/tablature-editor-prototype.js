@@ -1,5 +1,5 @@
 import { Alpine } from '../../vendor/livewire/livewire/dist/livewire.esm'
-import { createTabDraft, TAB_STRINGS, serializeTabDraft, parseTabDraft } from './metronome/alphatab/tab-editor.js'
+import { createTabDraft, TAB_STRINGS, serializeTabDraft, parseTabDraft, tabBeatUnits } from './metronome/alphatab/tab-editor.js'
 import { tablatureEditorMethods } from './metronome/tablature-editor-controller.js'
 import { parseMusicXmlTab } from './metronome/alphatab/musicxml-import.js'
 import './alphatab-exercises.js'
@@ -20,6 +20,25 @@ Alpine.data('tablatureRedesign', () => ({
     prototypePlaybackLoading: false,
     prototypePlaybackScore: null,
     prototypePlayingBeatIndex: null,
+    // Approximate the destination immediately from the editable rhythm;
+    // alphaTab corrects it using the actual MIDI tick after a seek.
+    showPrototypeBeatAtPercent(percent) {
+        const beats = this.tabDraft.beats
+        if (!beats.length) {
+            this.prototypePlayingBeatIndex = null
+            return
+        }
+        const lengths = beats.map(beat => tabBeatUnits(beat))
+        const total = lengths.reduce((sum, length) => sum + length, 0)
+        let position = Math.min(1 - Number.EPSILON, Math.max(0, percent / 100)) * total
+        for (let index = 0; index < beats.length; index++) {
+            position -= lengths[index]
+            if (position < 0 || index === beats.length - 1) {
+                this.prototypePlayingBeatIndex = index
+                return
+            }
+        }
+    },
     syncPrototypePlayedBeat(event) {
         if (event.detail?.element !== this.$refs.tabEditorPreview) return
         const measureIndex = Number(event.detail.measureIndex)
@@ -48,10 +67,11 @@ Alpine.data('tablatureRedesign', () => ({
         this.prototypeProgress = this.prototypeCurrentMs / duration * 100
     },
     seekPrototypePlayback(value) {
-        if (this.prototypeDurationMs <= 0 || this.prototypePlaybackLoading) return
+        if (!this.tabDraft.beats.length || this.prototypePlaybackLoading) return
         const percent = Math.max(0, Math.min(100, Number(value) || 0))
         this.prototypeProgress = percent
         this.prototypeCurrentMs = percent / 100 * this.prototypeDurationMs
+        this.showPrototypeBeatAtPercent(percent)
         window.dispatchEvent(new CustomEvent('alphatab:seek', {
             detail: { element: this.$refs.tabEditorPreview, percent },
         }))
@@ -101,14 +121,13 @@ Alpine.data('tablatureRedesign', () => ({
             return
         }
         this.prototypePlaybackLoading = true
-        this.prototypePlayingBeatIndex = null
-        this.prototypeProgress = 0
+        const seekPercent = this.prototypeProgress
         this.prototypeDurationMs = 0
         this.prototypeCurrentMs = 0
         this.prototypePlaybackScore = alphaTex
         window.dispatchEvent(new CustomEvent('alphatab:preview-draft', {
             detail: { element, alphaTex, bpm: Number(this.stepForm.bpm),
-                instrument: this.tabDraft.instrument, play: true },
+                instrument: this.tabDraft.instrument, seekPercent, play: true },
         }))
     },
     prototypeMusicXmlImport: null,
