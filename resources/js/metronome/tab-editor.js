@@ -29,7 +29,6 @@ export function tabEditor() {
         this.prototypeMusicXmlIssue = ''
         this.prototypeMusicXmlFileName = ''
         this.prototypeMusicXmlInitialBpm = null
-        this.prototypeMusicXmlSelectedSection = 0
         this.prototypeLoop = false
         this.prototypeCountIn = false
         this.prototypeMetronome = false
@@ -323,7 +322,6 @@ export function tabEditor() {
     },
     prototypeMusicXmlFileName: '',
     prototypeMusicXmlInitialBpm: null,
-    prototypeMusicXmlSelectedSection: 0,
     async importPrototypeMusicXml(event) {
         const input = event.target
         const file = input.files?.[0]
@@ -355,8 +353,7 @@ export function tabEditor() {
                 this.prototypeMusicXmlImport = null
                 this.prototypeMusicXmlIssue = error?.message || 'The editor cannot read this notation.'
             }
-            this.prototypeMusicXmlSelectedSection = 0
-            this.prototypeMessageType = 'success'
+                this.prototypeMessageType = 'success'
             this.prototypeMessage = this.canImportPrototypeMusicXmlForEditing()
                 ? 'This tablature is ready to edit.'
                 : 'This score can be imported for playback only.'
