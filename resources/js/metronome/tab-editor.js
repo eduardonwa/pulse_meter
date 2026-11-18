@@ -26,6 +26,7 @@ export function tabEditor() {
         this.prototypeCurrentMs = 0
         this.prototypeMusicXmlImport = null
         this.prototypeMusicXmlFullSource = null
+        this.prototypeMusicXmlIssue = ''
         this.prototypeMusicXmlFileName = ''
         this.prototypeMusicXmlInitialBpm = null
         this.prototypeMusicXmlSelectedSection = 0
@@ -309,6 +310,17 @@ export function tabEditor() {
     },
     prototypeMusicXmlImport: null,
     prototypeMusicXmlFullSource: null,
+    prototypeMusicXmlIssue: '',
+    canImportPrototypeMusicXmlForEditing() {
+        const imported = this.prototypeMusicXmlImport
+        return Boolean(imported?.sections?.length === 1 && !imported.warnings?.length &&
+            imported.sections[0].firstMeasure === 1)
+    },
+    dismissPrototypeMusicXml() {
+        this.prototypeMusicXmlImport = null
+        this.prototypeMusicXmlFullSource = null
+        this.prototypeMusicXmlIssue = ''
+    },
     prototypeMusicXmlFileName: '',
     prototypeMusicXmlInitialBpm: null,
     prototypeMusicXmlSelectedSection: 0,
@@ -319,6 +331,7 @@ export function tabEditor() {
         if (!file) return
         this.prototypeMusicXmlImport = null
         this.prototypeMusicXmlFullSource = null
+        this.prototypeMusicXmlIssue = ''
         if (!/\.(xml|musicxml)$/i.test(file.name) || file.size > 2_000_000) {
             this.prototypeMessageType = 'error'
             this.prototypeMessage = 'Choose an uncompressed .xml or .musicxml file under 2 MB.'
@@ -338,15 +351,19 @@ export function tabEditor() {
                 doc.querySelector('metronome per-minute')?.textContent)
             this.prototypeMusicXmlInitialBpm = Number.isFinite(bpm) && bpm >= 30 && bpm <= 400 ? Math.round(bpm) : null
             try { this.prototypeMusicXmlImport = parseMusicXmlTab(xml) }
-            catch { this.prototypeMusicXmlImport = null }
+            catch (error) {
+                this.prototypeMusicXmlImport = null
+                this.prototypeMusicXmlIssue = error?.message || 'The editor cannot read this notation.'
+            }
             this.prototypeMusicXmlSelectedSection = 0
             this.prototypeMessageType = 'success'
-            this.prototypeMessage = this.prototypeMusicXmlImport?.sections?.length
-                ? 'Choose an editable section, or import the complete score for playback only.'
-                : 'No editable sections found. The complete score can still be imported for playback.'
+            this.prototypeMessage = this.canImportPrototypeMusicXmlForEditing()
+                ? 'This tablature is ready to edit.'
+                : 'This score can be imported for playback only.'
         } catch (error) {
             this.prototypeMusicXmlFullSource = null
             this.prototypeMusicXmlImport = null
+            this.prototypeMusicXmlIssue = ''
             this.prototypeMessageType = 'error'
             this.prototypeMessage = error?.message || 'Unable to import MusicXML.'
         }
@@ -374,14 +391,16 @@ export function tabEditor() {
         this.tabInsertAtBar = false
         this.prototypeMusicXmlImport = null
         this.prototypeMusicXmlFullSource = null
+        this.prototypeMusicXmlIssue = ''
         this.prototypeMusicXmlInitialBpm = null
         this.prototypeMessageType = 'success'
         this.prototypeMessage = 'Complete score imported for playback only. Save to keep it in your routine.'
         this.renderPrototypeFullScore()
     },
     applyPrototypeMusicXmlSection() {
+        if (!this.canImportPrototypeMusicXmlForEditing()) return
         const imported = this.prototypeMusicXmlImport
-        const section = imported?.sections?.[Number(this.prototypeMusicXmlSelectedSection)]
+        const section = imported.sections[0]
         if (!section) return
         // Keep the last saved exercise untouched until the user explicitly saves.
         this.stopPrototypePlayback()
@@ -399,7 +418,7 @@ export function tabEditor() {
         this.tabInsertAtBar = false
         this.prototypeMusicXmlImport = null
         this.prototypeMessageType = 'success'
-        this.prototypeMessage = 'Imported editable MusicXML section. Save to keep it in this routine.'
+        this.prototypeMessage = 'Imported tablature for editing. Save to keep it in this routine.'
         this.$nextTick(() => this.updateTabEditorWidth())
     },
 
