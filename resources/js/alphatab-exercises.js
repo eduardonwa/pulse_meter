@@ -9,6 +9,8 @@ const mountPromises = new WeakMap()
 const readyPromises = new WeakMap()
 const renderedBpms = new WeakMap()
 const playbackRequests = new WeakMap()
+// Track the actual score loaded into an alphaTab instance, not just its dataset.
+const editorLoadedScores = new WeakMap()
 const routineLoopModes = new WeakMap()
 // Editor previews have independent, per-element transport controls.
 // Routine/practice preference functions remain unchanged.
@@ -296,6 +298,7 @@ async function mountAlphaTab(element) {
         renderedBpms.set(element, originalMusicXml ? musicXmlFirstTempo(originalMusicXml, bpm) : bpm)
 
         await readyPromise
+        if (isAdminPreview) editorLoadedScores.set(element, originalMusicXml ?? pattern)
 
         return api
     })()
@@ -398,13 +401,16 @@ window.addEventListener('alphatab:preview-draft', async event => {
         api = await mountAlphaTab(element)
     } catch (error) {
         console.error('alphaTab could not preview the imported score:', error)
+        window.dispatchEvent(new CustomEvent('alphatab:load-error', {
+            detail: { element, message: error?.message ?? 'Could not load the score' },
+        }))
         return
     }
     if (!api || !element.isConnected || playbackRequests.get(element) !== request || playbackGeneration !== request) return
 
     if (activeApi && activeApi !== api) activeApi.stop()
     activeApi = api
-    if (alreadyMounted) {
+    if (alreadyMounted && editorLoadedScores.get(element) !== (musicXml ?? alphaTex)) {
         api.stop()
         if (musicXml) {
             // Native file loading is asynchronous. Never play the previous
@@ -423,9 +429,13 @@ window.addEventListener('alphatab:preview-draft', async event => {
                 })
             } catch (error) {
                 console.error('alphaTab could not load the imported score:', error)
+                window.dispatchEvent(new CustomEvent('alphatab:load-error', {
+                    detail: { element, message: error?.message ?? 'Could not load the MusicXML score' },
+                }))
                 return
             }
         } else api.tex(pattern)
+        editorLoadedScores.set(element, musicXml ?? alphaTex)
     }
     if (playbackRequests.get(element) !== request || playbackGeneration !== request) return
     if (renderOnly) {
