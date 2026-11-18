@@ -14,7 +14,8 @@
         @alphatab:playback-position.window="syncPrototypePlaybackPosition($event)"
         @alphatab:played-beat.window="syncPrototypePlayedBeat($event)"
         @alphatab:playback-finished.window="finishPrototypePlayback($event)"
-        @alphatab:load-error.window="prototypePlaybackError($event)">
+        @alphatab:load-error.window="prototypePlaybackError($event)"
+    >
         <div class="tab-editor__prototype-state" x-show="!prototypeEditorOpen" x-cloak>
             <p x-text="prototypeSaved ? 'Exercise saved in this browser (prototype only).' : 'Editor closed without a saved exercise.'"></p>
             <button type="button" class="button" data-type="outline" @click="reopenPrototypeExercise()">Reopen editor</button>

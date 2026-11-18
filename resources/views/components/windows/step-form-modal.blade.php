@@ -137,5 +137,5 @@
 {{-- Separate native dialog: the exercise does not exist until Save is confirmed. --}}
 
 @can('use-pro')
-    @include('components.windows.tab-editor-redesign-beta')
+    @include('components.windows.tab-editor')
 @endcan
