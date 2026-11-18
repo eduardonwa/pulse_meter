@@ -13,31 +13,6 @@ const routineLoopModes = new WeakMap()
 // Editor previews have independent, per-element transport controls.
 // Routine/practice preference functions remain unchanged.
 const editorPreviewOptions = new WeakMap()
-const editorCountInActive = new WeakMap()
-const editorSeekRestarts = new WeakMap()
-
-// Editor scores are generated at a constant BPM. A range start defines the
-// requested entry before play() so alphaTab can synthesize a fresh count-in.
-function editorStartTick(api, percent) {
-    const end = Number(api.endTick)
-    if (!Number.isFinite(end) || end <= 0) return 0
-    return Math.max(0, Math.min(end - 1, Math.round(end * Math.min(100, Math.max(0, percent)) / 100)))
-}
-
-function restartEditorCountIn(api, element, percent) {
-    const existing = editorSeekRestarts.get(api)
-    if (existing) {
-        existing.percent = percent
-        return
-    }
-    // A request is held until the synth acknowledges stop(). Configuring the
-    // range or replaying before that acknowledgement races with the old count-in.
-    editorSeekRestarts.set(api, { generation: playbackGeneration, percent })
-    editorCountInActive.set(api, false)
-    api.stop()
-}
-
-
 function applyEditorPreviewOptions(element, api) {
     const options = editorPreviewOptions.get(element)
     if (!options || !api) return false
@@ -245,7 +220,6 @@ async function mountAlphaTab(element) {
                         !editorPreviewOptions.get(element)?.loop || !editorPreviewOptions.get(element)?.countIn) return
                     api.stop()
                     applyEditorPreviewOptions(element, api)
-                    editorCountInActive.set(api, true)
                     api.play()
                 }, 0)
                 return
@@ -260,7 +234,6 @@ async function mountAlphaTab(element) {
         // Editor UI has its own grid, so forward the actual alphaTab beat
         // rather than estimating note positions from elapsed milliseconds.
         api.playedBeatChanged.on(beat => {
-            if (editorPreviewOptions.has(element)) editorCountInActive.set(api, false)
             window.dispatchEvent(new CustomEvent('alphatab:played-beat', {
                 detail: {
                     element,
@@ -272,9 +245,6 @@ async function mountAlphaTab(element) {
 
         let waitingForScoreStart = false
         api.playerPositionChanged.on(args => {
-            // During count-in alphaTab may not emit position events at all.
-            // Track that phase from play() until the first actual score beat.
-            if (editorSeekRestarts.has(api)) return
             window.dispatchEvent(new CustomEvent('alphatab:playback-position', {
                 detail: { element, currentTime: args.currentTime, endTime: args.endTime },
             }))
@@ -287,19 +257,6 @@ async function mountAlphaTab(element) {
         })
 
         api.playerStateChanged.on(args => {
-            const restart = editorSeekRestarts.get(api)
-            if (restart) {
-                if (args.stopped && args.state === alphaTab.synth.PlayerState.Paused) {
-                    editorSeekRestarts.delete(api)
-                    if (restart.generation === playbackGeneration && activeApi === api) {
-                        api.playbackRange = { startTick: editorStartTick(api, restart.percent), endTick: api.endTick }
-                        applyEditorPreviewOptions(element, api)
-                        editorCountInActive.set(api, true)
-                        api.play()
-                    }
-                }
-                return
-            }
             waitingForScoreStart = args.state === alphaTab.synth.PlayerState.Playing
             dispatchPlaybackState(
                 element,
@@ -405,10 +362,6 @@ window.addEventListener('alphatab:preview-draft', async event => {
     if (!play) {
         playbackRequests.set(element, ++playbackGeneration)
         const api = instances.get(element)
-        if (api) {
-            editorSeekRestarts.delete(api)
-            editorCountInActive.set(api, false)
-        }
         api?.stop()
         if (activeApi === api) activeApi = null
         return
@@ -447,7 +400,6 @@ window.addEventListener('alphatab:preview-draft', async event => {
     if (!api || !element.isConnected || playbackRequests.get(element) !== request || playbackGeneration !== request) return
 
     if (activeApi && activeApi !== api) activeApi.stop()
-    editorSeekRestarts.delete(api)
     activeApi = api
     if (alreadyMounted) {
         api.stop()
@@ -474,7 +426,6 @@ window.addEventListener('alphatab:preview-draft', async event => {
     }
     if (playbackRequests.get(element) !== request || playbackGeneration !== request) return
     api.playbackSpeed = musicXml ? Number(bpm) / musicXmlFirstTempo(musicXml, Number(bpm) || 100) : 1
-    api.playbackRange = null
     if (!applyEditorPreviewOptions(element, api)) {
         setExerciseLoopMode(api, false)
         configureCountIn(api)
@@ -482,13 +433,8 @@ window.addEventListener('alphatab:preview-draft', async event => {
     // A slider position chosen before the first Play must also affect audio.
     const seekPercent = Number(event.detail?.seekPercent)
     if (Number.isFinite(seekPercent) && seekPercent > 0 && Number.isFinite(api.endTime) && api.endTime > 0) {
-        if (editorPreviewOptions.get(element)?.countIn && Number.isFinite(api.endTick) && api.endTick > 0) {
-            api.playbackRange = { startTick: editorStartTick(api, seekPercent), endTick: api.endTick }
-        } else {
-            api.timePosition = Math.min(100, Math.max(0, seekPercent)) / 100 * api.endTime
-        }
+        api.timePosition = Math.min(100, Math.max(0, seekPercent)) / 100 * api.endTime
     }
-    editorCountInActive.set(api, Boolean(editorPreviewOptions.get(element)?.countIn))
     api.play()
 })
 
@@ -520,8 +466,6 @@ window.addEventListener('alphatab:play-pause', async event => {
             setExerciseLoopMode(api, false)
             configureCountIn(api)
         }
-        const wasPlaying = api.playerState === (await getAlphaTab()).synth.PlayerState.Playing
-        editorCountInActive.set(api, !wasPlaying && Boolean(editorPreviewOptions.get(element)?.countIn))
         api.playPause()
     } catch (error) {
         console.error('AlphaTab preview could not start:', error)
@@ -577,11 +521,7 @@ window.addEventListener('alphatab:start-exercise', async event => {
 window.addEventListener('alphatab:stop', () => {
     notifyAudioPreparation(null, false)
     ++playbackGeneration
-    if (activeApi) {
-        editorSeekRestarts.delete(activeApi)
-        editorCountInActive.set(activeApi, false)
-        setExerciseLoopMode(activeApi, false)
-    }
+    if (activeApi) setExerciseLoopMode(activeApi, false)
     activeApi?.stop()
     activeApi = null
 })
@@ -662,22 +602,9 @@ window.addEventListener('alphatab:seek', event => {
     const percent = Number(event.detail?.percent)
     if (!api || !Number.isFinite(percent) || !Number.isFinite(api.endTime) || api.endTime <= 0) return
     const position = Math.max(0, Math.min(100, percent)) / 100 * api.endTime
-    // Seeking during a count-in invalidates the old lead-in. Stop the
-    // current pass and wait for the Paused state before starting a new one.
-    if (editorSeekRestarts.has(api)) {
-        editorSeekRestarts.get(api).percent = percent
-        return
-    }
-    if (editorPreviewOptions.get(element)?.countIn && editorCountInActive.get(api) && activeApi === api) {
-        restartEditorCountIn(api, element, percent)
-        return
-    }
-    editorSeekRestarts.delete(api)
-    // Leave restricted playback mode when seeking normally, so the slider
-    // can move freely both before and after the requested entry point.
-    if (editorPreviewOptions.has(element) && api.playbackRange) api.playbackRange = null
+    // Seeking updates the playback position directly. Count-in is not
+    // restarted when seeking during its lead-in (known alphaTab limitation).
     api.timePosition = position
-    // The alphaTab position event refreshes the exact beat even while paused.
 })
 
 // Update editor transport controls without changing Practice preferences.
