@@ -21,6 +21,9 @@ export function tablatureRedesignBeta() {
         this.prototypeDurationMs = 0
         this.prototypeCurrentMs = 0
         this.prototypeMusicXmlImport = null
+        this.prototypeMusicXmlFullSource = null
+        this.prototypeMusicXmlFileName = ''
+        this.prototypeMusicXmlInitialBpm = null
         this.prototypeMusicXmlSelectedSection = 0
         this.prototypeLoop = false
         this.prototypeCountIn = false
@@ -69,6 +72,7 @@ export function tablatureRedesignBeta() {
     // Approximate the destination immediately from the editable rhythm;
     // alphaTab corrects it using the actual MIDI tick after a seek.
     showPrototypeBeatAtPercent(percent) {
+        if (this.tabFullMusicXml) { this.prototypePlayingBeatIndex = null; return }
         const beats = this.tabDraft.beats
         if (!beats.length) {
             this.prototypePlayingBeatIndex = null
@@ -159,14 +163,15 @@ export function tablatureRedesignBeta() {
         if (!element) return
         let alphaTex
         try {
-            alphaTex = serializeTabDraft(this.tabDraft, this.stepForm.time_signature_numerator,
+            alphaTex = this.tabFullMusicXml ? null : serializeTabDraft(this.tabDraft, this.stepForm.time_signature_numerator,
                 Number(this.stepForm.bpm), this.stepForm.time_signature_denominator)
         } catch (error) {
             this.prototypeMessageType = 'error'
             this.prototypeMessage = error?.message || 'Unable to play this tablature.'
             return
         }
-        if (alphaTex === this.prototypePlaybackScore) {
+        const source = this.tabFullMusicXml ?? alphaTex
+        if (source === this.prototypePlaybackScore) {
             window.dispatchEvent(new CustomEvent('alphatab:play-pause', { detail: { element } }))
             return
         }
@@ -174,14 +179,17 @@ export function tablatureRedesignBeta() {
         const seekPercent = this.prototypeProgress
         this.prototypeDurationMs = 0
         this.prototypeCurrentMs = 0
-        this.prototypePlaybackScore = alphaTex
+        this.prototypePlaybackScore = source
         window.dispatchEvent(new CustomEvent('alphatab:preview-draft', {
-            detail: { element, alphaTex, bpm: Number(this.stepForm.bpm),
+            detail: { element, alphaTex, musicXml: this.tabFullMusicXml, bpm: Number(this.stepForm.bpm),
                 instrument: this.tabDraft.instrument, seekPercent,
                 transportOptions: this.prototypeTransportOptions(), play: true },
         }))
     },
     prototypeMusicXmlImport: null,
+    prototypeMusicXmlFullSource: null,
+    prototypeMusicXmlFileName: '',
+    prototypeMusicXmlInitialBpm: null,
     prototypeMusicXmlSelectedSection: 0,
     async importPrototypeMusicXml(event) {
         const input = event.target
@@ -189,6 +197,7 @@ export function tablatureRedesignBeta() {
         input.value = ''
         if (!file) return
         this.prototypeMusicXmlImport = null
+        this.prototypeMusicXmlFullSource = null
         if (!/\.(xml|musicxml)$/i.test(file.name) || file.size > 2_000_000) {
             this.prototypeMessageType = 'error'
             this.prototypeMessage = 'Choose an uncompressed .xml or .musicxml file under 2 MB.'
@@ -196,17 +205,58 @@ export function tablatureRedesignBeta() {
         }
         try {
             const xml = await file.text()
-            const imported = parseMusicXmlTab(xml)
-            if (!imported.sections?.length) throw new Error('No editable tablature sections were found.')
-            this.prototypeMusicXmlImport = imported
+            if (/<!ENTITY|<!DOCTYPE[^>]*\[/i.test(xml)) throw new Error('MusicXML with custom entities is not supported')
+            const doc = new DOMParser().parseFromString(xml, 'application/xml')
+            if (doc.getElementsByTagName('parsererror').length ||
+                !['score-partwise', 'score-timewise'].includes(doc.documentElement?.localName)) {
+                throw new Error('Invalid MusicXML score')
+            }
+            this.prototypeMusicXmlFullSource = xml
+            this.prototypeMusicXmlFileName = file.name.replace(/\.(musicxml|xml)$/i, '')
+            const bpm = Number(doc.querySelector('sound[tempo]')?.getAttribute('tempo') ??
+                doc.querySelector('metronome per-minute')?.textContent)
+            this.prototypeMusicXmlInitialBpm = Number.isFinite(bpm) && bpm >= 30 && bpm <= 400 ? Math.round(bpm) : null
+            try { this.prototypeMusicXmlImport = parseMusicXmlTab(xml) }
+            catch { this.prototypeMusicXmlImport = null }
             this.prototypeMusicXmlSelectedSection = 0
             this.prototypeMessageType = 'success'
-            this.prototypeMessage = 'Choose a MusicXML section to import.'
+            this.prototypeMessage = this.prototypeMusicXmlImport?.sections?.length
+                ? 'Choose an editable section, or import the complete score for playback only.'
+                : 'No editable sections found. The complete score can still be imported for playback.'
         } catch (error) {
+            this.prototypeMusicXmlFullSource = null
+            this.prototypeMusicXmlImport = null
             this.prototypeMessageType = 'error'
             this.prototypeMessage = error?.message || 'Unable to import MusicXML.'
-            console.error('MusicXML import failed', error)
         }
+    },
+    renderPrototypeFullScore() {
+        const element = this.$refs.tabEditorPreview
+        if (!element || !this.tabFullMusicXml) return
+        this.$nextTick(() => {
+            window.dispatchEvent(new CustomEvent('alphatab:preview-draft', {
+                detail: { element, musicXml: this.tabFullMusicXml, bpm: Number(this.stepForm.bpm),
+                    transportOptions: this.prototypeTransportOptions(), renderOnly: true },
+            }))
+        })
+    },
+    applyPrototypeMusicXmlFullScore() {
+        if (!this.prototypeMusicXmlFullSource) return
+        this.stopPrototypePlayback()
+        this.recordTabEditorUndo()
+        this.tabFullMusicXml = this.prototypeMusicXmlFullSource
+        this.tabDraft = { ...this.tabDraft, beats: [], breaks: [] }
+        if (this.prototypeMusicXmlInitialBpm) this.stepForm.bpm = this.prototypeMusicXmlInitialBpm
+        this.stepForm.name = (this.prototypeMusicXmlImport?.title || this.prototypeMusicXmlFileName || 'Imported score').slice(0, 255)
+        this.tabSelectedIndices = []
+        this.tabSelectedIndex = 0
+        this.tabInsertAtBar = false
+        this.prototypeMusicXmlImport = null
+        this.prototypeMusicXmlFullSource = null
+        this.prototypeMusicXmlInitialBpm = null
+        this.prototypeMessageType = 'success'
+        this.prototypeMessage = 'Complete score imported for playback only. Save to keep it in your routine.'
+        this.renderPrototypeFullScore()
     },
     applyPrototypeMusicXmlSection() {
         const imported = this.prototypeMusicXmlImport
@@ -216,6 +266,8 @@ export function tablatureRedesignBeta() {
         this.stopPrototypePlayback()
         this.recordTabEditorUndo()
         this.tabDraft = JSON.parse(JSON.stringify(section.draft))
+        this.tabFullMusicXml = null
+        this.prototypeMusicXmlFullSource = null
         this.stepForm.name = imported.title.slice(0, 255)
         this.stepForm.bpm = section.bpm
         this.stepForm.time_signature_numerator = section.numerator
