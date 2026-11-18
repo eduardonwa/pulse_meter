@@ -273,100 +273,104 @@
                 
                 <span x-ref="tabEditorScoreFocus" class="sr-only" tabindex="-1">Tab keyboard controls</span>
 
-                {{-- Bottom-docked validation log. Uses the existing measure calculation. --}}
-                <section class="tab-editor__log" aria-label="Measure validation log" x-data="{ logOpen: false }">
-                    <div id="tab-editor-log-panel" class="tab-editor__log-panel" x-show="logOpen" x-cloak role="region" aria-label="Measure validation messages">
-                        <div class="tab-editor__log-summary" x-text="tabEditorMeasureStatus()"></div>
-
-                        <ul class="tab-editor__log-messages">
-                            <template x-for="measure in tabEditorMeasureWarnings()" :key="measure.number">
-                                <li :data-status="measure.status">
-                                    <span class="tab-editor__log-status" aria-hidden="true"></span>
-                                    <span x-text="measure.message"></span>
-                                </li>
-                            </template>
-                            <li x-show="!tabDraft.beats.length">No notes yet. Add a note to see measure validation.</li>
-                        </ul>
-                    </div>
-
-                    <div class="tab-editor__log-bar">
-                        <button type="button" class="tab-editor__log-toggle" aria-controls="tab-editor-log-panel" :aria-expanded="logOpen.toString()" @click="logOpen = !logOpen">
-                            <x-lucide-square-terminal width="18" height="18" />
-                            
-                            <span class="fs-300">Log</span>
-                            
-                            <span class="tab-editor__log-count"
-                                x-show="tabEditorMeasureWarnings().some(measure => measure.status !== 'complete')"
-                                x-text="tabEditorMeasureWarnings().filter(measure => measure.status !== 'complete').length"
-                                aria-label="Incomplete or overfull measures"
-                            ></span>
-                            <x-lucide-chevron-up width="16" height="16"
-                                x-bind:class="{ 'is-open': logOpen }"
-                            />
-                        </button>
-                    </div>
-                </section>
             </section>
 
             {{-- Playback uses the existing alphaTab engine without replacing the editable grid. --}}
             <div class="tab-editor__playback-host" :class="{ 'is-full-score': tabFullMusicXml }" x-ref="tabEditorPreview" data-alphatab data-admin-preview="true" :aria-hidden="(!tabFullMusicXml).toString()"></div>
 
-            {{-- playback controls --}}
-            <footer class="tab-editor__transport">
-                <button class="button" data-type="icon" type="button"
-                    :aria-label="prototypePlaying ? 'Pause' : 'Play'"
-                    :class="{ 'is-active': prototypePlaying }"
-                    @click="togglePrototypePlayback()" :disabled="prototypePlaybackLoading"
-                >
-                    <template x-if="!prototypePlaying">
-                        <x-lucide-play height="50" width="50" />
-                    </template>
+            {{-- Keep the validation log and playback footer docked together. --}}
+            <div class="tab-editor__bottom-dock">
+                {{-- Bottom-docked validation log. Uses the existing measure calculation. --}}
+                            <section class="tab-editor__log" aria-label="Measure validation log" x-data="{ logOpen: false }">
+                                <div id="tab-editor-log-panel" class="tab-editor__log-panel" x-show="logOpen" x-cloak role="region" aria-label="Measure validation messages">
+                                    <div class="tab-editor__log-summary" x-text="tabEditorMeasureStatus()"></div>
+                
+                                    <ul class="tab-editor__log-messages">
+                                        <template x-for="measure in tabEditorMeasureWarnings()" :key="measure.number">
+                                            <li :data-status="measure.status">
+                                                <span class="tab-editor__log-status" aria-hidden="true"></span>
+                                                <span x-text="measure.message"></span>
+                                            </li>
+                                        </template>
+                                        <li x-show="!tabDraft.beats.length">No notes yet. Add a note to see measure validation.</li>
+                                    </ul>
+                                </div>
+                
+                                <div class="tab-editor__log-bar">
+                                    <button type="button" class="tab-editor__log-toggle" aria-controls="tab-editor-log-panel" :aria-expanded="logOpen.toString()" @click="logOpen = !logOpen">
+                                        <x-lucide-square-terminal width="18" height="18" />
+                                        
+                                        <span class="fs-300">Log</span>
+                                        
+                                        <span class="tab-editor__log-count"
+                                            x-show="tabEditorMeasureWarnings().some(measure => measure.status !== 'complete')"
+                                            x-text="tabEditorMeasureWarnings().filter(measure => measure.status !== 'complete').length"
+                                            aria-label="Incomplete or overfull measures"
+                                        ></span>
+                                        <x-lucide-chevron-up width="16" height="16"
+                                            x-bind:class="{ 'is-open': logOpen }"
+                                        />
+                                    </button>
+                                </div>
+                            </section>
 
-                    <template x-if="prototypePlaying">
-                        <x-lucide-pause height="50" width="50" />
-                    </template>
-                </button>
+                {{-- playback controls --}}
+                <footer class="tab-editor__transport">
+                    <button class="button" data-type="icon" type="button"
+                        :aria-label="prototypePlaying ? 'Pause' : 'Play'"
+                        :class="{ 'is-active': prototypePlaying }"
+                        @click="togglePrototypePlayback()" :disabled="prototypePlaybackLoading"
+                    >
+                        <template x-if="!prototypePlaying">
+                            <x-lucide-play height="50" width="50" />
+                        </template>
 
-                <div class="tab-editor__progress">
-                    <div class="tab-editor__progress-track" :style="`--progress: ${prototypeProgress}%`" aria-hidden="true">
-                        <span class="tab-editor__progress-active"></span>
-                        <span class="tab-editor__progress-inactive"></span>
-                        <span class="tab-editor__progress-handle"></span>
-                        <span class="tab-editor__progress-stop"></span>
+                        <template x-if="prototypePlaying">
+                            <x-lucide-pause height="50" width="50" />
+                        </template>
+                    </button>
+
+                    <div class="tab-editor__progress">
+                        <div class="tab-editor__progress-track" :style="`--progress: ${prototypeProgress}%`" aria-hidden="true">
+                            <span class="tab-editor__progress-active"></span>
+                            <span class="tab-editor__progress-inactive"></span>
+                            <span class="tab-editor__progress-handle"></span>
+                            <span class="tab-editor__progress-stop"></span>
+                        </div>
+                        <input class="tab-editor__progress-input" type="range" min="0" max="100" step="0.1"
+                            :value="prototypeProgress" :disabled="(!tabDraft.beats.length && !tabFullMusicXml) || prototypePlaybackLoading"
+                            @input="previewPrototypeSeek($event.target.value)"
+                            @change="seekPrototypePlayback($event.target.value)"
+                            aria-label="Playback position" :aria-valuetext="`${Math.round(prototypeProgress)}% of tablature`">
                     </div>
-                    <input class="tab-editor__progress-input" type="range" min="0" max="100" step="0.1"
-                        :value="prototypeProgress" :disabled="(!tabDraft.beats.length && !tabFullMusicXml) || prototypePlaybackLoading"
-                        @input="previewPrototypeSeek($event.target.value)"
-                        @change="seekPrototypePlayback($event.target.value)"
-                        aria-label="Playback position" :aria-valuetext="`${Math.round(prototypeProgress)}% of tablature`">
-                </div>
 
-                <div class="tab-editor__playback-options">
-                    <button class="button" data-type="icon-text" type="button" aria-label="Loop" title="Loop"
-                        x-on:click="setPrototypeTransportOption('loop')"
-                        x-bind:class="{ 'is-active': prototypeLoop }"
-                        x-bind:aria-pressed="prototypeLoop.toString()"
-                    >
-                        <x-lucide-repeat />
-                    </button>
+                    <div class="tab-editor__playback-options">
+                        <button class="button" data-type="icon-text" type="button" aria-label="Loop" title="Loop"
+                            x-on:click="setPrototypeTransportOption('loop')"
+                            x-bind:class="{ 'is-active': prototypeLoop }"
+                            x-bind:aria-pressed="prototypeLoop.toString()"
+                        >
+                            <x-lucide-repeat />
+                        </button>
 
-                    <button class="button" data-type="icon-text" type="button" aria-label="Count-in" title="Count-in"
-                        x-on:click="setPrototypeTransportOption('countIn')"
-                        x-bind:class="{ 'is-active': prototypeCountIn }"
-                        x-bind:aria-pressed="prototypeCountIn.toString()"
-                    >
-                        <x-lucide-timer />
-                    </button>
+                        <button class="button" data-type="icon-text" type="button" aria-label="Count-in" title="Count-in"
+                            x-on:click="setPrototypeTransportOption('countIn')"
+                            x-bind:class="{ 'is-active': prototypeCountIn }"
+                            x-bind:aria-pressed="prototypeCountIn.toString()"
+                        >
+                            <x-lucide-timer />
+                        </button>
 
-                    <button class="button" data-type="icon-text" type="button" aria-label="Metronome" title="Metronome"
-                        x-on:click="setPrototypeTransportOption('metronome')"
-                        x-bind:class="{ 'is-active': prototypeMetronome }"
-                        x-bind:aria-pressed="prototypeMetronome.toString()"
-                    >
-                        <x-lucide-metronome />
-                    </button>
-                </div>
-            </footer>
+                        <button class="button" data-type="icon-text" type="button" aria-label="Metronome" title="Metronome"
+                            x-on:click="setPrototypeTransportOption('metronome')"
+                            x-bind:class="{ 'is-active': prototypeMetronome }"
+                            x-bind:aria-pressed="prototypeMetronome.toString()"
+                        >
+                            <x-lucide-metronome />
+                        </button>
+                    </div>
+                </footer>
+            </div>
         </div>
     </div>
 </dialog>
