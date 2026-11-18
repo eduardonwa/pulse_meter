@@ -281,38 +281,38 @@
             {{-- Keep the validation log and playback footer docked together. --}}
             <div class="tab-editor__bottom-dock">
                 {{-- Bottom-docked validation log. Uses the existing measure calculation. --}}
-                            <section class="tab-editor__log" aria-label="Measure validation log" x-data="{ logOpen: false }">
-                                <div id="tab-editor-log-panel" class="tab-editor__log-panel" x-show="logOpen" x-cloak role="region" aria-label="Measure validation messages">
-                                    <div class="tab-editor__log-summary" x-text="tabEditorMeasureStatus()"></div>
+                <section class="tab-editor__log" x-show="!tabFullMusicXml" x-cloak aria-label="Measure validation log" x-data="{ logOpen: false }">
+                    <div id="tab-editor-log-panel" class="tab-editor__log-panel" x-show="logOpen" x-cloak role="region" aria-label="Measure validation messages">
+                        <div class="tab-editor__log-summary" x-text="tabEditorMeasureStatus()"></div>
                 
-                                    <ul class="tab-editor__log-messages">
-                                        <template x-for="measure in tabEditorMeasureWarnings()" :key="measure.number">
-                                            <li :data-status="measure.status">
-                                                <span class="tab-editor__log-status" aria-hidden="true"></span>
-                                                <span x-text="measure.message"></span>
-                                            </li>
-                                        </template>
-                                        <li x-show="!tabDraft.beats.length">No notes yet. Add a note to see measure validation.</li>
-                                    </ul>
-                                </div>
+                        <ul class="tab-editor__log-messages">
+                            <template x-for="measure in tabEditorMeasureWarnings()" :key="measure.number">
+                                <li :data-status="measure.status">
+                                    <span class="tab-editor__log-status" aria-hidden="true"></span>
+                                    <span x-text="measure.message"></span>
+                                </li>
+                            </template>
+                            <li x-show="!tabDraft.beats.length">No notes yet. Add a note to see measure validation.</li>
+                        </ul>
+                    </div>
                 
-                                <div class="tab-editor__log-bar">
-                                    <button type="button" class="tab-editor__log-toggle" aria-controls="tab-editor-log-panel" :aria-expanded="logOpen.toString()" @click="logOpen = !logOpen">
-                                        <x-lucide-square-terminal width="18" height="18" />
-                                        
-                                        <span class="fs-300">Log</span>
-                                        
-                                        <span class="tab-editor__log-count"
-                                            x-show="tabEditorMeasureWarnings().some(measure => measure.status !== 'complete')"
-                                            x-text="tabEditorMeasureWarnings().filter(measure => measure.status !== 'complete').length"
-                                            aria-label="Incomplete or overfull measures"
-                                        ></span>
-                                        <x-lucide-chevron-up width="16" height="16"
-                                            x-bind:class="{ 'is-open': logOpen }"
-                                        />
-                                    </button>
-                                </div>
-                            </section>
+                    <div class="tab-editor__log-bar">
+                        <button type="button" class="tab-editor__log-toggle" aria-controls="tab-editor-log-panel" :aria-expanded="logOpen.toString()" @click="logOpen = !logOpen">
+                            <x-lucide-square-terminal width="18" height="18" />
+                            
+                            <span class="fs-300">Log</span>
+                            
+                            <span class="tab-editor__log-count"
+                                x-show="tabEditorMeasureWarnings().some(measure => measure.status !== 'complete')"
+                                x-text="tabEditorMeasureWarnings().filter(measure => measure.status !== 'complete').length"
+                                aria-label="Incomplete or overfull measures"
+                            ></span>
+                            <x-lucide-chevron-up width="16" height="16"
+                                x-bind:class="{ 'is-open': logOpen }"
+                            />
+                        </button>
+                    </div>
+                </section>
 
                 {{-- playback controls --}}
                 <footer class="tab-editor__transport">
