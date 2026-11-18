@@ -286,12 +286,16 @@
                         <div class="tab-editor__log-summary" x-text="tabEditorMeasureStatus()"></div>
                 
                         <ul class="tab-editor__log-messages">
-                            <template x-for="measure in tabEditorMeasureWarnings()" :key="measure.number">
+                            <template x-for="measure in tabEditorMeasureIssues()" :key="measure.number">
                                 <li :data-status="measure.status">
                                     <span class="tab-editor__log-status" aria-hidden="true"></span>
                                     <span x-text="measure.message"></span>
                                 </li>
                             </template>
+                            <li x-show="tabDraft.beats.length > 0 && tabEditorMeasureIssues().length === 0" data-status="complete">
+                                <span class="tab-editor__log-status" aria-hidden="true"></span>
+                                <span>All measures are complete.</span>
+                            </li>
                             <li x-show="!tabDraft.beats.length">No notes yet. Add a note to see measure validation.</li>
                         </ul>
                     </div>
@@ -303,8 +307,8 @@
                             <span class="fs-300">Log</span>
                             
                             <span class="tab-editor__log-count"
-                                x-show="tabEditorMeasureWarnings().some(measure => measure.status !== 'complete')"
-                                x-text="tabEditorMeasureWarnings().filter(measure => measure.status !== 'complete').length"
+                                x-show="tabEditorMeasureIssues().length > 0"
+                                x-text="tabEditorMeasureIssues().length"
                                 aria-label="Incomplete or overfull measures"
                             ></span>
                             <x-lucide-chevron-up width="16" height="16"

@@ -66,3 +66,30 @@ test('measure boundaries are computed once for a full imported score', () => {
     assert.equal(columns.length, 106)
     assert.equal(columns.filter(column => column.measureEnd).length, 15)
 })
+
+test('validation log reports one success message for complete measures', () => {
+    const instance = editor()
+    instance.tabDraft.beats = [
+        ...instance.tabDraft.beats,
+        ...instance.tabDraft.beats,
+    ]
+    instance.tabDraft.breaks = [7]
+    assert.equal(instance.tabEditorMeasureStatus(), '2 measure(s) · all complete')
+    assert.deepEqual(instance.tabEditorMeasureIssues(), [])
+})
+
+test('validation log lists only incomplete and overfull measures with reasons', () => {
+    const instance = editor()
+    instance.tabDraft.beats = [
+        ...instance.tabDraft.beats,
+        { fret: 8, string: 1, duration: 16 },
+        ...Array.from({ length: 8 }, (_, fret) => ({ fret, string: 1, duration: 8 })),
+    ]
+    instance.tabDraft.breaks = [7, 8]
+    const issues = instance.tabEditorMeasureIssues()
+    assert.equal(issues.length, 2)
+    assert.deepEqual(issues.map(issue => [issue.number, issue.status]), [[2, 'incomplete'], [3, 'overflow']])
+    assert.match(issues[0].message, /Measure 2: .* remaining/)
+    assert.match(issues[1].message, /Measure 3: .* over limit/)
+    assert.equal(instance.tabEditorMeasureWarnings()[0].status, 'complete')
+})
