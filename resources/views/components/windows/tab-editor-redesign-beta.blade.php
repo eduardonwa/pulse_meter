@@ -220,12 +220,17 @@
                         <div class="tab-editor__grid">
                             {{-- A stable overlay; playback time moves it continuously between notes. --}}
                             <div class="tab-editor__playhead" aria-hidden="true"></div>
+                            {{-- One continuous selection area per adjacent run, behind the note cells. --}}
+                            <template x-for="run in prototypeSelectionRuns(system)" :key="`${run.start}-${run.length}`">
+                                <div class="tab-editor__selection-range" aria-hidden="true"
+                                    :style="`left: ${run.start * 40}px; width: ${run.length * 40}px`"></div>
+                            </template>
                             <template x-for="(name, stringIndex) in tabStringNames" :key="stringIndex">
                                 <div class="tab-editor__string-row">
                                     <template x-for="column in system" :key="`${column.index}-${column.insertion}`">
                                         <button type="button" class="tab-editor__cell"
                                             :data-playhead-beat="stringIndex === 0 && !column.insertion ? column.index : null"
-                                            :class="{ 'is-selected': tabSelectedIndex === column.index && tabDraft.string === stringIndex + 1 && tabInsertAtBar === column.insertion, 'is-measure-end': column.measureEnd, 'is-multi-selected': !column.insertion && tabSelectedIndices.includes(column.index) && column.index < tabDraft.beats.length && (tabEditorNoteAt(column.index, stringIndex + 1) !== null || (tabDraft.beats[column.index]?.rest && stringIndex + 1 === (tabDraft.beats[column.index]?.string ?? tabDraft.string))) , 'is-insertion': column.insertion }"
+                                            :class="{ 'is-selected': tabSelectedIndices.length <= 1 && tabSelectedIndex === column.index && tabDraft.string === stringIndex + 1 && tabInsertAtBar === column.insertion, 'is-measure-end': column.measureEnd, 'is-insertion': column.insertion }"
                                             :aria-label="column.insertion ? `Insert note before next measure, string ${stringIndex + 1}` : `String ${stringIndex + 1}, position ${column.index + 1}`"
                                             :aria-pressed="tabSelectedIndex === column.index && tabDraft.string === stringIndex + 1 && tabInsertAtBar === column.insertion"
                                             @pointerdown="!column.insertion && startTabDrag(column.index, stringIndex + 1, $event)"
