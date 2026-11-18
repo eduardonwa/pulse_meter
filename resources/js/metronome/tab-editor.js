@@ -315,6 +315,10 @@ export function tabEditor() {
         return Boolean(imported?.sections?.length === 1 && !imported.warnings?.length &&
             imported.sections[0].firstMeasure === 1)
     },
+    prototypeMusicXmlHasMultipleTimeSignatures() {
+        const sections = this.prototypeMusicXmlImport?.sections ?? []
+        return new Set(sections.map(section => `${section.numerator}/${section.denominator}`)).size > 1
+    },
     dismissPrototypeMusicXml() {
         this.prototypeMusicXmlImport = null
         this.prototypeMusicXmlFullSource = null
@@ -353,7 +357,7 @@ export function tabEditor() {
                 this.prototypeMusicXmlImport = null
                 this.prototypeMusicXmlIssue = error?.message || 'The editor cannot read this notation.'
             }
-                this.prototypeMessageType = 'success'
+            this.prototypeMessageType = 'success'
             this.prototypeMessage = this.canImportPrototypeMusicXmlForEditing()
                 ? 'This tablature is ready to edit.'
                 : 'This score can be imported for playback only.'
