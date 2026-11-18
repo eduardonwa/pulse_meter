@@ -117,6 +117,17 @@ export function dispatchPlaybackState(
     )
 }
 
+// Resolve a seek position against the same MIDI beat map used by alphaTab.
+// Unlike elapsed-time estimates, this respects rests, dots and tuplets.
+function dispatchBeatAtTick(api, element, tick) {
+    if (!Number.isFinite(tick) || tick < 0) return
+    const beat = api.tickCache?.findBeat(new Set([0]), tick)?.currentBeat
+    if (!beat) return
+    window.dispatchEvent(new CustomEvent('alphatab:played-beat', {
+        detail: { element, measureIndex: beat.voice?.bar?.index, beatIndex: beat.index },
+    }))
+}
+
 function scoreScrollContainer(element) {
     return element.closest('.mobile-exercise-view-dialog__content') ?? 'html,body'
 }
@@ -210,6 +221,7 @@ async function mountAlphaTab(element) {
             window.dispatchEvent(new CustomEvent('alphatab:playback-position', {
                 detail: { element, currentTime: args.currentTime, endTime: args.endTime },
             }))
+            if (args.isSeek) dispatchBeatAtTick(api, element, args.currentTick)
             if (!waitingForScoreStart || args.currentTick < 0) return
             waitingForScoreStart = false
             window.dispatchEvent(new CustomEvent('alphatab:score-started', {
@@ -546,4 +558,5 @@ window.addEventListener('alphatab:seek', event => {
     const percent = Number(event.detail?.percent)
     if (!api || !Number.isFinite(percent) || !Number.isFinite(api.endTime) || api.endTime <= 0) return
     api.timePosition = Math.max(0, Math.min(100, percent)) / 100 * api.endTime
+    // Position changes after seeking are also reflected while audio is paused.
 })
