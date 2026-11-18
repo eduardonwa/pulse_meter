@@ -356,10 +356,10 @@ window.addEventListener('alphatab:update', async event => {
 })
 
 window.addEventListener('alphatab:preview-draft', async event => {
-    const { element, alphaTex, musicXml, bpm, play, instrument, transportOptions } = event.detail ?? {}
+    const { element, alphaTex, musicXml, bpm, play, instrument, transportOptions, renderOnly } = event.detail ?? {}
     if (!element) return
 
-    if (!play) {
+    if (!play && !renderOnly) {
         playbackRequests.set(element, ++playbackGeneration)
         const api = instances.get(element)
         api?.stop()
@@ -425,6 +425,10 @@ window.addEventListener('alphatab:preview-draft', async event => {
         } else api.tex(pattern)
     }
     if (playbackRequests.get(element) !== request || playbackGeneration !== request) return
+    if (renderOnly) {
+        api.stop()
+        return
+    }
     api.playbackSpeed = musicXml ? Number(bpm) / musicXmlFirstTempo(musicXml, Number(bpm) || 100) : 1
     if (!applyEditorPreviewOptions(element, api)) {
         setExerciseLoopMode(api, false)
