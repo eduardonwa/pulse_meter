@@ -19,6 +19,21 @@ Alpine.data('tablatureRedesign', () => ({
     prototypePlaying: false,
     prototypePlaybackLoading: false,
     prototypePlaybackScore: null,
+    prototypePlayingBeatIndex: null,
+    syncPrototypePlayedBeat(event) {
+        if (event.detail?.element !== this.$refs.tabEditorPreview) return
+        const measureIndex = Number(event.detail.measureIndex)
+        const beatIndex = Number(event.detail.beatIndex)
+        if (!Number.isInteger(measureIndex) || !Number.isInteger(beatIndex) ||
+            measureIndex < 0 || beatIndex < 0) return
+        const measures = this.tabEditorMeasureLayout()
+        const beat = measures[measureIndex]?.notes?.[beatIndex]
+        this.prototypePlayingBeatIndex = Number.isInteger(beat?.index) ? beat.index : null
+    },
+    finishPrototypePlayback(event) {
+        if (event.detail?.element !== this.$refs.tabEditorPreview) return
+        this.prototypePlayingBeatIndex = null
+    },
     prototypeProgress: 0,
     prototypeDurationMs: 0,
     prototypeCurrentMs: 0,
@@ -48,6 +63,7 @@ Alpine.data('tablatureRedesign', () => ({
         this.prototypePlaying = false
         this.prototypePlaybackLoading = false
         this.prototypePlaybackScore = null
+        this.prototypePlayingBeatIndex = null
         this.prototypeProgress = 0
         this.prototypeDurationMs = 0
         this.prototypeCurrentMs = 0
@@ -62,6 +78,7 @@ Alpine.data('tablatureRedesign', () => ({
         this.prototypePlaying = false
         this.prototypePlaybackLoading = false
         this.prototypePlaybackScore = null
+        this.prototypePlayingBeatIndex = null
         this.prototypeMessageType = 'error'
         this.prototypeMessage = event.detail.message || 'Unable to play this tablature.'
     },
@@ -83,6 +100,7 @@ Alpine.data('tablatureRedesign', () => ({
             return
         }
         this.prototypePlaybackLoading = true
+        this.prototypePlayingBeatIndex = null
         this.prototypeProgress = 0
         this.prototypeDurationMs = 0
         this.prototypeCurrentMs = 0
