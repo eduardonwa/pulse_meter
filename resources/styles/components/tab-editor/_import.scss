@@ -4,7 +4,7 @@
     // Mobile styles go here.
 
     @include mq(medium) {
-        // Mobile-first import controls: shared layout also works below medium.
+        // Current tablet/desktop import layout.
         &__import-bar {
             display: flex;
             flex-direction: column;
