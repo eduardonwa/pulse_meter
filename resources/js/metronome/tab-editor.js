@@ -331,6 +331,7 @@ export function tabEditor() {
         const file = input.files?.[0]
         input.value = ''
         if (!file) return
+        this.$refs.tabEditorImportDetails?.removeAttribute('open')
         this.prototypeMusicXmlImport = null
         this.prototypeMusicXmlFullSource = null
         this.prototypeMusicXmlIssue = ''
