@@ -1,7 +1,54 @@
 @use "../../abstracts" as *;
 
 .tab-editor {
-    // Mobile styles (base) go here.
+    // Mobile-first import controls: shared layout also works below medium.
+    &__import-bar {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: $size-3;
+        min-width: 0;
+        padding: $size-3;
+    }
+
+    &__import-panel {
+        display: grid;
+        gap: $size-3;
+        width: 100%;
+        min-width: 0;
+        padding: $size-3;
+        border: 1px solid hsl(var(--neutral-800) / .2);
+        border-radius: $border-radius-2;
+        background: hsl(var(--neutral-100));
+
+        p { margin: 0; }
+        small { font-size: 12px; }
+    }
+
+    &__import-result {
+        display: grid;
+        gap: $size-2;
+        min-width: 0;
+    }
+
+    &__import-warnings {
+        display: grid;
+        gap: $size-2;
+        font-size: 13px;
+
+        ul {
+            margin: 0;
+            padding-inline-start: $size-5;
+            overflow-wrap: anywhere;
+        }
+    }
+
+    &__import-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: $size-2;
+    }
+
 
     @include mq(medium) {
         &__import-bar {
