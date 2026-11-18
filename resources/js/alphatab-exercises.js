@@ -394,6 +394,11 @@ window.addEventListener('alphatab:preview-draft', async event => {
     api.playbackSpeed = musicXml ? Number(bpm) / musicXmlFirstTempo(musicXml, Number(bpm) || 100) : 1
     setExerciseLoopMode(api, false)
     configureCountIn(api)
+    // A slider position chosen before the first Play must also affect audio.
+    const seekPercent = Number(event.detail?.seekPercent)
+    if (Number.isFinite(seekPercent) && seekPercent > 0 && Number.isFinite(api.endTime) && api.endTime > 0) {
+        api.timePosition = Math.min(100, Math.max(0, seekPercent)) / 100 * api.endTime
+    }
     api.play()
 })
 
@@ -558,5 +563,5 @@ window.addEventListener('alphatab:seek', event => {
     const percent = Number(event.detail?.percent)
     if (!api || !Number.isFinite(percent) || !Number.isFinite(api.endTime) || api.endTime <= 0) return
     api.timePosition = Math.max(0, Math.min(100, percent)) / 100 * api.endTime
-    // Position changes after seeking are also reflected while audio is paused.
+    // The alphaTab position event refreshes the exact beat even while paused.
 })
