@@ -1,162 +1,158 @@
 @use "../../abstracts" as *;
 
-.tab-editor {
-    &__transport {
-        min-width: 0;
-        position: sticky;
-        bottom: 0;
-        z-index: 30;
+// Base styles for phones (up to 767px) will be defined here.
 
-        padding: $size-5 $size-12;
-        background-color: $color-do-800;
-        
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: $size-4;
-
-        @supports (animation-timeline: scroll()) {
-            animation: transport-shrink linear both;
-            animation-timeline: scroll(root block);
-            animation-range: 0px 150px;
-        }
-        
-        .button {
-            color: $color-do-50;
-
-            svg { stroke: currentColor; }
-        }
-
-        // PLAY BTN
-        .button[data-type="icon"] {
-            display: grid;
-            place-items: center;
-
-            width: 55px;
-            height: 55px;
-            padding: 0;
-            border-radius: 50%;
-
-            transition: transform 150ms ease;
-
-            &.is-active {
-                background-color: hsl(var(--do-500) / .8);
-            }
-
-            &:active {
-                transform: scale(0.96);
-            }
-        }
-    }
-
-    // Material-style progress: thick split track and vertical thumb, in Do colors.
-    &__progress {
-        position: relative;
-        flex: 1 1 auto;
-        min-width: 80px;
-        height: 48px;
-        display: flex;
-        align-items: center;
-    }
-
-    &__progress-track {
-        position: relative;
-        width: 100%;
-        height: 32px;
-        pointer-events: none;
-    }
-
-    &__progress-active,
-    &__progress-inactive {
-        position: absolute;
-        top: 10px;
-        height: 12px;
-        border-radius: 999px;
-    }
-
-    &__progress-active {
-        left: 0;
-        width: max(0px, calc(var(--progress) - 6px));
-        background: $color-do-500;
-    }
-
-    &__progress-inactive {
-        left: min(100%, calc(var(--progress) + 6px));
-        right: 0;
-        background: $color-do-900;
-    }
-
-    &__progress-handle {
-        position: absolute;
-        top: 0;
-        left: clamp(2px, var(--progress), calc(100% - 2px));
-        width: 4px;
-        height: 32px;
-        border-radius: 999px;
-        transform: translateX(-50%);
-        background: $color-do-300;
-    }
-
-    &__progress-stop {
-        position: absolute;
-        top: 14px;
-        right: 8px;
-        width: 4px;
-        height: 4px;
-        border-radius: 50%;
-        background: $color-do-300;
-    }
-
-    &__progress-input {
-        position: absolute;
-        inset: 0;
-        width: 100%;
-        height: 100%;
-        margin: 0;
-        opacity: 0;
-        cursor: pointer;
-        touch-action: pan-y;
-
-        &:disabled { cursor: default; }
-
-        &:focus-visible {
-            opacity: 1;
-            outline: 2px solid $color-do-300;
-            outline-offset: 3px;
-        }
-    }
-
-    &__progress:has(.tab-editor__progress-input:disabled) {
-        opacity: .6;
-    }
-
-    &__playback-options {
-        display: flex;
-        align-items: center;
-        gap: $size-4;
-
-        .button {
-            opacity: 0.5;
-            padding: $size-2;
-            border: 1px solid transparent;
-
-            &.is-active {
-                opacity: 1;
-
-                transform: scale(0.96);
-                border: 1px solid hsl(var(--do-50) / .4);
-                background-color: hsl(var(--do-500) / .2);
-            }
-        }
-    }
-
-    @media (max-width: 700px) {
+@include mq(medium) {
+    .tab-editor {
         &__transport {
-            padding-inline: $size-3;
-            gap: $size-2;
+            min-width: 0;
+            position: sticky;
+            bottom: 0;
+            z-index: 30;
+
+            padding: $size-5 $size-12;
+            background-color: $color-do-800;
+            
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: $size-4;
+
+            @supports (animation-timeline: scroll()) {
+                animation: transport-shrink linear both;
+                animation-timeline: scroll(root block);
+                animation-range: 0px 150px;
+            }
+            
+            .button {
+                color: $color-do-50;
+
+                svg { stroke: currentColor; }
+            }
+
+            // PLAY BTN
+            .button[data-type="icon"] {
+                display: grid;
+                place-items: center;
+
+                width: 55px;
+                height: 55px;
+                padding: 0;
+                border-radius: 50%;
+
+                transition: transform 150ms ease;
+
+                &.is-active {
+                    background-color: hsl(var(--do-500) / .8);
+                }
+
+                &:active {
+                    transform: scale(0.96);
+                }
+            }
         }
 
-        &__playback-options { gap: $size-1; }
+        // Material-style progress: thick split track and vertical thumb, in Do colors.
+        &__progress {
+            position: relative;
+            flex: 1 1 auto;
+            min-width: 80px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+        }
+
+        &__progress-track {
+            position: relative;
+            width: 100%;
+            height: 32px;
+            pointer-events: none;
+        }
+
+        &__progress-active,
+        &__progress-inactive {
+            position: absolute;
+            top: 10px;
+            height: 12px;
+            border-radius: 999px;
+        }
+
+        &__progress-active {
+            left: 0;
+            width: max(0px, calc(var(--progress) - 6px));
+            background: $color-do-500;
+        }
+
+        &__progress-inactive {
+            left: min(100%, calc(var(--progress) + 6px));
+            right: 0;
+            background: $color-do-900;
+        }
+
+        &__progress-handle {
+            position: absolute;
+            top: 0;
+            left: clamp(2px, var(--progress), calc(100% - 2px));
+            width: 4px;
+            height: 32px;
+            border-radius: 999px;
+            transform: translateX(-50%);
+            background: $color-do-300;
+        }
+
+        &__progress-stop {
+            position: absolute;
+            top: 14px;
+            right: 8px;
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: $color-do-300;
+        }
+
+        &__progress-input {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            opacity: 0;
+            cursor: pointer;
+            touch-action: pan-y;
+
+            &:disabled { cursor: default; }
+
+            &:focus-visible {
+                opacity: 1;
+                outline: 2px solid $color-do-300;
+                outline-offset: 3px;
+            }
+        }
+
+        &__progress:has(.tab-editor__progress-input:disabled) {
+            opacity: .6;
+        }
+
+        &__playback-options {
+            display: flex;
+            align-items: center;
+            gap: $size-4;
+
+            .button {
+                opacity: 0.5;
+                padding: $size-2;
+                border: 1px solid transparent;
+
+                &.is-active {
+                    opacity: 1;
+
+                    transform: scale(0.96);
+                    border: 1px solid hsl(var(--do-50) / .4);
+                    background-color: hsl(var(--do-500) / .2);
+                }
+            }
+        }
+
     }
 }
 
