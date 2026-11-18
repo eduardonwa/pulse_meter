@@ -1,5 +1,6 @@
 import { isAlphaTabCountInEnabled } from './metronome/alphatab/count-in-preference.js'
 import { playbackAlphaTex } from './metronome/alphatab/tab-editor.js'
+import { installMidiReloadListener, loadReplacementMusicXml } from './metronome/alphatab/midi-reload.js'
 let alphaTabModule = null
 let activeApi = null
 
@@ -270,6 +271,10 @@ async function mountAlphaTab(element) {
             )
         })
 
+        // Register before any MIDI is loaded: adding a midiLoaded listener later
+        // triggers alphaTab 1.8.4's recursive loadedMidiInfo getter.
+        installMidiReloadListener(api)
+
         const readyPromise = new Promise((resolve, reject) => {
             api.playerReady.on(() => {
                 window.dispatchEvent(new CustomEvent('alphatab:playback-position', {
@@ -416,17 +421,7 @@ window.addEventListener('alphatab:preview-draft', async event => {
             // Native file loading is asynchronous. Never play the previous
             // score while alphaTab is still importing the new MusicXML.
             try {
-                await new Promise((resolve, reject) => {
-                    let offLoaded
-                    let offError
-                    const cleanup = () => { offLoaded?.(); offError?.() }
-                    offLoaded = api.midiLoaded.on(() => { cleanup(); resolve() })
-                    offError = api.error.on(error => { cleanup(); reject(error) })
-                    if (!api.load(new TextEncoder().encode(musicXml))) {
-                        cleanup()
-                        reject(new Error('alphaTab did not accept this MusicXML file'))
-                    }
-                })
+                await loadReplacementMusicXml(api, musicXml)
             } catch (error) {
                 console.error('alphaTab could not load the imported score:', error)
                 window.dispatchEvent(new CustomEvent('alphatab:load-error', {
