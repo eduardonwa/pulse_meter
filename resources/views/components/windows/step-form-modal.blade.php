@@ -137,7 +137,8 @@
 {{-- Separate native dialog: the exercise does not exist until Save is confirmed. --}}
 
 @can('use-pro')
-    @if(request()->boolean('tab_editor_beta'))
+    {{-- The redesigned editor is the default. Keep the legacy dialog available only for temporary compatibility with full-score MusicXML imports. --}}
+    @if(!request()->boolean('tab_editor_legacy'))
         @include('components.windows.tab-editor-redesign-beta')
     @else
     <dialog class="dialog-shell dialog-shell--bottom-sheet mobile-exercise-view-dialog is-fullscreen" x-ref="tabEditorDialog"
