@@ -40,6 +40,36 @@
         pointer-events: none;
     }
 
+    &__playback-host {
+        &.is-full-score {
+            grid-row: 4;
+            position: relative;
+            width: 100%;
+            max-width: 100%;
+            min-width: 0;
+            height: auto;
+            min-height: 240px;
+            
+            overflow-x: auto;
+            
+            visibility: visible;
+            
+            pointer-events: auto;
+
+            // alphaTab animates the beat cursor; soften the abrupt bar-wide
+            // highlight and use a more legible moving line.
+            .at-cursor-bar {
+                background: hsl(var(--sol-500) / .08);
+            }
+
+            .at-cursor-beat {
+                width: 3px;
+                background: hsl(var(--sol-600) / .8);
+                border-radius: 2px;
+            }
+        }
+    }
+
     @include mq(medium) {
         &__prototype-state {
             display: grid;
@@ -62,35 +92,7 @@
             margin-block-start: $size-3;
         }
 
-        &__playback-host {
-            &.is-full-score {
-                grid-row: 4;
-                position: relative;
-                width: 100%;
-                max-width: 100%;
-                min-width: 0;
-                height: auto;
-                min-height: 240px;
-                
-                overflow-x: auto;
-                
-                visibility: visible;
-                
-                pointer-events: auto;
 
-                // alphaTab animates the beat cursor; soften the abrupt bar-wide
-                // highlight and use a more legible moving line.
-                .at-cursor-bar {
-                    background: hsl(var(--sol-500) / .08);
-                }
-
-                .at-cursor-beat {
-                    width: 3px;
-                    background: hsl(var(--sol-600) / .8);
-                    border-radius: 2px;
-                }
-            }
-        }
     }
 
     @include mq(large) {
