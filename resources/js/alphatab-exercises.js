@@ -16,6 +16,33 @@ const editorPreviewOptions = new WeakMap()
 const editorCountInActive = new WeakMap()
 const editorSeekRestarts = new WeakMap()
 
+// Editor scores are generated at a constant BPM. A range start defines the
+// requested entry before play() so alphaTab can synthesize a fresh count-in.
+function editorStartTick(api, percent) {
+    const end = Number(api.endTick)
+    if (!Number.isFinite(end) || end <= 0) return 0
+    return Math.max(0, Math.min(end - 1, Math.round(end * Math.min(100, Math.max(0, percent)) / 100)))
+}
+
+function restartEditorCountIn(api, element, percent) {
+    const generation = playbackGeneration
+    const restart = { generation }
+    editorSeekRestarts.set(api, restart)
+    // Stop first; alphaTab documents stop() as moving the playback back to
+    // the beginning. Setting timePosition before play() would be overwritten.
+    api.stop()
+    api.playbackRange = { startTick: editorStartTick(api, percent), endTick: api.endTick }
+    applyEditorPreviewOptions(element, api)
+    // Do not call play() from inside alphaTab's current position event.
+    setTimeout(() => {
+        if (editorSeekRestarts.get(api) !== restart || playbackGeneration !== generation || activeApi !== api) return
+        editorSeekRestarts.delete(api)
+        editorCountInActive.set(api, false)
+        api.play()
+    }, 0)
+}
+
+
 function applyEditorPreviewOptions(element, api) {
     const options = editorPreviewOptions.get(element)
     if (!options || !api) return false
@@ -263,21 +290,7 @@ async function mountAlphaTab(element) {
         })
 
         api.playerStateChanged.on(args => {
-            const restart = editorSeekRestarts.get(api)
-            if (restart && args.state === alphaTab.synth.PlayerState.Paused) {
-                // stop() completed: set the destination, then start a fresh
-                // count-in. Do not mutate the synth during its old count-in.
-                setTimeout(() => {
-                    if (editorSeekRestarts.get(api) !== restart ||
-                        playbackGeneration !== restart.generation || activeApi !== api) return
-                    api.timePosition = restart.position
-                    applyEditorPreviewOptions(element, api)
-                    editorSeekRestarts.delete(api)
-                    editorCountInActive.set(api, false)
-                    api.play()
-                }, 0)
-                return
-            }
+            if (editorSeekRestarts.has(api)) return
             waitingForScoreStart = args.state === alphaTab.synth.PlayerState.Playing
             dispatchPlaybackState(
                 element,
@@ -449,6 +462,7 @@ window.addEventListener('alphatab:preview-draft', async event => {
     }
     if (playbackRequests.get(element) !== request || playbackGeneration !== request) return
     api.playbackSpeed = musicXml ? Number(bpm) / musicXmlFirstTempo(musicXml, Number(bpm) || 100) : 1
+    api.playbackRange = null
     if (!applyEditorPreviewOptions(element, api)) {
         setExerciseLoopMode(api, false)
         configureCountIn(api)
@@ -456,7 +470,11 @@ window.addEventListener('alphatab:preview-draft', async event => {
     // A slider position chosen before the first Play must also affect audio.
     const seekPercent = Number(event.detail?.seekPercent)
     if (Number.isFinite(seekPercent) && seekPercent > 0 && Number.isFinite(api.endTime) && api.endTime > 0) {
-        api.timePosition = Math.min(100, Math.max(0, seekPercent)) / 100 * api.endTime
+        if (editorPreviewOptions.get(element)?.countIn && Number.isFinite(api.endTick) && api.endTick > 0) {
+            api.playbackRange = { startTick: editorStartTick(api, seekPercent), endTick: api.endTick }
+        } else {
+            api.timePosition = Math.min(100, Math.max(0, seekPercent)) / 100 * api.endTime
+        }
     }
     api.play()
 })
@@ -630,13 +648,14 @@ window.addEventListener('alphatab:seek', event => {
     const position = Math.max(0, Math.min(100, percent)) / 100 * api.endTime
     // Seeking during a count-in invalidates the old lead-in. Stop the
     // current pass and wait for the Paused state before starting a new one.
-    if (editorPreviewOptions.has(element) && editorCountInActive.get(api) && activeApi === api) {
-        editorSeekRestarts.set(api, { position, generation: playbackGeneration })
-        editorCountInActive.set(api, false)
-        api.stop()
+    if (editorPreviewOptions.get(element)?.countIn && editorCountInActive.get(api) && activeApi === api) {
+        restartEditorCountIn(api, element, percent)
         return
     }
     editorSeekRestarts.delete(api)
+    // Leave restricted playback mode when seeking normally, so the slider
+    // can move freely both before and after the requested entry point.
+    if (editorPreviewOptions.has(element) && api.playbackRange) api.playbackRange = null
     api.timePosition = position
     // The alphaTab position event refreshes the exact beat even while paused.
 })
