@@ -218,11 +218,13 @@
                         </div>
 
                         <div class="tab-editor__grid">
+                            <div class="tab-editor__playhead" aria-hidden="true" x-show="system.some(column => !column.insertion && column.index === prototypePlayingBeatIndex)"
+                                :style="`left: ${system.findIndex(column => !column.insertion && column.index === prototypePlayingBeatIndex) * 40}px`"></div>
                             <template x-for="(name, stringIndex) in tabStringNames" :key="stringIndex">
                                 <div class="tab-editor__string-row">
                                     <template x-for="column in system" :key="`${column.index}-${column.insertion}`">
                                         <button type="button" class="tab-editor__cell"
-                                            :class="{ 'is-selected': tabSelectedIndex === column.index && tabDraft.string === stringIndex + 1 && tabInsertAtBar === column.insertion, 'is-measure-end': column.measureEnd, 'is-multi-selected': !column.insertion && tabSelectedIndices.includes(column.index) && column.index < tabDraft.beats.length, 'is-playing': !column.insertion && prototypePlayingBeatIndex === column.index && column.index < tabDraft.beats.length, 'is-insertion': column.insertion }"
+                                            :class="{ 'is-selected': tabSelectedIndex === column.index && tabDraft.string === stringIndex + 1 && tabInsertAtBar === column.insertion, 'is-measure-end': column.measureEnd, 'is-multi-selected': !column.insertion && tabSelectedIndices.includes(column.index) && column.index < tabDraft.beats.length , 'is-insertion': column.insertion }"
                                             :aria-label="column.insertion ? `Insert note before next measure, string ${stringIndex + 1}` : `String ${stringIndex + 1}, position ${column.index + 1}`"
                                             :aria-pressed="tabSelectedIndex === column.index && tabDraft.string === stringIndex + 1 && tabInsertAtBar === column.insertion"
                                             @pointerdown="!column.insertion && startTabDrag(column.index, stringIndex + 1, $event)"
