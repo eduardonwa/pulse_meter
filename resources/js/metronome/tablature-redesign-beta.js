@@ -34,6 +34,24 @@ export function tablatureRedesignBeta() {
         this.prototypeMetronome = false
         this.loadPrototypeTransportOptions()
     },
+    // Group neighboring selected rhythmic positions into a single visual block
+    // per system; disconnected Ctrl/Cmd selections remain separate blocks.
+    prototypeSelectionRuns(system) {
+        if (this.tabSelectedIndices.length < 2) return []
+        const selected = new Set(this.tabSelectedIndices)
+        const runs = []
+        let start = -1
+        for (let i = 0; i <= system.length; i++) {
+            const column = system[i]
+            const included = column && !column.insertion && selected.has(column.index)
+            if (included && start === -1) start = i
+            if (!included && start !== -1) {
+                runs.push({ start, length: i - start })
+                start = -1
+            }
+        }
+        return runs
+    },
     prototypePlaying: false,
     prototypeLoop: false,
     prototypeCountIn: false,
