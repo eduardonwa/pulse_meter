@@ -10,6 +10,18 @@ const readyPromises = new WeakMap()
 const renderedBpms = new WeakMap()
 const playbackRequests = new WeakMap()
 const routineLoopModes = new WeakMap()
+// Editor previews have independent, per-element transport controls.
+// Routine/practice preference functions remain unchanged.
+const editorPreviewOptions = new WeakMap()
+
+function applyEditorPreviewOptions(element, api) {
+    const options = editorPreviewOptions.get(element)
+    if (!options || !api) return false
+    api.countInVolume = options.countIn ? 1 : 0
+    api.metronomeVolume = options.metronome ? 1 : 0
+    api.isLooping = options.loop && !options.countIn
+    return true
+}
 let playbackGeneration = 0
 
 // Native alphaTab looping jumps straight to the first note. To repeat the
@@ -198,11 +210,27 @@ async function mountAlphaTab(element) {
 
         api.metronomeVolume = 1
         configureCountIn(api)
+        applyEditorPreviewOptions(element, api)
         api.playerFinished.on(() => {
-            window.dispatchEvent(new CustomEvent('alphatab:playback-finished', {
-                detail: { element },
-            }))
-            restartExerciseWithCountIn(api, { isActive: () => activeApi === api })
+            const editorOptions = editorPreviewOptions.get(element)
+            if (editorOptions?.loop && editorOptions.countIn && activeApi === api) {
+                const generation = playbackGeneration
+                // Native looping skips count-in. Restart a new pass to include it.
+                setTimeout(() => {
+                    if (generation !== playbackGeneration || activeApi !== api ||
+                        !editorPreviewOptions.get(element)?.loop || !editorPreviewOptions.get(element)?.countIn) return
+                    api.stop()
+                    applyEditorPreviewOptions(element, api)
+                    api.play()
+                }, 0)
+                return
+            }
+            if (!editorOptions?.loop) {
+                window.dispatchEvent(new CustomEvent('alphatab:playback-finished', {
+                    detail: { element },
+                }))
+            }
+            if (!editorOptions) restartExerciseWithCountIn(api, { isActive: () => activeApi === api })
         })
         // Editor UI has its own grid, so forward the actual alphaTab beat
         // rather than estimating note positions from elapsed milliseconds.
@@ -329,14 +357,21 @@ window.addEventListener('alphatab:update', async event => {
 })
 
 window.addEventListener('alphatab:preview-draft', async event => {
-    const { element, alphaTex, musicXml, bpm, play, instrument } = event.detail ?? {}
+    const { element, alphaTex, musicXml, bpm, play, instrument, transportOptions } = event.detail ?? {}
     if (!element) return
 
     if (!play) {
         playbackRequests.set(element, ++playbackGeneration)
-        instances.get(element)?.stop()
+        const api = instances.get(element)
+        api?.stop()
+        if (activeApi === api) activeApi = null
         return
     }
+    if (transportOptions) editorPreviewOptions.set(element, {
+        loop: Boolean(transportOptions.loop),
+        countIn: Boolean(transportOptions.countIn),
+        metronome: Boolean(transportOptions.metronome),
+    })
 
     if (!alphaTex && !musicXml) return
 
@@ -392,8 +427,10 @@ window.addEventListener('alphatab:preview-draft', async event => {
     }
     if (playbackRequests.get(element) !== request || playbackGeneration !== request) return
     api.playbackSpeed = musicXml ? Number(bpm) / musicXmlFirstTempo(musicXml, Number(bpm) || 100) : 1
-    setExerciseLoopMode(api, false)
-    configureCountIn(api)
+    if (!applyEditorPreviewOptions(element, api)) {
+        setExerciseLoopMode(api, false)
+        configureCountIn(api)
+    }
     // A slider position chosen before the first Play must also affect audio.
     const seekPercent = Number(event.detail?.seekPercent)
     if (Number.isFinite(seekPercent) && seekPercent > 0 && Number.isFinite(api.endTime) && api.endTime > 0) {
@@ -424,9 +461,12 @@ window.addEventListener('alphatab:play-pause', async event => {
 
         if (activeApi && activeApi !== api) activeApi.stop()
         activeApi = api
-        // Preview is always a single listen, regardless of exercise mode.
-        setExerciseLoopMode(api, false)
-        configureCountIn(api)
+        // Routine viewers remain single-listen previews; the editor instead
+        // preserves its own transport options when pausing and resuming.
+        if (!applyEditorPreviewOptions(element, api)) {
+            setExerciseLoopMode(api, false)
+            configureCountIn(api)
+        }
         api.playPause()
     } catch (error) {
         console.error('AlphaTab preview could not start:', error)
@@ -564,4 +604,16 @@ window.addEventListener('alphatab:seek', event => {
     if (!api || !Number.isFinite(percent) || !Number.isFinite(api.endTime) || api.endTime <= 0) return
     api.timePosition = Math.max(0, Math.min(100, percent)) / 100 * api.endTime
     // The alphaTab position event refreshes the exact beat even while paused.
+})
+
+// Update editor transport controls without changing Practice preferences.
+window.addEventListener('alphatab:editor-transport-options', event => {
+    const { element, options } = event.detail ?? {}
+    if (!element || !options) return
+    editorPreviewOptions.set(element, {
+        loop: Boolean(options.loop),
+        countIn: Boolean(options.countIn),
+        metronome: Boolean(options.metronome),
+    })
+    applyEditorPreviewOptions(element, instances.get(element))
 })
