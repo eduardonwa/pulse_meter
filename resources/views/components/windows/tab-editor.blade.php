@@ -58,18 +58,33 @@
                             : 'This score contains notation the Dorelog editor cannot represent as one editable exercise. You can still import the complete score for playback.'"></p>
                     </div>
 
-                    <div class="tab-editor__import-warnings" x-show="!canImportPrototypeMusicXmlForEditing()" x-cloak>
-                        <strong>Why is editing unavailable?</strong>
-                        <p x-show="prototypeMusicXmlImport?.sections?.length > 1">
-                            This score contains separate sections, including changes of time signature. The editor currently supports one time signature per exercise.
-                        </p>
-                        <p x-show="prototypeMusicXmlIssue" x-text="prototypeMusicXmlIssue"></p>
-                        <ul x-show="prototypeMusicXmlImport?.warnings?.length">
-                            <template x-for="(warning, index) in (prototypeMusicXmlImport?.warnings ?? [])" :key="index">
-                                <li x-text="warning"></li>
-                            </template>
-                        </ul>
-                    </div>
+                    <details class="tab-editor__import-warnings" x-ref="tabEditorImportDetails"
+                        x-show="!canImportPrototypeMusicXmlForEditing()" x-cloak>
+                        <summary>Why is editing unavailable?</summary>
+                        <div class="tab-editor__import-details">
+                            <p x-show="prototypeMusicXmlImport?.sections?.length > 1"
+                                x-text="prototypeMusicXmlHasMultipleTimeSignatures()
+                                    ? 'This score contains separate sections, including changes of time signature. The editor currently supports one time signature per exercise.'
+                                    : 'This score contains separate sections because some measures cannot be edited.'"></p>
+                            <div x-show="(prototypeMusicXmlImport?.sections?.length ?? 0) > 1">
+                                <strong>Compatible sections</strong>
+                                <ul>
+                                    <template x-for="(section, index) in (prototypeMusicXmlImport?.sections ?? [])" :key="index">
+                                        <li x-text="`${section.firstMeasure === section.lastMeasure ? 'Measure' : 'Measures'} ${section.firstMeasure}${section.firstMeasure === section.lastMeasure ? '' : '–' + section.lastMeasure}: ${section.numerator}/${section.denominator}`"></li>
+                                    </template>
+                                </ul>
+                            </div>
+                            <p x-show="prototypeMusicXmlIssue" x-text="prototypeMusicXmlIssue"></p>
+                            <div x-show="prototypeMusicXmlImport?.warnings?.length">
+                                <strong>Unsupported measures</strong>
+                                <ul>
+                                    <template x-for="(warning, index) in (prototypeMusicXmlImport?.warnings ?? [])" :key="index">
+                                        <li x-text="warning"></li>
+                                    </template>
+                                </ul>
+                            </div>
+                        </div>
+                    </details>
 
                     <div class="tab-editor__import-actions">
                         <button class="button" data-type="primary" type="button"
