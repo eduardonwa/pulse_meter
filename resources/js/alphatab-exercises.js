@@ -14,7 +14,7 @@ const routineLoopModes = new WeakMap()
 // Routine/practice preference functions remain unchanged.
 const editorPreviewOptions = new WeakMap()
 const editorCountInActive = new WeakMap()
-const pendingEditorSeeks = new WeakMap()
+const editorSeekRestarts = new WeakMap()
 
 function applyEditorPreviewOptions(element, api) {
     const options = editorPreviewOptions.get(element)
@@ -248,19 +248,9 @@ async function mountAlphaTab(element) {
 
         let waitingForScoreStart = false
         api.playerPositionChanged.on(args => {
+            // Ignore the stop/reset position while restarting the count-in.
+            if (editorSeekRestarts.has(api)) return
             if (editorPreviewOptions.has(element)) editorCountInActive.set(api, args.currentTick < 0)
-            const pendingSeek = pendingEditorSeeks.get(api)
-            if (pendingSeek && args.currentTick >= 0 && activeApi === api) {
-                pendingEditorSeeks.delete(api)
-                // Let alphaTab complete the count-in transition before seeking.
-                // Guard the queued callback against stop/new-preview operations.
-                setTimeout(() => {
-                    if (playbackGeneration !== pendingSeek.generation || activeApi !== api) return
-                    api.timePosition = pendingSeek.position
-                }, 0)
-                return
-            }
-            if (pendingSeek) return // Keep the slider at the selected destination during count-in.
             window.dispatchEvent(new CustomEvent('alphatab:playback-position', {
                 detail: { element, currentTime: args.currentTime, endTime: args.endTime },
             }))
@@ -273,6 +263,21 @@ async function mountAlphaTab(element) {
         })
 
         api.playerStateChanged.on(args => {
+            const restart = editorSeekRestarts.get(api)
+            if (restart && args.state === alphaTab.synth.PlayerState.Paused) {
+                // stop() completed: set the destination, then start a fresh
+                // count-in. Do not mutate the synth during its old count-in.
+                setTimeout(() => {
+                    if (editorSeekRestarts.get(api) !== restart ||
+                        playbackGeneration !== restart.generation || activeApi !== api) return
+                    api.timePosition = restart.position
+                    applyEditorPreviewOptions(element, api)
+                    editorSeekRestarts.delete(api)
+                    editorCountInActive.set(api, false)
+                    api.play()
+                }, 0)
+                return
+            }
             waitingForScoreStart = args.state === alphaTab.synth.PlayerState.Playing
             dispatchPlaybackState(
                 element,
@@ -378,7 +383,7 @@ window.addEventListener('alphatab:preview-draft', async event => {
     if (!play) {
         playbackRequests.set(element, ++playbackGeneration)
         const api = instances.get(element)
-        if (api) pendingEditorSeeks.delete(api)
+        if (api) editorSeekRestarts.delete(api)
         api?.stop()
         if (activeApi === api) activeApi = null
         return
@@ -417,7 +422,7 @@ window.addEventListener('alphatab:preview-draft', async event => {
     if (!api || !element.isConnected || playbackRequests.get(element) !== request || playbackGeneration !== request) return
 
     if (activeApi && activeApi !== api) activeApi.stop()
-    pendingEditorSeeks.delete(api)
+    editorSeekRestarts.delete(api)
     activeApi = api
     if (alreadyMounted) {
         api.stop()
@@ -540,7 +545,7 @@ window.addEventListener('alphatab:stop', () => {
     notifyAudioPreparation(null, false)
     ++playbackGeneration
     if (activeApi) {
-        pendingEditorSeeks.delete(activeApi)
+        editorSeekRestarts.delete(activeApi)
         setExerciseLoopMode(activeApi, false)
     }
     activeApi?.stop()
@@ -623,13 +628,15 @@ window.addEventListener('alphatab:seek', event => {
     const percent = Number(event.detail?.percent)
     if (!api || !Number.isFinite(percent) || !Number.isFinite(api.endTime) || api.endTime <= 0) return
     const position = Math.max(0, Math.min(100, percent)) / 100 * api.endTime
-    // Do not stop, seek or restart the synth while negative count-in ticks
-    // are playing: that can strand playback or produce a stray MIDI note.
+    // Seeking during a count-in invalidates the old lead-in. Stop the
+    // current pass and wait for the Paused state before starting a new one.
     if (editorPreviewOptions.has(element) && editorCountInActive.get(api) && activeApi === api) {
-        pendingEditorSeeks.set(api, { position, generation: playbackGeneration })
+        editorSeekRestarts.set(api, { position, generation: playbackGeneration })
+        editorCountInActive.set(api, false)
+        api.stop()
         return
     }
-    pendingEditorSeeks.delete(api)
+    editorSeekRestarts.delete(api)
     api.timePosition = position
     // The alphaTab position event refreshes the exact beat even while paused.
 })
