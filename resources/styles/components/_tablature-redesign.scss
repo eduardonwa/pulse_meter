@@ -7,6 +7,8 @@
     &__editor {
         display: grid;
         grid-template-rows: auto auto auto minmax(0, 1fr) auto;
+        width: 100%;
+        min-width: 0;
         min-height: 100dvh;
     }
 
@@ -48,6 +50,8 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
+        flex-wrap: wrap;
+        gap: $size-2;
 
         background-color: hsl(var(--neutral-300) /.2);
 
@@ -59,6 +63,11 @@
     }
 
     &__actions {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: $size-2;
+
         .button { padding: $size-2; }
 
         .save {
@@ -537,6 +546,7 @@
     }
 
     &__transport {
+        min-width: 0;
         position: sticky;
         bottom: 0;
         z-index: 30;
@@ -683,6 +693,15 @@
             }
         }
     }
+
+    @media (max-width: 700px) {
+        &__transport {
+            padding-inline: $size-3;
+            gap: $size-2;
+        }
+
+        &__playback-options { gap: $size-1; }
+    }
 }
 
 @keyframes transport-shrink {
@@ -697,7 +716,8 @@
 .tab-editor-beta {
     position: fixed;
     inset: 0;
-    width: 100vw;
+    // 100vw includes the vertical scrollbar; 100% keeps the right gutter visible.
+    width: 100%;
     max-width: none;
     height: 100dvh;
     max-height: none;
