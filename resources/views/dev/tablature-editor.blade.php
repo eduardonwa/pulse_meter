@@ -11,6 +11,7 @@
 <body>
     <main class="tab-editor" x-data="tablatureRedesign" x-init="loadPrototypeExercise()"
         @alphatab:playback-state.window="syncPrototypePlayback($event)"
+        @alphatab:playback-position.window="syncPrototypePlaybackPosition($event)"
         @alphatab:load-error.window="prototypePlaybackError($event)">
         <div class="tab-editor__prototype-state" x-show="!prototypeEditorOpen" x-cloak>
             <p x-text="prototypeSaved ? 'Exercise saved in this browser (prototype only).' : 'Editor closed without a saved exercise.'"></p>
@@ -297,6 +298,19 @@
                     <x-lucide-pause height="50" width="50" />
                 </template>
             </button>
+
+            <div class="tab-editor__progress">
+                <div class="tab-editor__progress-track" :style="`--progress: ${prototypeProgress}%`" aria-hidden="true">
+                    <span class="tab-editor__progress-active"></span>
+                    <span class="tab-editor__progress-inactive"></span>
+                    <span class="tab-editor__progress-handle"></span>
+                    <span class="tab-editor__progress-stop"></span>
+                </div>
+                <input class="tab-editor__progress-input" type="range" min="0" max="100" step="0.1"
+                    :value="prototypeProgress" :disabled="prototypeDurationMs <= 0 || prototypePlaybackLoading"
+                    @input="seekPrototypePlayback($event.target.value)"
+                    aria-label="Playback position" :aria-valuetext="`${Math.round(prototypeProgress)}% of tablature`">
+            </div>
 
             <div class="tab-editor__playback-options">
                 <button class="button" data-type="icon-text" type="button" aria-label="Loop" title="Loop"
