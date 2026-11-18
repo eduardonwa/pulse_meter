@@ -38,9 +38,7 @@
         overflow: hidden;
         visibility: hidden;
         pointer-events: none;
-    }
 
-    &__playback-host {
         &.is-full-score {
             grid-row: 4;
             position: relative;
@@ -91,8 +89,6 @@
 
             margin-block-start: $size-3;
         }
-
-
     }
 
     @include mq(large) {
