@@ -6,6 +6,16 @@
     @alphatab:played-beat.window="syncPrototypePlayedBeat($event)"
     @alphatab:playback-finished.window="finishPrototypePlayback($event)"
     @alphatab:load-error.window="prototypePlaybackError($event)">
+    {{-- Display toasts inside the modal's top layer while it is open. --}}
+    <div class="toaster" data-align="top" data-pos="right" aria-live="polite" aria-atomic="true">
+        <div class="toast" x-show="toast.visible" x-cloak x-transition>
+            <div class="toast__body" :class="`toast__body--${toast.type}`">
+                <span x-text="toast.message"></span>
+                <button class="button" data-type="icon" type="button" aria-label="Close notification"
+                    @click="hideToast()"><x-heroicon-o-x-mark /></button>
+            </div>
+        </div>
+    </div>
     <div class="tab-editor">
         <div class="tab-editor__editor">
         {{-- Exercise name and save actions --}}
