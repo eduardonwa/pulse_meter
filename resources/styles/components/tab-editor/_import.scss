@@ -15,7 +15,7 @@
             width: 100%;
 
             border-block-end: 1px solid hsl(var(--neutral-800) / .2);
-
+            
             .button { padding: $size-2; }
         }
 
@@ -23,14 +23,22 @@
             display: grid;
             gap: $size-3;
             align-self: stretch;
+            
             width: 100%;
-            max-width: 720px;
+            max-width: 100%;
+            
             padding: $size-3;
             border: 1px solid hsl(var(--neutral-800) / .2);
             border-radius: $border-radius-2;
+            
             background: hsl(var(--neutral-100));
 
-            p { margin: 0; }
+            p {
+                margin: 0;
+                font-size: 15px;
+                font-weight: 600;
+            }
+
             small { font-size: 12px; }
         }
 

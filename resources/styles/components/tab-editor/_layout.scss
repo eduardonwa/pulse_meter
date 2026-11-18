@@ -77,16 +77,20 @@
 .tab-editor-dialog {
     position: fixed;
     inset: 0;
-    // 100vw includes the vertical scrollbar; 100% keeps the right gutter visible.
+    
     width: 100%;
     max-width: none;
     height: 100dvh;
     max-height: none;
+    
     margin: 0;
     padding: 0;
+    
     border: 0;
     background: hsl(var(--neutral-100));
     color: inherit;
-    overflow: auto;
+    
+    overflow: hidden;
+    
     .tab-editor { min-height: 100dvh; }
 }
