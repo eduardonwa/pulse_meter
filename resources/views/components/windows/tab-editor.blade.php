@@ -1,5 +1,5 @@
-{{-- Default real-routine editor; legacy available for compatibility. --}}
-<dialog class="tab-editor-beta" x-ref="tabEditorDialog"
+{{-- Tablature editor for routine exercises. --}}
+<dialog class="tab-editor-dialog" x-ref="tabEditorDialog"
     @cancel.prevent="closeNewTabEditor()" @close="tabEditorOpen = false"
     @alphatab:playback-state.window="syncPrototypePlayback($event)"
     @alphatab:playback-position.window="syncPrototypePlaybackPosition($event)"
