@@ -365,6 +365,16 @@
         min-width: 0;
     }
 
+    &__selection-range {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        z-index: 1;
+        pointer-events: none;
+        border-radius: .2rem;
+        background: hsl(var(--primary-300) / .55);
+    }
+
     &__playhead {
         position: absolute;
         left: 16px;
@@ -397,6 +407,8 @@
     }
 
     &__cell {
+        position: relative;
+        z-index: 2;
         width: 40px;
         height: 36px;
 
