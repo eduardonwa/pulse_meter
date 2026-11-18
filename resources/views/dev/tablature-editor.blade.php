@@ -284,13 +284,7 @@
         <div class="tab-editor__playback-host" x-ref="tabEditorPreview" data-alphatab data-admin-preview="true" aria-hidden="true"></div>
 
         {{-- playback controls --}}
-        <footer class="tab-editor__transport"
-            x-data="{
-                loop: false,
-                countIn: false,
-                metronome: false
-            }"
-        >
+        <footer class="tab-editor__transport">
             <button class="button" data-type="icon" type="button"
                 :aria-label="prototypePlaying ? 'Pause' : 'Play'"
                 :class="{ 'is-active': prototypePlaying }"
@@ -320,25 +314,25 @@
 
             <div class="tab-editor__playback-options">
                 <button class="button" data-type="icon-text" type="button" aria-label="Loop" title="Loop"
-                    x-on:click="loop = !loop"
-                    x-bind:class="{ 'is-active': loop }"
-                    x-bind:aria-pressed="loop.toString()"
+                    x-on:click="setPrototypeTransportOption('loop')"
+                    x-bind:class="{ 'is-active': prototypeLoop }"
+                    x-bind:aria-pressed="prototypeLoop.toString()"
                 >
                     <x-lucide-repeat />
                 </button>
 
                 <button class="button" data-type="icon-text" type="button" aria-label="Count-in" title="Count-in"
-                    x-on:click="countIn = !countIn"
-                    x-bind:class="{ 'is-active': countIn }"
-                    x-bind:aria-pressed="countIn.toString()"
+                    x-on:click="setPrototypeTransportOption('countIn')"
+                    x-bind:class="{ 'is-active': prototypeCountIn }"
+                    x-bind:aria-pressed="prototypeCountIn.toString()"
                 >
                     <x-lucide-timer />
                 </button>
 
                 <button class="button" data-type="icon-text" type="button" aria-label="Metronome" title="Metronome"
-                    x-on:click="metronome = !metronome"
-                    x-bind:class="{ 'is-active': metronome }"
-                    x-bind:aria-pressed="metronome.toString()"
+                    x-on:click="setPrototypeTransportOption('metronome')"
+                    x-bind:class="{ 'is-active': prototypeMetronome }"
+                    x-bind:aria-pressed="prototypeMetronome.toString()"
                 >
                     <x-lucide-metronome />
                 </button>
