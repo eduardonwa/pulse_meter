@@ -19,11 +19,7 @@
         &__palette-effects {
             display: grid;
             gap: .25rem;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-
-            @include mq(medium) {
-                grid-template-columns: 1fr;
-            }
+            grid-template-columns: 1fr;
         }
 
         &__palette-tool {
