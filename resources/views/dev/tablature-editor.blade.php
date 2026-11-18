@@ -308,7 +308,8 @@
                 </div>
                 <input class="tab-editor__progress-input" type="range" min="0" max="100" step="0.1"
                     :value="prototypeProgress" :disabled="!tabDraft.beats.length || prototypePlaybackLoading"
-                    @input="seekPrototypePlayback($event.target.value)"
+                    @input="previewPrototypeSeek($event.target.value)"
+                    @change="seekPrototypePlayback($event.target.value)"
                     aria-label="Playback position" :aria-valuetext="`${Math.round(prototypeProgress)}% of tablature`">
             </div>
 
