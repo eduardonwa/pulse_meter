@@ -1,5 +1,38 @@
 @use "../../abstracts" as *;
 
-.selection {
+.tab-editor {
+    &__selection-range {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        z-index: 1;
+        pointer-events: none;
+        border-radius: .2rem;
+        background: hsl(var(--primary-300) / .55);
+    }
+
+    &__playhead {
+        position: absolute;
+        left: 16px;
+        top: 0;
+        bottom: 0;
+        width: 5px;
+
+        z-index: 3;
+        pointer-events: none;
+
+        border-radius: .4rem;
+        background: hsl(var(--sol-500));
+
+        opacity: 0;
+        will-change: transform;
+        transition: opacity 90ms ease-out;
+
+        &.is-visible { opacity: 1; }
+
+        @media (prefers-reduced-motion: reduce) {
+            transition: none;
+        }
+    }
 
 }
