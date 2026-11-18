@@ -1,87 +1,91 @@
 @use "../../abstracts" as *;
 
-.tab-editor {
-    min-height: 100dvh;
+// Base styles for phones (up to 767px) will be defined here.
 
-    &__editor {
-        display: grid;
-        grid-template-rows: auto auto auto minmax(0, 1fr) auto;
-        width: 100%;
-        min-width: 0;
+@include mq(medium) {
+    .tab-editor {
         min-height: 100dvh;
-    }
 
-    &__prototype-state {
-        display: grid;
-        place-content: center;
-        justify-items: center;
-        gap: $size-3;
-        min-height: 100dvh;
-    }
-
-    // MAIN EDITOR
-    &__workspace {
-        position: relative;
-        display: grid;
-        grid-template-columns: minmax(0, 1fr);
-        gap: 1rem;
-        align-items: start;
-
-        margin-block-start: $size-3;
-        margin-inline: $size-3;
-        
-        @media (min-width: 800px) {
-            grid-template-columns: 180px minmax(0, 1fr);
-        }
-    }
-
-    &__playback-host {
-        position: absolute;
-        width: 800px;
-        height: 1px;
-        overflow: hidden;
-        visibility: hidden;
-        pointer-events: none;
-
-        &.is-full-score {
-            position: relative;
+        &__editor {
+            display: grid;
+            grid-template-rows: auto auto auto minmax(0, 1fr) auto;
             width: 100%;
-            max-width: 100%;
             min-width: 0;
-            height: auto;
-            min-height: 240px;
-            overflow-x: auto;
-            visibility: visible;
-            pointer-events: auto;
+            min-height: 100dvh;
+        }
 
-            // alphaTab animates the beat cursor; soften the abrupt bar-wide
-            // highlight and use a more legible moving line.
-            .at-cursor-bar {
-                background: hsl(var(--sol-500) / .08);
+        &__prototype-state {
+            display: grid;
+            place-content: center;
+            justify-items: center;
+            gap: $size-3;
+            min-height: 100dvh;
+        }
+
+        // MAIN EDITOR
+        &__workspace {
+            position: relative;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr);
+            gap: 1rem;
+            align-items: start;
+
+            margin-block-start: $size-3;
+            margin-inline: $size-3;
+            
+            @media (min-width: 800px) {
+                grid-template-columns: 180px minmax(0, 1fr);
             }
+        }
 
-            .at-cursor-beat {
-                width: 3px;
-                background: hsl(var(--sol-600) / .8);
-                border-radius: 2px;
+        &__playback-host {
+            position: absolute;
+            width: 800px;
+            height: 1px;
+            overflow: hidden;
+            visibility: hidden;
+            pointer-events: none;
+
+            &.is-full-score {
+                position: relative;
+                width: 100%;
+                max-width: 100%;
+                min-width: 0;
+                height: auto;
+                min-height: 240px;
+                overflow-x: auto;
+                visibility: visible;
+                pointer-events: auto;
+
+                // alphaTab animates the beat cursor; soften the abrupt bar-wide
+                // highlight and use a more legible moving line.
+                .at-cursor-bar {
+                    background: hsl(var(--sol-500) / .08);
+                }
+
+                .at-cursor-beat {
+                    width: 3px;
+                    background: hsl(var(--sol-600) / .8);
+                    border-radius: 2px;
+                }
             }
         }
     }
-}
 
-.tab-editor-dialog {
-    position: fixed;
-    inset: 0;
-    // 100vw includes the vertical scrollbar; 100% keeps the right gutter visible.
-    width: 100%;
-    max-width: none;
-    height: 100dvh;
-    max-height: none;
-    margin: 0;
-    padding: 0;
-    border: 0;
-    background: hsl(var(--neutral-100));
-    color: inherit;
-    overflow: auto;
-    .tab-editor { min-height: 100dvh; }
+    .tab-editor-dialog {
+        position: fixed;
+        inset: 0;
+        // 100vw includes the vertical scrollbar; 100% keeps the right gutter visible.
+        width: 100%;
+        max-width: none;
+        height: 100dvh;
+        max-height: none;
+        margin: 0;
+        padding: 0;
+        border: 0;
+        background: hsl(var(--neutral-100));
+        color: inherit;
+        overflow: auto;
+        .tab-editor { min-height: 100dvh; }
+    }
 }
