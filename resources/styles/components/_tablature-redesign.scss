@@ -694,3 +694,18 @@
         padding-block: 8px;
     }
 }
+.tab-editor-beta {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    max-width: none;
+    height: 100dvh;
+    max-height: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: hsl(var(--neutral-100));
+    color: inherit;
+    overflow: auto;
+    .tab-editor { min-height: 100dvh; }
+}
