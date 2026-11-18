@@ -80,14 +80,18 @@ Alpine.data('tablatureRedesign', () => ({
         this.prototypeCurrentMs = Math.max(0, Math.min(duration, current))
         this.prototypeProgress = this.prototypeCurrentMs / duration * 100
     },
-    seekPrototypePlayback(value) {
+    previewPrototypeSeek(value) {
         if (!this.tabDraft.beats.length || this.prototypePlaybackLoading) return
         const percent = Math.max(0, Math.min(100, Number(value) || 0))
         this.prototypeProgress = percent
         this.prototypeCurrentMs = percent / 100 * this.prototypeDurationMs
         this.showPrototypeBeatAtPercent(percent)
+    },
+    seekPrototypePlayback(value) {
+        if (!this.tabDraft.beats.length || this.prototypePlaybackLoading) return
+        this.previewPrototypeSeek(value)
         window.dispatchEvent(new CustomEvent('alphatab:seek', {
-            detail: { element: this.$refs.tabEditorPreview, percent },
+            detail: { element: this.$refs.tabEditorPreview, percent: this.prototypeProgress },
         }))
     },
     stopPrototypePlayback() {
