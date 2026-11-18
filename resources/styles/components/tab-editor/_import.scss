@@ -32,14 +32,34 @@
     }
 
     &__import-warnings {
-        display: grid;
-        gap: $size-2;
         font-size: 13px;
+
+        summary {
+            cursor: pointer;
+            font-weight: 600;
+            padding-block: $size-1;
+        }
+
+        summary:focus-visible {
+            outline: 2px solid currentColor;
+            outline-offset: 2px;
+        }
 
         ul {
             margin: 0;
             padding-inline-start: $size-5;
             overflow-wrap: anywhere;
+        }
+    }
+
+    &__import-details {
+        display: grid;
+        gap: $size-3;
+        padding-block-start: $size-3;
+
+        > div {
+            display: grid;
+            gap: $size-2;
         }
     }
 
