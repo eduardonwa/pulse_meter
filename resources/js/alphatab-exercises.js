@@ -1,6 +1,7 @@
 import { isAlphaTabCountInEnabled } from './metronome/alphatab/count-in-preference.js'
 import { playbackAlphaTex } from './metronome/alphatab/tab-editor.js'
 import { installMidiReloadListener, loadReplacementMusicXml } from './metronome/alphatab/midi-reload.js'
+import { fixAlphaTabMidiInfoGetter } from './metronome/alphatab/fix-midi-info-getter.js'
 let alphaTabModule = null
 let activeApi = null
 
@@ -54,6 +55,7 @@ async function getAlphaTab() {
         const alphaTabUrl = `${window.location.origin}/alphatab/alphaTab.mjs`
 
         alphaTabModule = await import(/* @vite-ignore */ alphaTabUrl)
+        fixAlphaTabMidiInfoGetter(alphaTabModule)
     }
 
     return alphaTabModule
