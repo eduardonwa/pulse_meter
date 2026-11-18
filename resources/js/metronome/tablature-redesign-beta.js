@@ -19,6 +19,7 @@ export function tablatureRedesignBeta() {
         this.prototypePlaybackLoading = false
         this.prototypePlaybackScore = null
         this.prototypePlayingBeatIndex = null
+        this.stopPrototypePlayheadAnimation()
         this.prototypeProgress = 0
         this.prototypeDurationMs = 0
         this.prototypeCurrentMs = 0
@@ -71,6 +72,66 @@ export function tablatureRedesignBeta() {
     prototypePlaybackLoading: false,
     prototypePlaybackScore: null,
     prototypePlayingBeatIndex: null,
+    prototypePlayheadFrame: null,
+    prototypePlayheadClock: null,
+    stopPrototypePlayheadAnimation() {
+        if (this.prototypePlayheadFrame !== null) {
+            cancelAnimationFrame(this.prototypePlayheadFrame)
+            this.prototypePlayheadFrame = null
+        }
+        this.prototypePlayheadClock = null
+        this.$refs.tabEditorDialog?.querySelectorAll('.tab-editor__playhead').forEach(el => {
+            el.classList.remove('is-visible')
+        })
+    },
+    paintPrototypePlayhead(progress) {
+        if (this.tabFullMusicXml || !this.tabDraft.beats.length) return
+        const beats = this.tabDraft.beats
+        const units = beats.map(beat => tabBeatUnits(beat))
+        const total = units.reduce((sum, unit) => sum + unit, 0)
+        if (!(total > 0)) return
+        let remaining = Math.max(0, Math.min(1, progress)) * total
+        let index = beats.length - 1
+        let fraction = 0
+        for (let i = 0; i < beats.length; i++) {
+            if (remaining < units[i] || i === beats.length - 1) {
+                index = i
+                fraction = Math.max(0, Math.min(1, remaining / units[i]))
+                break
+            }
+            remaining -= units[i]
+        }
+        const grids = this.$refs.tabEditorScore?.querySelectorAll('.tab-editor__grid')
+        grids?.forEach(grid => {
+            const cursor = grid.querySelector('.tab-editor__playhead')
+            const cell = grid.querySelector(`[data-playhead-beat="${index}"]`)
+            if (!cursor) return
+            if (!cell) {
+                cursor.classList.remove('is-visible')
+                return
+            }
+            const next = grid.querySelector(`[data-playhead-beat="${index + 1}"]`)
+            const startX = cell.offsetLeft
+            const endX = next?.offsetLeft ?? startX
+            cursor.style.transform = `translate3d(${startX + (endX - startX) * fraction}px, 0, 0)`
+            cursor.classList.add('is-visible')
+        })
+    },
+    startPrototypePlayheadAnimation() {
+        if (this.tabFullMusicXml || this.prototypePlayheadFrame !== null) return
+        const frame = now => {
+            this.prototypePlayheadFrame = null
+            if (!this.prototypePlaying || this.tabFullMusicXml) return
+            const clock = this.prototypePlayheadClock
+            if (clock && clock.duration > 0) {
+                const elapsed = Math.max(0, now - clock.at)
+                const position = Math.min(clock.duration, clock.current + elapsed)
+                this.paintPrototypePlayhead(position / clock.duration)
+            }
+            this.prototypePlayheadFrame = requestAnimationFrame(frame)
+        }
+        this.prototypePlayheadFrame = requestAnimationFrame(frame)
+    },
     // Approximate the destination immediately from the editable rhythm;
     // alphaTab corrects it using the actual MIDI tick after a seek.
     showPrototypeBeatAtPercent(percent) {
@@ -104,6 +165,8 @@ export function tablatureRedesignBeta() {
     },
     finishPrototypePlayback(event) {
         if (event.detail?.element !== this.$refs.tabEditorPreview) return
+        this.prototypePlaying = false
+        this.stopPrototypePlayheadAnimation()
         this.prototypePlayingBeatIndex = null
     },
     prototypeProgress: 0,
@@ -117,6 +180,8 @@ export function tablatureRedesignBeta() {
         this.prototypeDurationMs = duration
         this.prototypeCurrentMs = Math.max(0, Math.min(duration, current))
         this.prototypeProgress = this.prototypeCurrentMs / duration * 100
+        this.prototypePlayheadClock = { current: this.prototypeCurrentMs, duration, at: performance.now() }
+        if (!this.prototypePlaying) this.paintPrototypePlayhead(this.prototypeProgress / 100)
     },
     previewPrototypeSeek(value) {
         if ((!this.tabDraft.beats.length && !this.tabFullMusicXml) || this.prototypePlaybackLoading) return
@@ -124,6 +189,8 @@ export function tablatureRedesignBeta() {
         this.prototypeProgress = percent
         this.prototypeCurrentMs = percent / 100 * this.prototypeDurationMs
         this.showPrototypeBeatAtPercent(percent)
+        this.prototypePlayheadClock = { current: this.prototypeCurrentMs, duration: this.prototypeDurationMs, at: performance.now() }
+        this.paintPrototypePlayhead(percent / 100)
     },
     seekPrototypePlayback(value) {
         if ((!this.tabDraft.beats.length && !this.tabFullMusicXml) || this.prototypePlaybackLoading) return
@@ -141,6 +208,7 @@ export function tablatureRedesignBeta() {
         this.prototypePlaybackLoading = false
         this.prototypePlaybackScore = null
         this.prototypePlayingBeatIndex = null
+        this.stopPrototypePlayheadAnimation()
         this.prototypeProgress = 0
         this.prototypeDurationMs = 0
         this.prototypeCurrentMs = 0
@@ -149,6 +217,16 @@ export function tablatureRedesignBeta() {
         if (event.detail?.element !== this.$refs.tabEditorPreview) return
         this.prototypePlaying = Boolean(event.detail.playing)
         this.prototypePlaybackLoading = false
+        if (this.prototypePlaying) {
+            this.prototypePlayheadClock = {
+                current: this.prototypeCurrentMs, duration: this.prototypeDurationMs, at: performance.now(),
+            }
+            this.startPrototypePlayheadAnimation()
+        } else {
+            if (this.prototypePlayheadFrame !== null) cancelAnimationFrame(this.prototypePlayheadFrame)
+            this.prototypePlayheadFrame = null
+            this.prototypePlayheadClock = null
+        }
     },
     prototypePlaybackError(event) {
         if (event.detail?.element !== this.$refs.tabEditorPreview) return
@@ -156,6 +234,7 @@ export function tablatureRedesignBeta() {
         this.prototypePlaybackLoading = false
         this.prototypePlaybackScore = null
         this.prototypePlayingBeatIndex = null
+        this.stopPrototypePlayheadAnimation()
         this.prototypeMessageType = 'error'
         this.prototypeMessage = event.detail.message || 'Unable to play this tablature.'
     },
