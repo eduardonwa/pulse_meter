@@ -187,9 +187,23 @@ async function mountAlphaTab(element) {
 
         api.metronomeVolume = 1
         configureCountIn(api)
-        api.playerFinished.on(() => restartExerciseWithCountIn(api, {
-            isActive: () => activeApi === api,
-        }))
+        api.playerFinished.on(() => {
+            window.dispatchEvent(new CustomEvent('alphatab:playback-finished', {
+                detail: { element },
+            }))
+            restartExerciseWithCountIn(api, { isActive: () => activeApi === api })
+        })
+        // Editor UI has its own grid, so forward the actual alphaTab beat
+        // rather than estimating note positions from elapsed milliseconds.
+        api.playedBeatChanged.on(beat => {
+            window.dispatchEvent(new CustomEvent('alphatab:played-beat', {
+                detail: {
+                    element,
+                    measureIndex: beat?.voice?.bar?.index,
+                    beatIndex: beat?.index,
+                },
+            }))
+        })
 
         let waitingForScoreStart = false
         api.playerPositionChanged.on(args => {
