@@ -28,7 +28,8 @@ Alpine.data('tablatureRedesign', () => ({
             measureIndex < 0 || beatIndex < 0) return
         const measures = this.tabEditorMeasureLayout()
         const beat = measures[measureIndex]?.notes?.[beatIndex]
-        this.prototypePlayingBeatIndex = Number.isInteger(beat?.index) ? beat.index : null
+        const next = Number.isInteger(beat?.index) ? beat.index : null
+        if (this.prototypePlayingBeatIndex !== next) this.prototypePlayingBeatIndex = next
     },
     finishPrototypePlayback(event) {
         if (event.detail?.element !== this.$refs.tabEditorPreview) return
