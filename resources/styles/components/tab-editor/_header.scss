@@ -1,62 +1,66 @@
 @use "../../abstracts" as *;
 
-.tab-editor {
-    &__heading {
-        display: flex;
-        align-items: baseline;
-        gap: $size-3;
-        flex-wrap: wrap;
-        min-width: 0;
-    }
+// Base styles for phones (up to 767px) will be defined here.
 
-    &__save-status {
-        margin: 0;
-        font-size: 13px;
-        font-weight: 500;
-
-        &.is-error {
-            color: $color-re-600;
+@include mq(medium) {
+    .tab-editor {
+        &__heading {
+            display: flex;
+            align-items: baseline;
+            gap: $size-3;
+            flex-wrap: wrap;
+            min-width: 0;
         }
 
-        &.is-success {
-            color: $color-sol-600;
+        &__save-status {
+            margin: 0;
+            font-size: 13px;
+            font-weight: 500;
+
+            &.is-error {
+                color: $color-re-600;
+            }
+
+            &.is-success {
+                color: $color-sol-600;
+            }
+
+            &:empty { display: none; }
+        }
+        
+        &__header {
+            padding: $size-4;
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: $size-2;
+
+            background-color: hsl(var(--neutral-300) /.2);
+
+            .exercise-name {
+                font-size: 15px;
+                font-weight: 600;
+                letter-spacing: .3px;
+            }
         }
 
-        &:empty { display: none; }
-    }
-    
-    &__header {
-        padding: $size-4;
+        &__actions {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: $size-2;
 
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        flex-wrap: wrap;
-        gap: $size-2;
+            .button { padding: $size-2; }
 
-        background-color: hsl(var(--neutral-300) /.2);
+            .save {
+                background-color: $color-do-500;
+                color: $color-do-50;
+                &:hover { background-color: $color-do-600; }
+            }
 
-        .exercise-name {
-            font-size: 15px;
-            font-weight: 600;
-            letter-spacing: .3px;
+            .save-close { background-color: $color-neutral-300; }
         }
-    }
-
-    &__actions {
-        display: flex;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: $size-2;
-
-        .button { padding: $size-2; }
-
-        .save {
-            background-color: $color-do-500;
-            color: $color-do-50;
-            &:hover { background-color: $color-do-600; }
-        }
-
-        .save-close { background-color: $color-neutral-300; }
     }
 }
