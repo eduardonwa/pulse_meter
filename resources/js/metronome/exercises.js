@@ -1,5 +1,5 @@
 import { tablatureEditorMethods } from "./tablature-editor-controller.js";
-import { tablatureRedesignBeta } from "./tablature-redesign-beta.js";
+import { tabEditor } from "./tab-editor.js";
 import { createTabDraft, TAB_STRINGS } from "./alphatab/tab-editor.js";
 
 export function exercises() {
@@ -8,17 +8,10 @@ export function exercises() {
         tabEditorOpen: false,
         tabEditorEditingIndex: null,
         tabEditorSaving: false,
-        tabPreviewPlaying: false,
-        tabPreviewVisible: false,
         tabUndoHistory: [],
         tabRedoHistory: [],
         tabDraft: createTabDraft(),
-        tabMusicXmlImport: null,
-        tabMusicXmlFullSource: null,
-        tabMusicXmlFileName: '',
-        tabMusicXmlInitialBpm: null,
         tabFullMusicXml: null,
-        tabMusicXmlSelectedSection: 0,
         tabStringNames: TAB_STRINGS,
         tabSelectedIndex: 0,
         tabInsertAtBar: false,
@@ -311,7 +304,7 @@ export function exercises() {
         },
 
         ...tablatureEditorMethods(),
-        ...tablatureRedesignBeta(),
+        ...tabEditor(),
 
         // MODALS
         openAddStepModal() {

@@ -1,4 +1,3 @@
-import { parseMusicXmlTab } from "./alphatab/musicxml-import.js";
 import {
     createTabDraft, appendTabNote, serializeTabDraft, parseTabDraft,
     layoutTabMeasures, selectTabNoteIndices, changeSelectedTabDurations,
@@ -20,19 +19,13 @@ export function tablatureEditorMethods() {
             this.tabDraft = createTabDraft();
             this.tabUndoHistory = [];
             this.tabRedoHistory = [];
-            this.tabPreviewVisible = false;
-            this.tabMusicXmlImport = null;
-            this.tabMusicXmlFullSource = null;
-            this.tabMusicXmlFileName = '';
-            this.tabMusicXmlInitialBpm = null;
             this.tabFullMusicXml = null;
-            this.tabMusicXmlSelectedSection = 0;
             this.tabSelectedIndex = 0;
             this.tabInsertAtBar = false;
             this.tabSelectedIndices = [];
             this.tabSelectionAnchor = null;
             this.tabEditorOpen = true;
-            if (this.$refs.tabEditorDialog?.classList.contains('tab-editor-beta')) this.prepareRedesignEditor();
+            this.prepareRedesignEditor();
             this.$nextTick(() => {
                 this.$refs.tabEditorDialog?.showModal();
                 this.updateTabEditorWidth();
@@ -54,7 +47,6 @@ export function tablatureEditorMethods() {
             this.tabDraft = parsed.draft;
             this.tabUndoHistory = [];
             this.tabRedoHistory = [];
-            this.tabPreviewVisible = false;
             this.tabFullMusicXml = null;
             this.tabSelectedIndex = parsed.draft.beats.length;
             this.tabInsertAtBar = false;
@@ -79,136 +71,22 @@ export function tablatureEditorMethods() {
             }
             viewerDialog?.close();
             this.tabEditorOpen = true;
-            if (this.$refs.tabEditorDialog?.classList.contains('tab-editor-beta')) this.prepareRedesignEditor();
+            this.prepareRedesignEditor();
             this.$nextTick(() => {
                 this.$refs.tabEditorDialog?.showModal();
                 this.updateTabEditorWidth();
             });
         },
 
-        async importTabMusicXml(event) {
-            const input = event.target;
-            const file = input.files?.[0];
-            input.value = '';
-            if (!file || !this.canCreateTablatures || this.tabEditorEditingIndex !== null) return;
-            if (!/\.(xml|musicxml)$/i.test(file.name) || file.size > 2_000_000) {
-                this.showToast?.('Choose an uncompressed .xml or .musicxml file under 2 MB', 'error');
-                return;
-            }
-            try {
-                const xmlText = await file.text();
-                // Full-score playback and limited editable imports are separate.
-                // A complex score can be played even when the simple editor
-                // rejects its notes, voices or time-signature changes.
-                if (/<!ENTITY|<!DOCTYPE[^>]*\[/i.test(xmlText)) {
-                    throw new Error('MusicXML with custom entities is not supported');
-                }
-                const document = new DOMParser().parseFromString(xmlText, 'application/xml');
-                if (document.getElementsByTagName('parsererror').length ||
-                    !['score-partwise', 'score-timewise'].includes(document.documentElement?.localName)) {
-                    throw new Error('Invalid MusicXML score');
-                }
-                this.tabMusicXmlFullSource = xmlText;
-                const initialTempo = Number(document.querySelector('sound[tempo]')?.getAttribute('tempo') ??
-                    document.querySelector('metronome per-minute')?.textContent);
-                this.tabMusicXmlInitialBpm = Number.isFinite(initialTempo) && initialTempo >= 30 && initialTempo <= 400
-                    ? Math.round(initialTempo) : null;
-                this.tabMusicXmlFileName = file.name.replace(/\.(musicxml|xml)$/i, '');
-                try {
-                    this.tabMusicXmlImport = parseMusicXmlTab(xmlText);
-                } catch {
-                    this.tabMusicXmlImport = null;
-                }
-                this.tabMusicXmlSelectedSection = 0;
-            } catch (error) {
-                this.tabMusicXmlImport = null;
-                this.tabMusicXmlFullSource = null;
-                this.showToast?.(error.message, 'error');
-            }
-        },
-
-        applyTabMusicXmlSection() {
-            if (this.tabEditorEditingIndex !== null) return;
-            const imported = this.tabMusicXmlImport;
-            const section = imported?.sections[Number(this.tabMusicXmlSelectedSection)];
-            if (!section) return;
-            this.stopTabEditorPreview();
-            this.recordTabEditorUndo();
-            this.tabDraft = section.draft;
-            this.tabFullMusicXml = null;
-            this.stepForm.name = imported.title.slice(0, 255);
-            this.stepForm.bpm = section.bpm;
-            this.stepForm.time_signature_numerator = section.numerator;
-            this.stepForm.time_signature_denominator = section.denominator;
-            this.tabSelectedIndex = section.draft.beats.length;
-            this.tabSelectedIndices = [];
-            this.tabSelectionAnchor = null;
-            this.tabInsertAtBar = false;
-            this.tabMusicXmlImport = null;
-            this.$nextTick(() => this.updateTabEditorWidth());
-        },
-
-        applyTabMusicXmlFullScore() {
-            if (!this.tabMusicXmlFullSource || this.tabEditorEditingIndex !== null) return;
-            this.stopTabEditorPreview();
-            this.recordTabEditorUndo();
-            this.tabFullMusicXml = this.tabMusicXmlFullSource;
-            this.tabDraft = createTabDraft();
-            if (this.tabMusicXmlInitialBpm) this.stepForm.bpm = this.tabMusicXmlInitialBpm;
-            this.stepForm.name = (this.tabMusicXmlImport?.title || this.tabMusicXmlFileName || 'Imported score').slice(0, 255);
-            this.tabSelectedIndices = [];
-            this.tabMusicXmlImport = null;
-            this.tabMusicXmlFullSource = null;
-            this.tabMusicXmlInitialBpm = null;
-        },
-
         closeNewTabEditor() {
-            if (this.$refs.tabEditorDialog?.classList.contains('tab-editor-beta')) this.stopPrototypePlayback();
-            else this.stopTabEditorPreview();
+            this.stopPrototypePlayback();
             this.finishPendingTabDigit(false);
             this.$refs.tabEditorDialog?.close();
             this.tabEditorOpen = false;
-            this.tabPreviewVisible = false;
             this.tabUndoHistory = [];
             this.tabRedoHistory = [];
             this.tabEditorEditingIndex = null;
-            this.tabMusicXmlImport = null;
-            this.tabMusicXmlFullSource = null;
             this.tabFullMusicXml = null;
-        },
-
-        previewTabEditor() {
-            if (this.tabPreviewPlaying) {
-                this.stopTabEditorPreview();
-                return;
-            }
-            let alphaTex;
-            try {
-                alphaTex = this.tabFullMusicXml ? null : serializeTabDraft(this.tabDraft, this.stepForm.time_signature_numerator, this.stepForm.bpm, this.stepForm.time_signature_denominator);
-            } catch (error) {
-                this.showToast?.(error.message, "error");
-                return;
-            }
-            const element = this.$refs.tabEditorPreview;
-            if (!element) return;
-            this.tabPreviewVisible = true;
-            this.tabPreviewPlaying = true;
-            // alphaTab measures its container at mount. Let Alpine remove
-            // x-show's display:none before requesting the render.
-            this.$nextTick(() => {
-                if (!this.tabPreviewPlaying || !this.tabEditorOpen) return;
-                window.dispatchEvent(new CustomEvent("alphatab:preview-draft", {
-                    detail: { element, alphaTex, musicXml: this.tabFullMusicXml, bpm: Number(this.stepForm.bpm), instrument: this.tabDraft.instrument, play: true },
-                }));
-            });
-        },
-
-        stopTabEditorPreview() {
-            const element = this.$refs.tabEditorPreview;
-            if (element) window.dispatchEvent(new CustomEvent("alphatab:preview-draft", {
-                detail: { element, play: false },
-            }));
-            this.tabPreviewPlaying = false;
         },
 
         updateTabEditorWidth() {
@@ -683,10 +561,10 @@ export function tablatureEditorMethods() {
                         }));
                     });
                     if (closeAfterSave) {
-                        const isBeta = this.$refs.tabEditorDialog?.classList.contains('tab-editor-beta')
+                        
                         this.closeNewTabEditor();
                         this.resetStepForm();
-                        if (isBeta) this.showToast?.('Tablature saved', 'success');
+                        this.showToast?.('Tablature saved', 'success');
                     } else {
                         this.showToast?.('Tablature saved', 'success');
                     }
@@ -713,10 +591,10 @@ export function tablatureEditorMethods() {
                     has_tablature: true,
                 });
                 if (closeAfterSave) {
-                    const isBeta = this.$refs.tabEditorDialog?.classList.contains('tab-editor-beta')
+                    
                     this.closeNewTabEditor();
                     this.resetStepForm();
-                    if (isBeta) this.showToast?.('Tablature saved', 'success');
+                    this.showToast?.('Tablature saved', 'success');
                 } else {
                     this.showToast?.('Tablature saved', 'success');
                 }
