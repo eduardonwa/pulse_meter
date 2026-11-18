@@ -1,68 +1,72 @@
 @use "../../abstracts" as *;
 
-.tab-editor {
-    // RHYTHM CONTROLS
-    // Keep both palettes together as the score grows and the page scrolls.
-    &__rhythm {
-        position: sticky;
-        top: 0;
-        z-index: 5;
-        align-self: start;
-        background: hsl(var(--neutral-100));
-    }
+// Base styles for phones (up to 767px) will be defined here.
 
-    //-PALETTE-
-    &__palette-durations,
-    &__palette-effects {
-        display: grid;
-        gap: .25rem;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-
-        @include mq(medium) {
-            grid-template-columns: 1fr;
-        }
-    }
-
-    &__palette-tool {
-        display: flex;
-        align-items: center;
-        gap: .5rem;
-        
-        padding: $size-1 $size-2;
-        
-        min-height: 38px;
-        
-        border: 1px solid transparent;
-        border-radius: .4rem;
-        
-        text-align: left;
-        
-        background: transparent;
-        color: inherit;
-        
-        font: inherit;
-        font-size: 14px;
-        cursor: pointer;
-
-        span:first-child {
-            min-width: 2rem;
-            font-size: 1rem;
-            text-align: center;
+@include mq(medium) {
+    .tab-editor {
+        // RHYTHM CONTROLS
+        // Keep both palettes together as the score grows and the page scrolls.
+        &__rhythm {
+            position: sticky;
+            top: 0;
+            z-index: 5;
+            align-self: start;
+            background: hsl(var(--neutral-100));
         }
 
-        &:hover {
-            background: hsl(var(--neutral-500) / .12);
+        //-PALETTE-
+        &__palette-durations,
+        &__palette-effects {
+            display: grid;
+            gap: .25rem;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+
+            @include mq(medium) {
+                grid-template-columns: 1fr;
+            }
         }
 
-        &.is-active {
-            border-color: hsl(var(--primary-700) / .45);
-            background: hsl(var(--primary-200) / .6);
-            color: hsl(var(--primary-950));
-        }
+        &__palette-tool {
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+            
+            padding: $size-1 $size-2;
+            
+            min-height: 38px;
+            
+            border: 1px solid transparent;
+            border-radius: .4rem;
+            
+            text-align: left;
+            
+            background: transparent;
+            color: inherit;
+            
+            font: inherit;
+            font-size: 14px;
+            cursor: pointer;
 
-        &:focus-visible {
-            outline: 2px solid currentColor;
-            outline-offset: 2px;
+            span:first-child {
+                min-width: 2rem;
+                font-size: 1rem;
+                text-align: center;
+            }
+
+            &:hover {
+                background: hsl(var(--neutral-500) / .12);
+            }
+
+            &.is-active {
+                border-color: hsl(var(--primary-700) / .45);
+                background: hsl(var(--primary-200) / .6);
+                color: hsl(var(--primary-950));
+            }
+
+            &:focus-visible {
+                outline: 2px solid currentColor;
+                outline-offset: 2px;
+            }
         }
     }
 }
