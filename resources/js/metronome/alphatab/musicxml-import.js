@@ -166,7 +166,7 @@ export function parseMusicXmlTab(xmlText, parser = null) {
         if (active.draft.beats.length) active.draft.breaks.push(active.draft.beats.length)
         active.draft.beats.push(...measureBeats)
     }
-    if (!sections.length) throw new Error('No measures were found')
+    if (!sections.length) throw new Error('No compatible measures found for editing. The full score is still available for playback.')
     const title = value(child(score, 'work'), 'work-title') ??
         value(score, 'movement-title') ?? 'Imported tablature'
     return { title, sections, warnings }
