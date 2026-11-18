@@ -367,6 +367,7 @@
 
     &__playhead {
         position: absolute;
+        left: 0;
         top: 0;
         bottom: 0;
         width: 40px;
@@ -375,10 +376,11 @@
         border: 2px solid hsl(var(--sol-600));
         border-radius: .4rem;
         background: hsl(var(--sol-500) / .22);
+        opacity: 0;
+        will-change: transform;
+        transition: transform 90ms linear, opacity 90ms ease-out;
 
-        // Animate movement between adjacent notes instead of snapping.
-        // Keep the transition short so fast sixteenth notes don't visibly lag.
-        transition: left 75ms linear;
+        &.is-visible { opacity: 1; }
 
         @media (prefers-reduced-motion: reduce) {
             transition: none;
