@@ -542,6 +542,16 @@
         overflow: hidden;
         visibility: hidden;
         pointer-events: none;
+
+        &.is-full-score {
+            position: relative;
+            width: 100%;
+            height: auto;
+            min-height: 240px;
+            overflow: visible;
+            visibility: visible;
+            pointer-events: auto;
+        }
     }
 
     &__transport {
