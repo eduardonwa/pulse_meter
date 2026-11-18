@@ -218,8 +218,10 @@
                         </div>
 
                         <div class="tab-editor__grid">
-                            <div class="tab-editor__playhead" aria-hidden="true" x-show="system.some(column => !column.insertion && column.index === prototypePlayingBeatIndex)"
-                                :style="`left: ${system.findIndex(column => !column.insertion && column.index === prototypePlayingBeatIndex) * 40}px`"></div>
+                            <template x-if="system.some(column => !column.insertion && column.index === prototypePlayingBeatIndex)">
+                                <div class="tab-editor__playhead" aria-hidden="true"
+                                    :style="`left: ${Math.max(0, system.findIndex(column => !column.insertion && column.index === prototypePlayingBeatIndex)) * 40}px`"></div>
+                            </template>
                             <template x-for="(name, stringIndex) in tabStringNames" :key="stringIndex">
                                 <div class="tab-editor__string-row">
                                     <template x-for="column in system" :key="`${column.index}-${column.insertion}`">
@@ -311,7 +313,7 @@
                     <span class="tab-editor__progress-stop"></span>
                 </div>
                 <input class="tab-editor__progress-input" type="range" min="0" max="100" step="0.1"
-                    :value="prototypeProgress" :disabled="prototypeDurationMs <= 0 || prototypePlaybackLoading"
+                    :value="prototypeProgress" :disabled="!tabDraft.beats.length || prototypePlaybackLoading"
                     @input="seekPrototypePlayback($event.target.value)"
                     aria-label="Playback position" :aria-valuetext="`${Math.round(prototypeProgress)}% of tablature`">
             </div>
