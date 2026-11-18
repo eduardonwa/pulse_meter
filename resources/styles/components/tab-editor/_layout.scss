@@ -19,7 +19,6 @@
         min-height: 100dvh;
     }
 
-
     // MAIN EDITOR
     &__workspace {
         position: relative;
@@ -35,7 +34,6 @@
             grid-template-columns: 180px minmax(0, 1fr);
         }
     }
-
 
     &__playback-host {
         position: absolute;
@@ -69,7 +67,6 @@
             }
         }
     }
-
 }
 
 .tab-editor-dialog {
