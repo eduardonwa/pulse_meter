@@ -36,7 +36,7 @@
             <div class="creative-randomizer__grouping" x-show="randomizerResult" x-cloak>
                 <h3 class="heading">Grouping</h3>
         
-                <p x-text="randomizerPulse.grouping.join(' + ')"></p>
+                <p x-text="getGroupingLabel(randomizerPulse.pattern, randomizerPulse.timeSignature.numerator)"></p>
             </div>
 
             <div>
