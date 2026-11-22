@@ -167,6 +167,51 @@ class PulsePresetAuthorizationTest extends TestCase
             ->assertJsonPath('0.name', 'Three Pulse');
     }
 
+    public function test_pro_can_save_and_reload_sixteenth_note_grouping(): void
+    {
+        $user = $this->createProUser();
+
+        $pattern = [];
+        foreach (range(0, 3) as $beat) {
+            $starts = [3, 6, 9, 12];
+            $position = $beat * 4;
+            $subdivisions = [];
+
+            foreach (['e', '&', 'a'] as $index => $label) {
+                $subPosition = $position + $index + 1;
+                $subdivisions[] = [
+                    'label' => $label,
+                    'sound' => in_array($subPosition, $starts) ? 'accent' : 'click',
+                    'groupStart' => in_array($subPosition, $starts),
+                ];
+            }
+
+            $pattern[] = [
+                'sound' => $beat === 0 || $beat === 3 ? 'accent' : 'click',
+                'groupStart' => $beat === 0 || $beat === 3,
+                'subdivisions' => $subdivisions,
+            ];
+        }
+
+        $this->actingAs($user)
+            ->postJson(route('pulse-presets.store'), [
+                'name' => 'Nu metal rhythm',
+                'numerator' => 4,
+                'denominator' => 4,
+                'grouping' => [0.75, 0.75, 0.75, 0.75, 1],
+                'pattern' => $pattern,
+            ])
+            ->assertCreated()
+            ->assertJsonPath('grouping.0', 0.75)
+            ->assertJsonPath('pattern.0.subdivisions.2.groupStart', true);
+
+        $this->actingAs($user)
+            ->getJson(route('pulse-presets.index'))
+            ->assertOk()
+            ->assertJsonPath('0.grouping.4', 1)
+            ->assertJsonPath('0.pattern.2.subdivisions.0.groupStart', true);
+    }
+
     public function test_user_cannot_update_or_delete_another_users_preset(): void
     {
         $owner = $this->createProUser();
