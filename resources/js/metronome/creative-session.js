@@ -450,10 +450,15 @@ export function creativeSession() {
 
             this.randomizerPulse.subdivision =
                 subdivision
-            this.randomizerPulse.grouping = this.getGroupingFromPattern(
-                this.randomizerPulse.pattern,
-                this.randomizerPulse.timeSignature.numerator
-            )
+            // The standalone creative session does not provide grouping helpers.
+            // In the full editor, recalculate after subdivision changes so
+            // removed subdivision boundaries cannot leave stale group sizes.
+            if (typeof this.getGroupingFromPattern === 'function') {
+                this.randomizerPulse.grouping = this.getGroupingFromPattern(
+                    this.randomizerPulse.pattern,
+                    this.randomizerPulse.timeSignature.numerator
+                )
+            }
 
             if (this.isPlaying) {
                 this.restartMetronome()
