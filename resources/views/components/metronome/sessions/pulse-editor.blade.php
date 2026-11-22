@@ -52,7 +52,7 @@
 
         <div class="time-signature__grouping">
             <h2 class="heading">Grouping</h2>
-            <div class="current" x-text="getGroupingFromPattern().join(' + ')"></div>
+            <div class="current" x-text="getGroupingLabel()"></div>
         </div>
         
         <div class="time-signature__subdivision">
