@@ -274,15 +274,6 @@ export function audioEngine() {
                 return
             }
 
-            // En Pulse mode las subdivisiones no generan
-            // los tonos de agrupación.
-            if (
-                this.metronome.mode === 'creative'
-                && this.getCreativePlaybackMode() === 'pulse'
-            ) {
-                return
-            }
-
             const playbackPulse = this.getPlaybackPulse()
 
             const patternBeat =
@@ -297,38 +288,50 @@ export function audioEngine() {
                 return
             }
 
-            if (subdivisionItem.sound === 'rest') {
+            if (
+                this.metronome.mode === 'creative'
+                && this.getCreativePlaybackMode() === 'pulse'
+            ) {
+                if (subdivisionItem.groupStart && subdivisionItem.sound !== 'rest') {
+                    this.playPulseTone({
+                        groupSize: this.getPlaybackGroupSizeForBeat(
+                            this.currentBeat,
+                            playbackPulse,
+                            this.currentSubdivision
+                        ),
+                    })
+                }
                 return
             }
 
-            this.tick(
-                subdivisionItem.sound === 'accent'
-            )
+            if (subdivisionItem.sound === 'rest') return
+
+            this.tick(subdivisionItem.sound === 'accent')
         },
 
         getPlaybackGroupSizeForBeat(
             beat,
-            playbackPulse = this.getPlaybackPulse()
+            playbackPulse = this.getPlaybackPulse(),
+            subdivisionPosition = 0
         ) {
             let groupIndex = -1
 
-            for (let i = 0; i < beat; i++) {
-                if (
-                    playbackPulse
-                        .pattern[i]
-                        ?.groupStart
-                ) {
-                    groupIndex++
-                }
-            }
+            playbackPulse.pattern.forEach((item, index) => {
+                if (index + 1 > beat) return
 
-            if (groupIndex < 0) {
-                return 0
-            }
+                if (item.groupStart) groupIndex++
 
-            return playbackPulse
-                .grouping[groupIndex]
-                ?? 0
+                item.subdivisions?.forEach((sub, subIndex) => {
+                    if (
+                        sub.groupStart
+                        && (index + 1 < beat || subIndex + 1 <= subdivisionPosition)
+                    ) {
+                        groupIndex++
+                    }
+                })
+            })
+
+            return playbackPulse.grouping[groupIndex] ?? 0
         },
 
         // PULSE PLAYBACK
