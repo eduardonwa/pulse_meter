@@ -191,7 +191,7 @@ export function pattern() {
                     return {
                         label,
                         sound: old?.sound ?? 'click',
-                        groupStart: Boolean(old?.groupStart),
+                        ...(old?.groupStart ? { groupStart: true } : {}),
                     }
                 })
             })
