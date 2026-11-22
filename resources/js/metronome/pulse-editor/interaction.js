@@ -179,6 +179,72 @@ export function interaction() {
             this.closePatternDialog()
         },
 
+        // PATTERN NAMING DIALOG
+        openPulsePatternNameDialog(action) {
+            if (!['new', 'copy'].includes(action)) return false
+
+            this.pulsePatternNameAction = action
+            this.pulsePatternNameInput = action === 'copy'
+                ? String(this.patternName ?? '')
+                : ''
+            this.isPulsePatternNameDialogOpen = true
+
+            this.$nextTick(() => {
+                this.$refs.pulsePatternNameDialog?.showModal()
+                this.$refs.pulsePatternNameInput?.focus()
+                this.$refs.pulsePatternNameInput?.select()
+            })
+
+            return true
+        },
+
+        closePulsePatternNameDialog() {
+            if (this.isPulsePatternNameSaving) return false
+
+            this.isPulsePatternNameDialogOpen = false
+            this.$refs.pulsePatternNameDialog?.close()
+            this.pulsePatternNameAction = null
+            this.pulsePatternNameInput = ''
+            return true
+        },
+
+        async submitPulsePatternName() {
+            const name = this.pulsePatternNameInput.trim()
+            const action = this.pulsePatternNameAction
+
+            if (!name || name.length > 80 || this.isPulsePatternNameSaving) {
+                return false
+            }
+
+            if (!['new', 'copy'].includes(action)) return false
+
+            const previousName = this.patternName
+            this.isPulsePatternNameSaving = true
+            this.patternName = name
+
+            try {
+                const saved = action === 'new'
+                    ? await this.savePulsePattern()
+                    : await this.savePulsePatternAs()
+
+                if (!saved) {
+                    this.patternName = previousName
+                    return false
+                }
+
+                this.isPulsePatternNameSaving = false
+                this.closePulsePatternNameDialog()
+                return true
+            } catch (error) {
+                this.patternName = previousName
+                console.error('Could not save named pulse pattern.', error)
+                this.showToast('Could not save pattern', 'error')
+                return false
+            } finally {
+                this.isPulsePatternNameSaving = false
+            }
+        },
+
         // DELETE DIALOG
         openDeletePatternDialog(id) {
             this.patternPendingDeleteId = id
