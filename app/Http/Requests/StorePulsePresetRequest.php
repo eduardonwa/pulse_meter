@@ -95,6 +95,11 @@ class StorePulsePresetRequest extends FormRequest
                 ]),
             ],
 
+            'pattern.*.subdivisions.*.groupStart' => [
+                'sometimes',
+                'boolean',
+            ],
+
             'pattern.*.subdivisions.*.sound' => [
                 'required',
                 Rule::in([
