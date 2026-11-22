@@ -56,8 +56,8 @@ class StorePulsePresetRequest extends FormRequest
 
             'grouping.*' => [
                 'required',
-                'integer',
-                'min:1',
+                'numeric',
+                'min:0.0625',
             ],
 
             'pattern' => [
@@ -95,6 +95,11 @@ class StorePulsePresetRequest extends FormRequest
                 ]),
             ],
 
+            'pattern.*.subdivisions.*.groupStart' => [
+                'sometimes',
+                'boolean',
+            ],
+
             'pattern.*.subdivisions.*.sound' => [
                 'required',
                 Rule::in([
@@ -115,7 +120,7 @@ class StorePulsePresetRequest extends FormRequest
                 $pattern = $this->input('pattern', []);
 
                 if (is_array($grouping)
-                    && array_sum($grouping) !== $numerator
+                    && abs(array_sum($grouping) - $numerator) > 0.000001
                 ) {
                     $validator
                         ->errors()

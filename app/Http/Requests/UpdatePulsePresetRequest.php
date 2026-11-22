@@ -52,8 +52,8 @@ class UpdatePulsePresetRequest extends FormRequest
 
             'grouping.*' => [
                 'required',
-                'integer',
-                'min:1',
+                'numeric',
+                'min:0.0625',
             ],
 
             'pattern' => [
@@ -92,6 +92,11 @@ class UpdatePulsePresetRequest extends FormRequest
                 ]),
             ],
 
+            'pattern.*.subdivisions.*.groupStart' => [
+                'sometimes',
+                'boolean',
+            ],
+
             'pattern.*.subdivisions.*.sound' => [
                 'required',
                 Rule::in([
@@ -122,7 +127,7 @@ class UpdatePulsePresetRequest extends FormRequest
 
                 if (
                     is_array($grouping)
-                    && array_sum($grouping) !== $numerator
+                    && abs(array_sum($grouping) - $numerator) > 0.000001
                 ) {
                     $validator->errors()->add(
                         'grouping',

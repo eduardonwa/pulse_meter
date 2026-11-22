@@ -52,7 +52,7 @@
 
         <div class="time-signature__grouping">
             <h2 class="heading">Grouping</h2>
-            <div class="current" x-text="getGroupingFromPattern().join(' + ')"></div>
+            <div class="current" x-text="getGroupingLabel()"></div>
         </div>
         
         <div class="time-signature__subdivision">
@@ -148,11 +148,11 @@
         </div>
 
         <div class="time-signature__actions">
-            <button class="button" data-type="primary" type="button" @click="savePulsePattern()" x-show="pulseDraft.origin === 'new' || pulseDraft.origin === 'user'">
+            <button class="button" data-type="primary" type="button" @click="pulseDraft.origin === 'new' ? openPulsePatternNameDialog('new') : savePulsePattern()" x-show="pulseDraft.origin === 'new' || pulseDraft.origin === 'user'">
                 Save
             </button>
 
-            <button class="button" data-type="primary" data-variant="outline" type="button" @click="savePulsePatternAs()" x-show="pulseDraft.origin === 'preset' || pulseDraft.origin === 'user'">
+            <button class="button" data-type="primary" data-variant="outline" type="button" @click="openPulsePatternNameDialog('copy')" x-show="pulseDraft.origin === 'preset' || pulseDraft.origin === 'user'">
                 Save as copy
             </button>
         </div>

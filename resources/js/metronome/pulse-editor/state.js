@@ -75,6 +75,10 @@ export function pulseState(pulsePresets = []) {
 
         // DIALOG
         isPatternDialogOpen: false,
+        isPulsePatternNameDialogOpen: false,
+        isPulsePatternNameSaving: false,
+        pulsePatternNameInput: '',
+        pulsePatternNameAction: null,
         showDeletePatternDialog: false,
         patternPendingDeleteId: null,
         

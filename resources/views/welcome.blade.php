@@ -191,6 +191,7 @@
         <x-windows.pattern-modal />
 
         <x-windows.pattern-delete />
+        <x-windows.pulse-pattern-name />
 
         @if ($usesServerPersistence)
             <x-windows.randomizer-sessions />

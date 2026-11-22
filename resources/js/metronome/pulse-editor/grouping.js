@@ -32,31 +32,36 @@ export function grouping() {
             numerator =
                 this.timeSignature.numerator
         ) {
+            const subdivision = this.getSubdivisionFromPattern(pattern)
             const groupStarts = []
 
-            for (
-                let beat = 1;
-                beat <= numerator;
-                beat++
-            ) {
-                if (pattern[beat - 1]?.groupStart) {
-                    groupStarts.push(beat)
-                }
-            }
+            pattern.slice(0, numerator).forEach((beat, index) => {
+                if (beat.groupStart) groupStarts.push(index * subdivision)
 
-            const grouping = []
+                beat.subdivisions?.forEach((item, subIndex) => {
+                    if (item.groupStart) {
+                        groupStarts.push(index * subdivision + subIndex + 1)
+                    }
+                })
+            })
 
-            for (let i = 0; i < groupStarts.length; i++) {
-                const start = groupStarts[i]
+            const total = numerator * subdivision
+            return groupStarts.map((start, index) => {
+                const next = groupStarts[index + 1] ?? total
+                return (next - start) / subdivision
+            })
+        },
 
-                const nextStart =
-                    groupStarts[i + 1]
-                    ?? numerator + 1
+        getGroupingLabel(
+            pattern = this.pattern,
+            numerator = this.timeSignature.numerator
+        ) {
+            const groups = this.getGroupingFromPattern(pattern, numerator)
+            const subdivision = this.getSubdivisionFromPattern(pattern)
 
-                grouping.push(nextStart - start)
-            }
-
-            return grouping
+            return groups.some(value => !Number.isInteger(value))
+                ? groups.map(value => Math.round(value * subdivision)).join(' + ')
+                : groups.join(' + ')
         },
 
         // GROUPING UPDATES
@@ -81,7 +86,8 @@ export function grouping() {
         setGroupStart(
             beat,
             isGroupStart,
-            pulse = null
+            pulse = null,
+            subdivisionIndex = null
         ) {
             const pattern =
                 pulse?.pattern
@@ -98,27 +104,22 @@ export function grouping() {
                 return false
             }
 
-            // El beat 1 siempre inicia el primer grupo.
-            if (beat === 1 && !isGroupStart) {
+            // The first beat always starts the first group.
+            if (beat === 1 && subdivisionIndex === null && !isGroupStart) {
                 return false
             }
 
             const patternBeat = pattern[beat - 1]
+            const item = subdivisionIndex === null
+                ? patternBeat
+                : patternBeat?.subdivisions?.[subdivisionIndex]
 
-            if (!patternBeat) {
+            if (!item || Boolean(item.groupStart) === isGroupStart) {
                 return false
             }
 
-            // Estamos creando un nuevo group start.
-            if (isGroupStart && !patternBeat.groupStart) {
-                patternBeat.groupStart = true
-
-                // Sonido default de un nuevo group start.
-                patternBeat.sound = 'accent'
-            } else {
-                // Si lo quitamos, conservamos el sonido que ya tenía.
-                patternBeat.groupStart = isGroupStart
-            }
+            item.groupStart = isGroupStart
+            if (isGroupStart) item.sound = 'accent'
 
             const grouping =
                 this.getGroupingFromPattern(

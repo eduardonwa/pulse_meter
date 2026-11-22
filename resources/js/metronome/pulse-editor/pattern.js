@@ -116,18 +116,18 @@ export function pattern() {
             const groups = []
             let currentGroup = []
 
-            pattern.forEach((item, index) => {
-                if (
-                    item.groupStart
-                    && currentGroup.length
-                ) {
+            const append = item => {
+                if (item.groupStart && currentGroup.length) {
                     groups.push(currentGroup)
                     currentGroup = []
                 }
+                currentGroup.push(item)
+            }
 
-                currentGroup.push({
-                    ...item,
-                    beat: index + 1,
+            pattern.forEach((beat, index) => {
+                append({ ...beat, beat: index + 1, subdivisionIndex: null })
+                beat.subdivisions?.forEach((sub, subdivisionIndex) => {
+                    append({ ...sub, beat: index + 1, subdivisionIndex })
                 })
             })
 
@@ -167,6 +167,7 @@ export function pattern() {
                 subdivision
             )
 
+            this.grouping = this.getGroupingFromPattern()
             this.syncPulseDirty()
 
             return true
@@ -184,10 +185,15 @@ export function pattern() {
                 this.getSubdivisionLabels(subdivision)
 
             pattern.forEach(beat => {
-                beat.subdivisions = labels.map(label => ({
-                    label,
-                    sound: 'click',
-                }))
+                const previous = beat.subdivisions ?? []
+                beat.subdivisions = labels.map(label => {
+                    const old = previous.find(item => item.label === label)
+                    return {
+                        label,
+                        sound: old?.sound ?? 'click',
+                        ...(old?.groupStart ? { groupStart: true } : {}),
+                    }
+                })
             })
 
             return true
