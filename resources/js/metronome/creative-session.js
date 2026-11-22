@@ -450,6 +450,10 @@ export function creativeSession() {
 
             this.randomizerPulse.subdivision =
                 subdivision
+            this.randomizerPulse.grouping = this.getGroupingFromPattern(
+                this.randomizerPulse.pattern,
+                this.randomizerPulse.timeSignature.numerator
+            )
 
             if (this.isPlaying) {
                 this.restartMetronome()
@@ -507,13 +511,27 @@ export function creativeSession() {
                 return false
             }
 
-            const applied =
-                this.setPatternSubdivision(
+            let applied
+
+            if (this.randomizerEditorTool === 'groupStart') {
+                const item = this.randomizerPulse.pattern[beat - 1]
+                    ?.subdivisions?.[subdivisionIndex]
+                applied = item
+                    ? this.setGroupStart(
+                        beat,
+                        !Boolean(item.groupStart),
+                        this.randomizerPulse,
+                        subdivisionIndex
+                    )
+                    : false
+            } else {
+                applied = this.setPatternSubdivision(
                     beat,
                     subdivisionIndex,
                     this.randomizerEditorTool,
                     this.randomizerPulse.pattern
                 )
+            }
 
             if (applied) {
                 this.cancelToolTether()
