@@ -36,8 +36,17 @@ export function interaction() {
                 return
             }
 
-            // Group start solo aplica a los beats principales.
             if (this.editorTool === 'groupStart') {
+                const item = this.pattern[beat - 1]?.subdivisions?.[subdivisionIndex]
+                if (!item) return
+
+                this.setGroupStart(
+                    beat,
+                    !Boolean(item.groupStart),
+                    null,
+                    subdivisionIndex
+                )
+                this.cancelToolTether()
                 return
             }
 
