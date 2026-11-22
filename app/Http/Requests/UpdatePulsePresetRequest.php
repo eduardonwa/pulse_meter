@@ -92,6 +92,11 @@ class UpdatePulsePresetRequest extends FormRequest
                 ]),
             ],
 
+            'pattern.*.subdivisions.*.groupStart' => [
+                'sometimes',
+                'boolean',
+            ],
+
             'pattern.*.subdivisions.*.sound' => [
                 'required',
                 Rule::in([
