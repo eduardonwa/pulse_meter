@@ -8,67 +8,68 @@
             subdivision-action="applyEditorToolToSubdivision(item.beat, subdivisionIndex)"
         />
 
-        <div class="time-signature__rhythm-tools">
-            <h2 class="heading">Editing tools</h2>
-
-            <div class="tool-group">
-                <button class="button" type="button" data-tether-trigger
-                    @click="
-                        editorTool = 'accent';
-                        startToolTether($event);
-                    "
-                    :class="{ 'is-selected': editorTool === 'accent' }"
-                >
-                    Accent
-                </button>
-
-                <button class="button" type="button" data-tether-trigger
-                    @click="
-                        editorTool = 'click';
-                        startToolTether($event);
-                    "
-                    :class="{ 'is-selected': editorTool === 'click' }"
-                >
-                    Click
-                </button>
-
-                <button class="button" type="button" data-tether-trigger
-                    @click="
-                        editorTool = 'rest';
-                        startToolTether($event);
-                    "
-                    :class="{ 'is-selected': editorTool === 'rest' }"
-                >
-                    Rest
-                </button>
-
-                <button class="button" type="button" data-tether-trigger
-                    @click="
-                        editorTool = 'groupStart';
-                        startToolTether($event);
-                    "
-                    :class="{ 'is-selected': editorTool === 'groupStart' }"
-                >
-                    Group start
-                </button>
+        <div class="time-signature__editing-row">
+            <div class="time-signature__rhythm-tools">
+                <h2 class="heading">Editing tools</h2>
+    
+                <div class="tool-group">
+                    <button class="button" type="button" data-tether-trigger
+                        @click="
+                            editorTool = 'accent';
+                            startToolTether($event);
+                        "
+                        :class="{ 'is-selected': editorTool === 'accent' }"
+                    >
+                        Accent
+                    </button>
+    
+                    <button class="button" type="button" data-tether-trigger
+                        @click="
+                            editorTool = 'click';
+                            startToolTether($event);
+                        "
+                        :class="{ 'is-selected': editorTool === 'click' }"
+                    >
+                        Click
+                    </button>
+    
+                    <button class="button" type="button" data-tether-trigger
+                        @click="
+                            editorTool = 'rest';
+                            startToolTether($event);
+                        "
+                        :class="{ 'is-selected': editorTool === 'rest' }"
+                    >
+                        Rest
+                    </button>
+    
+                    <button class="button" type="button" data-tether-trigger
+                        @click="
+                            editorTool = 'groupStart';
+                            startToolTether($event);
+                        "
+                        :class="{ 'is-selected': editorTool === 'groupStart' }"
+                    >
+                        Group start
+                    </button>
+                </div>
+            </div>
+    
+            <div class="time-signature__subdivision">
+                <h2 class="heading">Subdivision</h2>
+    
+                <div class="subdivision-options" role="group" aria-label="Subdivision">
+                    <template x-for="option in subdivisionOptions" :key="option.value">
+                        <button class="button" type="button"
+                            @click="setSubdivision(option.value)"
+                            :class="{ 'is-selected': subdivision === option.value }"
+                            :aria-pressed="subdivision === option.value"
+                            x-text="option.value === 1 ? 'Off' : option.label"
+                        ></button>
+                    </template>
+                </div>
             </div>
         </div>
-
-        <div class="time-signature__subdivision">
-            <h2 class="heading">Subdivision</h2>
-
-            <div class="subdivision-options" role="group" aria-label="Subdivision">
-                <template x-for="option in subdivisionOptions" :key="option.value">
-                    <button class="button" type="button"
-                        @click="setSubdivision(option.value)"
-                        :class="{ 'is-selected': subdivision === option.value }"
-                        :aria-pressed="subdivision === option.value"
-                        x-text="option.value === 1 ? 'Off' : option.label"
-                    ></button>
-                </template>
-            </div>
-        </div>
-        
 
         <div class="time-signature__playback">
             <h2 class="heading">Playback</h2>
