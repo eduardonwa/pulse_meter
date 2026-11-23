@@ -96,6 +96,7 @@
                 @click="$refs.pulseSettingsSheet.showModal()"
                 aria-haspopup="dialog"
             >
+                <x-lucide-sliders-vertical />
                 Pattern Settings
             </button>
         </div>
