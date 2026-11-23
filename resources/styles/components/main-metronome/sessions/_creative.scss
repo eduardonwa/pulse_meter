@@ -358,7 +358,6 @@
         }
     }
 
-    // Settings launcher stays in the editor flow at every breakpoint.
     .pulse-settings-bar {
         padding: $size-4;
         border-block-end: 1px solid hsl(var(--neutral-950) / .2);
@@ -378,7 +377,6 @@
         }
     }
 
-    // The existing dialog-shell bottom sheet is shared by mobile and desktop.
     .pulse-settings-sheet {
         // Override the shared 80dvh dialog height for this compact settings panel.
         height: fit-content;
@@ -476,7 +474,6 @@
 
     .time-signature {
         --border: 1px solid hsl(var(--neutral-950) / .2);
-        
         border: var(--border);
         border-radius: $border-radius-2;
 
@@ -491,9 +488,7 @@
         }
         
         &__pattern {
-
             min-width: 0;
-
             border-block-end: var(--border);
 
             &-controls {
@@ -520,7 +515,6 @@
         }
 
         &__meter {
-
             border-block-end: var(--border);
             border-inline-end: var(--border);
                             
@@ -547,7 +541,6 @@
         }
     
         &__grouping {
-
             border-block-end: var(--border);
             
             display: flex;
@@ -562,7 +555,6 @@
         }
     
         &__beats {
-
             border-block-end: var(--border);
 
             display: flex;
@@ -653,7 +645,6 @@
         }
 
         &__subdivision {
-
             border-block-end: var(--border);
             border-inline-end: var(--border);
            
@@ -669,7 +660,6 @@
         }
     
         &__rhythm-tools {
-
             border-inline-end: var(--border);
             border-block-end: var(--border);
 
@@ -704,7 +694,6 @@
         }
 
         &__playback {
-
             flex-direction: column;
             flex-wrap: wrap;
             
@@ -712,12 +701,13 @@
 
             .tool-group {
                 display: flex;
-                flex-direction: row;
                 align-items: center;
                 flex-wrap: wrap;
                 gap: $size-3;
 
                 .button {
+                    flex: 1;
+                    min-width: 0;
                     &:active {
                         transform: scale(0.96);
                     }

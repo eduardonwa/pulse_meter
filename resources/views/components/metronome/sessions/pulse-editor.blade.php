@@ -123,7 +123,11 @@
         <div class="dialog-shell__content pulse-settings-sheet__content">
             <header class="pulse-settings-sheet__header">
                 <span class="pulse-settings-sheet__handle" aria-hidden="true"></span>
-                <h2 id="pulse-settings-title" class="heading">Pattern Settings</h2>
+                
+                <h2 id="pulse-settings-title" class="heading">
+                    Pattern Settings
+                </h2>
+                
                 <button class="button" type="button" data-type="icon"
                     aria-label="Close pattern settings"
                     @click="$refs.pulseSettingsSheet.close()"
@@ -134,13 +138,14 @@
 
             <div class="pulse-settings-sheet__section pulse-settings-sheet__section--actions">
                 <div class="pulse-settings-sheet__pattern-controls">
-                    <button class="button" data-type="outline" type="button"
+                    <button class="button" data-type="accent" type="button"
                         @click="$refs.pulseSettingsSheet.close(); $nextTick(() => openPatternDialog())"
                         aria-label="New or choose pattern"
                     >
                         <x-lucide-plus />
                         New
                     </button>
+
                     <button class="button" data-type="outline" type="button"
                         @click="$refs.pulseSettingsSheet.close(); resetPulse()"
                         title="Reset to a new 4/4 Pulse pattern"
@@ -153,6 +158,7 @@
 
             <div class="pulse-settings-sheet__section">
                 <h3 class="heading">Meter</h3>
+                
                 <div class="pulse-settings-sheet__value pulse-settings-sheet__meter">
                     <div class="meter-control">
                         <x-inputs.number-picker
