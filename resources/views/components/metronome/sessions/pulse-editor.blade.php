@@ -13,7 +13,12 @@
                 <span x-text="getCurrentPulseSourceLabel()"></span>
             </button>
 
-            {{-- esta en welcome --}}
+            <button class="button" data-type="outline" type="button"
+                @click="resetPulse()"
+                title="Reset to a new 4/4 Pulse pattern"
+            >
+                Reset Pulse
+            </button>
         </div>
 
         <div class="time-signature__meter">
