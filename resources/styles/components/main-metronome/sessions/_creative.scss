@@ -644,6 +644,38 @@
             }
         }
 
+        &__editing-row {
+            > .time-signature__rhythm-tools,
+            > .time-signature__subdivision {
+                padding: $size-4;
+
+                .heading {
+                    padding-block-end: $size-3;
+                    font-size: 14px;
+                    color: hsl(var(--neutral-950) / .6);
+                }
+            }
+
+            @include mq(medium) {
+                display: grid;
+                grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+
+                > .time-signature__rhythm-tools,
+                > .time-signature__subdivision {
+                    min-width: 0;
+                    border-block-end: var(--border);
+                }
+
+                > .time-signature__rhythm-tools {
+                    border-inline-end: var(--border);
+                }
+
+                > .time-signature__subdivision {
+                    border-inline-end: 0;
+                }
+            }
+        }
+
         &__subdivision {
             border-block-end: var(--border);
             border-inline-end: var(--border);
