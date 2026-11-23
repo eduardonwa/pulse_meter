@@ -387,6 +387,25 @@
             }
         }
 
+        &__meter {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            min-width: 0;
+
+            .meter-control {
+                display: flex;
+                align-items: center;
+                gap: $size-4;
+
+                @include mq(medium) {
+                    .number-picker__control {
+                        color: hsl(var(--neutral-900) / .3);
+                    }
+                }
+            }
+        }
+
         &__handle {
             display: none;
         }
