@@ -2,6 +2,12 @@
     <x-metronome.creative-transport variant="mobile" />
 
     <div class="time-signature">
+        <x-metronome.pulse-beats
+            groups="getPatternGroups()"
+            beat-action="applyEditorTool(item.beat)"
+            subdivision-action="applyEditorToolToSubdivision(item.beat, subdivisionIndex)"
+        />
+
         <x-metronome.creative-transport variant="desktop" />
 
         <div class="time-signature__pattern">
@@ -74,12 +80,7 @@
             </label>
         </div>
         
-        <x-metronome.pulse-beats
-            groups="getPatternGroups()"
-            beat-action="applyEditorTool(item.beat)"
-            subdivision-action="applyEditorToolToSubdivision(item.beat, subdivisionIndex)"
-        />
-        
+
         <div class="time-signature__rhythm-tools">
             <h2 class="heading">Editing tools</h2>
 
