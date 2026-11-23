@@ -54,6 +54,19 @@
             </div>
         </div>
 
+        <div class="time-signature__subdivision">
+            <h2 class="heading">Subdivision</h2>
+
+            <label>
+                <select class="subdivision-selector" x-model.number="subdivision" @change="setSubdivision($event.target.value)">
+                    <template x-for="option in subdivisionOptions" :key="option.value">
+                        <option :value="option.value" x-text="option.label"></option>
+                    </template>
+                </select>
+            </label>
+        </div>
+        
+
         <div class="time-signature__playback">
             <h2 class="heading">Playback</h2>
 
@@ -138,19 +151,6 @@
             <div class="current" x-text="getGroupingLabel()"></div>
         </div>
         
-        <div class="time-signature__subdivision">
-            <h2 class="heading">Subdivision</h2>
-
-            <label>
-                <select class="subdivision-selector" x-model.number="subdivision" @change="setSubdivision($event.target.value)">
-                    <template x-for="option in subdivisionOptions" :key="option.value">
-                        <option :value="option.value" x-text="option.label"></option>
-                    </template>
-                </select>
-            </label>
-        </div>
-        
-
         <div class="time-signature__actions">
             <button class="button" data-type="primary" type="button" @click="pulseDraft.origin === 'new' ? openPulsePatternNameDialog('new') : savePulsePattern()" x-show="pulseDraft.origin === 'new' || pulseDraft.origin === 'user'">
                 Save
