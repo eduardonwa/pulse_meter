@@ -102,11 +102,7 @@
 
         <x-metronome.creative-transport variant="desktop" />
 
-        <div class="time-signature__grouping">
-            <h2 class="heading">Grouping</h2>
-            <div class="current" x-text="getGroupingLabel()"></div>
-        </div>
-        
+
         <div class="time-signature__actions">
             <button class="button" data-type="primary" type="button" @click="pulseDraft.origin === 'new' ? openPulsePatternNameDialog('new') : savePulsePattern()" x-show="pulseDraft.origin === 'new' || pulseDraft.origin === 'user'">
                 Save
@@ -137,25 +133,24 @@
 
             <div class="pulse-settings-sheet__section">
                 <h3 class="heading">Patterns</h3>
-                <button class="button" data-type="outline" type="button"
-                    @click="$refs.pulseSettingsSheet.close(); $nextTick(() => openPatternDialog())"
-                >
-                    <span x-text="getCurrentPulseSourceLabel()"></span>
-                </button>
-                <button class="button" data-type="outline" type="button"
-                    @click="$refs.pulseSettingsSheet.close(); resetPulse()"
-                    title="Reset to a new 4/4 Pulse pattern"
-                >
-                    Reset Pulse
-                </button>
+                <div class="pulse-settings-sheet__value pulse-settings-sheet__pattern-controls">
+                    <button class="button" data-type="outline" type="button"
+                        @click="$refs.pulseSettingsSheet.close(); $nextTick(() => openPatternDialog())"
+                    >
+                        <span x-text="getCurrentPulseSourceLabel()"></span>
+                    </button>
+                    <button class="button" data-type="outline" type="button"
+                        @click="$refs.pulseSettingsSheet.close(); resetPulse()"
+                        title="Reset to a new 4/4 Pulse pattern"
+                    >
+                        Reset Pulse
+                    </button>
+                </div>
             </div>
 
             <div class="pulse-settings-sheet__section">
-                <div class="time-signature__meter pulse-settings-sheet__meter">
-                    <h3 class="heading">
-                        Meter
-                    </h3>
-
+                <h3 class="heading">Meter</h3>
+                <div class="pulse-settings-sheet__value pulse-settings-sheet__meter">
                     <div class="meter-control">
                         <x-inputs.number-picker
                             class="meter-numerator"
@@ -184,7 +179,13 @@
                         />
                     </div>
                 </div>
+            </div>
 
+            <div class="pulse-settings-sheet__section">
+                <h3 class="heading">Grouping</h3>
+                <div class="pulse-settings-sheet__value">
+                    <span class="current" x-text="getGroupingLabel()"></span>
+                </div>
             </div>
         </div>
     </dialog>
