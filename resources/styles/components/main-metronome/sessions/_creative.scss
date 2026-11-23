@@ -370,6 +370,10 @@
 
     // The existing dialog-shell bottom sheet is shared by mobile and desktop.
     .pulse-settings-sheet {
+        // Override the shared 80dvh dialog height for this compact settings panel.
+        height: fit-content;
+        max-height: min(90dvh, 34rem);
+
         &__content {
             padding: $size-4;
         }
@@ -401,6 +405,11 @@
                 margin: 0;
                 padding: 0;
                 font-size: 15px;
+                color: hsl(var(--neutral-800) / .8);
+            }
+
+            &--actions {
+                display: block;
             }
         }
 
@@ -411,10 +420,21 @@
         &__pattern-controls {
             display: flex;
             flex-wrap: wrap;
+            justify-content: flex-end;
             gap: $size-2;
 
             > .button {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                gap: $size-2;
                 min-width: 0;
+            }
+
+            svg {
+                width: 18px;
+                height: 18px;
+                flex: 0 0 auto;
             }
         }
 
