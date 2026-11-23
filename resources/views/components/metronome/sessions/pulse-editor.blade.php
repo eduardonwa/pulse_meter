@@ -54,6 +54,30 @@
             </div>
         </div>
 
+        <div class="time-signature__playback">
+            <h2 class="heading">Playback</h2>
+
+            <div class="tool-group">
+                <button
+                    class="button"
+                    type="button"
+                    @click="creativePlaybackMode = 'click'"
+                    :class="{ 'is-selected': creativePlaybackMode === 'click' }"
+                >
+                    Click
+                </button>
+
+                <button
+                    class="button"
+                    type="button"
+                    @click="creativePlaybackMode = 'pulse'"
+                    :class="{ 'is-selected': creativePlaybackMode === 'pulse' }"
+                >
+                    Pulse
+                </button>
+            </div>
+        </div>
+
         <x-metronome.creative-transport variant="desktop" />
 
         <div class="time-signature__pattern">
@@ -126,30 +150,6 @@
             </label>
         </div>
         
-
-        <div class="time-signature__playback">
-            <h2 class="heading">Playback</h2>
-
-            <div class="tool-group">
-                <button
-                    class="button"
-                    type="button"
-                    @click="creativePlaybackMode = 'click'"
-                    :class="{ 'is-selected': creativePlaybackMode === 'click' }"
-                >
-                    Click
-                </button>
-
-                <button
-                    class="button"
-                    type="button"
-                    @click="creativePlaybackMode = 'pulse'"
-                    :class="{ 'is-selected': creativePlaybackMode === 'pulse' }"
-                >
-                    Pulse
-                </button>
-            </div>
-        </div>
 
         <div class="time-signature__actions">
             <button class="button" data-type="primary" type="button" @click="pulseDraft.origin === 'new' ? openPulsePatternNameDialog('new') : savePulsePattern()" x-show="pulseDraft.origin === 'new' || pulseDraft.origin === 'user'">
