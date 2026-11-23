@@ -151,39 +151,39 @@
             </div>
 
             <div class="pulse-settings-sheet__section">
-        <div class="time-signature__meter pulse-settings-sheet__meter">
-            <h3 class="heading">
-                Meter
-            </h3>
+                <div class="time-signature__meter pulse-settings-sheet__meter">
+                    <h3 class="heading">
+                        Meter
+                    </h3>
 
-            <div class="meter-control">
-                <x-inputs.number-picker
-                    class="meter-numerator"
-                    options="meterNumeratorOptions"
-                    model="timeSignature.numerator"
-                    afterChange="setDraftNumerator(value)"
-                    :controls="true"
-                    decrease-label="Decrease numerator"
-                    increase-label="Increase numerator"
-                    hint="Scroll to change numerator"
-                    :controls-on-mobile="false"
-                />
+                    <div class="meter-control">
+                        <x-inputs.number-picker
+                            class="meter-numerator"
+                            options="meterNumeratorOptions"
+                            model="timeSignature.numerator"
+                            afterChange="setDraftNumerator(value)"
+                            :controls="true"
+                            decrease-label="Decrease numerator"
+                            increase-label="Increase numerator"
+                            hint="Scroll to change numerator"
+                            :controls-on-mobile="false"
+                        />
 
-                <span class="meter-control__separator">/</span>
+                        <span class="meter-control__separator">/</span>
 
-                <x-inputs.number-picker
-                    class="meter-denominator"
-                    options="meterDenominatorOptions"
-                    model="timeSignature.denominator"
-                    afterChange="setDraftDenominator(value)"
-                    :controls="true"
-                    decrease-label="Decrease beat unit"
-                    increase-label="Increase beat unit"
-                    hint="Scroll to change beat unit"
-                    :controls-on-mobile="false"
-                />
-            </div>
-        </div>
+                        <x-inputs.number-picker
+                            class="meter-denominator"
+                            options="meterDenominatorOptions"
+                            model="timeSignature.denominator"
+                            afterChange="setDraftDenominator(value)"
+                            :controls="true"
+                            decrease-label="Decrease beat unit"
+                            increase-label="Increase beat unit"
+                            hint="Scroll to change beat unit"
+                            :controls-on-mobile="false"
+                        />
+                    </div>
+                </div>
 
             </div>
         </div>
