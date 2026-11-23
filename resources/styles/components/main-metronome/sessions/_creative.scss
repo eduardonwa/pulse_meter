@@ -358,6 +358,58 @@
         }
     }
 
+    // Settings launcher stays in the editor flow at every breakpoint.
+    .pulse-settings-bar {
+        padding: $size-4;
+        border-block-end: 1px solid hsl(var(--neutral-950) / .2);
+
+        .button {
+            width: 100%;
+        }
+    }
+
+    // The existing dialog-shell bottom sheet is shared by mobile and desktop.
+    .pulse-settings-sheet {
+        &__content {
+            padding: $size-4;
+        }
+
+        &__header {
+            display: flex;
+            align-items: center;
+            gap: $size-3;
+            padding-block-end: $size-4;
+            border-block-end: 1px solid hsl(var(--neutral-950) / .15);
+
+            .heading {
+                flex: 1;
+                margin: 0;
+            }
+        }
+
+        &__handle {
+            display: none;
+        }
+
+        &__section {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: $size-3;
+            padding-block: $size-4;
+
+            .heading {
+                width: 100%;
+            }
+        }
+
+        @include mq(medium) {
+            &__content {
+                padding: $size-5;
+            }
+        }
+    }
+
     .time-signature {
         --border: 1px solid hsl(var(--neutral-950) / .2);
         
