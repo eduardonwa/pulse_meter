@@ -411,11 +411,25 @@
             border-block-end: var(--border);
             border-inline-end: var(--border);
 
+            &-controls {
+                display: flex;
+                align-items: stretch;
+                gap: $size-2;
+
+                .button:first-child {
+                    flex: 1;
+                    min-width: 0;
+                }
+
+                .button:last-child {
+                    flex: 0 0 auto;
+                }
+            }
+
             .button[data-type="outline"] {
-                width: 100%;
                 min-width: 0;
                 font-size: $font-size-400;
-                
+
                 span { line-height: 1.3; }
             }
         }
