@@ -647,14 +647,21 @@
         &__subdivision {
             border-block-end: var(--border);
             border-inline-end: var(--border);
-           
-            .subdivision-selector {
-                width: 100%;
-            }
 
-            @include mq(medium) {
-                .subdivision-selector {
-                    width: fit-content;
+            .subdivision-options {
+                display: grid;
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                gap: $size-3;
+
+                .button {
+                    min-width: 0;
+                    width: 100%;
+
+                    &.is-selected {
+                        color: $color-neutral-50;
+                        background: $color-neutral-950;
+                        border-color: $color-neutral-950;
+                    }
                 }
             }
         }
