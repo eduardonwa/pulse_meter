@@ -81,7 +81,7 @@
         />
         
         <div class="time-signature__rhythm-tools">
-            <h2 class="heading">Cue</h2>
+            <h2 class="heading">Editing tools</h2>
 
             <div class="tool-group">
                 <button class="button" type="button" data-tether-trigger
@@ -113,6 +113,16 @@
                 >
                     Rest
                 </button>
+
+                <button class="button" type="button" data-tether-trigger
+                    @click="
+                        editorTool = 'groupStart';
+                        startToolTether($event);
+                    "
+                    :class="{ 'is-selected': editorTool === 'groupStart' }"
+                >
+                    Group start
+                </button>
             </div>
         </div>
 
@@ -138,20 +148,6 @@
                     Pulse
                 </button>
             </div>
-        </div>
-
-        <div class="time-signature__rhythm-structure">
-            <h2 class="heading">Structure</h2>
-
-            <button class="button" type="button" data-tether-trigger
-                @click="
-                    editorTool = 'groupStart';
-                    startToolTether($event);
-                "
-                :class="{ 'is-selected': editorTool === 'groupStart' }"
-            >
-                Group start
-            </button>
         </div>
 
         <div class="time-signature__actions">
