@@ -9,16 +9,18 @@
                 Patterns
             </h2>
 
-            <button class="button" data-type="outline" type="button" @click="openPatternDialog()">
-                <span x-text="getCurrentPulseSourceLabel()"></span>
-            </button>
+            <div class="time-signature__pattern-controls">
+                <button class="button" data-type="outline" type="button" @click="openPatternDialog()">
+                    <span x-text="getCurrentPulseSourceLabel()"></span>
+                </button>
 
-            <button class="button" data-type="outline" type="button"
-                @click="resetPulse()"
-                title="Reset to a new 4/4 Pulse pattern"
-            >
-                Reset Pulse
-            </button>
+                <button class="button" data-type="outline" type="button"
+                    @click="resetPulse()"
+                    title="Reset to a new 4/4 Pulse pattern"
+                >
+                    Reset Pulse
+                </button>
+            </div>
         </div>
 
         <div class="time-signature__meter">
