@@ -91,26 +91,16 @@
             </div>
         </div>
 
-        <x-metronome.creative-transport variant="desktop" />
-
-        <div class="time-signature__pattern">
-            <h2 class="heading">
-                Patterns
-            </h2>
-
-            <div class="time-signature__pattern-controls">
-                <button class="button" data-type="outline" type="button" @click="openPatternDialog()">
-                    <span x-text="getCurrentPulseSourceLabel()"></span>
-                </button>
-
-                <button class="button" data-type="outline" type="button"
-                    @click="resetPulse()"
-                    title="Reset to a new 4/4 Pulse pattern"
-                >
-                    Reset Pulse
-                </button>
-            </div>
+        <div class="pulse-settings-bar">
+            <button class="button" data-type="outline" type="button"
+                @click="$refs.pulseSettingsSheet.showModal()"
+                aria-haspopup="dialog"
+            >
+                Pattern Settings
+            </button>
         </div>
+
+        <x-metronome.creative-transport variant="desktop" />
 
         <div class="time-signature__meter">
             <h2 class="heading">
@@ -161,4 +151,38 @@
             </button>
         </div>
     </div>
+
+    <dialog class="dialog-shell dialog-shell--bottom-sheet pulse-settings-sheet"
+        x-ref="pulseSettingsSheet"
+        aria-labelledby="pulse-settings-title"
+        @click.self="$refs.pulseSettingsSheet.close()"
+    >
+        <div class="dialog-shell__content pulse-settings-sheet__content">
+            <header class="pulse-settings-sheet__header">
+                <span class="pulse-settings-sheet__handle" aria-hidden="true"></span>
+                <h2 id="pulse-settings-title" class="heading">Pattern Settings</h2>
+                <button class="button" type="button" data-type="icon"
+                    aria-label="Close pattern settings"
+                    @click="$refs.pulseSettingsSheet.close()"
+                >
+                    <x-heroicon-o-x-mark />
+                </button>
+            </header>
+
+            <div class="pulse-settings-sheet__section">
+                <h3 class="heading">Patterns</h3>
+                <button class="button" data-type="outline" type="button"
+                    @click="$refs.pulseSettingsSheet.close(); $nextTick(() => openPatternDialog())"
+                >
+                    <span x-text="getCurrentPulseSourceLabel()"></span>
+                </button>
+                <button class="button" data-type="outline" type="button"
+                    @click="$refs.pulseSettingsSheet.close(); resetPulse()"
+                    title="Reset to a new 4/4 Pulse pattern"
+                >
+                    Reset Pulse
+                </button>
+            </div>
+        </div>
+    </dialog>
 </div>
