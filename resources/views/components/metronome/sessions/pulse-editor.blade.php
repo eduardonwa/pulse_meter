@@ -131,19 +131,21 @@
                 </button>
             </header>
 
-            <div class="pulse-settings-sheet__section">
-                <h3 class="heading">Patterns</h3>
-                <div class="pulse-settings-sheet__value pulse-settings-sheet__pattern-controls">
+            <div class="pulse-settings-sheet__section pulse-settings-sheet__section--actions">
+                <div class="pulse-settings-sheet__pattern-controls">
                     <button class="button" data-type="outline" type="button"
                         @click="$refs.pulseSettingsSheet.close(); $nextTick(() => openPatternDialog())"
+                        aria-label="New or choose pattern"
                     >
-                        <span x-text="getCurrentPulseSourceLabel()"></span>
+                        <x-lucide-plus />
+                        New
                     </button>
                     <button class="button" data-type="outline" type="button"
                         @click="$refs.pulseSettingsSheet.close(); resetPulse()"
                         title="Reset to a new 4/4 Pulse pattern"
                     >
-                        Reset Pulse
+                        <x-lucide-rotate-ccw />
+                        Reset
                     </button>
                 </div>
             </div>
