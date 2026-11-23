@@ -57,13 +57,16 @@
         <div class="time-signature__subdivision">
             <h2 class="heading">Subdivision</h2>
 
-            <label>
-                <select class="subdivision-selector" x-model.number="subdivision" @change="setSubdivision($event.target.value)">
-                    <template x-for="option in subdivisionOptions" :key="option.value">
-                        <option :value="option.value" x-text="option.label"></option>
-                    </template>
-                </select>
-            </label>
+            <div class="subdivision-options" role="group" aria-label="Subdivision">
+                <template x-for="option in subdivisionOptions" :key="option.value">
+                    <button class="button" type="button"
+                        @click="setSubdivision(option.value)"
+                        :class="{ 'is-selected': subdivision === option.value }"
+                        :aria-pressed="subdivision === option.value"
+                        x-text="option.value === 1 ? 'Off' : option.label"
+                    ></button>
+                </template>
+            </div>
         </div>
         
 
