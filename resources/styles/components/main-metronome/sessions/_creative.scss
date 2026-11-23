@@ -369,7 +369,7 @@
         grid-template-areas: 
             "pattern     pattern     pattern"
             "meter       meter       current-meter"
-            "grouping    structure   subdivision"
+            "grouping    grouping    subdivision"
             "cue         cue         cue"
             "playback    playback    playback"
             "actions     actions     actions";
@@ -380,7 +380,7 @@
             grid-template-areas: 
                 "pattern     pattern        pattern"
                 "meter       current-meter  grouping"
-                "cue         structure      playback"
+                "cue         cue            playback"
                 "subdivision subdivision    subdivision"
                 "actions     actions        actions";
         }
@@ -389,7 +389,7 @@
             grid-template-areas:
                 "pattern     pattern        pattern"
                 "meter       current-meter  grouping"
-                "cue         structure      playback"
+                "cue         cue            playback"
                 "subdivision tempo          start"
                 "actions     actions        actions";
         }
@@ -649,19 +649,6 @@
             }
         }
     
-        &__rhythm-structure {
-            grid-area: structure;
-            border-inline-end: var(--border);
-            border-block-end: var(--border);
-
-            .button {
-                &.is-selected {
-                    outline: 2px solid currentColor;
-                    outline-offset: 4px;
-                }
-            }
-        }
-
         &__actions {
             grid-area: actions;
             width: 100%;
