@@ -10,7 +10,7 @@
 
         <div class="time-signature__editing-row">
             <div class="time-signature__rhythm-tools">
-                <h2 class="heading">Editing tools</h2>
+                <h2 class="heading">Editing</h2>
     
                 <div class="tool-group">
                     <button class="button" type="button" data-tether-trigger
