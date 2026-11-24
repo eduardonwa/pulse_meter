@@ -78,7 +78,7 @@ function staffOf(note) {
 
 // Track the MusicXML cursor across both staves so that filtering does not
 // accidentally flatten simultaneous voices, gaps or overlapping notes.
-function measureNotes(measure, staff, capacityTicks) {
+function measureNotes(measure, staff) {
     const selected = []
     let cursor = 0
     let onset = 0
@@ -111,9 +111,6 @@ function measureNotes(measure, staff, capacityTicks) {
         if (!chord) selectedEnd = onset + duration
         selected.push(node)
     }
-    if (selected.length && selectedEnd !== capacityTicks) {
-        throw new Error('The tablature staff does not fill the measure')
-    }
     if (!selected.length && children(measure, 'note').length) {
         throw new Error('No notes found on the tablature staff')
     }
@@ -123,7 +120,7 @@ function measureNotes(measure, staff, capacityTicks) {
 function readMeasure(measure, divisions, signature, staff) {
     const beats = []
     const capacity = signature.numerator * 16 / signature.denominator
-    const notes = measureNotes(measure, staff, capacity * divisions / 4)
+    const notes = measureNotes(measure, staff)
     if (notes.length === 1 && child(notes[0], 'rest')?.getAttribute('measure') === 'yes') {
         return fullMeasureRests(capacity)
     }
@@ -190,7 +187,6 @@ export function parseMusicXmlTab(xmlText, parser = null) {
     const sections = []
     const warnings = []
     const limitations = new Set()
-    let initialTempo = null
     let active = null
     const measures = children(part, 'measure')
     for (const [i, measure] of measures.entries()) {
@@ -205,15 +201,16 @@ export function parseMusicXmlTab(xmlText, parser = null) {
         if (numerator > 16 || !SUPPORTED_DENOMINATORS.includes(denominator)) {
             throw new Error('Time signatures must use 1–16 over 2, 4, 8 or 16')
         }
-        const tempo = Number(Array.from(measure.getElementsByTagName('sound'))
-            .find(node => node.hasAttribute('tempo'))?.getAttribute('tempo'))
-        if (Number.isFinite(tempo) && tempo >= 30 && tempo <= 400) {
-            const nextBpm = Math.round(tempo)
-            if ((initialTempo !== null && nextBpm !== bpm) || (i > 0 && nextBpm !== bpm)) {
+        const tempos = Array.from(measure.getElementsByTagName('sound'))
+            .filter(node => node.hasAttribute('tempo'))
+            .map(node => Number(node.getAttribute('tempo')))
+            .filter(tempo => Number.isFinite(tempo) && tempo >= 30 && tempo <= 400)
+            .map(Math.round)
+        for (const [index, tempo] of tempos.entries()) {
+            if ((i > 0 || index > 0) && tempo !== bpm) {
                 limitations.add('This score contains tempo changes. The editor currently supports one BPM per exercise.')
             }
-            bpm = nextBpm
-            initialTempo ??= bpm
+            bpm = tempo
         }
         const signature = { numerator, denominator }
         let measureBeats
