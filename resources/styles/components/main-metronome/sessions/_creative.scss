@@ -110,6 +110,24 @@
                 .creative-transport__bpm {
                     flex: 1 1 auto;
                     width: 100%;
+                    height: 40px;
+                    grid-template-columns: 28px minmax(0, 1fr) 28px;
+
+                    .picker-column {
+                        width: 100%;
+                        min-width: 0;
+                        max-width: none;
+                        height: 40px;
+                        line-height: 40px;
+
+                        .picker-option {
+                            height: 40px;
+                        }
+                    }
+
+                    .number-picker__control {
+                        height: 40px;
+                    }
                 }
 
                 .creative-transport__play {
