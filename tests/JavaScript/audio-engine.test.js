@@ -632,3 +632,105 @@ test('stale loading cannot overwrite the latest profile request', async () => {
     assert.equal(engine.accentBuffer.generation, 3)
     assert.equal(engine.finishBuffer.generation, 3)
 })
+
+test('Pulse plays clicks, accents and group starts but skips rests', () => {
+    const engine = audioEngine()
+    engine.metronome = { mode: 'creative', bpm: 120 }
+    engine.creativeMode = 'pulse-editor'
+    engine.creativePlaybackMode = 'pulse'
+    engine.timeSignature = { numerator: 4, denominator: 4 }
+    engine.subdivision = 1
+    engine.grouping = [4]
+    engine.pattern = [
+        { sound: 'click', groupStart: true },
+        { sound: 'click', groupStart: false },
+        { sound: 'accent', groupStart: false },
+        { sound: 'rest', groupStart: false },
+    ]
+    engine.pulseDownbeatEnabled = true
+
+    const calls = []
+    engine.playPulseTone = options => calls.push(options)
+    for (let beat = 1; beat <= 4; beat++) {
+        engine.playPatternBeat(beat)
+    }
+
+    assert.deepEqual(calls, [
+        { isAccent: true, isDownbeat: true },
+        { isAccent: false, isDownbeat: false },
+        { isAccent: true, isDownbeat: false },
+    ])
+})
+
+test('Pulse sounds on audible subdivisions, including offbeat accents', () => {
+    const engine = audioEngine()
+    engine.metronome = { mode: 'creative', bpm: 120 }
+    engine.creativeMode = 'pulse-editor'
+    engine.creativePlaybackMode = 'pulse'
+    engine.timeSignature = { numerator: 1, denominator: 4 }
+    engine.subdivision = 4
+    engine.grouping = [4]
+    engine.pattern = [{
+        sound: 'accent',
+        groupStart: true,
+        subdivisions: [
+            { sound: 'click' },
+            { sound: 'accent' },
+            { sound: 'rest', groupStart: true },
+        ],
+    }]
+
+    const calls = []
+    engine.playPulseTone = options => calls.push(options)
+
+    for (let subdivision = 0; subdivision < 4; subdivision++) {
+        engine.currentBeat = 1
+        engine.currentSubdivision = subdivision
+        engine.playPatternPosition()
+    }
+
+    assert.deepEqual(calls, [
+        { isAccent: true, isDownbeat: undefined },
+        { isAccent: false },
+        { isAccent: true },
+    ])
+})
+
+test('Pulse tone decay stays shorter than the subdivision step', () => {
+    const engine = audioEngine()
+    engine.metronome = { mode: 'creative', bpm: 120 }
+    engine.timeSignature = { numerator: 4, denominator: 4 }
+    engine.subdivision = 4
+    engine.grouping = [4]
+    engine.pattern = []
+
+    const events = { gain: [], frequency: [], stop: null }
+    engine.audioContext = {
+        currentTime: 10,
+        destination: {},
+        createOscillator: () => ({
+            frequency: {
+                setValueAtTime: () => {},
+                exponentialRampToValueAtTime: () => {},
+            },
+            connect: () => {},
+            start: () => {},
+            stop: time => { events.stop = time },
+        }),
+        createGain: () => ({
+            gain: {
+                setValueAtTime: (...args) => events.gain.push(['set', ...args]),
+                linearRampToValueAtTime: (...args) => events.gain.push(['attack', ...args]),
+                exponentialRampToValueAtTime: (...args) => events.gain.push(['decay', ...args]),
+            },
+            connect: () => {},
+        }),
+    }
+
+    engine.playPulseTone({ isAccent: true })
+    const stepSeconds = engine.getSubdivisionIntervalMs(120) / 1000
+
+    assert.ok(events.stop - 10 < stepSeconds)
+    assert.ok(events.gain.some(([type]) => type === 'attack'))
+    assert.ok(events.gain.some(([type]) => type === 'decay'))
+})

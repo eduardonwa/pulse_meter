@@ -224,87 +224,47 @@ export function audioEngine() {
             const playbackPulse = this.getPlaybackPulse()
             const patternBeat = playbackPulse.pattern[beat - 1]
 
-            if (!patternBeat) { return }
+            if (!patternBeat || patternBeat.sound === 'rest') return
 
-            /*
-            * PULSE MODE
-            *
-            * Solo suena el inicio de cada grupo.
-            */
             if (
                 this.metronome.mode === 'creative'
                 && this.getCreativePlaybackMode() === 'pulse'
             ) {
-                if (!patternBeat.groupStart) {
-                    return
-                }
-
-                if (patternBeat.sound === 'rest') {
-                    return
-                }
-
                 this.playPulseTone({
-                    groupSize:
-                        this.getPlaybackGroupSizeForBeat(
-                            beat,
-                            playbackPulse
-                        ),
-
-                    isDownbeat:
-                        this.pulseDownbeatEnabled
-                        && beat === 1,
+                    isAccent: patternBeat.sound === 'accent'
+                        || Boolean(patternBeat.groupStart),
+                    isDownbeat: this.pulseDownbeatEnabled && beat === 1,
                 })
-
                 return
             }
 
-            if (patternBeat.sound === 'rest') {
-                return
-            }
-
-            this.tick(
-                patternBeat.sound === 'accent'
-            )
+            this.tick(patternBeat.sound === 'accent')
         },
 
         playPatternPosition() {
-            // Beat principal: 1, 2, 3, 4...
             if (this.currentSubdivision === 0) {
                 this.playPatternBeat(this.currentBeat)
                 return
             }
 
             const playbackPulse = this.getPlaybackPulse()
+            const patternBeat = playbackPulse.pattern[this.currentBeat - 1]
+            const subdivisionItem = patternBeat?.subdivisions?.[
+                this.currentSubdivision - 1
+            ]
 
-            const patternBeat =
-                playbackPulse.pattern[this.currentBeat - 1]
-
-            const subdivisionItem =
-                patternBeat?.subdivisions?.[
-                    this.currentSubdivision - 1
-                ]
-
-            if (!subdivisionItem) {
-                return
-            }
+            if (!subdivisionItem || subdivisionItem.sound === 'rest') return
 
             if (
                 this.metronome.mode === 'creative'
                 && this.getCreativePlaybackMode() === 'pulse'
             ) {
-                if (subdivisionItem.groupStart && subdivisionItem.sound !== 'rest') {
-                    this.playPulseTone({
-                        groupSize: this.getPlaybackGroupSizeForBeat(
-                            this.currentBeat,
-                            playbackPulse,
-                            this.currentSubdivision
-                        ),
-                    })
-                }
+                this.playPulseTone({
+                    isAccent: subdivisionItem.sound === 'accent'
+                        || Boolean(subdivisionItem.groupStart),
+                })
                 return
             }
-
-            if (subdivisionItem.sound === 'rest') return
 
             this.tick(subdivisionItem.sound === 'accent')
         },
@@ -334,86 +294,50 @@ export function audioEngine() {
             return playbackPulse.grouping[groupIndex] ?? 0
         },
 
-        // PULSE PLAYBACK
+        // Pulse uses synthesized tones for every audible pattern position.
+        // Keep the organic pitch sweep while shortening each envelope to avoid
+        // overlap at eighth- and sixteenth-note subdivisions.
         playPulseTone({
-            groupSize,
+            isAccent = false,
             isDownbeat = false,
-        }) {
-            if (!groupSize) {
-                return
-            }
-
+        } = {}) {
             this.ensureAudioContext()
 
             const ctx = this.audioContext
             const now = ctx.currentTime
-
-            const bpm =
-                this.activeMetronomeBpm
-                ?? this.metronome.bpm
-
-            const subdivisionSeconds =
-                this.getBeatIntervalMs(bpm) / 1000
-
-            const groupDuration =
-                groupSize * subdivisionSeconds
-
-            const decayDuration =
-                Math.max(
-                    0.08,
-                    groupDuration * 0.88
-                )
-
-            const oscillator =
-                ctx.createOscillator()
-
-            const gain =
-                ctx.createGain()
-
-            /*
-            * DOWNBEAT:
-            *
-            * true  = BUM
-            * false = TUM
-            */
-            oscillator.type =
-                isDownbeat
-                    ? 'sine'
-                    : 'triangle'
-
-            const startFrequency =
-                isDownbeat
-                    ? 135
-                    : 190
-
-            const endFrequency =
-                isDownbeat
-                    ? 75
-                    : 105
-
-            const volume =
-                isDownbeat
-                    ? 0.65
-                    : 0.45
-
-            oscillator.frequency.setValueAtTime(
-                startFrequency,
-                now
+            const bpm = this.activeMetronomeBpm ?? this.metronome.bpm
+            const stepSeconds = this.getSubdivisionIntervalMs(bpm) / 1000
+            const decayDuration = Math.max(
+                0.025,
+                Math.min(0.22, stepSeconds * 0.72)
             )
 
+            const oscillator = ctx.createOscillator()
+            const gain = ctx.createGain()
+
+            oscillator.type = isDownbeat ? 'sine' : 'triangle'
+
+            const startFrequency = isDownbeat
+                ? 135
+                : isAccent ? 190 : 205
+            const endFrequency = isDownbeat
+                ? 75
+                : isAccent ? 105 : 145
+            const volume = isDownbeat
+                ? 0.65
+                : isAccent ? 0.45 : 0.23
+
+            oscillator.frequency.setValueAtTime(startFrequency, now)
             oscillator.frequency.exponentialRampToValueAtTime(
                 endFrequency,
-                now + Math.min(
-                    0.14,
-                    decayDuration * 0.35
-                )
+                now + Math.min(0.10, decayDuration * 0.55)
             )
 
-            gain.gain.setValueAtTime(
+            gain.gain.setValueAtTime(0.001, now)
+            gain.gain.linearRampToValueAtTime(
                 volume,
-                now
+                now + Math.min(0.008, decayDuration * 0.12)
             )
-
             gain.gain.exponentialRampToValueAtTime(
                 0.001,
                 now + decayDuration
@@ -423,10 +347,7 @@ export function audioEngine() {
             gain.connect(ctx.destination)
 
             oscillator.start(now)
-
-            oscillator.stop(
-                now + decayDuration + 0.02
-            )
+            oscillator.stop(now + decayDuration + 0.01)
 
             oscillator.onended = () => {
                 oscillator.disconnect()

@@ -4,16 +4,24 @@ export function collections() {
         getPulsePresetCollections() {
             return [
                 ...new Set(
-                    this.pulsePresets
+                    this.getSelectablePulsePresets()
                         .map(preset => preset.collection)
                         .filter(Boolean)
                 ),
             ]
         },
 
+        getSelectablePulsePresets() {
+            return this.pulsePresets.filter(preset => !(
+                preset.name === 'Common Time'
+                && preset.numerator === 4
+                && preset.denominator === 4
+            ))
+        },
+
         // Presets from one system collection
         getPulsePresetsByCollection(collection) {
-            return this.pulsePresets.filter(
+            return this.getSelectablePulsePresets().filter(
                 preset => preset.collection === collection
             )
         },

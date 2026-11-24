@@ -76,6 +76,24 @@ export function sources() {
             this.setPulseBaseline()
         },
 
+        // RESET: start a fresh 4/4 pattern without overwriting saved data.
+        async resetPulse() {
+            if (this.pulseDraft.isDirty && !window.confirm(
+                'Discard unsaved changes and reset Pulse to 4/4?'
+            )) {
+                return false
+            }
+
+            this.startNewPattern()
+            this.rememberPulseSource('new')
+
+            if (this.intervalId) {
+                await this.startMetronome(this.metronome.bpm)
+            }
+
+            return true
+        },
+
         // USER PATTERN LOADING
         loadUserPattern(id) {
             const userPattern = this.userPatterns.find(
@@ -141,6 +159,13 @@ export function sources() {
                 )
 
                 if (!preset) {
+                    return
+                }
+
+                // Legacy Common Time links resolve to a fresh pattern.
+                if (preset.name === 'Common Time' && preset.numerator === 4 && preset.denominator === 4) {
+                    this.startNewPattern()
+                    this.rememberPulseSource('new')
                     return
                 }
 
