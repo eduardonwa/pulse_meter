@@ -356,6 +356,7 @@
 
     .pulse-settings-bar {
         border-block-end: 1px solid hsl(var(--neutral-950) / .2);
+        padding-block-end: $size-4;
 
         .button {
             display: flex;
@@ -476,8 +477,6 @@
         &__content {
             padding: $size-4;
 
-            // Section outlines can reach the container edges, while content
-            // keeps the same consistent horizontal inset.
             > * {
                 margin-inline: -$size-4;
                 padding-inline: $size-4;
@@ -565,6 +564,8 @@
             display: flex;
             flex-direction: column;
             gap: .5rem;
+
+            padding-block-end: $size-4;
 
             .beat-groups {
                 display: flex;
@@ -666,11 +667,14 @@
         }
 
         &__subdivision {
+            .heading {
+                padding-block-start: $size-3;
+            }
             .subdivision-options {
                 display: grid;
                 grid-template-columns: repeat(3, minmax(0, 1fr));
                 gap: $size-3;
-
+                
                 .button {
                     min-width: 0;
                     width: 100%;
@@ -715,6 +719,8 @@
         &__playback {
             flex-direction: column;
             flex-wrap: wrap;
+
+            padding-block-end: $size-4;
             
             border-block-end: var(--border);
 
