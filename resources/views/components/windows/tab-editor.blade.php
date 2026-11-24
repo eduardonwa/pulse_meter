@@ -347,12 +347,15 @@
                 </div>
                 
                 <span x-ref="tabEditorScoreFocus" class="sr-only" tabindex="-1">Tab keyboard controls</span>
-                <div class="tab-editor__score-preview" x-show="!tabFullMusicXml && tabScoreView === 'score'" x-cloak>
-                    <p class="tab-editor__score-preview-hint">Score editor · Click a note, then use the keyboard or tools.</p>
+                <div class="tab-editor__score-preview" x-show="!tabFullMusicXml && tabScoreView === 'score'" x-cloak
+                    x-ref="tabEditorScoreKeyboard" tabindex="0" role="group" aria-label="Score keyboard editor">
+                    <p class="tab-editor__score-preview-hint">Click a note to edit. Arrow keys navigate · I inserts a new position · 0–9 enters frets · R inserts a rest.</p>
+                    <button type="button" class="button" data-type="outline" @click="prepareTabEditorScoreInsertion()" title="Insert a position after the current note (I)">Insert position (I)</button>
+                    <p x-show="tabInsertAtBar" x-cloak>Insertion cursor at position <span x-text="tabSelectedIndex + 1"></span> · choose a duration, then type a fret or R.</p>
                     <p x-show="tabSelectedIndices.length && tabSelectedIndex < tabDraft.beats.length"
                         x-text="`Selected position ${tabSelectedIndex + 1} · string ${tabDraft.string} · use 0–9 to change fret, R for rest, H/P/M/L for techniques.`"></p>
                     <p class="tab-editor__score-preview-error" role="status" x-show="tabScorePreviewError" x-text="tabScorePreviewError"></p>
-                    <p class="tab-editor__score-preview-empty" x-show="!tabDraft.beats.length">Add notes in Grid to see your score here.</p>
+                    <p class="tab-editor__score-preview-empty" x-show="!tabDraft.beats.length">Press I and enter a fret to start a score.</p>
                 </div>
                 {{-- The playback renderer also supplies the score view; one AlphaTab instance. --}}
                 <div class="tab-editor__playback-host"
