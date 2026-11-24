@@ -8,7 +8,8 @@
             model="metronome.bpm"
             after-change="handleCreativeBpmChange()"
             hint="Scroll to change tempo"
-            :live-preview="true"
+            :controls="$variant === 'desktop'"
+            :live-preview="$variant !== 'desktop'"
         />
         <span class="creative-transport__unit">BPM</span>
     </div>
