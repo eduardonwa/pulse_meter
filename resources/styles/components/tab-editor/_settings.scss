@@ -19,6 +19,18 @@
         }
     }
 
+    &__utility-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: $size-3;
+        flex-wrap: wrap;
+
+        > .button {
+            margin-inline-start: auto;
+        }
+    }
+
     &__utility-actions {
         align-items: center;
         flex-wrap: wrap;
@@ -57,14 +69,6 @@
 
     @include mq(medium) {
         &__utility-bar { position: relative; }
-
-        &__utility-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: $size-3;
-            flex-wrap: wrap;
-        }
 
         &__field {
             display: grid;
