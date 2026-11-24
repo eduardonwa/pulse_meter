@@ -197,7 +197,7 @@ export function tablatureEditorMethods() {
             const requestedString = Number(detail.string);
             const string = Number.isInteger(requestedString) && requestedString >= 1 && requestedString <= 6
                 ? requestedString : (notes[0]?.string ?? this.tabDraft.string);
-            this.selectTabEditorCell(position, string);
+            this.selectTabEditorCell(position, string, detail);
             this.$nextTick(() => this.$refs.tabEditorScoreKeyboard?.focus());
         },
 
@@ -346,6 +346,9 @@ export function tablatureEditorMethods() {
         selectTabEditorCell(index, string, event = null) {
             const validNote = index < this.tabDraft.beats.length;
             if (event?.shiftKey && validNote) {
+                if (!Number.isInteger(this.tabSelectionAnchor)) {
+                    this.tabSelectionAnchor = Math.max(0, Math.min(this.tabSelectedIndex, this.tabDraft.beats.length - 1));
+                }
                 this.tabSelectedIndices = selectTabNoteIndices(this.tabSelectedIndices, this.tabSelectionAnchor, index, 'range', this.tabDraft.beats.length);
             } else if ((event?.ctrlKey || event?.metaKey) && validNote) {
                 this.tabSelectedIndices = selectTabNoteIndices(this.tabSelectedIndices, this.tabSelectionAnchor, index, 'toggle', this.tabDraft.beats.length);
