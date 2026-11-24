@@ -81,5 +81,6 @@ test('pulse playback emits tones at subdivision group starts', () => {
     assert.equal(player.played[0].isAccent, true)
     player.currentSubdivision = 1
     player.playPatternPosition()
-    assert.equal(player.played.length, 1)
+    assert.equal(player.played.length, 2)
+    assert.equal(player.played[1].isAccent, false)
 })
