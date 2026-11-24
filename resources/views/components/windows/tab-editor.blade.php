@@ -224,6 +224,43 @@
                 x-init="$watch('tabDraft', () => $nextTick(() => renderTabScorePreview())); $watch('stepForm.bpm', () => $nextTick(() => renderTabScorePreview())); $watch('stepForm.time_signature_numerator', () => $nextTick(() => renderTabScorePreview())); $watch('stepForm.time_signature_denominator', () => $nextTick(() => renderTabScorePreview())); $watch('tabSelectedIndex', () => $nextTick(() => syncTabEditorScoreCaret())); $watch('tabSelectedIndices', () => $nextTick(() => syncTabEditorScoreCaret())); $watch('tabDraft.string', () => $nextTick(() => syncTabEditorScoreCaret())); $watch('tabInsertAtBar', () => $nextTick(() => syncTabEditorScoreCaret()))"
                 @keydown="handleTabEditorKey($event)"
             >
+                <div class="tab-editor__edit-toolbar" x-show="!tabFullMusicXml" x-cloak role="group" aria-label="Editing tools">
+                    <div class="tab-editor__edit-group" role="group" aria-label="History">
+                        <button type="button" class="tab-editor__edit-tool" aria-label="Undo" title="Undo (Ctrl/Cmd + Z)"
+                            :disabled="prototypePlaying || prototypePlaybackLoading || !tabUndoHistory.length" @click="undoTabEditorChange(); $nextTick(() => $refs.tabEditorScoreKeyboard?.focus({ preventScroll: true }))">
+                            <x-lucide-undo-2 width="20" height="20" aria-hidden="true" />
+                        </button>
+                        <button type="button" class="tab-editor__edit-tool" aria-label="Redo" title="Redo (Ctrl/Cmd + Shift + Z)"
+                            :disabled="prototypePlaying || prototypePlaybackLoading || !tabRedoHistory.length" @click="redoTabEditorChange(); $nextTick(() => $refs.tabEditorScoreKeyboard?.focus({ preventScroll: true }))">
+                            <x-lucide-redo-2 width="20" height="20" aria-hidden="true" />
+                        </button>
+                    </div>
+                    <div class="tab-editor__edit-group" role="group" aria-label="Clipboard">
+                        <button type="button" class="tab-editor__edit-tool" aria-label="Cut" title="Cut (Ctrl/Cmd + X)"
+                            :disabled="prototypePlaying || prototypePlaybackLoading || tabInsertAtBar || tabSelectedIndex >= tabDraft.beats.length" @click="copyTabEditorSelection(true); $nextTick(() => $refs.tabEditorScoreKeyboard?.focus({ preventScroll: true }))">
+                            <x-lucide-scissors width="20" height="20" aria-hidden="true" />
+                        </button>
+                        <button type="button" class="tab-editor__edit-tool" aria-label="Copy" title="Copy (Ctrl/Cmd + C)"
+                            :disabled="prototypePlaying || prototypePlaybackLoading || tabInsertAtBar || tabSelectedIndex >= tabDraft.beats.length" @click="copyTabEditorSelection(); $nextTick(() => $refs.tabEditorScoreKeyboard?.focus({ preventScroll: true }))">
+                            <x-lucide-copy width="20" height="20" aria-hidden="true" />
+                        </button>
+                        <button type="button" class="tab-editor__edit-tool" aria-label="Paste" title="Paste (Ctrl/Cmd + V)"
+                            :disabled="prototypePlaying || prototypePlaybackLoading || !tabClipboard.length" @click="pasteTabEditorSelection(); $nextTick(() => $refs.tabEditorScoreKeyboard?.focus({ preventScroll: true }))">
+                            <x-lucide-clipboard-paste width="20" height="20" aria-hidden="true" />
+                        </button>
+                    </div>
+                    <div class="tab-editor__edit-group" role="group" aria-label="Structure">
+                        <button type="button" class="tab-editor__edit-tool" aria-label="Insert position" title="Insert position (I)"
+                            :disabled="prototypePlaying || prototypePlaybackLoading" @click="prepareTabEditorScoreInsertion(); $nextTick(() => $refs.tabEditorScoreKeyboard?.focus({ preventScroll: true }))">
+                            <x-lucide-list-plus width="20" height="20" aria-hidden="true" />
+                        </button>
+                        <button type="button" class="tab-editor__edit-tool" aria-label="Delete measure" title="Delete measure"
+                            :disabled="prototypePlaying || prototypePlaybackLoading || !tabDraft.beats.length" @click="deleteTabEditorMeasure(); $nextTick(() => $refs.tabEditorScoreKeyboard?.focus({ preventScroll: true }))">
+                            <x-lucide-trash-2 width="20" height="20" aria-hidden="true" />
+                        </button>
+                    </div>
+                </div>
+
                 <aside class="tab-editor__rhythm" x-show="!tabFullMusicXml" aria-label="Tablature tools">
                     <details class="tab-editor__palette-section" open>
                         <summary class="tab-editor__palette-heading">Rhythm<x-lucide-chevron-down aria-hidden="true" /></summary>
@@ -254,10 +291,6 @@
 
                         <button type="button" class="tab-editor__palette-tool" :class="{ 'is-active': tabDraft.tuplet === 3 }" :aria-pressed="(tabDraft.tuplet === 3).toString()" @click="setTabEditorRhythm({ tuplet: tabDraft.tuplet === 3 ? null : 3 })" title="Triplet: three notes in the time of two">
                             <span aria-hidden="true">3:2</span> Triplet
-                        </button>
-
-                        <button type="button" class="tab-editor__palette-tool tab-editor__insert-position" @click="prepareTabEditorScoreInsertion()" title="Insert a position after the current note (I)">
-                            <span aria-hidden="true">+</span> Insert position
                         </button>
 
                         <button type="button" class="tab-editor__palette-tool" @click="addTabEditorRest()" title="Insert or replace with a rest">
@@ -298,14 +331,6 @@
                             title="Toggle palm mute on selected notes (M)">
                             <span aria-hidden="true">P.M.</span> Palm mute
                         </button>
-                        </div>
-                    </details>
-                    <details class="tab-editor__palette-section" open>
-                        <summary class="tab-editor__palette-heading">Editing<x-lucide-chevron-down aria-hidden="true" /></summary>
-                        <div class="tab-editor__palette-effects" role="group" aria-label="Editing controls">
-                            <button type="button" class="tab-editor__palette-tool" @click="deleteTabEditorMeasure()" :disabled="!tabDraft.beats.length" title="Delete selected measure">
-                                <span aria-hidden="true">−</span> Delete measure
-                            </button>
                         </div>
                     </details>
                 </aside>
