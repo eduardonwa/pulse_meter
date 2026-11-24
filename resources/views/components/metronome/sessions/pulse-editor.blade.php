@@ -106,19 +106,18 @@
                     Pattern Settings
                 </button>
             </div>
-        </div>
 
-        <x-metronome.creative-transport variant="desktop" />
+            <x-metronome.creative-transport variant="desktop" />
 
+            <div class="time-signature__actions">
+                <button class="button" data-type="primary" type="button" @click="pulseDraft.origin === 'new' ? openPulsePatternNameDialog('new') : savePulsePattern()" x-show="pulseDraft.origin === 'new' || pulseDraft.origin === 'user'">
+                    Save
+                </button>
 
-        <div class="time-signature__actions">
-            <button class="button" data-type="primary" type="button" @click="pulseDraft.origin === 'new' ? openPulsePatternNameDialog('new') : savePulsePattern()" x-show="pulseDraft.origin === 'new' || pulseDraft.origin === 'user'">
-                Save
-            </button>
-
-            <button class="button" data-type="primary" data-variant="outline" type="button" @click="openPulsePatternNameDialog('copy')" x-show="pulseDraft.origin === 'preset' || pulseDraft.origin === 'user'">
-                Save as copy
-            </button>
+                <button class="button" data-type="primary" data-variant="outline" type="button" @click="openPulsePatternNameDialog('copy')" x-show="pulseDraft.origin === 'preset' || pulseDraft.origin === 'user'">
+                    Save as copy
+                </button>
+            </div>
         </div>
         </div>
     </div>
