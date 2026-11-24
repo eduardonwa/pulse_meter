@@ -166,6 +166,11 @@
         background: hsl(var(--neutral-100));
         box-shadow: 0 12px 28px hsl(var(--neutral-900) / .16);
 
+        &.opens-above {
+            top: auto;
+            bottom: 100%;
+        }
+
         .tab-editor__palette-tool[aria-pressed="true"] {
             background: hsl(var(--neutral-500) / .12);
         }
