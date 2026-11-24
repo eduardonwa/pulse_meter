@@ -177,6 +177,7 @@
                                     <div><dt>Rest</dt><dd>R</dd></div>
                                     <div><dt>Extend selection</dt><dd>Shift + ← / →</dd></div>
                                     <div><dt>Previous / next measure (Score)</dt><dd>Ctrl/Cmd + Shift + ← / →</dd></div>
+                                    <div><dt>Copy / cut / paste (Score)</dt><dd>Ctrl/Cmd + C / X / V</dd></div>
                                     <div><dt>Undo</dt><dd>Ctrl/Cmd + Z</dd></div>
                                     <div><dt>Redo</dt><dd>Ctrl/Cmd + Shift + Z</dd></div>
                                     <div><dt>Clear note</dt><dd>Backspace</dd></div>
