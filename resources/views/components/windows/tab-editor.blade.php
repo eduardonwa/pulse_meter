@@ -86,7 +86,8 @@
                                     <h4>Note &amp; rhythm entry</h4>
                                     <dl>
                                         <div><dt>Enter fret</dt><dd>0-9</dd></div>
-                                        <div><dt>Insert position</dt><dd>I</dd></div>
+                                        <div><dt>Insert after</dt><dd>I</dd></div>
+                                        <div><dt>Insert before</dt><dd>Shift + I</dd></div>
                                         <div><dt>Rest</dt><dd>R</dd></div>
                                         <div><dt>Change duration</dt><dd>+ / -</dd></div>
                                     </dl>
@@ -248,7 +249,7 @@
                         </button>
                     </div>
                     <div class="tab-editor__edit-group" role="group" aria-label="Structure">
-                        <button type="button" class="tab-editor__edit-tool" aria-label="Insert position" title="Insert position (I)"
+                        <button type="button" class="tab-editor__edit-tool" aria-label="Insert position" title="Insert after (I) · Insert before (Shift + I)"
                             :disabled="prototypePlaying || prototypePlaybackLoading" @click="prepareTabEditorScoreInsertion(); $nextTick(() => $refs.tabEditorScoreKeyboard?.focus({ preventScroll: true }))">
                             <x-lucide-list-plus width="20" height="20" aria-hidden="true" />
                         </button>
