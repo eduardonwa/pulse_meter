@@ -145,6 +145,14 @@
 
             <div class="pulse-settings-sheet__section pulse-settings-sheet__section--actions">
                 <div class="pulse-settings-sheet__pattern-controls">
+                    <button class="button" data-type="outline" type="button"
+                        @click="$refs.pulseSettingsSheet.close(); $nextTick(() => openPatternDialog())"
+                        aria-label="Browse saved and preset patterns"
+                    >
+                        <x-lucide-library />
+                        Browse Patterns
+                    </button>
+
                     <button class="button" data-type="accent" type="button"
                         @click="$refs.pulseSettingsSheet.close(); $nextTick(() => openPatternDialog())"
                         aria-label="New or choose pattern"
