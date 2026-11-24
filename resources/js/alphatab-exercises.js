@@ -11,6 +11,40 @@ const mountPromises = new WeakMap()
 const readyPromises = new WeakMap()
 const renderedBpms = new WeakMap()
 const playbackRequests = new WeakMap()
+const editorScoreCursors = new WeakMap()
+
+// The editing caret is independent from alphaTab's playback cursor.
+// Position it using the bounds of the rendered beat, never by guessing
+// pixel widths from the original Grid editor.
+function updateEditorScoreCaret(element, api) {
+    const selection = editorScoreCursors.get(element)
+    let caret = element.querySelector(':scope > .tab-editor-score-caret')
+    if (!selection || !api?.score || !api.boundsLookup) {
+        caret?.remove()
+        return
+    }
+    const { measureIndex, beatIndex, insertion } = selection
+    const score = api.score
+    const beat = score.tracks?.[0]?.staves?.[0]?.bars?.[measureIndex]?.voices?.[0]?.beats?.[beatIndex]
+    const bounds = beat && api.boundsLookup.findBeat(beat)
+    if (!bounds) {
+        caret?.remove()
+        return
+    }
+    const rect = bounds.visualBounds
+    if (!Number.isFinite(rect.x) || !Number.isFinite(rect.y)) return
+    if (!caret) {
+        caret = document.createElement('div')
+        caret.className = 'tab-editor-score-caret'
+        caret.setAttribute('aria-hidden', 'true')
+        element.appendChild(caret)
+    }
+    caret.classList.toggle('is-insertion', Boolean(insertion))
+    caret.style.left = `${rect.x + (insertion ? 0 : rect.w / 2)}px`
+    caret.style.top = `${rect.y}px`
+    caret.style.height = `${Math.max(rect.h, 26)}px`
+}
+
 // Track the actual score loaded into an alphaTab instance, not just its dataset.
 const editorLoadedScores = new WeakMap()
 const routineLoopModes = new WeakMap()
@@ -227,6 +261,10 @@ async function mountAlphaTab(element) {
             api.noteMouseDown.on(note => dispatchSelection(note?.beat, note))
         }
 
+        if (isAdminPreview) {
+            api.postRenderFinished.on(() => updateEditorScoreCaret(element, api))
+        }
+
         api.renderFinished.on(() => {
             element.dataset.alphaTabRendered = 'true'
             window.dispatchEvent(new CustomEvent('alphatab:rendered', {
@@ -284,6 +322,9 @@ async function mountAlphaTab(element) {
         })
 
         api.playerStateChanged.on(args => {
+            if (isAdminPreview) {
+                element.classList.toggle('is-playing', args.state === alphaTab.synth.PlayerState.Playing)
+            }
             waitingForScoreStart = args.state === alphaTab.synth.PlayerState.Playing
             dispatchPlaybackState(
                 element,
@@ -456,6 +497,7 @@ window.addEventListener('alphatab:preview-draft', async event => {
     if (playbackRequests.get(element) !== request || playbackGeneration !== request) return
     if (renderOnly) {
         api.stop()
+        element.classList.remove('is-playing')
         return
     }
     api.playbackSpeed = musicXml ? Number(bpm) / musicXmlFirstTempo(musicXml, Number(bpm) || 100) : 1
@@ -650,4 +692,12 @@ window.addEventListener('alphatab:editor-transport-options', event => {
         metronome: Boolean(options.metronome),
     })
     applyEditorPreviewOptions(element, instances.get(element))
+})
+
+window.addEventListener('alphatab:editor-caret', event => {
+    const { element, selection } = event.detail ?? {}
+    if (!element) return
+    if (selection) editorScoreCursors.set(element, selection)
+    else editorScoreCursors.delete(element)
+    updateEditorScoreCaret(element, instances.get(element))
 })
