@@ -6,6 +6,8 @@ import {
     serializeTabDraft,
     parseTabDraft,
     playbackAlphaTex,
+    tabLegatoDirection,
+    toggleTabLegato,
 } from '../../resources/js/metronome/alphatab/tab-editor.js'
 
 const sevenEighthNotes = {
@@ -70,4 +72,45 @@ test('invalid time signatures are rejected', () => {
     for (const [numerator, denominator] of [[0, 4], [17, 4], [7, 3]]) {
         assert.throws(() => serializeTabDraft(draft, numerator, 100, denominator), RangeError)
     }
+})
+
+
+test('legato hammer-on and pull-off round-trip in editable AlphaTex', () => {
+    const draft = {
+        ...createTabDraft(),
+        beats: [
+            { fret: 5, string: 2, duration: 4, legato: true },
+            { fret: 7, string: 2, duration: 4, legato: true },
+            { fret: 5, string: 2, duration: 4 },
+            { fret: 4, string: 2, duration: 4 },
+        ],
+    }
+    assert.equal(tabLegatoDirection(draft.beats, 0), 'H')
+    assert.equal(tabLegatoDirection(draft.beats, 1), 'P')
+    const alphaTex = serializeTabDraft(draft)
+    assert.match(alphaTex, /5\\.2\\{h\\}/)
+    assert.match(alphaTex, /7\\.2\\{h\\}/)
+    assert.deepEqual(parseTabDraft(alphaTex).draft.beats, draft.beats)
+    assert.equal(playbackAlphaTex(alphaTex), alphaTex)
+})
+
+test('legato can be toggled, but cannot connect rests or unrelated strings', () => {
+    const pair = [
+        { fret: 5, string: 2, duration: 4 },
+        { fret: 7, string: 2, duration: 4 },
+    ]
+    const enabled = toggleTabLegato(pair, 0)
+    assert.equal(enabled[0].legato, true)
+    assert.equal(toggleTabLegato(enabled, 0)[0].legato, false)
+    assert.throws(() => toggleTabLegato(pair, 1), RangeError)
+    assert.throws(() => toggleTabLegato([pair[0], { ...pair[1], string: 1 }], 0), RangeError)
+    assert.throws(() => toggleTabLegato([pair[0], { rest: true, duration: 4 }], 0), RangeError)
+})
+
+test('invalid legato destinations are rejected on save', () => {
+    const draft = {
+        ...createTabDraft(),
+        beats: [{ fret: 5, string: 2, duration: 4, legato: true }, { fret: 5, string: 2, duration: 4 }],
+    }
+    assert.throws(() => serializeTabDraft(draft), RangeError)
 })
