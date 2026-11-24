@@ -8,6 +8,7 @@
     @alphatab:playback-finished.window="finishPrototypePlayback($event)"
     @alphatab:load-error.window="prototypePlaybackError($event)"
     @alphatab:editor-select.window="selectTabEditorScoreBeat($event)"
+    @alphatab:rendered.window="if ($event.detail?.element === $refs.tabEditorPreview) syncTabEditorScoreCaret()"
 >
     {{-- Display toasts inside the modal's top layer while it is open. --}}
     <div class="toaster" data-align="bottom" data-pos="right" aria-live="polite" aria-atomic="true">
@@ -207,7 +208,7 @@
 
             {{-- main editing area --}}
             <section class="tab-editor__workspace" :class="{ 'is-imported-score': Boolean(tabFullMusicXml) }" aria-label="Tablature workspace"
-                x-init="$nextTick(() => updateTabEditorWidth()); $watch('tabDraft', () => { if (tabScoreView === 'score') $nextTick(() => renderTabScorePreview()) }); $watch('stepForm.bpm', () => { if (tabScoreView === 'score') $nextTick(() => renderTabScorePreview()) }); $watch('stepForm.time_signature_numerator', () => { if (tabScoreView === 'score') $nextTick(() => renderTabScorePreview()) }); $watch('stepForm.time_signature_denominator', () => { if (tabScoreView === 'score') $nextTick(() => renderTabScorePreview()) })"
+                x-init="$nextTick(() => updateTabEditorWidth()); $watch('tabDraft', () => { if (tabScoreView === 'score') $nextTick(() => renderTabScorePreview()) }); $watch('stepForm.bpm', () => { if (tabScoreView === 'score') $nextTick(() => renderTabScorePreview()) }); $watch('stepForm.time_signature_numerator', () => { if (tabScoreView === 'score') $nextTick(() => renderTabScorePreview()) }); $watch('stepForm.time_signature_denominator', () => { if (tabScoreView === 'score') $nextTick(() => renderTabScorePreview()) }); $watch('tabSelectedIndex', () => $nextTick(() => syncTabEditorScoreCaret())); $watch('tabDraft.string', () => $nextTick(() => syncTabEditorScoreCaret())); $watch('tabInsertAtBar', () => $nextTick(() => syncTabEditorScoreCaret()))"
                 @keydown="handleTabEditorKey($event)"
                 @resize.window="updateTabEditorWidth()"
                 @pointerup.window="endTabDrag()"
