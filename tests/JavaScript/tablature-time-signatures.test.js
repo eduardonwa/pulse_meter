@@ -8,6 +8,7 @@ import {
     playbackAlphaTex,
     tabLegatoDirection,
     toggleTabLegato,
+    normalizeTabLegato,
 } from '../../resources/js/metronome/alphatab/tab-editor.js'
 
 const sevenEighthNotes = {
@@ -113,4 +114,17 @@ test('invalid legato destinations are rejected on save', () => {
         beats: [{ fret: 5, string: 2, duration: 4, legato: true }, { fret: 5, string: 2, duration: 4 }],
     }
     assert.throws(() => serializeTabDraft(draft), RangeError)
+})
+
+
+test('editing a legato destination removes orphaned effects without touching valid links', () => {
+    const beats = [
+        { fret: 5, string: 1, duration: 4, legato: true },
+        { fret: 7, string: 1, duration: 4, legato: true },
+        { fret: 9, string: 2, duration: 4 },
+    ]
+    const cleaned = normalizeTabLegato(beats)
+    assert.equal(cleaned[0].legato, true)
+    assert.equal(cleaned[1].legato, undefined)
+    assert.equal(beats[1].legato, true)
 })
