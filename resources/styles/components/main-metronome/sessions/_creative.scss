@@ -717,6 +717,33 @@
             }
         }
 
+        &__control-row {
+            > * + * {
+                margin-block-start: var(--flow-spacer);
+            }
+
+            @include mq(large) {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                align-items: stretch;
+                gap: $size-4;
+
+                > * + * {
+                    margin-block-start: 0;
+                }
+
+                > .pulse-settings-bar {
+                    grid-column: 1;
+                    grid-row: 1;
+                }
+
+                > .time-signature__playback {
+                    grid-column: 2;
+                    grid-row: 1;
+                }
+            }
+        }
+
         &__playback {
             flex-direction: column;
             flex-wrap: wrap;
