@@ -237,10 +237,6 @@ export function tabEditor() {
         return Boolean(imported?.sections?.length === 1 && !imported.warnings?.length && !imported.limitations?.length &&
             imported.sections[0].firstMeasure === 1)
     },
-    prototypeMusicXmlHasMultipleTimeSignatures() {
-        const sections = this.prototypeMusicXmlImport?.sections ?? []
-        return new Set(sections.map(section => `${section.numerator}/${section.denominator}`)).size > 1
-    },
     dismissPrototypeMusicXml() {
         this.prototypeMusicXmlImport = null
         this.prototypeMusicXmlFullSource = null
