@@ -9,6 +9,7 @@ import {
     tabLegatoDirection,
     toggleTabLegato,
     normalizeTabLegato,
+    toggleTabPalmMute,
 } from '../../resources/js/metronome/alphatab/tab-editor.js'
 
 const sevenEighthNotes = {
@@ -132,4 +133,52 @@ test('editing a legato destination removes orphaned effects without touching val
     assert.equal(cleaned[0].legato, true)
     assert.equal(cleaned[1].legato, undefined)
     assert.equal(beats[1].legato, true)
+})
+
+test('palm mute round-trips notes and chords through AlphaTex', () => {
+    const draft = {
+        ...createTabDraft(),
+        beats: [
+            { fret: 5, string: 6, duration: 4, palmMute: true },
+            { notes: [{ fret: 5, string: 6 }, { fret: 7, string: 5 }], duration: 4, palmMute: true },
+            { fret: 7, string: 6, duration: 4 },
+            { rest: true, duration: 4 },
+        ],
+    }
+    const alphaTex = serializeTabDraft(draft)
+    assert.ok(alphaTex.includes('5.6{pm}'))
+    assert.ok(alphaTex.includes('(5.6{pm} 7.5{pm})'))
+    assert.deepEqual(parseTabDraft(alphaTex).draft.beats, draft.beats)
+    assert.equal(playbackAlphaTex(alphaTex), alphaTex)
+})
+
+test('palm mute can coexist with hammer-on and pull-off', () => {
+    const draft = {
+        ...createTabDraft(),
+        beats: [
+            { fret: 5, string: 2, duration: 4, legato: true, palmMute: true },
+            { fret: 7, string: 2, duration: 4, legato: true, palmMute: true },
+            { fret: 5, string: 2, duration: 4 },
+            { fret: 5, string: 3, duration: 4 },
+        ],
+    }
+    const alphaTex = serializeTabDraft(draft)
+    assert.ok(alphaTex.includes('5.2{h pm}'))
+    assert.deepEqual(parseTabDraft(alphaTex).draft.beats, draft.beats)
+})
+
+test('palm mute acts on selected notes and ignores rests', () => {
+    const beats = [
+        { fret: 5, string: 6, duration: 8 },
+        { rest: true, duration: 8 },
+        { fret: 7, string: 6, duration: 8 },
+    ]
+    const on = toggleTabPalmMute(beats, [0, 1, 2])
+    assert.equal(on[0].palmMute, true)
+    assert.equal(on[1].palmMute, undefined)
+    assert.equal(on[2].palmMute, true)
+    const off = toggleTabPalmMute(on, [0, 2])
+    assert.equal(off[0].palmMute, false)
+    assert.equal(off[2].palmMute, false)
+    assert.deepEqual(toggleTabPalmMute(beats, [1]), beats)
 })
