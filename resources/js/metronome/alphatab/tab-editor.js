@@ -119,11 +119,19 @@ export function normalizeTabLegato(beats) {
         : beat);
 }
 
-export function toggleTabLegato(beats, index) {
-    if (!tabLegatoDirection(beats, index)) {
+export function toggleTabLegato(beats, index, technique = null) {
+    const direction = tabLegatoDirection(beats, index);
+    if (!direction) {
         throw new RangeError('Legato needs two consecutive notes on the same string at different frets.');
     }
-    return beats.map((beat, i) => i === index ? { ...beat, legato: !beat.legato } : beat);
+    if (technique && technique !== direction) {
+        throw new RangeError(technique === 'H'
+            ? 'Hammer-on requires the following fret to be higher.'
+            : 'Pull-off requires the following fret to be lower.');
+    }
+    return beats.map((beat, i) => i === index
+        ? { ...beat, ...(beat.legato ? { legato: false } : { legato: true }) }
+        : beat);
 }
 
 // Legacy beats contain one fret/string; chord beats contain several notes.
