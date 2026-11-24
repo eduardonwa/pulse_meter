@@ -72,38 +72,40 @@
             </div>
         </div>
 
-        <div class="time-signature__playback">
-            <h2 class="heading">Playback</h2>
-
-            <div class="tool-group">
-                <button
-                    class="button"
-                    type="button"
-                    @click="creativePlaybackMode = 'click'"
-                    :class="{ 'is-selected': creativePlaybackMode === 'click' }"
+        <div class="time-signature__control-row">
+            <div class="time-signature__playback">
+                <h2 class="heading">Playback</h2>
+    
+                <div class="tool-group">
+                    <button
+                        class="button"
+                        type="button"
+                        @click="creativePlaybackMode = 'click'"
+                        :class="{ 'is-selected': creativePlaybackMode === 'click' }"
+                    >
+                        Click
+                    </button>
+    
+                    <button
+                        class="button"
+                        type="button"
+                        @click="creativePlaybackMode = 'pulse'"
+                        :class="{ 'is-selected': creativePlaybackMode === 'pulse' }"
+                    >
+                        Pulse
+                    </button>
+                </div>
+            </div>
+    
+            <div class="pulse-settings-bar">
+                <button class="button" data-type="outline" type="button"
+                    @click="$refs.pulseSettingsSheet.showModal()"
+                    aria-haspopup="dialog"
                 >
-                    Click
-                </button>
-
-                <button
-                    class="button"
-                    type="button"
-                    @click="creativePlaybackMode = 'pulse'"
-                    :class="{ 'is-selected': creativePlaybackMode === 'pulse' }"
-                >
-                    Pulse
+                    <x-lucide-sliders-vertical />
+                    Pattern Settings
                 </button>
             </div>
-        </div>
-
-        <div class="pulse-settings-bar">
-            <button class="button" data-type="outline" type="button"
-                @click="$refs.pulseSettingsSheet.showModal()"
-                aria-haspopup="dialog"
-            >
-                <x-lucide-sliders-vertical />
-                Pattern Settings
-            </button>
         </div>
 
         <x-metronome.creative-transport variant="desktop" />
