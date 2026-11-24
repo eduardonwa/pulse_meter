@@ -128,10 +128,23 @@
                 font-weight: 600;
             }
 
+            .tab-editor__shortcuts-group {
+                margin-block-start: $size-3;
+                padding-block-start: $size-3;
+                border-block-start: 1px solid hsl(var(--neutral-800) / .15);
+
+                h4 {
+                    margin: 0 0 $size-2;
+                    font-size: 13px;
+                    font-weight: 600;
+                    color: hsl(var(--neutral-800) / .75);
+                }
+            }
+
             dl {
                 display: grid;
                 gap: $size-2;
-                margin-block: $size-3 0;
+                margin: 0;
                 font-size: 14px;
             }
 
