@@ -128,7 +128,9 @@
 
         &__playback-host.is-full-score {
             grid-column: 2;
-            grid-row: 2;
+            grid-row: 1;
+            align-self: start;
+            margin-top: 34px;
             width: 100%;
         }
 
