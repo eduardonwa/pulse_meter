@@ -95,7 +95,7 @@
                 position: static;
                 display: grid;
                 grid-template-columns: repeat(2, minmax(0, 1fr));
-                align-items: center;
+                align-items: start;
                 width: 100%;
                 margin: 0;
                 padding: 0 $size-4;
