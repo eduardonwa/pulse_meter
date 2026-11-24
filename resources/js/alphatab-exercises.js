@@ -183,6 +183,7 @@ async function mountAlphaTab(element) {
         const api = new alphaTab.AlphaTabApi(element, {
             core: {
                 fontDirectory: '/font/',
+                includeNoteBounds: isAdminPreview,
             },
 
             display: {
@@ -196,7 +197,7 @@ async function mountAlphaTab(element) {
                 playerMode: alphaTab.PlayerMode.EnabledSynthesizer,
                 soundFont: '/soundfont/sonivox.sf2',
 
-                enableUserInteraction: !isAdminPreview,
+                enableUserInteraction: true,
                 enableCursor: true,
                 enableAnimatedBeatCursor: true,
                 enableElementHighlighting: !isAdminPreview,
@@ -207,6 +208,24 @@ async function mountAlphaTab(element) {
                     : alphaTab.ScrollMode.Continuous,
             },
         })
+
+        // AlphaTab remains responsible for drawing the score. The editor
+        // translates hits into indices of its existing editable tab draft.
+        if (isAdminPreview) {
+            const dispatchSelection = (beat, note = null) => {
+                if (!beat) return
+                window.dispatchEvent(new CustomEvent('alphatab:editor-select', {
+                    detail: {
+                        element,
+                        measureIndex: beat.voice?.bar?.masterBar?.index ?? beat.voice?.bar?.index,
+                        beatIndex: beat.index,
+                        string: note?.string ?? null,
+                    },
+                }))
+            }
+            api.beatMouseDown.on(beat => dispatchSelection(beat))
+            api.noteMouseDown.on(note => dispatchSelection(note?.beat, note))
+        }
 
         api.renderFinished.on(() => {
             element.dataset.alphaTabRendered = 'true'
