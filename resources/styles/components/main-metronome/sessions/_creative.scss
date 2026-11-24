@@ -92,23 +92,22 @@
             }
 
             &--desktop {
-                display: contents;
+                position: static;
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                align-items: center;
+                width: 100%;
+                margin: 0;
+                padding-block: $size-4;
+                background: $color-neutral-100;
+                border-block-end: var(--border);
 
                 .creative-transport__tempo {
-                    grid-area: tempo;
-                    padding: $size-4;
-                    border-block-end: var(--border);
-                    border-inline-end: var(--border);
-                    background: $color-neutral-100;
+                    min-width: 0;
                 }
 
                 .creative-transport__play {
-                    grid-area: start;
-                    display: flex;
-                    align-items: center;
-                    padding: $size-4;
-                    border-block-end: var(--border);
-                    background: $color-neutral-100;
+                    min-width: 0;
                 }
             }
         }
