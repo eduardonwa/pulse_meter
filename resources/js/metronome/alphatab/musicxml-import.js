@@ -82,23 +82,23 @@ function resolveConnections(beats, limitations) {
             const direction = tabLegatoDirection(clean, i)
             if (start.kind === 'tie' && tabTieSource(clean, i + 1) !== null) {
                 clean[i + 1].tie = true
-            } else if (start.kind === 'slide' && direction) {
-                const slurStart = endpoints[i].findIndex((e, j) => !consumed[i].has(j) && e.kind === 'slur' && e.type === 'start' &&
-                    next.some((n, k) => !consumed[i + 1].has(k) && n.kind === 'slur' && n.type === 'stop' && n.number === e.number))
+            } else if ((start.kind === 'slide' && direction) ||
+                (start.kind === 'hammer-on' && direction === 'H') ||
+                (start.kind === 'pull-off' && direction === 'P')) {
+                // A matching slur accompanying a slide denotes a legato slide.
+                // An unaccompanied slur is ambiguous and remains unsupported.
+                const slurStart = endpoints[i].findIndex((e, j) => !consumed[i].has(j) &&
+                    e.kind === 'slur' && e.type === 'start' &&
+                    next.some((n, k) => !consumed[i + 1].has(k) &&
+                        n.kind === 'slur' && n.type === 'stop' && n.number === e.number))
                 if (slurStart >= 0) {
-                    const slurStop = next.findIndex((e, j) => !consumed[i + 1].has(j) && e.kind === 'slur' && e.type === 'stop' && e.number === endpoints[i][slurStart].number)
+                    const slurStop = next.findIndex((e, j) => !consumed[i + 1].has(j) &&
+                        e.kind === 'slur' && e.type === 'stop' && e.number === endpoints[i][slurStart].number)
                     consumed[i].add(slurStart)
                     consumed[i + 1].add(slurStop)
                 }
-                clean[i].slide = slurStart >= 0 ? 'sl' : 'ss'
-            } else if ((start.kind === 'hammer-on' && direction === 'H') || (start.kind === 'pull-off' && direction === 'P')) {
-                clean[i].legato = true
-                const slurStart = endpoints[i].findIndex((e, j) => !consumed[i].has(j) && e.kind === 'slur' && e.type === 'start' &&
-                    next.some((n, k) => !consumed[i + 1].has(k) && n.kind === 'slur' && n.type === 'stop' && n.number === e.number))
-                if (slurStart >= 0) {
-                    consumed[i].add(slurStart)
-                    consumed[i + 1].add(next.findIndex((e, j) => !consumed[i + 1].has(j) && e.kind === 'slur' && e.type === 'stop' && e.number === endpoints[i][slurStart].number))
-                }
+                if (start.kind === 'slide') clean[i].slide = slurStart >= 0 ? 'sl' : 'ss'
+                else clean[i].legato = true
             } else continue
             consumed[i].add(index)
             consumed[i + 1].add(stop)
