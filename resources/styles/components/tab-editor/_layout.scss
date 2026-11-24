@@ -30,6 +30,26 @@
         grid-row: 4;
     }
 
+    &__score-preview {
+        display: flex;
+        flex-direction: column;
+        gap: $size-2;
+        grid-column: 1;
+        padding: $size-3 $size-4 0;
+        font-size: 12px;
+        color: hsl(var(--neutral-800) / .75);
+    }
+
+    &__score-preview-hint,
+    &__score-preview-error,
+    &__score-preview-empty {
+        margin: 0;
+    }
+
+    &__score-preview-error {
+        color: hsl(var(--neutral-900));
+    }
+
     &__playback-host {
         position: absolute;
         width: 100%;
@@ -40,7 +60,8 @@
         pointer-events: none;
 
         &.is-full-score {
-            grid-row: 4;
+            grid-column: 1;
+            grid-row: auto;
             position: relative;
             width: 100%;
             max-width: 100%;
@@ -69,6 +90,10 @@
     }
 
     @include mq(medium) {
+        &__score-preview {
+            padding-inline: $size-4;
+        }
+
         &__prototype-state {
             display: grid;
             place-content: center;
@@ -96,8 +121,20 @@
             grid-template-columns: 180px minmax(0, 1fr);
         }
 
-        &__playback-host {
-            width: 800px;
+        &__score-preview {
+            grid-column: 2;
+            grid-row: 1;
+        }
+
+        &__playback-host.is-full-score {
+            grid-column: 2;
+            grid-row: 2;
+            width: 100%;
+        }
+
+        &__workspace:has(> .tab-editor__rhythm[style*="display: none"]) .tab-editor__playback-host.is-full-score {
+            grid-column: 1 / -1;
+            grid-row: 1;
         }
     }
 }
