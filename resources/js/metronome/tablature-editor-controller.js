@@ -3,7 +3,7 @@ import {
     layoutTabMeasures, selectTabNoteIndices, changeSelectedTabDurations,
     changeSelectedTabRhythm, tabBeatUnits, clearTabNotes, updateTabBreaks,
     breaksForInsertedTabNote, tabBeatNotes, setTabBeatNote,
-    removeTabNoteAtString, tabLegatoDirection, toggleTabLegato, normalizeTabLegato, TAB_DURATIONS
+    removeTabNoteAtString, tabLegatoDirection, toggleTabLegato, normalizeTabLegato, toggleTabPalmMute, TAB_DURATIONS
 } from "./alphatab/tab-editor.js";
 
 // The Alpine component spreads these actions into its existing exercise state.
@@ -171,6 +171,23 @@ export function tablatureEditorMethods() {
 
         tabEditorMeasureIssues() {
             return this.tabEditorMeasureWarnings().filter(measure => measure.status !== 'complete');
+        },
+
+        toggleTabEditorPalmMute() {
+            this.finishPendingTabDigit(false);
+            if (this.tabInsertAtBar) return;
+            const selected = this.tabSelectedIndices.length
+                ? this.tabSelectedIndices
+                : [this.tabSelectedIndex];
+            const beats = toggleTabPalmMute(this.tabDraft.beats, selected);
+            if (beats === this.tabDraft.beats) return;
+            this.recordTabEditorUndo();
+            this.tabDraft = { ...this.tabDraft, beats };
+        },
+
+        tabEditorPalmMuteAt(index, string) {
+            const beat = this.tabDraft.beats[index];
+            return Boolean(beat?.palmMute && tabBeatNotes(beat).some(note => note.string === string));
         },
 
         tabEditorLegatoDirection(index) {
@@ -515,6 +532,12 @@ export function tablatureEditorMethods() {
             // accept Delete, Backspace and the existing tab keyboard controls.
             if (tag === 'BUTTON' && !event.target?.classList?.contains('tab-editor__cell')) return;
             const techniqueKey = event.key.toLowerCase();
+            if (!event.ctrlKey && !event.metaKey && !event.altKey && !event.repeat &&
+                techniqueKey === 'm') {
+                event.preventDefault();
+                this.toggleTabEditorPalmMute();
+                return;
+            }
             if (!event.ctrlKey && !event.metaKey && !event.altKey && !event.repeat &&
                 (techniqueKey === 'h' || techniqueKey === 'p')) {
                 event.preventDefault();
