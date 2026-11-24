@@ -134,6 +134,31 @@ export function toggleTabLegato(beats, index, technique = null) {
         : beat);
 }
 
+// Ties belong to their destination, unlike hammer-on/pull-off links.
+// The first version supports a single note of the same fret and string,
+// including connections across measure boundaries.
+export function tabTieSource(beats, index) {
+    if (!Number.isInteger(index) || index <= 0 || index >= beats.length) return null;
+    const source = tabBeatNotes(beats[index - 1]);
+    const destination = tabBeatNotes(beats[index]);
+    return source.length === 1 && destination.length === 1 &&
+        source[0].string === destination[0].string && source[0].fret === destination[0].fret
+        ? index - 1 : null;
+}
+
+export function toggleTabTie(beats, index) {
+    if (tabTieSource(beats, index) === null) {
+        throw new RangeError('Tie needs the same fret and string as the preceding note.');
+    }
+    return beats.map((beat, i) => i === index ? { ...beat, tie: !beat.tie } : beat);
+}
+
+export function normalizeTabTies(beats) {
+    return beats.map((beat, i) => beat.tie && tabTieSource(beats, i) === null
+        ? (() => { const { tie, ...rest } = beat; return rest; })()
+        : beat);
+}
+
 // Legacy beats contain one fret/string; chord beats contain several notes.
 export function tabBeatNotes(beat) {
     if (!beat || beat.rest) return [];
@@ -170,10 +195,13 @@ export function serializeTabDraft(draft, numerator = 4, bpm = 100, denominator =
     const measures = layoutTabMeasures(draft, numerator, denominator);
     const body = measures.map(measure => measure.notes.map(beat => {
         const notes = tabBeatNotes(beat);
+        if (beat.tie && tabTieSource(draft.beats, beat.index) === null) {
+            throw new RangeError('Tie needs the same fret and string as the preceding note.');
+        }
         if (beat.legato && !tabLegatoDirection(draft.beats, beat.index)) {
             throw new RangeError('Legato needs two consecutive notes on the same string at different frets.');
         }
-        const effects = [beat.legato ? 'h' : null, beat.palmMute ? 'pm' : null].filter(Boolean);
+        const effects = [beat.legato ? 'h' : null, beat.palmMute ? 'pm' : null, beat.tie ? 't' : null].filter(Boolean);
         const content = beat.rest ? 'r' : notes.length === 1
             ? `${notes[0].fret}.${notes[0].string}${effects.length ? `{${effects.join(' ')}}` : ''}`
             : `(${notes.map(note => `${note.fret}.${note.string}${beat.palmMute ? '{pm}' : ''}`).join(' ')})`;
@@ -206,7 +234,7 @@ export function parseTabDraft(alphaTex) {
     const breaks = [];
     for (const measure of content[4].split('|')) {
         if (beats.length) breaks.push(beats.length);
-        const tokens = measure.trim().match(/:\d+\s+(?:\((?:\d+\.\d+(?:\{pm\})?\s*){2,6}\)|\d+\.\d+(?:\{(?:h pm|h|pm)\})?|r)(?:\s+\{\s*(?:d|tu 3)(?:\s+(?:d|tu 3))?\s*\})?/g) ?? [];
+        const tokens = measure.trim().match(/:\d+\s+(?:\((?:\d+\.\d+(?:\{pm\})?\s*){2,6}\)|\d+\.\d+(?:\{(?:h(?: pm)?(?: t)?|pm(?: t)?|t)\})?|r)(?:\s+\{\s*(?:d|tu 3)(?:\s+(?:d|tu 3))?\s*\})?/g) ?? [];
         if (!tokens.length || tokens.join(' ').replace(/\s+/g, ' ') !== measure.trim().replace(/\s+/g, ' ')) {
             throw new Error('This tablature contains unsupported notation');
         }
@@ -227,11 +255,12 @@ export function parseTabDraft(alphaTex) {
                 ? body.slice(1, -1).trim().split(/\s+/)
                 : [body];
             const notes = raw.map(part => {
-                const note = /^(\d+)\.(\d+)(?:\{(h pm|h|pm)\})?$/.exec(part);
-                if (!note || (note[3]?.includes('h') && raw.length !== 1)) throw new Error('Unsupported chord');
+                const note = /^(\d+)\.(\d+)(?:\{(h(?: pm)?(?: t)?|pm(?: t)?|t)\})?$/.exec(part);
+                if (!note || ((note[3]?.includes('h') || note[3]?.split(' ').includes('t')) && raw.length !== 1)) throw new Error('Unsupported chord');
                 return { fret: Number(note[1]), string: Number(note[2]),
                     ...(note[3]?.includes('h') ? { legato: true } : {}),
-                    ...(note[3]?.includes('pm') ? { palmMute: true } : {}) };
+                    ...(note[3]?.includes('pm') ? { palmMute: true } : {}),
+                    ...(note[3]?.split(' ').includes('t') ? { tie: true } : {}) };
             });
             if (notes.length > 6 || notes.some(note => note.fret > 24 ||
                 note.string < 1 || note.string > 6) ||
