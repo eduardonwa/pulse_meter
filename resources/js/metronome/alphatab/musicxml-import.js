@@ -3,7 +3,7 @@ import { createTabDraft, TAB_DURATIONS, tabBeatUnits } from './tab-editor.js'
 const SUPPORTED_DENOMINATORS = [2, 4, 8, 16]
 
 function child(element, tag) {
-    return Array.from(element?.children ?? []).find(node => node.localName === tag) ?? null
+    return children(element, tag)[0] ?? null
 }
 
 function children(element, tag) {
@@ -38,13 +38,14 @@ function parseNote(note, divisions) {
     const rhythm = { ...(dots.length ? { dotted: true } : {}), ...(modification ? { tuplet: 3 } : {}) }
     if (child(note, 'rest')) return { rest: true, duration, ...rhythm, chord: false }
     const technical = child(child(note, 'notations'), 'technical')
-    const string = Number(value(technical, 'string'))
-    const fret = Number(value(technical, 'fret'))
+    const string = Number(value(technical, 'string') ?? NaN)
+    const fret = Number(value(technical, 'fret') ?? NaN)
     if (!Number.isInteger(string) || string < 1 || string > 6 ||
         !Number.isInteger(fret) || fret < 0 || fret > 24) {
         throw new Error('MusicXML must contain valid guitar string and fret positions (1–6, 0–24)')
     }
-    return { string, fret, duration, ...rhythm, chord: Boolean(child(note, 'chord')) }
+    const palmMute = value(child(note, 'play'), 'mute') === 'palm'
+    return { string, fret, duration, ...rhythm, ...(palmMute ? { palmMute: true } : {}), chord: Boolean(child(note, 'chord')) }
 }
 
 function fullMeasureRests(capacity) {
@@ -60,21 +61,71 @@ function fullMeasureRests(capacity) {
     return rests
 }
 
-function readMeasure(measure, divisions, signature) {
+// A Guitar Pro export may contain the same instrument twice: standard
+// notation and TAB. Prefer the explicitly declared TAB staff, not a voice ID.
+function tablatureStaff(part) {
+    for (const measure of children(part, 'measure')) {
+        const clefs = children(child(measure, 'attributes'), 'clef')
+        const tab = clefs.find(clef => value(clef, 'sign') === 'TAB')
+        if (tab) return tab.getAttribute('number') || '1'
+    }
+    return null
+}
+
+function staffOf(note) {
+    return value(note, 'staff') ?? '1'
+}
+
+// Track the MusicXML cursor across both staves so that filtering does not
+// accidentally flatten simultaneous voices, gaps or overlapping notes.
+function measureNotes(measure, staff, capacityTicks) {
+    const selected = []
+    let cursor = 0
+    let onset = 0
+    let selectedEnd = 0
+    let voice = null
+    for (const node of Array.from(measure.children)) {
+        if (['backup', 'forward'].includes(node.localName)) {
+            if (staff === null) throw new Error('Multiple voices and offsets are not supported yet')
+            const ticks = requiredPositiveInteger(Number(value(node, 'duration')), 'offset duration')
+            cursor += node.localName === 'backup' ? -ticks : ticks
+            if (cursor < 0) throw new Error('Invalid MusicXML offset')
+            continue
+        }
+        if (node.localName !== 'note') continue
+        const chord = Boolean(child(node, 'chord'))
+        const duration = requiredPositiveInteger(Number(value(node, 'duration')), 'note duration')
+        if (!chord) {
+            onset = cursor
+            cursor += duration
+        }
+        if (staff !== null && staffOf(node) !== staff) continue
+        const noteVoice = value(node, 'voice') ?? '1'
+        if (voice !== null && voice !== noteVoice) throw new Error('Multiple voices are not supported yet')
+        voice = noteVoice
+        if (chord ? !selected.length || onset !== selectedEnd - duration : onset !== selectedEnd) {
+            throw new Error('Overlapping notes or offsets are not supported yet')
+        }
+        if (!chord) selectedEnd = onset + duration
+        selected.push(node)
+    }
+    if (selected.length && selectedEnd !== capacityTicks) {
+        throw new Error('The tablature staff does not fill the measure')
+    }
+    if (!selected.length && children(measure, 'note').length) {
+        throw new Error('No notes found on the tablature staff')
+    }
+    return selected
+}
+
+function readMeasure(measure, divisions, signature, staff) {
     const beats = []
-    const notes = children(measure, 'note')
     const capacity = signature.numerator * 16 / signature.denominator
+    const notes = measureNotes(measure, staff, capacity * divisions / 4)
     if (notes.length === 1 && child(notes[0], 'rest')?.getAttribute('measure') === 'yes') {
         return fullMeasureRests(capacity)
     }
-    for (const node of Array.from(measure.children)) {
-        if (['backup', 'forward'].includes(node.localName)) {
-            throw new Error('Multiple voices and offsets are not supported yet')
-        }
-        if (node.localName !== 'note') continue
-        if (value(node, 'voice') && value(node, 'voice') !== '1') {
-            throw new Error('Multiple voices are not supported yet')
-        }
+    for (const node of notes) {
         const note = parseNote(node, divisions)
         if (note.chord) {
             const previous = beats.at(-1)
@@ -86,7 +137,11 @@ function readMeasure(measure, divisions, signature) {
                 throw new Error('Multiple notes on the same string cannot form a chord')
             }
             notes.push({ string: note.string, fret: note.fret })
-            beats[beats.length - 1] = { duration: note.duration, ...(note.dotted ? { dotted: true } : {}), ...(note.tuplet === 3 ? { tuplet: 3 } : {}), notes }
+            if (Boolean(previous.palmMute) !== Boolean(note.palmMute)) {
+                throw new Error('Mixed palm mute within a chord is not supported yet')
+            }
+            const { string, fret, ...rhythm } = previous
+            beats[beats.length - 1] = { ...rhythm, notes }
         } else {
             const { chord, ...single } = note
             beats.push(single)
@@ -125,6 +180,7 @@ export function parseMusicXmlTab(xmlText, parser = null) {
     const parts = children(score, 'part')
     const part = parts.find(item => Array.from(item.getElementsByTagName('fret')).length > 0)
     if (!part) throw new Error('No tablature with string and fret information was found')
+    const staff = tablatureStaff(part)
     let numerator = 4
     let denominator = 4
     let divisions = 1
@@ -151,7 +207,7 @@ export function parseMusicXmlTab(xmlText, parser = null) {
         const signature = { numerator, denominator }
         let measureBeats
         try {
-            measureBeats = readMeasure(measure, divisions, signature)
+            measureBeats = readMeasure(measure, divisions, signature, staff)
         } catch (error) {
             warnings.push('Measure ' + (i + 1) + ': ' + error.message)
             active = null
