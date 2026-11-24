@@ -95,12 +95,14 @@ export function tabEditor() {
     prototypeScoreStarted: false,
     prototypePlayheadFrame: null,
     prototypePlayheadClock: null,
+    prototypeBeatClock: null,
     stopPrototypePlayheadAnimation() {
         if (this.prototypePlayheadFrame !== null) {
             cancelAnimationFrame(this.prototypePlayheadFrame)
             this.prototypePlayheadFrame = null
         }
         this.prototypePlayheadClock = null
+        this.prototypeBeatClock = null
         this.$refs.tabEditorDialog?.querySelectorAll('.tab-editor__playhead').forEach(el => {
             el.classList.remove('is-visible')
         })
@@ -122,6 +124,10 @@ export function tabEditor() {
             }
             remaining -= units[i]
         }
+        this.paintPrototypePlayheadBeat(index, fraction)
+    },
+    paintPrototypePlayheadBeat(index, fraction = 0) {
+        if (!this.prototypeScoreStarted || this.tabFullMusicXml) return
         const grids = this.$refs.tabEditorScore?.querySelectorAll('.tab-editor__grid')
         grids?.forEach(grid => {
             const cursor = grid.querySelector('.tab-editor__playhead')
@@ -133,8 +139,9 @@ export function tabEditor() {
             }
             const next = grid.querySelector(`[data-playhead-beat="${index + 1}"]`)
             const startX = cell.offsetLeft
-            const endX = next?.offsetLeft ?? startX
-            cursor.style.transform = `translate3d(${startX + (endX - startX) * fraction}px, 0, 0)`
+            // The last note has no following cell, but it still owns one column.
+            const endX = next?.offsetLeft ?? (startX + cell.offsetWidth)
+            cursor.style.transform = `translate3d(${startX + (endX - startX) * Math.max(0, Math.min(1, fraction))}px, 0, 0)`
             cursor.classList.add('is-visible')
         })
     },
@@ -143,11 +150,19 @@ export function tabEditor() {
         const frame = now => {
             this.prototypePlayheadFrame = null
             if (!this.prototypePlaying || this.tabFullMusicXml) return
-            const clock = this.prototypePlayheadClock
-            if (clock && clock.duration > 0) {
-                const elapsed = Math.max(0, now - clock.at)
-                const position = Math.min(clock.duration, clock.current + elapsed)
-                this.paintPrototypePlayhead(position / clock.duration)
+            const beatClock = this.prototypeBeatClock
+            if (beatClock && beatClock.duration > 0) {
+                // Each beat notification is an audio-timed anchor. This avoids
+                // stretching three notes over a four-beat bar's trailing rest.
+                const fraction = (now - beatClock.at) / beatClock.duration
+                this.paintPrototypePlayheadBeat(beatClock.index, fraction)
+            } else {
+                const clock = this.prototypePlayheadClock
+                if (clock && clock.duration > 0) {
+                    const elapsed = Math.max(0, now - clock.at)
+                    const position = Math.min(clock.duration, clock.current + elapsed)
+                    this.paintPrototypePlayhead(position / clock.duration)
+                }
             }
             this.prototypePlayheadFrame = requestAnimationFrame(frame)
         }
@@ -183,6 +198,18 @@ export function tabEditor() {
         const beat = measures[measureIndex]?.notes?.[beatIndex]
         const next = Number.isInteger(beat?.index) ? beat.index : null
         if (this.prototypePlayingBeatIndex !== next) this.prototypePlayingBeatIndex = next
+        if (next !== null && this.prototypeScoreStarted) {
+            const beatUnits = tabBeatUnits(this.tabDraft.beats[next])
+            const bpm = Number(this.stepForm.bpm)
+            if (Number.isFinite(bpm) && bpm > 0) {
+                this.prototypeBeatClock = {
+                    index: next,
+                    at: performance.now(),
+                    duration: beatUnits * 15000 / bpm,
+                }
+                this.paintPrototypePlayheadBeat(next, 0)
+            }
+        }
     },
     finishPrototypePlayback(event) {
         if (event.detail?.element !== this.$refs.tabEditorPreview) return
@@ -197,7 +224,22 @@ export function tabEditor() {
         this.prototypePlayheadClock = {
             current: this.prototypeCurrentMs, duration: this.prototypeDurationMs, at: performance.now(),
         }
-        this.paintPrototypePlayhead(this.prototypeProgress / 100)
+        // Position on the actual starting beat if alphaTab emitted it before
+        // the score-start signal; otherwise use the seek/progress fallback.
+        if (Number.isInteger(this.prototypePlayingBeatIndex)) {
+            const index = this.prototypePlayingBeatIndex
+            const bpm = Number(this.stepForm.bpm)
+            if (Number.isFinite(bpm) && bpm > 0 && this.tabDraft.beats[index]) {
+                this.prototypeBeatClock = {
+                    index,
+                    at: performance.now(),
+                    duration: tabBeatUnits(this.tabDraft.beats[index]) * 15000 / bpm,
+                }
+                this.paintPrototypePlayheadBeat(index, 0)
+            }
+        } else {
+            this.paintPrototypePlayhead(this.prototypeProgress / 100)
+        }
         if (this.prototypePlaying) this.startPrototypePlayheadAnimation()
     },
     prototypeProgress: 0,
@@ -225,6 +267,7 @@ export function tabEditor() {
         this.prototypeCurrentMs = percent / 100 * this.prototypeDurationMs
         this.showPrototypeBeatAtPercent(percent)
         this.prototypePlayheadClock = { current: this.prototypeCurrentMs, duration: this.prototypeDurationMs, at: performance.now() }
+        this.prototypeBeatClock = null
         if (this.prototypeScoreStarted) this.paintPrototypePlayhead(percent / 100)
     },
     seekPrototypePlayback(value) {
@@ -263,6 +306,7 @@ export function tabEditor() {
             if (this.prototypePlayheadFrame !== null) cancelAnimationFrame(this.prototypePlayheadFrame)
             this.prototypePlayheadFrame = null
             this.prototypePlayheadClock = null
+            this.prototypeBeatClock = null
         }
     },
     prototypePlaybackError(event) {
