@@ -229,6 +229,14 @@
                         <button type="button" class="tab-editor__palette-tool" @click="addTabEditorRest()" title="Insert or replace with a rest">
                             <span aria-hidden="true">𝄽</span> Rest
                         </button>
+
+                        <button type="button" class="tab-editor__palette-tool"
+                            :class="{ 'is-active': Boolean(tabDraft.beats[tabSelectedIndex]?.legato) }"
+                            :aria-pressed="Boolean(tabDraft.beats[tabSelectedIndex]?.legato).toString()"
+                            @click="toggleTabEditorLegato()"
+                            title="Connect the selected note to the following note on the same string (hammer-on or pull-off)">
+                            <span aria-hidden="true">H/P</span> Legato
+                        </button>
                     </div>
                 </aside>
 
@@ -260,8 +268,9 @@
                                                 @pointerdown="!column.insertion && startTabDrag(column.index, stringIndex + 1, $event)"
                                                 @pointerenter="!column.insertion && extendTabDrag(column.index)"
                                                 @click="column.insertion ? selectTabEditorInsertion(column.index, stringIndex + 1) : clickTabCell(column.index, stringIndex + 1, $event); $refs.tabEditorScoreFocus?.focus()"
-                                                x-text="column.insertion ? (stringIndex + 1 === tabDraft.string ? '+' : '·') : (tabEditorNoteAt(column.index, stringIndex + 1) ?? '·')"
                                             >
+                                                <span x-text="column.insertion ? (stringIndex + 1 === tabDraft.string ? '+' : '·') : (tabEditorNoteAt(column.index, stringIndex + 1) ?? '·')"></span>
+                                                <span class="tab-editor__legato-mark" x-show="!column.insertion && tabEditorLegatoAt(column.index, stringIndex + 1)" x-text="tabEditorLegatoAt(column.index, stringIndex + 1)" aria-hidden="true"></span>
                                             </button>
                                         </template>
                                     </div>
