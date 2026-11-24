@@ -788,6 +788,17 @@
                 align-items: stretch;
                 gap: $size-4;
 
+                // One divider spanning both columns between playback and settings.
+                &::before {
+                    content: "";
+                    grid-column: 1 / -1;
+                    grid-row: 2;
+                    align-self: start;
+                    border-block-start: var(--border);
+                    transform: translateY(-$size-2);
+                    pointer-events: none;
+                }
+
                 > * {
                     min-width: 0;
                     margin-block-start: 0;
