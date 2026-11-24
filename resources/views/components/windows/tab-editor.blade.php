@@ -108,31 +108,6 @@
                 x-data="{ infoOpen: false, shortcutsOpen: false }"
             >
                 <div class="tab-editor__utility-row">
-                    <div class="tab-editor__quick-settings">
-                        <label class="tab-editor__field">
-                            <span>BPM</span>
-                            <input type="number" min="30" max="400" x-model.number="stepForm.bpm">
-                        </label>
-
-                        <div class="tab-editor__field">
-                            <span>Time signature</span>
-                            <div class="tab-editor__time-signature">
-                                <select x-model.number="stepForm.time_signature_numerator" aria-label="Beats per measure">
-                                    @foreach (range(1, 16) as $numerator)
-                                        <option value="{{ $numerator }}">{{ $numerator }}</option>
-                                    @endforeach
-                                </select>
-                                <span aria-hidden="true">/</span>
-                                <select x-model.number="stepForm.time_signature_denominator" aria-label="Beat note value">
-                                    <option value="2">2</option>
-                                    <option value="4">4</option>
-                                    <option value="8">8</option>
-                                    <option value="16">16</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-
                     <div class="tab-editor__utility-actions">
                         <button class="button" data-type="outline" type="button"
                             aria-controls="tab-editor-info-panel"
@@ -224,7 +199,32 @@
                 x-init="$watch('tabDraft', () => $nextTick(() => renderTabScorePreview())); $watch('stepForm.bpm', () => $nextTick(() => renderTabScorePreview())); $watch('stepForm.time_signature_numerator', () => $nextTick(() => renderTabScorePreview())); $watch('stepForm.time_signature_denominator', () => $nextTick(() => renderTabScorePreview())); $watch('tabSelectedIndex', () => $nextTick(() => syncTabEditorScoreCaret())); $watch('tabSelectedIndices', () => $nextTick(() => syncTabEditorScoreCaret())); $watch('tabDraft.string', () => $nextTick(() => syncTabEditorScoreCaret())); $watch('tabInsertAtBar', () => $nextTick(() => syncTabEditorScoreCaret()))"
                 @keydown="handleTabEditorKey($event)"
             >
-                <div class="tab-editor__edit-toolbar" x-show="!tabFullMusicXml" x-cloak role="group" aria-label="Editing tools">
+                <div class="tab-editor__edit-toolbar" role="group" aria-label="Score controls">
+                    <div class="tab-editor__quick-settings">
+                        <label class="tab-editor__field">
+                            <span>BPM</span>
+                            <input type="number" min="30" max="400" x-model.number="stepForm.bpm">
+                        </label>
+
+                        <div class="tab-editor__field">
+                            <span>Time signature</span>
+                            <div class="tab-editor__time-signature">
+                                <select x-model.number="stepForm.time_signature_numerator" aria-label="Beats per measure">
+                                    @foreach (range(1, 16) as $numerator)
+                                        <option value="{{ $numerator }}">{{ $numerator }}</option>
+                                    @endforeach
+                                </select>
+                                <span aria-hidden="true">/</span>
+                                <select x-model.number="stepForm.time_signature_denominator" aria-label="Beat note value">
+                                    <option value="2">2</option>
+                                    <option value="4">4</option>
+                                    <option value="8">8</option>
+                                    <option value="16">16</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-editor__edit-actions" x-show="!tabFullMusicXml" x-cloak role="group" aria-label="Editing tools">
                     <div class="tab-editor__edit-group" role="group" aria-label="History">
                         <button type="button" class="tab-editor__edit-tool" aria-label="Undo" title="Undo (Ctrl/Cmd + Z)"
                             :disabled="prototypePlaying || prototypePlaybackLoading || !tabUndoHistory.length" @click="undoTabEditorChange(); $nextTick(() => $refs.tabEditorScoreKeyboard?.focus({ preventScroll: true }))">
@@ -258,6 +258,7 @@
                             :disabled="prototypePlaying || prototypePlaybackLoading || !tabDraft.beats.length" @click="deleteTabEditorMeasure(); $nextTick(() => $refs.tabEditorScoreKeyboard?.focus({ preventScroll: true }))">
                             <x-lucide-trash-2 width="20" height="20" aria-hidden="true" />
                         </button>
+                    </div>
                     </div>
                 </div>
 
