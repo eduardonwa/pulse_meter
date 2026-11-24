@@ -148,12 +148,12 @@ export function tablatureEditorMethods() {
             }
         },
 
-        prepareTabEditorScoreInsertion() {
+        prepareTabEditorScoreInsertion(before = false) {
             if (this.tabFullMusicXml) return;
             this.finishPendingTabDigit(false);
             // An insertion cursor is not a note. Keep the current rhythm and
             // let addTabEditorNote/addTabEditorRest reuse the existing model.
-            const afterSelected = this.tabSelectedIndices.length > 0;
+            const afterSelected = !before && this.tabSelectedIndices.length > 0;
             const index = Math.min(this.tabDraft.beats.length,
                 this.tabSelectedIndex + (afterSelected ? 1 : 0));
             this.tabSelectedIndex = index;
@@ -613,7 +613,7 @@ export function tablatureEditorMethods() {
             if (!event.ctrlKey && !event.metaKey &&
                 !event.altKey && !event.repeat && techniqueKey === 'i') {
                 event.preventDefault();
-                this.prepareTabEditorScoreInsertion();
+                this.prepareTabEditorScoreInsertion(event.shiftKey);
                 return;
             }
             if (!event.ctrlKey && !event.metaKey && !event.altKey && !event.repeat &&
