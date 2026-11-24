@@ -514,6 +514,13 @@ export function tablatureEditorMethods() {
             // Score cells are buttons for accessibility, but they must still
             // accept Delete, Backspace and the existing tab keyboard controls.
             if (tag === 'BUTTON' && !event.target?.classList?.contains('tab-editor__cell')) return;
+            const techniqueKey = event.key.toLowerCase();
+            if (!event.ctrlKey && !event.metaKey && !event.altKey && !event.repeat &&
+                (techniqueKey === 'h' || techniqueKey === 'p')) {
+                event.preventDefault();
+                this.toggleTabEditorLegato(techniqueKey.toUpperCase());
+                return;
+            }
             if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
                 event.preventDefault();
                 const delta = event.key === 'ArrowUp' ? -1 : 1;
