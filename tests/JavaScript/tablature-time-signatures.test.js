@@ -2,6 +2,8 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import {
     createTabDraft,
+    copyTabFragment,
+    pasteTabFragment,
     layoutTabMeasures,
     serializeTabDraft,
     parseTabDraft,
@@ -226,3 +228,42 @@ test('tie and palm mute round-trip on the same destination note', () => {
     assert.ok(alphaTex.includes('4.6{pm t}'))
     assert.deepEqual(parseTabDraft(alphaTex).draft.beats, draft.beats)
 })
+
+test('clipboard preserves chords, rhythms, techniques and measure breaks', () => {
+    const draft = { ...createTabDraft(), breaks: [2], beats: [
+        { fret: 5, string: 6, duration: 2, palmMute: true },
+        { fret: 5, string: 6, duration: 2, tie: true },
+        { notes: [{ fret: 7, string: 5 }, { fret: 5, string: 6 }], duration: 8, dotted: true },
+        { rest: true, duration: 16 },
+    ] };
+    const fragment = copyTabFragment(draft, [0, 1, 2, 3]);
+    const destination = { ...createTabDraft(), beats: [{ rest: true, duration: 1 }] };
+    const result = pasteTabFragment(destination, 0, fragment);
+    assert.deepEqual(result.draft.beats, draft.beats);
+    assert.deepEqual(result.draft.breaks, [2]);
+    assert.equal(result.count, 4);
+    assert.deepEqual(parseTabDraft(serializeTabDraft(result.draft)).draft.beats, draft.beats);
+});
+
+test('partial clipboard inserts without overwriting and splits overflowing measures', () => {
+    const draft = { ...createTabDraft(), beats: [
+        { fret: 3, string: 6, duration: 2 },
+        { fret: 5, string: 6, duration: 2 },
+    ] };
+    const fragment = copyTabFragment(draft, [0]);
+    const result = pasteTabFragment(draft, 1, fragment);
+    assert.deepEqual(result.draft.beats.map(beat => beat.fret), [3, 3, 5]);
+    assert.deepEqual(result.draft.breaks, [2]);
+    assert.equal(result.start, 1);
+});
+
+test('clipboard does not retain ties or legato to unselected notes', () => {
+    const draft = { ...createTabDraft(), beats: [
+        { fret: 3, string: 6, duration: 8, legato: true },
+        { fret: 5, string: 6, duration: 8 },
+        { fret: 5, string: 6, duration: 8, tie: true },
+    ] };
+    const fragment = copyTabFragment(draft, [0, 2]);
+    assert.equal(fragment[0].beats[0].legato, undefined);
+    assert.equal(fragment[0].beats[1].tie, undefined);
+});
