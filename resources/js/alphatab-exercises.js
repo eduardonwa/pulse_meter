@@ -41,9 +41,15 @@ function updateEditorScoreCaret(element, api) {
         element.appendChild(caret)
     }
     caret.classList.toggle('is-insertion', Boolean(insertion))
-    caret.style.left = `${rect.x + (insertion ? 0 : rect.w / 2)}px`
-    caret.style.top = `${rect.y}px`
-    caret.style.height = `${Math.max(rect.h, noteBounds ? 18 : 26)}px`
+    // Highlight a readable tab cell rather than drawing another playhead.
+    // Center around the selected note head; empty-string selections use the
+    // beat's visual bounds so the caret remains visible.
+    const width = Math.max(25, Math.min(40, rect.w + 12))
+    const height = Math.max(24, Math.min(34, rect.h + 8))
+    caret.style.left = `${rect.x + (insertion ? rect.w : rect.w / 2)}px`
+    caret.style.top = `${rect.y + rect.h / 2}px`
+    caret.style.width = `${width}px`
+    caret.style.height = `${height}px`
 }
 
 // Track the actual score loaded into an alphaTab instance, not just its dataset.
