@@ -72,6 +72,87 @@ export function layoutTabMeasures(draft, numerator = 4, denominator = 4) {
     return measures;
 }
 
+// The clipboard contains only musical data; no renderer or selection state.
+export function copyTabFragment(draft, indices, numerator = 4, denominator = 4) {
+    const selected = new Set(indices);
+    return layoutTabMeasures(draft, numerator, denominator).map(measure => {
+        const beats = measure.notes.filter(note => selected.has(note.index)).map(({ index, ...note }) => {
+            const beat = JSON.parse(JSON.stringify(note));
+            if (!selected.has(index - 1)) delete beat.tie;
+            if (!selected.has(index + 1)) delete beat.legato;
+            return beat;
+        });
+        return { beats, fullRest: isTabFullMeasureRest(measure.notes),
+            wholeMeasure: beats.length === measure.notes.length };
+    }).filter(group => group.beats.length);
+}
+
+// Insert rather than overwrite existing notes. A selected empty measure is
+// replaced, and original barlines outside the insertion remain unchanged.
+export function pasteTabFragment(draft, index, fragment, numerator = 4, denominator = 4, insertion = false) {
+    if (!fragment.length) return null;
+    const measures = layoutTabMeasures(draft, numerator, denominator);
+    const capacity = Number(numerator) * 16 / Number(denominator);
+    const groups = measures.map(measure => measure.notes.map(({ index: _, ...beat }) => beat));
+    const previous = insertion && index > 0
+        ? measures.findIndex(measure => measure.endIndex === index - 1) : -1;
+    const current = measures.findIndex(measure => measure.notes.some(note => note.index === index));
+    const firstGroup = fragment[0];
+    const firstSize = firstGroup.fullRest ? capacity : tabBeatUnits(firstGroup.beats[0]);
+    const usePrevious = previous >= 0 && !firstGroup.wholeMeasure &&
+        measures[previous].used + firstSize <= capacity + 1e-7;
+    const target = usePrevious ? previous : current >= 0 ? current : groups.length;
+    const original = groups[target] ?? [];
+    const offset = usePrevious ? original.length : current >= 0 ? index - measures[current].notes[0].index : 0;
+    const replaceRest = !insertion && isTabFullMeasureRest(original);
+    const prefix = replaceRest ? [] : original.slice(0, offset);
+    const suffix = replaceRest ? [] : original.slice(offset);
+    const packed = [];
+    let bar = [], used = 0;
+    const flush = () => {
+        if (bar.length) packed.push(bar);
+        bar = [];
+        used = 0;
+    };
+    const append = (beat, fullRest = false) => {
+        const size = fullRest ? capacity : tabBeatUnits(beat);
+        if (size > capacity + 1e-7) throw new RangeError('A copied note is longer than the destination measure.');
+        if (fullRest || used + size > capacity + 1e-7) flush();
+        bar.push(beat);
+        used += size;
+        if (fullRest || used >= capacity - 1e-7) flush();
+    };
+    prefix.forEach(beat => append(beat));
+    const start = groups.slice(0, target).reduce((total, group) => total + group.length, 0) + prefix.length;
+    const copied = JSON.parse(JSON.stringify(fragment));
+    let count = 0;
+    copied.forEach((group, i) => {
+        if (i > 0 || group.wholeMeasure) flush();
+        group.beats.forEach(beat => append(beat, group.fullRest));
+        count += group.beats.length;
+        if (group.wholeMeasure) flush();
+    });
+    suffix.forEach(beat => append(beat, isTabFullMeasureRest(original)));
+    flush();
+    groups.splice(target, original.length ? 1 : 0, ...packed);
+    const beats = [], breaks = [];
+    for (const group of groups) {
+        if (beats.length) breaks.push(beats.length);
+        beats.push(...group);
+    }
+    // Inserting changes adjacency at both ends. Do not create unintended
+    // links from existing notes into the pasted material.
+    if (start > 0 && beats[start - 1].legato) {
+        beats[start - 1] = { ...beats[start - 1] };
+        delete beats[start - 1].legato;
+    }
+    if (beats[start + count]?.tie) {
+        beats[start + count] = { ...beats[start + count] };
+        delete beats[start + count].tie;
+    }
+    return { draft: { ...draft, beats: normalizeTabTies(normalizeTabLegato(beats)), breaks }, start, count };
+}
+
 export function shiftTabBreaks(breaks, index, delta) {
     return [...new Set(breaks.map(position => position >= index ? position + delta : position)
         .filter(position => position > 0))].sort((a, b) => a - b);
