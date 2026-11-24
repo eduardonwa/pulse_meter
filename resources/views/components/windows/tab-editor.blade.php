@@ -3,10 +3,10 @@
     @cancel.prevent="closeNewTabEditor()" @close="tabEditorOpen = false"
     @alphatab:playback-state.window="syncPrototypePlayback($event)"
     @alphatab:playback-position.window="syncPrototypePlaybackPosition($event)"
-    @alphatab:played-beat.window="syncPrototypePlayedBeat($event)"
-    @alphatab:score-started.window="startPrototypeScorePlayhead($event)"
     @alphatab:playback-finished.window="finishPrototypePlayback($event)"
     @alphatab:load-error.window="prototypePlaybackError($event)"
+    @alphatab:editor-select.window="selectTabEditorScoreBeat($event)"
+    @alphatab:rendered.window="if ($event.detail?.element === $refs.tabEditorPreview) syncTabEditorScoreCaret()"
 >
     {{-- Display toasts inside the modal's top layer while it is open. --}}
     <div class="toaster" data-align="bottom" data-pos="right" aria-live="polite" aria-atomic="true">
@@ -41,14 +41,104 @@
                 </div>
             </header>
 
-            {{-- import --}}
-            <section class="tab-editor__import-bar" aria-label="Import options">
-                <label class="button" data-type="secondary" data-variant="outline">
-                    Import MusicXML
-                    <input type="file" accept=".xml,.musicxml,application/xml,text/xml"
-                        @change="importPrototypeMusicXml($event)" class="sr-only">
-                </label>
 
+
+            {{-- Quick settings and additional exercise information --}}
+            <section class="tab-editor__utility-bar" aria-label="Exercise information"
+                x-data="{ infoOpen: false, shortcutsOpen: false }"
+            >
+                <div class="tab-editor__utility-row">
+                    <div class="tab-editor__utility-actions">
+
+                        <button class="button" data-type="outline" type="button"
+                            aria-controls="tab-editor-info-panel"
+                            :aria-expanded="infoOpen.toString()"
+                            @click="infoOpen = !infoOpen; shortcutsOpen = false"
+                        >
+                            <x-lucide-info /> Info <x-lucide-chevron-down width="16" height="16" />
+                        </button>
+
+                        <div class="tab-editor__shortcuts">
+                            <button class="button" data-type="outline" type="button"
+                                aria-controls="tab-editor-shortcuts-panel"
+                                :aria-expanded="shortcutsOpen.toString()"
+                                @click="shortcutsOpen = !shortcutsOpen"
+                                @keydown.escape="shortcutsOpen = false"
+                            >
+                                <x-lucide-keyboard width="18" height="18" /> Shortcuts
+                            </button>
+
+                            <div id="tab-editor-shortcuts-panel" class="tab-editor__shortcuts-popover"
+                                x-show="shortcutsOpen" x-cloak @click.outside="shortcutsOpen = false"
+                                @keydown.escape.stop="shortcutsOpen = false"
+                            >
+                                <strong>Keyboard shortcuts</strong>
+                                <section class="tab-editor__shortcuts-group">
+                                    <h4>Navigation &amp; selection</h4>
+                                    <dl>
+                                        <div><dt>Navigate notes</dt><dd>← / →</dd></div>
+                                        <div><dt>Change string</dt><dd>↑ / ↓</dd></div>
+                                        <div><dt>Previous / next measure</dt><dd>Ctrl/Cmd + Shift + ← / →</dd></div>
+                                        <div><dt>Extend selection</dt><dd>Shift + ← / →</dd></div>
+                                    </dl>
+                                </section>
+                                <section class="tab-editor__shortcuts-group">
+                                    <h4>Note &amp; rhythm entry</h4>
+                                    <dl>
+                                        <div><dt>Enter fret</dt><dd>0-9</dd></div>
+                                        <div><dt>Insert after</dt><dd>I</dd></div>
+                                        <div><dt>Insert before</dt><dd>Shift + I</dd></div>
+                                        <div><dt>Rest</dt><dd>R</dd></div>
+                                        <div><dt>Change duration</dt><dd>+ / -</dd></div>
+                                    </dl>
+                                </section>
+                                <section class="tab-editor__shortcuts-group">
+                                    <h4>Techniques</h4>
+                                    <dl>
+                                        <div><dt>Hammer-on</dt><dd>H</dd></div>
+                                        <div><dt>Pull-off</dt><dd>P</dd></div>
+                                        <div><dt>Palm mute</dt><dd>M</dd></div>
+                                        <div><dt>Tie</dt><dd>L</dd></div>
+                                    </dl>
+                                </section>
+                                <section class="tab-editor__shortcuts-group">
+                                    <h4>Editing</h4>
+                                    <dl>
+                                        <div><dt>Copy / cut / paste</dt><dd>Ctrl/Cmd + C / X / V</dd></div>
+                                        <div><dt>Clear note</dt><dd>Backspace</dd></div>
+                                        <div><dt>Delete position</dt><dd>Delete</dd></div>
+                                        <div><dt>Undo</dt><dd>Ctrl/Cmd + Z</dd></div>
+                                        <div><dt>Redo</dt><dd>Ctrl/Cmd + Shift + Z</dd></div>
+                                    </dl>
+                                </section>
+                            </div>
+                        </div>
+                    </div>
+                    <label class="button" data-type="secondary" data-variant="outline">
+                        Import MusicXML
+                        <input type="file" accept=".xml,.musicxml,application/xml,text/xml"
+                            @change="importPrototypeMusicXml($event)" class="sr-only">
+                    </label>
+                </div>
+
+                <div id="tab-editor-info-panel" class="tab-editor__info-panel"
+                    x-show="infoOpen" x-cloak
+                >
+                    <label class="tab-editor__field">
+                        <span>Exercise name</span>
+                        <input type="text" x-model="stepForm.name" maxlength="255">
+                    </label>
+
+                    <label class="tab-editor__field">
+                        <span>Instrument</span>
+                        <select x-model.number="tabDraft.instrument">
+                            <option value="24">Nylon guitar</option>
+                            <option value="25">Steel guitar</option>
+                            <option value="26">Jazz guitar</option>
+                            <option value="27">Clean guitar</option>
+                        </select>
+                    </label>
+                </div>
                 <div class="tab-editor__import-panel" x-show="prototypeMusicXmlFullSource" x-cloak role="region" aria-label="MusicXML import result">
                     <div class="tab-editor__import-result">
                         <strong class="verdict" x-text="canImportPrototypeMusicXmlForEditing() ? 'Ready to edit' : 'Playback only'"></strong>
@@ -103,11 +193,12 @@
                 </div>
             </section>
 
-            {{-- Quick settings and additional exercise information --}}
-            <section class="tab-editor__utility-bar" aria-label="Exercise information"
-                x-data="{ infoOpen: false, shortcutsOpen: false }"
+            {{-- main editing area --}}
+            <section class="tab-editor__workspace" :class="{ 'is-imported-score': Boolean(tabFullMusicXml) }" aria-label="Tablature workspace"
+                x-init="$watch('tabDraft', () => $nextTick(() => renderTabScorePreview())); $watch('stepForm.bpm', () => $nextTick(() => renderTabScorePreview())); $watch('stepForm.time_signature_numerator', () => $nextTick(() => renderTabScorePreview())); $watch('stepForm.time_signature_denominator', () => $nextTick(() => renderTabScorePreview())); $watch('tabSelectedIndex', () => $nextTick(() => syncTabEditorScoreCaret())); $watch('tabSelectedIndices', () => $nextTick(() => syncTabEditorScoreCaret())); $watch('tabDraft.string', () => $nextTick(() => syncTabEditorScoreCaret())); $watch('tabInsertAtBar', () => $nextTick(() => syncTabEditorScoreCaret()))"
+                @keydown="handleTabEditorKey($event)"
             >
-                <div class="tab-editor__utility-row">
+                <div class="tab-editor__edit-toolbar" role="group" aria-label="Score controls">
                     <div class="tab-editor__quick-settings">
                         <label class="tab-editor__field">
                             <span>BPM</span>
@@ -132,77 +223,45 @@
                             </div>
                         </div>
                     </div>
-
-                    <div class="tab-editor__utility-actions">
-                        <button class="button" data-type="outline" type="button"
-                            aria-controls="tab-editor-info-panel"
-                            :aria-expanded="infoOpen.toString()"
-                            @click="infoOpen = !infoOpen; shortcutsOpen = false"
-                        >
-                            <x-lucide-info /> Info <x-lucide-chevron-down width="16" height="16" />
+                    <div class="tab-editor__edit-actions" x-show="!tabFullMusicXml" x-cloak role="group" aria-label="Editing tools">
+                    <div class="tab-editor__edit-group" role="group" aria-label="History">
+                        <button type="button" class="tab-editor__edit-tool" aria-label="Undo" title="Undo (Ctrl/Cmd + Z)"
+                            :disabled="prototypePlaying || prototypePlaybackLoading || !tabUndoHistory.length" @click="undoTabEditorChange(); $nextTick(() => $refs.tabEditorScoreKeyboard?.focus({ preventScroll: true }))">
+                            <x-lucide-undo-2 width="20" height="20" aria-hidden="true" />
                         </button>
-
-                        <div class="tab-editor__shortcuts">
-                            <button class="button" data-type="outline" type="button"
-                                aria-controls="tab-editor-shortcuts-panel"
-                                :aria-expanded="shortcutsOpen.toString()"
-                                @click="shortcutsOpen = !shortcutsOpen"
-                                @keydown.escape="shortcutsOpen = false"
-                            >
-                                <x-lucide-keyboard width="18" height="18" /> Shortcuts
-                            </button>
-
-                            <div id="tab-editor-shortcuts-panel" class="tab-editor__shortcuts-popover"
-                                x-show="shortcutsOpen" x-cloak @click.outside="shortcutsOpen = false"
-                                @keydown.escape.stop="shortcutsOpen = false"
-                            >
-                                <strong>Keyboard shortcuts</strong>
-                                <dl>
-                                    <div><dt>Enter fret</dt><dd>0-9</dd></div>
-                                    <div><dt>Navigate notes</dt><dd>← / →</dd></div>
-                                    <div><dt>Change string</dt><dd>↑ / ↓</dd></div>
-                                    <div><dt>Change duration</dt><dd>+ / -</dd></div>
-                                    <div><dt>Hammer-on</dt><dd>H</dd></div>
-                                    <div><dt>Pull-off</dt><dd>P</dd></div>
-                                    <div><dt>Extend selection</dt><dd>Shift + ← / →</dd></div>
-                                    <div><dt>Undo</dt><dd>Ctrl/Cmd + Z</dd></div>
-                                    <div><dt>Redo</dt><dd>Ctrl/Cmd + Shift + Z</dd></div>
-                                    <div><dt>Clear note</dt><dd>Backspace</dd></div>
-                                    <div><dt>Delete position</dt><dd>Delete</dd></div>
-                                </dl>
-                            </div>
-                        </div>
+                        <button type="button" class="tab-editor__edit-tool" aria-label="Redo" title="Redo (Ctrl/Cmd + Shift + Z)"
+                            :disabled="prototypePlaying || prototypePlaybackLoading || !tabRedoHistory.length" @click="redoTabEditorChange(); $nextTick(() => $refs.tabEditorScoreKeyboard?.focus({ preventScroll: true }))">
+                            <x-lucide-redo-2 width="20" height="20" aria-hidden="true" />
+                        </button>
+                    </div>
+                    <div class="tab-editor__edit-group" role="group" aria-label="Clipboard">
+                        <button type="button" class="tab-editor__edit-tool" aria-label="Cut" title="Cut (Ctrl/Cmd + X)"
+                            :disabled="prototypePlaying || prototypePlaybackLoading || tabInsertAtBar || tabSelectedIndex >= tabDraft.beats.length" @click="copyTabEditorSelection(true); $nextTick(() => $refs.tabEditorScoreKeyboard?.focus({ preventScroll: true }))">
+                            <x-lucide-scissors width="20" height="20" aria-hidden="true" />
+                        </button>
+                        <button type="button" class="tab-editor__edit-tool" aria-label="Copy" title="Copy (Ctrl/Cmd + C)"
+                            :disabled="prototypePlaying || prototypePlaybackLoading || tabInsertAtBar || tabSelectedIndex >= tabDraft.beats.length" @click="copyTabEditorSelection(); $nextTick(() => $refs.tabEditorScoreKeyboard?.focus({ preventScroll: true }))">
+                            <x-lucide-copy width="20" height="20" aria-hidden="true" />
+                        </button>
+                        <button type="button" class="tab-editor__edit-tool" aria-label="Paste" title="Paste (Ctrl/Cmd + V)"
+                            :disabled="prototypePlaying || prototypePlaybackLoading || !tabClipboard.length" @click="pasteTabEditorSelection(); $nextTick(() => $refs.tabEditorScoreKeyboard?.focus({ preventScroll: true }))">
+                            <x-lucide-clipboard-paste width="20" height="20" aria-hidden="true" />
+                        </button>
+                    </div>
+                    <div class="tab-editor__edit-group" role="group" aria-label="Structure">
+                        <button type="button" class="tab-editor__edit-tool" aria-label="Insert position" title="Insert after (I) · Insert before (Shift + I)"
+                            :disabled="prototypePlaying || prototypePlaybackLoading" @click="prepareTabEditorScoreInsertion(); $nextTick(() => $refs.tabEditorScoreKeyboard?.focus({ preventScroll: true }))">
+                            <x-lucide-list-plus width="20" height="20" aria-hidden="true" />
+                        </button>
+                        <button type="button" class="tab-editor__edit-tool" aria-label="Delete measure" title="Delete measure"
+                            :disabled="prototypePlaying || prototypePlaybackLoading || !tabDraft.beats.length" @click="deleteTabEditorMeasure(); $nextTick(() => $refs.tabEditorScoreKeyboard?.focus({ preventScroll: true }))">
+                            <x-lucide-trash-2 width="20" height="20" aria-hidden="true" />
+                        </button>
+                    </div>
                     </div>
                 </div>
 
-                <div id="tab-editor-info-panel" class="tab-editor__info-panel"
-                    x-show="infoOpen" x-cloak
-                >
-                    <label class="tab-editor__field">
-                        <span>Exercise name</span>
-                        <input type="text" x-model="stepForm.name" maxlength="255">
-                    </label>
-
-                    <label class="tab-editor__field">
-                        <span>Instrument</span>
-                        <select x-model.number="tabDraft.instrument">
-                            <option value="24">Nylon guitar</option>
-                            <option value="25">Steel guitar</option>
-                            <option value="26">Jazz guitar</option>
-                            <option value="27">Clean guitar</option>
-                        </select>
-                    </label>
-                </div>
-            </section>
-
-            {{-- main editing area --}}
-            <section class="tab-editor__workspace" x-show="!tabFullMusicXml" aria-label="Tablature workspace" x-init="$nextTick(() => updateTabEditorWidth())"
-                @keydown="handleTabEditorKey($event)"
-                @resize.window="updateTabEditorWidth()"
-                @pointerup.window="endTabDrag()"
-                @pointercancel.window="endTabDrag()"
-            >
-                <aside class="tab-editor__rhythm" aria-label="Tablature tools">
+                <aside class="tab-editor__rhythm" x-show="!tabFullMusicXml" aria-label="Tablature tools">
                     <details class="tab-editor__palette-section" open>
                         <summary class="tab-editor__palette-heading">Rhythm<x-lucide-chevron-down aria-hidden="true" /></summary>
                         <div class="tab-editor__palette-durations" role="group" aria-label="Note duration">
@@ -238,6 +297,13 @@
                             <span aria-hidden="true">𝄽</span> Rest
                         </button>
 
+                        <button type="button" class="tab-editor__palette-tool"
+                            :class="{ 'is-active': Boolean(tabDraft.beats[tabSelectedIndex]?.tie) }"
+                            :aria-pressed="Boolean(tabDraft.beats[tabSelectedIndex]?.tie).toString()"
+                            @click="toggleTabEditorTie()" title="Tie selected note to preceding note (L)">
+                            <span aria-hidden="true">⌣</span> Tie
+                        </button>
+
                         </div>
                     </details>
 
@@ -258,64 +324,26 @@
                             title="Pull-off: connect to the next lower fret on the same string">
                             <span aria-hidden="true">P</span> Pull-off
                         </button>
+                        <button type="button" class="tab-editor__palette-tool"
+                            :class="{ 'is-active': Boolean(tabDraft.beats[tabSelectedIndex]?.palmMute) }"
+                            :aria-pressed="Boolean(tabDraft.beats[tabSelectedIndex]?.palmMute).toString()"
+                            @click="toggleTabEditorPalmMute()"
+                            title="Toggle palm mute on selected notes (M)">
+                            <span aria-hidden="true">P.M.</span> Palm mute
+                        </button>
                         </div>
                     </details>
                 </aside>
 
-                <div class="tab-editor__score" x-ref="tabEditorScore" @pointerup.window="endTabDrag()" @pointercancel.window="endTabDrag()" @resize.window="updateTabEditorWidth()" tabindex="0" role="group" aria-label="Interactive six-string tablature">
-                    <template x-for="(system, systemIndex) in tabEditorSystems()" :key="systemIndex">
-                        <div class="tab-editor__system">
-                            <div class="tab-editor__string-labels">
-                                <template x-for="(name, stringIndex) in tabStringNames" :key="stringIndex">
-                                    <span x-text="name"></span>
-                                </template>
-                            </div>
-
-                            <div class="tab-editor__grid">
-                                {{-- A stable overlay; playback time moves it continuously between notes. --}}
-                                <div class="tab-editor__playhead" aria-hidden="true"></div>
-                                {{-- One continuous selection area per adjacent run, behind the note cells. --}}
-                                <template x-for="run in prototypeSelectionRuns(system)" :key="`${run.start}-${run.length}`">
-                                    <div class="tab-editor__selection-range" aria-hidden="true"
-                                        :style="`left: ${run.start * 40}px; width: ${run.length * 40}px`"></div>
-                                </template>
-                                <template x-for="(name, stringIndex) in tabStringNames" :key="stringIndex">
-                                    <div class="tab-editor__string-row">
-                                        <template x-for="column in system" :key="`${column.index}-${column.insertion}`">
-                                            <button type="button" class="tab-editor__cell"
-                                                :data-playhead-beat="stringIndex === 0 && !column.insertion ? column.index : null"
-                                                :class="{ 'is-selected': tabSelectedIndices.length <= 1 && tabSelectedIndex === column.index && tabDraft.string === stringIndex + 1 && tabInsertAtBar === column.insertion, 'is-measure-end': column.measureEnd, 'is-insertion': column.insertion }"
-                                                :aria-label="column.insertion ? `Insert note before next measure, string ${stringIndex + 1}` : `String ${stringIndex + 1}, position ${column.index + 1}`"
-                                                :aria-pressed="tabSelectedIndex === column.index && tabDraft.string === stringIndex + 1 && tabInsertAtBar === column.insertion"
-                                                @pointerdown="!column.insertion && startTabDrag(column.index, stringIndex + 1, $event)"
-                                                @pointerenter="!column.insertion && extendTabDrag(column.index)"
-                                                @click="column.insertion ? selectTabEditorInsertion(column.index, stringIndex + 1) : clickTabCell(column.index, stringIndex + 1, $event); $refs.tabEditorScoreFocus?.focus()"
-                                            >
-                                                <span x-text="column.insertion ? (stringIndex + 1 === tabDraft.string ? '+' : '·') : (tabEditorNoteAt(column.index, stringIndex + 1) ?? '·')"></span>
-                                                <template x-if="!column.insertion && tabEditorLegatoSegment(column.index, stringIndex + 1, system)">
-                                                    <svg class="tab-editor__legato-arc" aria-hidden="true"
-                                                        :width="tabEditorLegatoSegment(column.index, stringIndex + 1, system).width"
-                                                        height="21"
-                                                        :viewBox="`0 0 ${tabEditorLegatoSegment(column.index, stringIndex + 1, system).width} 21`">
-                                                        <path :d="`M 0 18 Q ${tabEditorLegatoSegment(column.index, stringIndex + 1, system).width / 2} -3 ${tabEditorLegatoSegment(column.index, stringIndex + 1, system).width} 18`" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"></path>
-                                                        <text :x="tabEditorLegatoSegment(column.index, stringIndex + 1, system).width / 2" y="8" text-anchor="middle" x-text="tabEditorLegatoSegment(column.index, stringIndex + 1, system).direction"></text>
-                                                    </svg>
-                                                </template>
-                                            </button>
-                                        </template>
-                                    </div>
-                                </template>
-                            </div>
-                        </div>
-                    </template>
+                <div class="tab-editor__score-preview" x-show="!tabFullMusicXml" x-cloak
+                    x-ref="tabEditorScoreKeyboard" tabindex="0" role="group" aria-label="Score keyboard editor">
+                    <p class="tab-editor__score-preview-error" role="status" x-show="tabScorePreviewError" x-text="tabScorePreviewError"></p>
                 </div>
-                
-                <span x-ref="tabEditorScoreFocus" class="sr-only" tabindex="-1">Tab keyboard controls</span>
-
+                {{-- The playback renderer also supplies the score view; one AlphaTab instance. --}}
+                <div class="tab-editor__playback-host is-full-score"
+                    
+                    x-ref="tabEditorPreview" data-alphatab data-admin-preview="true"  :data-score-editable="(!tabFullMusicXml).toString()"></div>
             </section>
-
-            {{-- Playback uses the existing alphaTab engine without replacing the editable grid. --}}
-            <div class="tab-editor__playback-host" :class="{ 'is-full-score': tabFullMusicXml }" x-ref="tabEditorPreview" data-alphatab data-admin-preview="true" :aria-hidden="(!tabFullMusicXml).toString()"></div>
 
             {{-- Keep the validation log and playback footer docked together. --}}
             <div class="tab-editor__bottom-dock">

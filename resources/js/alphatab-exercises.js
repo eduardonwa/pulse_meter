@@ -11,6 +11,235 @@ const mountPromises = new WeakMap()
 const readyPromises = new WeakMap()
 const renderedBpms = new WeakMap()
 const playbackRequests = new WeakMap()
+const editorScoreCursors = new WeakMap()
+
+// AlphaTex/Dorelog number strings from the top; AlphaTab's Note.string
+// numbers them from the bottom. Convert only at the renderer boundary.
+function editorStringFromAlphaTab(value) {
+    return Number.isInteger(value) && value >= 1 && value <= 6 ? 7 - value : null
+}
+
+// AlphaTab 1.8 paints TAB staff lines as filled SVG rectangles, split
+// around fret numbers. Read their actual centers once per rendered SVG.
+const editorStaffLines = new WeakMap()
+
+function editorScoreStaffLines(svg, color) {
+    if (editorStaffLines.has(svg)) return editorStaffLines.get(svg)
+    const lines = new Set()
+    for (const rect of svg.querySelectorAll('rect[fill]')) {
+        if (rect.getAttribute('fill').toLowerCase() !== color) continue
+        const width = Number(rect.getAttribute('width'))
+        const height = Number(rect.getAttribute('height'))
+        const y = Number(rect.getAttribute('y'))
+        if (height > 0 && width > height && Number.isFinite(y)) {
+            lines.add(y + height / 2)
+        }
+    }
+    const result = [...lines].sort((a, b) => a - b)
+    // Editable scores contain a single six-string TAB staff per system.
+    // Never invent a line if the SVG does not expose all six.
+    const geometry = result.length === 6 ? result : null
+    editorStaffLines.set(svg, geometry)
+    return geometry
+}
+
+// Resolve the same SVG geometry for editing, range highlights and pointer hits.
+function editorScoreGeometry(element, api) {
+    const surface = element.querySelector('.at-surface')
+    if (!surface || !api?.boundsLookup) return null
+    const origin = surface.getBoundingClientRect()
+    const host = element.getBoundingClientRect()
+    const color = api.settings.display.resources.staffLineColor.rgba.toLowerCase()
+    const systems = []
+    for (const svg of surface.querySelectorAll('svg')) {
+        const lines = editorScoreStaffLines(svg, color)
+        const matrix = svg.getScreenCTM()
+        if (!lines || !matrix) continue
+        systems.push({
+            box: svg.getBoundingClientRect(),
+            lines: lines.map(y => new DOMPoint(0, y).matrixTransform(matrix).y),
+        })
+    }
+    return {
+        origin, systems,
+        left: x => x - host.left - element.clientLeft + element.scrollLeft,
+        top: y => y - host.top - element.clientTop + element.scrollTop,
+        systemAt: (x, y) => systems.find(({ box }) =>
+            x >= box.left && x <= box.right && y >= box.top && y <= box.bottom),
+    }
+}
+
+// Keep editing inside the dialog's visible score area, above its sticky dock.
+function revealEditorScorePosition(element, target) {
+    if (!target || element.dataset.scoreEditable !== 'true' ||
+        element.classList.contains('is-playing')) return
+    const dialog = element.closest('.tab-editor-dialog')
+    if (!dialog?.open) return
+    const rect = target.getBoundingClientRect()
+    const host = element.getBoundingClientRect()
+    const dock = dialog.querySelector('.tab-editor__bottom-dock')?.getBoundingClientRect()
+    const viewport = dialog.getBoundingClientRect()
+    const top = viewport.top + dialog.clientTop
+    const bottom = Math.min(top + dialog.clientHeight, dock?.top ?? Infinity)
+    const margin = 12
+    if (rect.top < top + margin) dialog.scrollTop += rect.top - top - margin
+    else if (rect.bottom > bottom - margin) dialog.scrollTop += rect.bottom - bottom + margin
+    const left = host.left + element.clientLeft
+    const right = left + element.clientWidth
+    if (rect.left < left + margin) element.scrollLeft += rect.left - left - margin
+    else if (rect.right > right - margin) element.scrollLeft += rect.right - right + margin
+}
+
+function updateEditorScoreCaret(element, api) {
+    const selection = editorScoreCursors.get(element)
+    let caret = element.querySelector(':scope > .tab-editor-score-caret')
+    const range = element.querySelector(':scope > .tab-editor-score-range')
+    range?.remove()
+    if (!selection || !api?.score || !api.boundsLookup) {
+        caret?.remove()
+        return
+    }
+    const geometry = editorScoreGeometry(element, api)
+    if (!geometry) {
+        caret?.remove()
+        return
+    }
+    const { origin, systemAt, left, top } = geometry
+    const bars = api.score.tracks?.[0]?.staves?.[0]?.bars
+    const boundsAt = (measureIndex, beatIndex) => {
+        const beat = bars?.[measureIndex]?.voices?.[0]?.beats?.[beatIndex]
+        return beat && api.boundsLookup.findBeat(beat)
+    }
+    if (selection.range?.length > 1) {
+        caret?.remove()
+        const overlay = document.createElement('div')
+        overlay.className = 'tab-editor-score-range'
+        overlay.setAttribute('aria-hidden', 'true')
+        const fragment = document.createDocumentFragment()
+        let activeMark = null
+        for (const position of selection.range) {
+            const bounds = boundsAt(position.measureIndex, position.beatIndex)
+            if (!bounds) continue
+            const rect = bounds.realBounds
+            const system = systemAt(origin.left + bounds.onNotesX, origin.top + rect.y + rect.h / 2)
+            if (!system) continue
+            const lines = system.lines
+            const spacing = (lines[5] - lines[0]) / 5
+            const mark = document.createElement('div')
+            mark.className = 'tab-editor-score-range-beat'
+            mark.style.left = `${left(origin.left + rect.x)}px`
+            mark.style.top = `${top(lines[0] - spacing / 2)}px`
+            mark.style.width = `${rect.w}px`
+            mark.style.height = `${lines[5] - lines[0] + spacing}px`
+            fragment.appendChild(mark)
+            if (position.measureIndex === selection.measureIndex && position.beatIndex === selection.beatIndex) activeMark = mark
+        }
+        overlay.appendChild(fragment)
+        element.appendChild(overlay)
+        revealEditorScorePosition(element, activeMark)
+        return
+    }
+    const { measureIndex, beatIndex, insertion, after, newMeasure } = selection
+    const bounds = boundsAt(measureIndex, beatIndex)
+    const selectedString = Number(selection.string)
+    if (newMeasure || !bounds || !Number.isInteger(selectedString) ||
+        selectedString < 1 || selectedString > 6) {
+        caret?.remove()
+        return
+    }
+    const head = bounds.notes?.find(item =>
+        editorStringFromAlphaTab(item.note?.string) === selectedString)?.noteHeadBounds
+        ?? bounds.notes?.[0]?.noteHeadBounds
+    let beatX = head ? head.x + head.w / 2 : bounds.onNotesX
+    if (insertion) {
+        const barBounds = bounds.barBounds
+        const neighbor = barBounds.beats[beatIndex + (after ? 1 : -1)]
+        const edge = after
+            ? (neighbor?.onNotesX ?? barBounds.realBounds.x + barBounds.realBounds.w)
+            : (neighbor?.onNotesX ?? bounds.realBounds.x)
+        beatX = (bounds.onNotesX + edge) / 2
+    }
+    const screenX = origin.left + beatX
+    const system = systemAt(screenX, origin.top + bounds.realBounds.y + bounds.realBounds.h / 2)
+    const centerY = system?.lines[selectedString - 1]
+    if (!Number.isFinite(screenX) || !Number.isFinite(centerY)) {
+        caret?.remove()
+        return
+    }
+    if (!caret) {
+        caret = document.createElement('div')
+        caret.className = 'tab-editor-score-caret'
+        caret.setAttribute('aria-hidden', 'true')
+        element.appendChild(caret)
+    }
+    caret.classList.toggle('is-insertion', Boolean(insertion))
+    caret.style.left = `${left(screenX)}px`
+    caret.style.top = `${top(centerY)}px`
+    caret.style.width = '23px'
+    caret.style.height = '21px'
+    revealEditorScorePosition(element, caret)
+}
+
+// Use one pointer path for both notes and empty strings. AlphaTab's separate
+// beat/note mouse events must not both toggle the same selection.
+function installEditorScoreSelection(element, api) {
+    let dragBeat = null
+    const hit = event => {
+        if (element.dataset.scoreEditable !== 'true' || element.classList.contains('is-playing')) return null
+        const geometry = editorScoreGeometry(element, api)
+        if (!geometry) return null
+        const { clientX, clientY } = event
+        const system = geometry.systemAt(clientX, clientY)
+        if (!system) return null
+        const lines = system.lines
+        const spacing = (lines[5] - lines[0]) / 5
+        if (clientY < lines[0] - spacing / 2 || clientY > lines[5] + spacing / 2) return null
+        const beat = api.boundsLookup.getBeatAtPos(clientX - geometry.origin.left, clientY - geometry.origin.top)
+        if (!beat) return null
+        const string = lines.reduce((nearest, y, i) =>
+            Math.abs(y - clientY) < Math.abs(lines[nearest] - clientY) ? i : nearest, 0) + 1
+        return { beat, string }
+    }
+    const dispatch = ({ beat, string }, event, dragging = false) => {
+        window.dispatchEvent(new CustomEvent('alphatab:editor-select', {
+            detail: {
+                element,
+                measureIndex: beat.voice?.bar?.masterBar?.index ?? beat.voice?.bar?.index,
+                beatIndex: beat.index,
+                string,
+                shiftKey: dragging || event.shiftKey,
+                ctrlKey: !dragging && event.ctrlKey,
+                metaKey: !dragging && event.metaKey,
+            },
+        }))
+    }
+    element.addEventListener('pointerdown', event => {
+        dragBeat = null
+        if (event.button !== 0) return
+        const target = hit(event)
+        if (!target) return
+        event.preventDefault()
+        event.stopPropagation()
+        dispatch(target, event)
+        if (event.pointerType === 'mouse' && !event.shiftKey && !event.ctrlKey && !event.metaKey) {
+            dragBeat = target.beat
+        }
+    }, true)
+    element.addEventListener('pointermove', event => {
+        if (!dragBeat || !(event.buttons & 1)) {
+            dragBeat = null
+            return
+        }
+        const target = hit(event)
+        if (!target || target.beat === dragBeat) return
+        dragBeat = target.beat
+        dispatch(target, event, true)
+    })
+    const endDrag = () => { dragBeat = null }
+    element.addEventListener('pointerup', endDrag)
+    element.addEventListener('pointercancel', endDrag)
+}
+
 // Track the actual score loaded into an alphaTab instance, not just its dataset.
 const editorLoadedScores = new WeakMap()
 const routineLoopModes = new WeakMap()
@@ -183,10 +412,13 @@ async function mountAlphaTab(element) {
         const api = new alphaTab.AlphaTabApi(element, {
             core: {
                 fontDirectory: '/font/',
+                includeNoteBounds: isAdminPreview,
+                ...(isAdminPreview && !originalMusicXml ? { enableLazyLoading: false } : {}),
             },
 
             display: {
                 staveProfile: 'Tab',
+                ...(isAdminPreview && !originalMusicXml ? { stretchForce: 1.5 } : {}),
                 // Keep playback-only MusicXML scores within the editor viewport.
                 // Other Practice scores retain alphaTab's default page padding.
                 ...(isAdminPreview && originalMusicXml ? { padding: [16, 18] } : {}),
@@ -196,7 +428,7 @@ async function mountAlphaTab(element) {
                 playerMode: alphaTab.PlayerMode.EnabledSynthesizer,
                 soundFont: '/soundfont/sonivox.sf2',
 
-                enableUserInteraction: !isAdminPreview,
+                enableUserInteraction: true,
                 enableCursor: true,
                 enableAnimatedBeatCursor: true,
                 enableElementHighlighting: !isAdminPreview,
@@ -207,6 +439,11 @@ async function mountAlphaTab(element) {
                     : alphaTab.ScrollMode.Continuous,
             },
         })
+
+        if (isAdminPreview) {
+            installEditorScoreSelection(element, api)
+            api.postRenderFinished.on(() => updateEditorScoreCaret(element, api))
+        }
 
         api.renderFinished.on(() => {
             element.dataset.alphaTabRendered = 'true'
@@ -265,6 +502,9 @@ async function mountAlphaTab(element) {
         })
 
         api.playerStateChanged.on(args => {
+            if (isAdminPreview) {
+                element.classList.toggle('is-playing', args.state === alphaTab.synth.PlayerState.Playing)
+            }
             waitingForScoreStart = args.state === alphaTab.synth.PlayerState.Playing
             dispatchPlaybackState(
                 element,
@@ -437,6 +677,7 @@ window.addEventListener('alphatab:preview-draft', async event => {
     if (playbackRequests.get(element) !== request || playbackGeneration !== request) return
     if (renderOnly) {
         api.stop()
+        element.classList.remove('is-playing')
         return
     }
     api.playbackSpeed = musicXml ? Number(bpm) / musicXmlFirstTempo(musicXml, Number(bpm) || 100) : 1
@@ -631,4 +872,12 @@ window.addEventListener('alphatab:editor-transport-options', event => {
         metronome: Boolean(options.metronome),
     })
     applyEditorPreviewOptions(element, instances.get(element))
+})
+
+window.addEventListener('alphatab:editor-caret', event => {
+    const { element, selection } = event.detail ?? {}
+    if (!element) return
+    if (selection) editorScoreCursors.set(element, selection)
+    else editorScoreCursors.delete(element)
+    updateEditorScoreCaret(element, instances.get(element))
 })

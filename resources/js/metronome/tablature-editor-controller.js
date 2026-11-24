@@ -1,9 +1,9 @@
 import {
     createTabDraft, appendTabNote, serializeTabDraft, parseTabDraft,
-    layoutTabMeasures, selectTabNoteIndices, changeSelectedTabDurations,
+    layoutTabMeasures, isTabFullMeasureRest, selectTabNoteIndices, copyTabFragment, pasteTabFragment, changeSelectedTabDurations,
     changeSelectedTabRhythm, tabBeatUnits, clearTabNotes, updateTabBreaks,
     breaksForInsertedTabNote, tabBeatNotes, setTabBeatNote,
-    removeTabNoteAtString, tabLegatoDirection, toggleTabLegato, normalizeTabLegato, TAB_DURATIONS
+    removeTabNoteAtString, tabLegatoDirection, toggleTabLegato, normalizeTabLegato, toggleTabPalmMute, toggleTabTie, normalizeTabTies, TAB_DURATIONS
 } from "./alphatab/tab-editor.js";
 
 // The Alpine component spreads these actions into its existing exercise state.
@@ -28,7 +28,7 @@ export function tablatureEditorMethods() {
             this.prepareRedesignEditor();
             this.$nextTick(() => {
                 this.$refs.tabEditorDialog?.showModal();
-                this.updateTabEditorWidth();
+                this.initializeTabScoreView();
             });
         },
 
@@ -74,7 +74,7 @@ export function tablatureEditorMethods() {
             this.prepareRedesignEditor();
             this.$nextTick(() => {
                 this.$refs.tabEditorDialog?.showModal();
-                this.updateTabEditorWidth();
+                this.initializeTabScoreView();
             });
         },
 
@@ -89,42 +89,96 @@ export function tablatureEditorMethods() {
             this.tabFullMusicXml = null;
         },
 
-        updateTabEditorWidth() {
-            const width = this.$refs.tabEditorScore?.clientWidth;
-            if (width) this.tabViewportWidth = width;
+        appendTabEditorMeasure(recordUndo = true) {
+            this.finishPendingTabDigit(false);
+            if (recordUndo) this.recordTabEditorUndo();
+            const index = this.tabDraft.beats.length;
+            const beats = [...this.tabDraft.beats, { rest: true, duration: 1 }];
+            const breaks = index ? [...this.tabDraft.breaks, index] : [];
+            this.tabDraft = { ...this.tabDraft, beats, breaks };
+            this.selectTabEditorCell(index, this.tabDraft.string);
+            this.$nextTick(() => this.$refs.tabEditorScoreKeyboard?.focus());
         },
 
-        tabEditorDisplayColumns() {
-            // Compute measure boundaries once per layout, not once per string cell.
+        // Resolve insertion slots consistently with the score caret.
+        tabEditorActiveMeasureIndex(measures = this.tabEditorMeasureLayout()) {
+            if (this.tabInsertAtBar && this.tabSelectedIndex > 0) {
+                const previous = measures.findIndex(measure => measure.endIndex === this.tabSelectedIndex - 1);
+                if (previous >= 0 && measures[previous].used + tabBeatUnits(this.tabDraft) <= measures[previous].capacity + 1e-7) return previous;
+            }
+            const index = Math.min(this.tabSelectedIndex, this.tabDraft.beats.length - 1);
+            return measures.findIndex(measure => measure.notes.some(note => note.index === index));
+        },
+
+        deleteTabEditorMeasure() {
             const measures = this.tabEditorMeasureLayout();
-            const insertions = new Set(measures
-                .filter(measure => measure.used < measure.capacity - 1e-7)
-                .map(measure => measure.endIndex + 1));
-            const measureEnds = new Set(measures
-                .filter(measure => measure.used >= measure.capacity - 1e-7)
-                .map(measure => measure.endIndex));
-            const columns = [];
-            for (let index = 0; index <= this.tabDraft.beats.length; index++) {
-                if (insertions.has(index)) {
-                    columns.push({ index, insertion: true, measureEnd: true });
-                }
-                // An incomplete final measure has one insertion slot, not
-                // a second identical empty trailing column.
-                if (index !== this.tabDraft.beats.length || !insertions.has(index)) {
-                    columns.push({ index, insertion: false, measureEnd: measureEnds.has(index) });
-                }
-            }
-            return columns;
+            const measure = measures[this.tabEditorActiveMeasureIndex(measures)];
+            if (!measure) return;
+            this.finishPendingTabDigit(false);
+            this.recordTabEditorUndo();
+            const start = measure.notes[0].index;
+            const length = measure.notes.length;
+            const beats = [...this.tabDraft.beats];
+            beats.splice(start, length);
+            const breaks = [...new Set(this.tabDraft.breaks
+                .filter(position => position < start || position > measure.endIndex)
+                .map(position => position > measure.endIndex ? position - length : position)
+                .filter(position => position > 0 && position < beats.length))];
+            if (!beats.length) beats.push({ rest: true, duration: 1 });
+            this.tabDraft = { ...this.tabDraft, beats: normalizeTabTies(normalizeTabLegato(beats)), breaks };
+            this.selectTabEditorCell(Math.min(start, beats.length - 1), this.tabDraft.string);
+            this.$nextTick(() => this.$refs.tabEditorScoreKeyboard?.focus());
         },
 
-        tabEditorSystems() {
-            const columns = Math.max(1, Math.floor((this.tabViewportWidth - 68) / 48));
-            const display = this.tabEditorDisplayColumns();
-            const systems = [];
-            for (let start = 0; start < display.length; start += columns) {
-                systems.push(display.slice(start, start + columns));
+        advanceTabEditorPosition(index, recordUndo = true) {
+            const next = Math.min(this.tabDraft.beats.length, index + 1);
+            this.tabSelectedIndex = next;
+            this.tabSelectedIndices = [];
+            this.tabSelectionAnchor = null;
+            this.tabInsertAtBar = false;
+            const measure = this.tabEditorMeasureLayout().find(item => item.endIndex === index);
+            // At a bar boundary, keep the insertion slot in the preceding
+            // measure while the chosen rhythm still fits.
+            if (measure && measure.used + tabBeatUnits(this.tabDraft) <= measure.capacity + 1e-7) {
+                this.tabInsertAtBar = true;
+            } else if (next < this.tabDraft.beats.length) {
+                this.selectTabEditorCell(next, this.tabDraft.string);
+            } else {
+                this.appendTabEditorMeasure(recordUndo);
             }
-            return systems;
+        },
+
+        prepareTabEditorScoreInsertion(before = false) {
+            if (this.tabFullMusicXml) return;
+            this.finishPendingTabDigit(false);
+            // An insertion cursor is not a note. Keep the current rhythm and
+            // let addTabEditorNote/addTabEditorRest reuse the existing model.
+            const afterSelected = !before && this.tabSelectedIndices.length > 0;
+            const index = Math.min(this.tabDraft.beats.length,
+                this.tabSelectedIndex + (afterSelected ? 1 : 0));
+            this.tabSelectedIndex = index;
+            this.tabInsertAtBar = true;
+            this.tabSelectedIndices = [];
+            this.tabSelectionAnchor = null;
+            this.$nextTick(() => this.$refs.tabEditorScoreKeyboard?.focus());
+        },
+
+        selectTabEditorScoreBeat(event) {
+            const detail = event?.detail;
+            if (!detail || detail.element !== this.$refs.tabEditorPreview ||
+                this.tabFullMusicXml) return;
+            const measureIndex = Number(detail.measureIndex);
+            const beatIndex = Number(detail.beatIndex);
+            if (!Number.isInteger(measureIndex) || !Number.isInteger(beatIndex)) return;
+            const measure = this.tabEditorMeasureLayout()[measureIndex];
+            const position = measure?.notes?.[beatIndex]?.index;
+            if (!Number.isInteger(position)) return;
+            const notes = tabBeatNotes(this.tabDraft.beats[position]);
+            const requestedString = Number(detail.string);
+            const string = Number.isInteger(requestedString) && requestedString >= 1 && requestedString <= 6
+                ? requestedString : (notes[0]?.string ?? this.tabDraft.string);
+            this.selectTabEditorCell(position, string, detail);
+            this.$nextTick(() => this.$refs.tabEditorScoreKeyboard?.focus());
         },
 
         selectTabEditorInsertion(index, string) {
@@ -173,27 +227,32 @@ export function tablatureEditorMethods() {
             return this.tabEditorMeasureWarnings().filter(measure => measure.status !== 'complete');
         },
 
+        toggleTabEditorTie() {
+            this.finishPendingTabDigit(false);
+            if (this.tabInsertAtBar) return;
+            try {
+                const beats = toggleTabTie(this.tabDraft.beats, this.tabSelectedIndex);
+                this.recordTabEditorUndo();
+                this.tabDraft = { ...this.tabDraft, beats };
+            } catch (error) {
+                this.showToast?.(error.message, 'error');
+            }
+        },
+
+        toggleTabEditorPalmMute() {
+            this.finishPendingTabDigit(false);
+            if (this.tabInsertAtBar) return;
+            const selected = this.tabSelectedIndices.length
+                ? this.tabSelectedIndices
+                : [this.tabSelectedIndex];
+            const beats = toggleTabPalmMute(this.tabDraft.beats, selected);
+            if (beats === this.tabDraft.beats) return;
+            this.recordTabEditorUndo();
+            this.tabDraft = { ...this.tabDraft, beats };
+        },
+
         tabEditorLegatoDirection(index) {
             return tabLegatoDirection(this.tabDraft.beats, index);
-        },
-
-        tabEditorLegatoAt(index, string) {
-            const beat = this.tabDraft.beats[index];
-            if (!beat?.legato || !tabLegatoDirection(this.tabDraft.beats, index)) return null;
-            return tabBeatNotes(beat)[0]?.string === string
-                ? tabLegatoDirection(this.tabDraft.beats, index) : null;
-        },
-
-        tabEditorLegatoSegment(index, string, system) {
-            const direction = this.tabEditorLegatoAt(index, string);
-            if (!direction) return null;
-            const currentColumn = system.findIndex(column => !column.insertion && column.index === index);
-            if (currentColumn < 0) return null;
-            const nextColumn = system.findIndex(column => !column.insertion && column.index === index + 1);
-            if (nextColumn < 0) return null;
-            // A barline insertion column may sit between the notes; derive the
-            // horizontal distance from the displayed columns, not beat indices.
-            return { direction, width: (nextColumn - currentColumn) * 40 };
         },
 
         toggleTabEditorLegato(technique) {
@@ -203,21 +262,18 @@ export function tablatureEditorMethods() {
             try {
                 const beats = toggleTabLegato(this.tabDraft.beats, index, technique);
                 this.recordTabEditorUndo();
-                this.tabDraft = { ...this.tabDraft, beats: normalizeTabLegato(beats) };
+                this.tabDraft = { ...this.tabDraft, beats: normalizeTabTies(normalizeTabLegato(beats)) };
             } catch (error) {
                 this.showToast?.(error.message, 'error');
             }
         },
 
-        tabEditorNoteAt(index, string) {
-            const note = this.tabDraft.beats[index];
-            if (note?.rest) return null;
-            return tabBeatNotes(note).find(n => n.string === string)?.fret ?? null;
-        },
-
         selectTabEditorCell(index, string, event = null) {
             const validNote = index < this.tabDraft.beats.length;
             if (event?.shiftKey && validNote) {
+                if (!Number.isInteger(this.tabSelectionAnchor)) {
+                    this.tabSelectionAnchor = Math.max(0, Math.min(this.tabSelectedIndex, this.tabDraft.beats.length - 1));
+                }
                 this.tabSelectedIndices = selectTabNoteIndices(this.tabSelectedIndices, this.tabSelectionAnchor, index, 'range', this.tabDraft.beats.length);
             } else if ((event?.ctrlKey || event?.metaKey) && validNote) {
                 this.tabSelectedIndices = selectTabNoteIndices(this.tabSelectedIndices, this.tabSelectionAnchor, index, 'toggle', this.tabDraft.beats.length);
@@ -230,44 +286,17 @@ export function tablatureEditorMethods() {
             this.tabInsertAtBar = false;
             this.finishPendingTabDigit(false);
             const note = this.tabDraft.beats[index];
+            const fullRest = note?.rest &&
+                this.tabEditorMeasureLayout().some(measure =>
+                    measure.endIndex === index && isTabFullMeasureRest(measure.notes));
             this.tabDraft = {
                 ...this.tabDraft,
                 string,
                 fret: tabBeatNotes(note).find(n => n.string === string)?.fret ?? 0,
-                duration: note?.duration ?? this.tabDraft.duration,
-                dotted: note ? Boolean(note.dotted) : Boolean(this.tabDraft.dotted),
-                tuplet: note ? (note.tuplet ?? null) : this.tabDraft.tuplet,
+                duration: fullRest ? this.tabDraft.duration : (note?.duration ?? this.tabDraft.duration),
+                dotted: note && !fullRest ? Boolean(note.dotted) : Boolean(this.tabDraft.dotted),
+                tuplet: note && !fullRest ? (note.tuplet ?? null) : this.tabDraft.tuplet,
             };
-        },
-
-        startTabDrag(index, string, event) {
-            if (event.button !== 0 || event.shiftKey || event.ctrlKey || event.metaKey) return;
-            this.selectTabEditorCell(index, string);
-            this.tabDragAnchor = index;
-            this.tabDragging = true;
-            this.tabDragMoved = false;
-        },
-
-        extendTabDrag(index) {
-            if (!this.tabDragging || this.tabDragAnchor === null || index >= this.tabDraft.beats.length) return;
-            if (index === this.tabDragAnchor) return;
-            this.tabDragMoved = true;
-            this.selectTabEditorCell(index, this.tabDraft.beats[index].string, {
-                shiftKey: true,
-            });
-        },
-
-        endTabDrag() {
-            this.tabDragging = false;
-            this.tabDragAnchor = null;
-        },
-
-        clickTabCell(index, string, event) {
-            if (this.tabDragMoved) {
-                this.tabDragMoved = false;
-                return;
-            }
-            this.selectTabEditorCell(index, string, event);
         },
 
         finishPendingTabDigit(advance = true) {
@@ -276,9 +305,7 @@ export function tablatureEditorMethods() {
             this.tabDigitTimer = null;
             this.tabDigitPending = null;
             if (advance && pending && this.tabSelectedIndex === pending.index) {
-                this.tabSelectedIndex = Math.min(this.tabDraft.beats.length, pending.index + 1);
-                this.tabSelectedIndices = [];
-                this.tabSelectionAnchor = null;
+                this.advanceTabEditorPosition(pending.index, false);
             }
         },
 
@@ -303,7 +330,7 @@ export function tablatureEditorMethods() {
             }
             const index = this.tabSelectedIndex;
             this.tabDraft = { ...this.tabDraft, fret: digit };
-            this.addTabEditorNote();
+            this.addTabEditorNote(digit === 1 || digit === 2);
             if (digit === 1 || digit === 2) {
                 // Keep the caret on the first digit until it is completed or expires.
                 this.tabSelectedIndex = index;
@@ -323,6 +350,7 @@ export function tablatureEditorMethods() {
                 draft: JSON.parse(JSON.stringify(this.tabDraft)),
                 selectedIndex: this.tabSelectedIndex,
                 selectedIndices: [...this.tabSelectedIndices],
+                selectionAnchor: this.tabSelectionAnchor,
                 insertAtBar: this.tabInsertAtBar,
             };
         },
@@ -332,7 +360,7 @@ export function tablatureEditorMethods() {
             this.tabSelectedIndex = snapshot.selectedIndex;
             this.tabSelectedIndices = snapshot.selectedIndices;
             this.tabInsertAtBar = snapshot.insertAtBar;
-            this.tabSelectionAnchor = snapshot.selectedIndices.at(-1) ?? null;
+            this.tabSelectionAnchor = snapshot.selectionAnchor ?? null;
         },
 
         recordTabEditorUndo() {
@@ -360,9 +388,9 @@ export function tablatureEditorMethods() {
 
         changeTabEditorDuration(value) {
             const duration = Number(value);
-            const selected = this.tabSelectedIndices.length
+            const selected = this.tabInsertAtBar ? [] : (this.tabSelectedIndices.length
                 ? this.tabSelectedIndices
-                : (this.tabSelectedIndex < this.tabDraft.beats.length ? [this.tabSelectedIndex] : []);
+                : (this.tabSelectedIndex < this.tabDraft.beats.length ? [this.tabSelectedIndex] : []));
             if (selected.length) this.recordTabEditorUndo();
             this.tabDraft = {
                 ...this.tabDraft,
@@ -372,9 +400,9 @@ export function tablatureEditorMethods() {
         },
 
         setTabEditorRhythm(changes) {
-            const selected = this.tabSelectedIndices.length
+            const selected = this.tabInsertAtBar ? [] : (this.tabSelectedIndices.length
                 ? this.tabSelectedIndices
-                : (this.tabSelectedIndex < this.tabDraft.beats.length ? [this.tabSelectedIndex] : []);
+                : (this.tabSelectedIndex < this.tabDraft.beats.length ? [this.tabSelectedIndex] : []));
             if (selected.length) this.recordTabEditorUndo();
             this.tabDraft = {
                 ...this.tabDraft,
@@ -384,31 +412,63 @@ export function tablatureEditorMethods() {
         },
 
         addTabEditorRest() {
-            const beat = {
+            const index = this.tabSelectedIndex;
+            const inserting = this.tabInsertAtBar || index >= this.tabDraft.beats.length;
+            let beat = {
                 rest: true,
                 duration: this.tabDraft.duration,
                 ...(this.tabDraft.dotted ? { dotted: true } : {}),
                 ...(this.tabDraft.tuplet === 3 ? { tuplet: 3 } : {}),
             };
-            const index = this.tabSelectedIndex;
+            // Any insertion at an incomplete measure boundary must use the
+            // remaining musical space. An earlier dotted/triplet selection
+            // must not make a sixteenth rest too long or too short.
+            if (inserting) {
+                const measure = this.tabEditorMeasureLayout().find(item =>
+                    item.endIndex + 1 === index && item.used < item.capacity - 1e-7
+                );
+                if (measure) {
+                    const remaining = measure.capacity - measure.used;
+                    if (Math.abs(tabBeatUnits(beat) - remaining) > 1e-7 &&
+                        (tabBeatUnits(beat) > remaining + 1e-7 ||
+                         (index === this.tabDraft.beats.length && remaining <= 1 + 1e-7))) {
+                        const duration = [1, 2, 4, 8, 16].find(value =>
+                            16 / value <= remaining + 1e-7
+                        );
+                        if (!duration) {
+                            this.showToast?.('No rhythmic space remains for a rest here.', 'error');
+                            return;
+                        }
+                        beat = { rest: true, duration };
+                    }
+                }
+            }
             const beats = [...this.tabDraft.beats];
-            if (index < beats.length && !this.tabInsertAtBar) {
+            if (!inserting) {
                 beats[index] = beat;
             } else {
                 beats.splice(index, 0, beat);
             }
-            const breaks = beats.length > this.tabDraft.beats.length
-                ? breaksForInsertedTabNote(this.tabDraft, index, beat.duration, this.stepForm.time_signature_numerator, this.stepForm.time_signature_denominator)
+            // The break calculator must use the actual rhythm of the rest,
+            // not modifiers inherited from a previously selected note.
+            const insertionDraft = { ...this.tabDraft, dotted: Boolean(beat.dotted), tuplet: beat.tuplet ?? null };
+            const breaks = inserting
+                ? breaksForInsertedTabNote(insertionDraft, index, beat.duration,
+                    this.stepForm.time_signature_numerator, this.stepForm.time_signature_denominator)
                 : this.tabDraft.breaks;
             this.recordTabEditorUndo();
-            this.tabDraft = { ...this.tabDraft, beats: normalizeTabLegato(beats), breaks };
-            this.tabSelectedIndex = Math.min(beats.length, index + 1);
-            this.tabInsertAtBar = false;
-            this.tabSelectedIndices = [];
-            this.tabSelectionAnchor = null;
+            this.tabDraft = {
+                ...this.tabDraft,
+                duration: beat.duration,
+                dotted: Boolean(beat.dotted),
+                tuplet: beat.tuplet ?? null,
+                beats: normalizeTabTies(normalizeTabLegato(beats)),
+                breaks,
+            };
+            this.advanceTabEditorPosition(index, false);
         },
 
-        addTabEditorNote() {
+        addTabEditorNote(deferAdvance = false) {
             try {
                 const next = appendTabNote(this.tabDraft);
                 const beats = [...this.tabDraft.beats];
@@ -418,7 +478,7 @@ export function tablatureEditorMethods() {
                     tabBeatNotes(occupiedBeat).some(note => note.string === this.tabDraft.string)) {
                     this.recordTabEditorUndo();
                     beats[this.tabSelectedIndex] = setTabBeatNote(occupiedBeat, this.tabDraft.fret, this.tabDraft.string);
-                    this.tabDraft = { ...this.tabDraft, beats: normalizeTabLegato(beats) };
+                    this.tabDraft = { ...this.tabDraft, beats: normalizeTabTies(normalizeTabLegato(beats)) };
                     this.tabSelectedIndices = [this.tabSelectedIndex];
                     this.tabSelectionAnchor = this.tabSelectedIndex;
                     return;
@@ -430,7 +490,7 @@ export function tablatureEditorMethods() {
                 if (isChordEntry) {
                     this.recordTabEditorUndo();
                     beats[this.tabSelectedIndex] = setTabBeatNote(current, this.tabDraft.fret, this.tabDraft.string);
-                    this.tabDraft = { ...this.tabDraft, beats: normalizeTabLegato(beats) };
+                    this.tabDraft = { ...this.tabDraft, beats: normalizeTabTies(normalizeTabLegato(beats)) };
                     this.tabSelectedIndices = [this.tabSelectedIndex];
                     this.tabSelectionAnchor = this.tabSelectedIndex;
                     return;
@@ -442,11 +502,9 @@ export function tablatureEditorMethods() {
                 } else {
                     beats.splice(this.tabSelectedIndex, 0, next.beats.at(-1));
                 }
-                this.tabDraft = { ...next, beats: normalizeTabLegato(beats), breaks: beats.length > this.tabDraft.beats.length ? breaksForInsertedTabNote(this.tabDraft, this.tabSelectedIndex, next.beats.at(-1).duration, this.stepForm.time_signature_numerator, this.stepForm.time_signature_denominator) : this.tabDraft.breaks };
-                this.tabSelectedIndex = Math.min(beats.length, this.tabSelectedIndex + 1);
-                this.tabInsertAtBar = false;
-                this.tabSelectedIndices = [];
-                this.tabSelectionAnchor = null;
+                this.tabDraft = { ...next, beats: normalizeTabTies(normalizeTabLegato(beats)), breaks: beats.length > this.tabDraft.beats.length ? breaksForInsertedTabNote(this.tabDraft, this.tabSelectedIndex, next.beats.at(-1).duration, this.stepForm.time_signature_numerator, this.stepForm.time_signature_denominator) : this.tabDraft.breaks };
+                if (!deferAdvance) this.advanceTabEditorPosition(this.tabSelectedIndex, false);
+                else this.tabInsertAtBar = false;
             } catch (error) {
                 this.showToast?.(error.message, "error");
             }
@@ -469,7 +527,7 @@ export function tablatureEditorMethods() {
                     selected.has(index) ? removeTabNoteAtString(beat, this.tabDraft.string) : beat);
             if (beats.every((beat, index) => beat === this.tabDraft.beats[index])) return;
             this.recordTabEditorUndo();
-            this.tabDraft = { ...this.tabDraft, beats: normalizeTabLegato(beats) };
+            this.tabDraft = { ...this.tabDraft, beats: normalizeTabTies(normalizeTabLegato(beats)) };
         },
 
         // Delete removes selected beat positions; Backspace clears the current
@@ -490,11 +548,41 @@ export function tablatureEditorMethods() {
                 beats.splice(index, 1);
                 breaks = updateTabBreaks(breaks, index, 'delete', beats.length);
             }
-            this.tabDraft = { ...this.tabDraft, beats: normalizeTabLegato(beats), breaks };
-            this.tabSelectedIndex = Math.min(selected.at(-1), beats.length);
-            this.tabInsertAtBar = false;
-            this.tabSelectedIndices = [];
-            this.tabSelectionAnchor = null;
+            if (!beats.length) beats.push({ rest: true, duration: 1 });
+            this.tabDraft = { ...this.tabDraft, beats: normalizeTabTies(normalizeTabLegato(beats)), breaks };
+            this.selectTabEditorCell(Math.min(selected.at(-1), beats.length - 1), this.tabDraft.string);
+        },
+
+        tabClipboard: [],
+
+        copyTabEditorSelection(cut = false) {
+            this.finishPendingTabDigit(false);
+            if (this.tabInsertAtBar) return;
+            const indices = this.tabSelectedIndices.length
+                ? this.tabSelectedIndices : [this.tabSelectedIndex];
+            const fragment = copyTabFragment(this.tabDraft, indices,
+                this.stepForm.time_signature_numerator, this.stepForm.time_signature_denominator);
+            if (!fragment.length) return;
+            this.tabClipboard = fragment;
+            if (cut) this.undoTabEditorNote();
+        },
+
+        pasteTabEditorSelection() {
+            if (!this.tabClipboard.length) return;
+            this.finishPendingTabDigit(false);
+            try {
+                const result = pasteTabFragment(this.tabDraft, this.tabSelectedIndex, this.tabClipboard,
+                    this.stepForm.time_signature_numerator, this.stepForm.time_signature_denominator,
+                    this.tabInsertAtBar);
+                if (!result) return;
+                this.recordTabEditorUndo();
+                this.tabDraft = result.draft;
+                this.selectTabEditorCell(result.start, this.tabDraft.string);
+                this.tabSelectedIndices = Array.from({ length: result.count }, (_, i) => result.start + i);
+                this.tabSelectedIndex = result.start + result.count - 1;
+            } catch (error) {
+                this.showToast?.(error.message, 'error');
+            }
         },
 
         handleTabEditorKey(event) {
@@ -504,6 +592,15 @@ export function tablatureEditorMethods() {
             if (['INPUT', 'TEXTAREA', 'SELECT'].includes(tag)) return;
             if (event.ctrlKey || event.metaKey) {
                 const key = event.key.toLowerCase();
+                if (!this.tabFullMusicXml &&
+                    !event.altKey && !event.shiftKey && ['c', 'x', 'v'].includes(key) &&
+                    tag !== 'BUTTON' && !event.target?.isContentEditable) {
+                    event.preventDefault();
+                    if (event.repeat || this.prototypePlaying || this.prototypePlaybackLoading) return;
+                    if (key === 'v') this.pasteTabEditorSelection();
+                    else this.copyTabEditorSelection(key === 'x');
+                    return;
+                }
                 if (key === 'z' || (key === 'y' && !event.shiftKey)) {
                     event.preventDefault();
                     if (event.shiftKey || key === 'y') this.redoTabEditorChange();
@@ -511,10 +608,32 @@ export function tablatureEditorMethods() {
                     return;
                 }
             }
-            // Score cells are buttons for accessibility, but they must still
-            // accept Delete, Backspace and the existing tab keyboard controls.
-            if (tag === 'BUTTON' && !event.target?.classList?.contains('tab-editor__cell')) return;
+            if (tag === 'BUTTON') return;
             const techniqueKey = event.key.toLowerCase();
+            if (!event.ctrlKey && !event.metaKey &&
+                !event.altKey && !event.repeat && techniqueKey === 'i') {
+                event.preventDefault();
+                this.prepareTabEditorScoreInsertion(event.shiftKey);
+                return;
+            }
+            if (!event.ctrlKey && !event.metaKey && !event.altKey && !event.repeat &&
+                techniqueKey === 'r') {
+                event.preventDefault();
+                this.addTabEditorRest();
+                return;
+            }
+            if (!event.ctrlKey && !event.metaKey && !event.altKey && !event.repeat &&
+                techniqueKey === 'l') {
+                event.preventDefault();
+                this.toggleTabEditorTie();
+                return;
+            }
+            if (!event.ctrlKey && !event.metaKey && !event.altKey && !event.repeat &&
+                techniqueKey === 'm') {
+                event.preventDefault();
+                this.toggleTabEditorPalmMute();
+                return;
+            }
             if (!event.ctrlKey && !event.metaKey && !event.altKey && !event.repeat &&
                 (techniqueKey === 'h' || techniqueKey === 'p')) {
                 event.preventDefault();
@@ -533,10 +652,33 @@ export function tablatureEditorMethods() {
             } else if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
                 event.preventDefault();
                 const delta = event.key === 'ArrowLeft' ? -1 : 1;
+                if (event.shiftKey && (event.ctrlKey || event.metaKey) && !event.altKey) {
+                    this.finishPendingTabDigit(false);
+                    const measures = this.tabEditorMeasureLayout();
+                    const current = this.tabEditorActiveMeasureIndex(measures);
+                    const target = measures[current + delta]?.notes[0];
+                    if (current >= 0 && target) this.selectTabEditorCell(target.index, this.tabDraft.string);
+                    return;
+                }
                 // Shift+Arrow selects existing beats only. The extra caret
                 // position after the final beat must not clear the selection
                 // when key repeat continues at the end of the score.
                 const lastIndex = this.tabDraft.beats.length - 1;
+                if (delta === 1 && !event.shiftKey) {
+                    this.finishPendingTabDigit(false);
+                    if (this.tabInsertAtBar) {
+                        if (this.tabSelectedIndex <= lastIndex) {
+                            this.selectTabEditorCell(this.tabSelectedIndex, this.tabDraft.string);
+                        } else {
+                            this.appendTabEditorMeasure();
+                        }
+                    } else if (this.tabSelectedIndex > lastIndex) {
+                        this.appendTabEditorMeasure();
+                    } else {
+                        this.advanceTabEditorPosition(this.tabSelectedIndex);
+                    }
+                    return;
+                }
                 if (event.shiftKey && lastIndex < 0) return;
                 const maxIndex = event.shiftKey ? lastIndex : this.tabDraft.beats.length;
                 const index = Math.max(0, Math.min(maxIndex, this.tabSelectedIndex + delta));

@@ -19,7 +19,22 @@
         }
     }
 
-    &__utility-actions { padding-block-start: $size-3; }
+    &__utility-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: $size-3;
+        flex-wrap: wrap;
+
+        > .button {
+            margin-inline-start: auto;
+        }
+    }
+
+    &__utility-actions {
+        align-items: center;
+        flex-wrap: wrap;
+    }
 
     &__field {
         display: flex;
@@ -54,14 +69,6 @@
 
     @include mq(medium) {
         &__utility-bar { position: relative; }
-
-        &__utility-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: $size-3;
-            flex-wrap: wrap;
-        }
 
         &__field {
             display: grid;
@@ -109,12 +116,26 @@
             position: absolute;
             z-index: 20;
             top: calc(100% + $size-2);
-            right: 0;
+            inset-inline-start: 0;
 
             width: min(320px, calc(100vw - 2rem));
             max-height: min(65vh, 460px);
             
             overflow-y: auto;
+            scrollbar-width: thin;
+
+            &::-webkit-scrollbar {
+                width: 6px;
+            }
+
+            &::-webkit-scrollbar-thumb {
+                background-color: hsl(var(--neutral-800) / .25);
+                border-radius: 999px;
+            }
+
+            &::-webkit-scrollbar-track {
+                background: transparent;
+            }
             
             padding: $size-3;
             
@@ -128,10 +149,23 @@
                 font-weight: 600;
             }
 
+            .tab-editor__shortcuts-group {
+                margin-block-start: $size-3;
+                padding-block-start: $size-3;
+                border-block-start: 1px solid hsl(var(--neutral-800) / .15);
+
+                h4 {
+                    margin: 0 0 $size-2;
+                    font-size: 13px;
+                    font-weight: 600;
+                    color: hsl(var(--neutral-800));
+                }
+            }
+
             dl {
                 display: grid;
                 gap: $size-2;
-                margin-block: $size-3 0;
+                margin: 0;
                 font-size: 14px;
             }
 

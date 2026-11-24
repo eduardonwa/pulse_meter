@@ -37,6 +37,12 @@ export function appendTabNote(draft, fret = draft.fret, string = draft.string) {
         beats: [...draft.beats, { fret: number, string: line, duration, ...(draft.dotted ? { dotted: true } : {}), ...(draft.tuplet === 3 ? { tuplet: 3 } : {}) }],
     };
 }
+// A single whole rest represents a full measure in AlphaTab, in any meter.
+export function isTabFullMeasureRest(notes) {
+    return notes.length === 1 && notes[0].rest && notes[0].duration === 1 &&
+        !notes[0].dotted && !notes[0].tuplet;
+}
+
 export function layoutTabMeasures(draft, numerator = 4, denominator = 4) {
     const meter = Number(numerator);
     if (!Number.isInteger(meter) || meter < 1 || meter > 16) {
@@ -51,6 +57,7 @@ export function layoutTabMeasures(draft, numerator = 4, denominator = 4) {
     let units = 0;
     for (const [index, beat] of draft.beats.entries()) {
         if (boundaries.has(index) && current.length) {
+            if (isTabFullMeasureRest(current)) units = capacity;
             measures.push({ notes: current, endIndex: index - 1, complete: Math.abs(units - capacity) < 1e-7, used: units, capacity, overflowBeforeIndex: null });
             current = [];
             units = 0;
@@ -59,9 +66,91 @@ export function layoutTabMeasures(draft, numerator = 4, denominator = 4) {
         units += tabBeatUnits(beat);
     }
     if (current.length) {
+        if (isTabFullMeasureRest(current)) units = capacity;
         measures.push({ notes: current, endIndex: draft.beats.length - 1, complete: Math.abs(units - capacity) < 1e-7, used: units, capacity, overflowBeforeIndex: null });
     }
     return measures;
+}
+
+// The clipboard contains only musical data; no renderer or selection state.
+export function copyTabFragment(draft, indices, numerator = 4, denominator = 4) {
+    const selected = new Set(indices);
+    return layoutTabMeasures(draft, numerator, denominator).map(measure => {
+        const beats = measure.notes.filter(note => selected.has(note.index)).map(({ index, ...note }) => {
+            const beat = JSON.parse(JSON.stringify(note));
+            if (!selected.has(index - 1)) delete beat.tie;
+            if (!selected.has(index + 1)) delete beat.legato;
+            return beat;
+        });
+        return { beats, fullRest: isTabFullMeasureRest(measure.notes),
+            wholeMeasure: beats.length === measure.notes.length };
+    }).filter(group => group.beats.length);
+}
+
+// Insert rather than overwrite existing notes. A selected empty measure is
+// replaced, and original barlines outside the insertion remain unchanged.
+export function pasteTabFragment(draft, index, fragment, numerator = 4, denominator = 4, insertion = false) {
+    if (!fragment.length) return null;
+    const measures = layoutTabMeasures(draft, numerator, denominator);
+    const capacity = Number(numerator) * 16 / Number(denominator);
+    const groups = measures.map(measure => measure.notes.map(({ index: _, ...beat }) => beat));
+    const previous = insertion && index > 0
+        ? measures.findIndex(measure => measure.endIndex === index - 1) : -1;
+    const current = measures.findIndex(measure => measure.notes.some(note => note.index === index));
+    const firstGroup = fragment[0];
+    const firstSize = firstGroup.fullRest ? capacity : tabBeatUnits(firstGroup.beats[0]);
+    const usePrevious = previous >= 0 && !firstGroup.wholeMeasure &&
+        measures[previous].used + firstSize <= capacity + 1e-7;
+    const target = usePrevious ? previous : current >= 0 ? current : groups.length;
+    const original = groups[target] ?? [];
+    const offset = usePrevious ? original.length : current >= 0 ? index - measures[current].notes[0].index : 0;
+    const replaceRest = !insertion && isTabFullMeasureRest(original);
+    const prefix = replaceRest ? [] : original.slice(0, offset);
+    const suffix = replaceRest ? [] : original.slice(offset);
+    const packed = [];
+    let bar = [], used = 0;
+    const flush = () => {
+        if (bar.length) packed.push(bar);
+        bar = [];
+        used = 0;
+    };
+    const append = (beat, fullRest = false) => {
+        const size = fullRest ? capacity : tabBeatUnits(beat);
+        if (size > capacity + 1e-7) throw new RangeError('A copied note is longer than the destination measure.');
+        if (fullRest || used + size > capacity + 1e-7) flush();
+        bar.push(beat);
+        used += size;
+        if (fullRest || used >= capacity - 1e-7) flush();
+    };
+    prefix.forEach(beat => append(beat));
+    const start = groups.slice(0, target).reduce((total, group) => total + group.length, 0) + prefix.length;
+    const copied = JSON.parse(JSON.stringify(fragment));
+    let count = 0;
+    copied.forEach((group, i) => {
+        if (i > 0 || group.wholeMeasure) flush();
+        group.beats.forEach(beat => append(beat, group.fullRest));
+        count += group.beats.length;
+        if (group.wholeMeasure) flush();
+    });
+    suffix.forEach(beat => append(beat, isTabFullMeasureRest(original)));
+    flush();
+    groups.splice(target, original.length ? 1 : 0, ...packed);
+    const beats = [], breaks = [];
+    for (const group of groups) {
+        if (beats.length) breaks.push(beats.length);
+        beats.push(...group);
+    }
+    // Inserting changes adjacency at both ends. Do not create unintended
+    // links from existing notes into the pasted material.
+    if (start > 0 && beats[start - 1].legato) {
+        beats[start - 1] = { ...beats[start - 1] };
+        delete beats[start - 1].legato;
+    }
+    if (beats[start + count]?.tie) {
+        beats[start + count] = { ...beats[start + count] };
+        delete beats[start + count].tie;
+    }
+    return { draft: { ...draft, beats: normalizeTabTies(normalizeTabLegato(beats)), breaks }, start, count };
 }
 
 export function shiftTabBreaks(breaks, index, delta) {
@@ -85,10 +174,11 @@ export function breaksForInsertedTabNote(draft, index, duration, numerator = 4, 
     const beats = draft.beats;
     const boundaries = draft.breaks ?? [];
     const previousBoundary = Math.max(0, ...boundaries.filter(value => value < index));
-    const used = beats.slice(previousBoundary, index)
-        .reduce((total, beat) => total + tabBeatUnits(beat), 0);
-    const size = tabBeatUnits({ duration, dotted: draft.dotted, tuplet: draft.tuplet });
+    const previousBeats = beats.slice(previousBoundary, index);
     const capacity = Number(numerator) * 16 / Number(denominator);
+    const used = isTabFullMeasureRest(previousBeats) ? capacity :
+        previousBeats.reduce((total, beat) => total + tabBeatUnits(beat), 0);
+    const size = tabBeatUnits({ duration, dotted: draft.dotted, tuplet: draft.tuplet });
     const nextLength = beats.length + 1;
     const shifted = updateTabBreaks(boundaries, index, 'insert', nextLength);
     if (index === beats.length && used > 0 && used + size > capacity + 1e-7) {
@@ -134,10 +224,46 @@ export function toggleTabLegato(beats, index, technique = null) {
         : beat);
 }
 
+// Ties belong to their destination, unlike hammer-on/pull-off links.
+// The first version supports a single note of the same fret and string,
+// including connections across measure boundaries.
+export function tabTieSource(beats, index) {
+    if (!Number.isInteger(index) || index <= 0 || index >= beats.length) return null;
+    const source = tabBeatNotes(beats[index - 1]);
+    const destination = tabBeatNotes(beats[index]);
+    return source.length === 1 && destination.length === 1 &&
+        source[0].string === destination[0].string && source[0].fret === destination[0].fret
+        ? index - 1 : null;
+}
+
+export function toggleTabTie(beats, index) {
+    if (tabTieSource(beats, index) === null) {
+        throw new RangeError('Tie needs the same fret and string as the preceding note.');
+    }
+    return beats.map((beat, i) => i === index ? { ...beat, tie: !beat.tie } : beat);
+}
+
+export function normalizeTabTies(beats) {
+    return beats.map((beat, i) => beat.tie && tabTieSource(beats, i) === null
+        ? (() => { const { tie, ...rest } = beat; return rest; })()
+        : beat);
+}
+
 // Legacy beats contain one fret/string; chord beats contain several notes.
 export function tabBeatNotes(beat) {
     if (!beat || beat.rest) return [];
     return beat.notes ?? [{ fret: beat.fret, string: beat.string }];
+}
+
+// Palm mute applies to the selected rhythmic positions (all notes in a chord).
+export function toggleTabPalmMute(beats, indices) {
+    const selected = new Set(indices.filter(index => Number.isInteger(index) && index >= 0 && index < beats.length));
+    const targets = [...selected].filter(index => !beats[index]?.rest && tabBeatNotes(beats[index]).length);
+    if (!targets.length) return beats;
+    const enable = targets.some(index => !beats[index].palmMute);
+    return beats.map((beat, index) => targets.includes(index)
+        ? { ...beat, ...(enable ? { palmMute: true } : { palmMute: false }) }
+        : beat);
 }
 
 export function setTabBeatNote(beat, fret, string) {
@@ -159,12 +285,16 @@ export function serializeTabDraft(draft, numerator = 4, bpm = 100, denominator =
     const measures = layoutTabMeasures(draft, numerator, denominator);
     const body = measures.map(measure => measure.notes.map(beat => {
         const notes = tabBeatNotes(beat);
+        if (beat.tie && tabTieSource(draft.beats, beat.index) === null) {
+            throw new RangeError('Tie needs the same fret and string as the preceding note.');
+        }
         if (beat.legato && !tabLegatoDirection(draft.beats, beat.index)) {
             throw new RangeError('Legato needs two consecutive notes on the same string at different frets.');
         }
+        const effects = [beat.legato ? 'h' : null, beat.palmMute ? 'pm' : null, beat.tie ? 't' : null].filter(Boolean);
         const content = beat.rest ? 'r' : notes.length === 1
-            ? `${notes[0].fret}.${notes[0].string}${beat.legato ? '{h}' : ''}`
-            : `(${notes.map(note => `${note.fret}.${note.string}`).join(' ')})`;
+            ? `${notes[0].fret}.${notes[0].string}${effects.length ? `{${effects.join(' ')}}` : ''}`
+            : `(${notes.map(note => `${note.fret}.${note.string}${beat.palmMute ? '{pm}' : ''}`).join(' ')})`;
         return `:${beat.duration} ${content}${tabRhythmProperties(beat)}`;
     }).join(' ')).join(' | ');
     return `\\tempo ${Number(bpm)}\n\\instrument ${instrument}\n\\ts ${Number(numerator)} ${Number(denominator)}\n\\staff {tabs}\n.\n${body}`;
@@ -194,7 +324,7 @@ export function parseTabDraft(alphaTex) {
     const breaks = [];
     for (const measure of content[4].split('|')) {
         if (beats.length) breaks.push(beats.length);
-        const tokens = measure.trim().match(/:\d+\s+(?:\((?:\d+\.\d+\s*){2,6}\)|\d+\.\d+(?:\{h\})?|r)(?:\s+\{\s*(?:d|tu 3)(?:\s+(?:d|tu 3))?\s*\})?/g) ?? [];
+        const tokens = measure.trim().match(/:\d+\s+(?:\((?:\d+\.\d+(?:\{pm\})?\s*){2,6}\)|\d+\.\d+(?:\{(?:h(?: pm)?(?: t)?|pm(?: t)?|t)\})?|r)(?:\s+\{\s*(?:d|tu 3)(?:\s+(?:d|tu 3))?\s*\})?/g) ?? [];
         if (!tokens.length || tokens.join(' ').replace(/\s+/g, ' ') !== measure.trim().replace(/\s+/g, ' ')) {
             throw new Error('This tablature contains unsupported notation');
         }
@@ -215,16 +345,25 @@ export function parseTabDraft(alphaTex) {
                 ? body.slice(1, -1).trim().split(/\s+/)
                 : [body];
             const notes = raw.map(part => {
-                const note = /^(\d+)\.(\d+)(\{h\})?$/.exec(part);
-                if (!note || (note[3] && raw.length !== 1)) throw new Error('Unsupported chord');
-                return { fret: Number(note[1]), string: Number(note[2]), ...(note[3] ? { legato: true } : {}) };
+                const note = /^(\d+)\.(\d+)(?:\{(h(?: pm)?(?: t)?|pm(?: t)?|t)\})?$/.exec(part);
+                if (!note || ((note[3]?.includes('h') || note[3]?.split(' ').includes('t')) && raw.length !== 1)) throw new Error('Unsupported chord');
+                return { fret: Number(note[1]), string: Number(note[2]),
+                    ...(note[3]?.includes('h') ? { legato: true } : {}),
+                    ...(note[3]?.includes('pm') ? { palmMute: true } : {}),
+                    ...(note[3]?.split(' ').includes('t') ? { tie: true } : {}) };
             });
             if (notes.length > 6 || notes.some(note => note.fret > 24 ||
                 note.string < 1 || note.string > 6) ||
                 new Set(notes.map(note => note.string)).size !== notes.length) {
                 throw new Error('Invalid chord');
             }
-            beats.push(notes.length === 1 ? { ...notes[0], duration, ...rhythm } : { notes, duration, ...rhythm });
+            if (notes.length > 1 && notes.some(note => Boolean(note.palmMute) !== Boolean(notes[0].palmMute))) {
+                throw new Error('All notes in a chord must share palm mute.');
+            }
+            const palmMute = notes[0].palmMute ? { palmMute: true } : {};
+            beats.push(notes.length === 1
+                ? { ...notes[0], duration, ...rhythm }
+                : { notes: notes.map(({ fret, string }) => ({ fret, string })), duration, ...rhythm, ...palmMute });
         }
     }
     const draft = { ...createTabDraft(), beats, instrument, breaks };
@@ -291,7 +430,7 @@ export function serializeTabPlayback(draft, numerator = 4, bpm = 100, denominato
         if (beats.length) breaks.push(beats.length);
         let used = 0;
         for (const beat of measure.notes) {
-            const amount = tabBeatUnits(beat);
+            const amount = isTabFullMeasureRest(measure.notes) ? capacity : tabBeatUnits(beat);
             if (used + amount > capacity + 1e-7) break;
             const { index, ...note } = beat;
             beats.push(note);

@@ -2,6 +2,8 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import {
     createTabDraft,
+    copyTabFragment,
+    pasteTabFragment,
     layoutTabMeasures,
     serializeTabDraft,
     parseTabDraft,
@@ -9,6 +11,10 @@ import {
     tabLegatoDirection,
     toggleTabLegato,
     normalizeTabLegato,
+    toggleTabPalmMute,
+    tabTieSource,
+    toggleTabTie,
+    normalizeTabTies,
 } from '../../resources/js/metronome/alphatab/tab-editor.js'
 
 const sevenEighthNotes = {
@@ -133,3 +139,131 @@ test('editing a legato destination removes orphaned effects without touching val
     assert.equal(cleaned[1].legato, undefined)
     assert.equal(beats[1].legato, true)
 })
+
+test('palm mute round-trips notes and chords through AlphaTex', () => {
+    const draft = {
+        ...createTabDraft(),
+        beats: [
+            { fret: 5, string: 6, duration: 4, palmMute: true },
+            { notes: [{ fret: 5, string: 6 }, { fret: 7, string: 5 }], duration: 4, palmMute: true },
+            { fret: 7, string: 6, duration: 4 },
+            { rest: true, duration: 4 },
+        ],
+    }
+    const alphaTex = serializeTabDraft(draft)
+    assert.ok(alphaTex.includes('5.6{pm}'))
+    assert.ok(alphaTex.includes('(5.6{pm} 7.5{pm})'))
+    assert.deepEqual(parseTabDraft(alphaTex).draft.beats, draft.beats)
+    assert.equal(playbackAlphaTex(alphaTex), alphaTex)
+})
+
+test('palm mute can coexist with hammer-on and pull-off', () => {
+    const draft = {
+        ...createTabDraft(),
+        beats: [
+            { fret: 5, string: 2, duration: 4, legato: true, palmMute: true },
+            { fret: 7, string: 2, duration: 4, legato: true, palmMute: true },
+            { fret: 5, string: 2, duration: 4 },
+            { fret: 5, string: 3, duration: 4 },
+        ],
+    }
+    const alphaTex = serializeTabDraft(draft)
+    assert.ok(alphaTex.includes('5.2{h pm}'))
+    assert.deepEqual(parseTabDraft(alphaTex).draft.beats, draft.beats)
+})
+
+test('palm mute acts on selected notes and ignores rests', () => {
+    const beats = [
+        { fret: 5, string: 6, duration: 8 },
+        { rest: true, duration: 8 },
+        { fret: 7, string: 6, duration: 8 },
+    ]
+    const on = toggleTabPalmMute(beats, [0, 1, 2])
+    assert.equal(on[0].palmMute, true)
+    assert.equal(on[1].palmMute, undefined)
+    assert.equal(on[2].palmMute, true)
+    const off = toggleTabPalmMute(on, [0, 2])
+    assert.equal(off[0].palmMute, false)
+    assert.equal(off[2].palmMute, false)
+    assert.deepEqual(toggleTabPalmMute(beats, [1]), beats)
+})
+
+test('tied destination round-trips through AlphaTex across a barline', () => {
+    const draft = {
+        ...createTabDraft(),
+        breaks: [2],
+        beats: [
+            { fret: 5, string: 6, duration: 2 },
+            { fret: 4, string: 6, duration: 2 },
+            { fret: 4, string: 6, duration: 8, tie: true },
+            { rest: true, duration: 8 },
+        ],
+    }
+    assert.equal(tabTieSource(draft.beats, 2), 1)
+    const alphaTex = serializeTabDraft(draft)
+    assert.ok(alphaTex.includes('4.6{t}'))
+    assert.deepEqual(parseTabDraft(alphaTex).draft.beats, draft.beats)
+    assert.equal(playbackAlphaTex(alphaTex), alphaTex)
+})
+
+test('tie toggles on destination note and rejects different pitches and rests', () => {
+    const beats = [{ fret: 4, string: 6, duration: 8 }, { fret: 4, string: 6, duration: 16 }]
+    assert.equal(toggleTabTie(beats, 1)[1].tie, true)
+    assert.equal(toggleTabTie(toggleTabTie(beats, 1), 1)[1].tie, false)
+    assert.throws(() => toggleTabTie(beats, 0), RangeError)
+    assert.throws(() => toggleTabTie([beats[0], { ...beats[1], fret: 5 }], 1), RangeError)
+    assert.throws(() => toggleTabTie([beats[0], { rest: true, duration: 16 }], 1), RangeError)
+    assert.equal(normalizeTabTies([beats[0], { ...beats[1], fret: 5, tie: true }])[1].tie, undefined)
+})
+
+test('tie and palm mute round-trip on the same destination note', () => {
+    const draft = {
+        ...createTabDraft(),
+        beats: [
+            { fret: 4, string: 6, duration: 4 },
+            { fret: 4, string: 6, duration: 4, palmMute: true, tie: true },
+        ],
+    }
+    const alphaTex = serializeTabDraft(draft)
+    assert.ok(alphaTex.includes('4.6{pm t}'))
+    assert.deepEqual(parseTabDraft(alphaTex).draft.beats, draft.beats)
+})
+
+test('clipboard preserves chords, rhythms, techniques and measure breaks', () => {
+    const draft = { ...createTabDraft(), breaks: [2], beats: [
+        { fret: 5, string: 6, duration: 2, palmMute: true },
+        { fret: 5, string: 6, duration: 2, tie: true },
+        { notes: [{ fret: 7, string: 5 }, { fret: 5, string: 6 }], duration: 8, dotted: true },
+        { rest: true, duration: 16 },
+    ] };
+    const fragment = copyTabFragment(draft, [0, 1, 2, 3]);
+    const destination = { ...createTabDraft(), beats: [{ rest: true, duration: 1 }] };
+    const result = pasteTabFragment(destination, 0, fragment);
+    assert.deepEqual(result.draft.beats, draft.beats);
+    assert.deepEqual(result.draft.breaks, [2]);
+    assert.equal(result.count, 4);
+    assert.deepEqual(parseTabDraft(serializeTabDraft(result.draft)).draft.beats, draft.beats);
+});
+
+test('partial clipboard inserts without overwriting and splits overflowing measures', () => {
+    const draft = { ...createTabDraft(), beats: [
+        { fret: 3, string: 6, duration: 2 },
+        { fret: 5, string: 6, duration: 2 },
+    ] };
+    const fragment = copyTabFragment(draft, [0]);
+    const result = pasteTabFragment(draft, 1, fragment);
+    assert.deepEqual(result.draft.beats.map(beat => beat.fret), [3, 3, 5]);
+    assert.deepEqual(result.draft.breaks, [2]);
+    assert.equal(result.start, 1);
+});
+
+test('clipboard does not retain ties or legato to unselected notes', () => {
+    const draft = { ...createTabDraft(), beats: [
+        { fret: 3, string: 6, duration: 8, legato: true },
+        { fret: 5, string: 6, duration: 8 },
+        { fret: 5, string: 6, duration: 8, tie: true },
+    ] };
+    const fragment = copyTabFragment(draft, [0, 2]);
+    assert.equal(fragment[0].beats[0].legato, undefined);
+    assert.equal(fragment[0].beats[1].tie, undefined);
+});
