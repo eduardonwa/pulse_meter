@@ -112,7 +112,7 @@ test('Ctrl+Shift+Z and Ctrl+Y redo; a new edit clears redo history', () => {
     assert.equal(e.tabDraft.beats[0].duration, 16)
 })
 
-test('Delete from focused tablature cell removes all selected beats', () => {
+test('Delete from focused Score editor removes all selected beats', () => {
     const e = editor()
     e.tabDraft.beats.push({ fret: 6, string: 1, duration: 4 })
     e.tabSelectedIndices = [0, 2]
@@ -121,7 +121,7 @@ test('Delete from focused tablature cell removes all selected beats', () => {
         key: 'Delete',
         ctrlKey: false,
         metaKey: false,
-        target: { tagName: 'BUTTON', classList: { contains: name => name === 'tab-editor__cell' } },
+        target: { tagName: 'DIV' },
         preventDefault() { prevented = true },
     })
     assert.equal(prevented, true)
@@ -130,14 +130,14 @@ test('Delete from focused tablature cell removes all selected beats', () => {
     assert.deepEqual(e.tabDraft.beats.map(beat => beat.fret), [2, 4, 6])
 })
 
-test('Backspace from focused tablature cell clears every selected beat, including chords', () => {
+test('Backspace from focused Score editor clears every selected beat, including chords', () => {
     const e = editor()
     e.tabDraft.beats[0] = { duration: 4, notes: [{ fret: 2, string: 1 }, { fret: 5, string: 2 }] }
     e.tabSelectedIndices = [0, 1]
     let prevented = false
     e.handleTabEditorKey({
         key: 'Backspace',
-        target: { tagName: 'BUTTON', classList: { contains: name => name === 'tab-editor__cell' } },
+        target: { tagName: 'DIV' },
         preventDefault() { prevented = true },
     })
     assert.equal(prevented, true)
@@ -150,12 +150,12 @@ test('Backspace from focused tablature cell clears every selected beat, includin
     assert.equal(e.tabDraft.beats[1].fret, 4)
 })
 
-test('Delete does not trigger from other toolbar buttons', () => {
+test('Delete does not trigger from toolbar buttons', () => {
     const e = editor()
     e.tabSelectedIndices = [0, 1]
     e.handleTabEditorKey({
         key: 'Delete',
-        target: { tagName: 'BUTTON', classList: { contains: () => false } },
+        target: { tagName: 'BUTTON' },
         preventDefault() { throw new Error('Unexpected keyboard shortcut') },
     })
     assert.equal(e.tabDraft.beats.length, 2)
