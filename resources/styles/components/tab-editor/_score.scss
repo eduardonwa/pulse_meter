@@ -92,6 +92,16 @@
             }
         }
 
+        .tab-editor__tie-arc {
+            position: absolute;
+            z-index: 3;
+            top: -13px;
+            right: 50%;
+            overflow: visible;
+            pointer-events: none;
+            color: hsl(var(--primary-800));
+        }
+
         .tab-editor__palm-mute-mark {
             position: absolute;
             z-index: 4;
