@@ -85,6 +85,10 @@
                 }
             }
 
+            &.is-playing .tab-editor-score-caret {
+                display: none;
+            }
+
             .tab-editor-score-caret {
                 position: absolute;
                 z-index: 15;
