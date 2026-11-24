@@ -281,7 +281,6 @@
 
                 <div class="tab-editor__score-preview" x-show="!tabFullMusicXml" x-cloak
                     x-ref="tabEditorScoreKeyboard" tabindex="0" role="group" aria-label="Score keyboard editor">
-                    <p class="tab-editor__score-preview-hint">Click a note to edit. Arrow keys navigate · Shift + arrows or drag selects a range · Ctrl/Cmd + Shift + arrows jumps between measures · I inserts a position · 0–9 enters frets · R inserts a rest.</p>
                     <button type="button" class="button" data-type="outline" @click="prepareTabEditorScoreInsertion()" title="Insert a position after the current note (I)">Insert position (I)</button>
                     <button type="button" class="button" data-type="outline" @click="deleteTabEditorMeasure()" :disabled="!tabDraft.beats.length" title="Delete selected measure">Delete measure</button>
                     <p x-show="tabInsertAtBar" x-cloak>Insertion cursor at position <span x-text="tabSelectedIndex + 1"></span> · choose a duration, then type a fret or R.</p>
