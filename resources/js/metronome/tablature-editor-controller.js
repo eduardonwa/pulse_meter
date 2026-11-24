@@ -3,7 +3,7 @@ import {
     layoutTabMeasures, isTabFullMeasureRest, selectTabNoteIndices, copyTabFragment, pasteTabFragment, changeSelectedTabDurations,
     changeSelectedTabRhythm, tabBeatUnits, clearTabNotes, updateTabBreaks,
     breaksForInsertedTabNote, tabBeatNotes, setTabBeatNote,
-    removeTabNoteAtString, tabLegatoDirection, toggleTabLegato, normalizeTabLegato, toggleTabPalmMute, toggleTabTie, normalizeTabTies, toggleTabSlide, toggleTabPickStroke, TAB_DURATIONS
+    removeTabNoteAtString, tabLegatoDirection, toggleTabLegato, normalizeTabLegato, toggleTabPalmMute, toggleTabTie, normalizeTabTies, toggleTabSlide, toggleTabPickStroke, TAB_DURATIONS, tabTempoAt, setTabMeasureTempo, shiftTabMeasureTempos
 } from "./alphatab/tab-editor.js";
 
 // The Alpine component spreads these actions into its existing exercise state.
@@ -110,9 +110,41 @@ export function tablatureEditorMethods() {
             return measures.findIndex(measure => measure.notes.some(note => note.index === index));
         },
 
+        tabEditorCurrentBpm() {
+            return tabTempoAt(this.tabDraft, this.tabEditorActiveMeasureIndex(), this.stepForm.bpm);
+        },
+
+        tabEditorHasTempoChange() {
+            const index = this.tabEditorActiveMeasureIndex();
+            return index > 0 && Object.hasOwn(this.tabDraft.tempos ?? {}, index);
+        },
+
+        changeTabEditorBpm(value) {
+            const bpm = Number(value);
+            if (!Number.isInteger(bpm) || bpm < 30 || bpm > 400) {
+                this.showToast?.('Choose a BPM between 30 and 400.', 'error');
+                return;
+            }
+            const index = this.tabEditorActiveMeasureIndex();
+            if (bpm === this.tabEditorCurrentBpm()) return;
+            this.finishPendingTabDigit(false);
+            this.recordTabEditorUndo();
+            if (index <= 0) this.stepForm.bpm = bpm;
+            else this.tabDraft = setTabMeasureTempo(this.tabDraft, index, bpm);
+        },
+
+        removeTabEditorTempoChange() {
+            if (!this.tabEditorHasTempoChange()) return;
+            const index = this.tabEditorActiveMeasureIndex();
+            this.finishPendingTabDigit(false);
+            this.recordTabEditorUndo();
+            this.tabDraft = setTabMeasureTempo(this.tabDraft, index, null);
+        },
+
         deleteTabEditorMeasure() {
             const measures = this.tabEditorMeasureLayout();
-            const measure = measures[this.tabEditorActiveMeasureIndex(measures)];
+            const measureIndex = this.tabEditorActiveMeasureIndex(measures);
+            const measure = measures[measureIndex];
             if (!measure) return;
             this.finishPendingTabDigit(false);
             this.recordTabEditorUndo();
@@ -125,7 +157,11 @@ export function tablatureEditorMethods() {
                 .map(position => position > measure.endIndex ? position - length : position)
                 .filter(position => position > 0 && position < beats.length))];
             if (!beats.length) beats.push({ rest: true, duration: 1 });
-            this.tabDraft = { ...this.tabDraft, beats: normalizeTabTies(normalizeTabLegato(beats)), breaks };
+            const tempos = shiftTabMeasureTempos(this.tabDraft.tempos, measureIndex, 1);
+            if (measureIndex === 0 && this.tabDraft.tempos?.[1] !== undefined) {
+                this.stepForm.bpm = this.tabDraft.tempos[1];
+            }
+            this.tabDraft = { ...this.tabDraft, beats: normalizeTabTies(normalizeTabLegato(beats)), breaks, tempos };
             this.selectTabEditorCell(Math.min(start, beats.length - 1), this.tabDraft.string);
             this.$nextTick(() => this.$refs.tabEditorScoreKeyboard?.focus());
         },
@@ -372,6 +408,7 @@ export function tablatureEditorMethods() {
         tabEditorSnapshot() {
             return {
                 draft: JSON.parse(JSON.stringify(this.tabDraft)),
+                bpm: this.stepForm?.bpm,
                 selectedIndex: this.tabSelectedIndex,
                 selectedIndices: [...this.tabSelectedIndices],
                 selectionAnchor: this.tabSelectionAnchor,
@@ -381,6 +418,7 @@ export function tablatureEditorMethods() {
 
         restoreTabEditorSnapshot(snapshot) {
             this.tabDraft = snapshot.draft;
+            if (this.stepForm && snapshot.bpm !== undefined) this.stepForm.bpm = snapshot.bpm;
             this.tabSelectedIndex = snapshot.selectedIndex;
             this.tabSelectedIndices = snapshot.selectedIndices;
             this.tabInsertAtBar = snapshot.insertAtBar;
