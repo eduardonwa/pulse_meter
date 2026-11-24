@@ -523,6 +523,10 @@
                 > .time-signature__control-row {
                     display: contents;
 
+                    > * {
+                        padding-inline: $size-4;
+                    }
+
                     > .time-signature__playback {
                         grid-area: playback;
                         min-width: 0;
