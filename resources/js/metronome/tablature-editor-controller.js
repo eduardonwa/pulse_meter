@@ -117,6 +117,21 @@ export function tablatureEditorMethods() {
             return columns;
         },
 
+        prepareTabEditorScoreInsertion() {
+            if (this.tabScoreView !== 'score' || this.tabFullMusicXml) return;
+            this.finishPendingTabDigit(false);
+            // An insertion cursor is not a note. Keep the current rhythm and
+            // let addTabEditorNote/addTabEditorRest reuse the existing model.
+            const afterSelected = this.tabSelectedIndices.length > 0;
+            const index = Math.min(this.tabDraft.beats.length,
+                this.tabSelectedIndex + (afterSelected ? 1 : 0));
+            this.tabSelectedIndex = index;
+            this.tabInsertAtBar = true;
+            this.tabSelectedIndices = [];
+            this.tabSelectionAnchor = null;
+            this.$nextTick(() => this.$refs.tabEditorScoreKeyboard?.focus());
+        },
+
         selectTabEditorScoreBeat(event) {
             const detail = event?.detail;
             if (!detail || detail.element !== this.$refs.tabEditorPreview ||
@@ -132,7 +147,7 @@ export function tablatureEditorMethods() {
             const string = Number.isInteger(requestedString) && requestedString >= 1 && requestedString <= 6
                 ? requestedString : (notes[0]?.string ?? this.tabDraft.string);
             this.selectTabEditorCell(position, string);
-            this.$nextTick(() => this.$refs.tabEditorScoreFocus?.focus());
+            this.$nextTick(() => this.$refs.tabEditorScoreKeyboard?.focus());
         },
 
         tabEditorSystems() {
@@ -612,6 +627,12 @@ export function tablatureEditorMethods() {
             // accept Delete, Backspace and the existing tab keyboard controls.
             if (tag === 'BUTTON' && !event.target?.classList?.contains('tab-editor__cell')) return;
             const techniqueKey = event.key.toLowerCase();
+            if (this.tabScoreView === 'score' && !event.ctrlKey && !event.metaKey &&
+                !event.altKey && !event.repeat && techniqueKey === 'i') {
+                event.preventDefault();
+                this.prepareTabEditorScoreInsertion();
+                return;
+            }
             if (!event.ctrlKey && !event.metaKey && !event.altKey && !event.repeat &&
                 techniqueKey === 'r') {
                 event.preventDefault();
