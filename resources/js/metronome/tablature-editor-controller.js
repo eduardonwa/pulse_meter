@@ -428,24 +428,56 @@ export function tablatureEditorMethods() {
         },
 
         addTabEditorRest() {
-            const beat = {
+            const index = this.tabSelectedIndex;
+            const inserting = this.tabInsertAtBar || index >= this.tabDraft.beats.length;
+            let beat = {
                 rest: true,
                 duration: this.tabDraft.duration,
                 ...(this.tabDraft.dotted ? { dotted: true } : {}),
                 ...(this.tabDraft.tuplet === 3 ? { tuplet: 3 } : {}),
             };
-            const index = this.tabSelectedIndex;
+            // A + slot is tied to an incomplete measure. Do not carry a
+            // previously selected dotted/triplet rhythm into its last beat.
+            if (inserting && this.tabInsertAtBar) {
+                const measure = this.tabEditorMeasureLayout().find(item =>
+                    item.endIndex + 1 === index && item.used < item.capacity - 1e-7
+                );
+                if (measure) {
+                    const remaining = measure.capacity - measure.used;
+                    if (tabBeatUnits(beat) > remaining + 1e-7) {
+                        const duration = [1, 2, 4, 8, 16].find(value =>
+                            16 / value <= remaining + 1e-7
+                        );
+                        if (!duration) {
+                            this.showToast?.('No rhythmic space remains for a rest here.', 'error');
+                            return;
+                        }
+                        beat = { rest: true, duration };
+                    }
+                }
+            }
             const beats = [...this.tabDraft.beats];
-            if (index < beats.length && !this.tabInsertAtBar) {
+            if (!inserting) {
                 beats[index] = beat;
             } else {
                 beats.splice(index, 0, beat);
             }
-            const breaks = beats.length > this.tabDraft.beats.length
-                ? breaksForInsertedTabNote(this.tabDraft, index, beat.duration, this.stepForm.time_signature_numerator, this.stepForm.time_signature_denominator)
+            // The break calculator must use the actual rhythm of the rest,
+            // not modifiers inherited from a previously selected note.
+            const insertionDraft = { ...this.tabDraft, dotted: Boolean(beat.dotted), tuplet: beat.tuplet ?? null };
+            const breaks = inserting
+                ? breaksForInsertedTabNote(insertionDraft, index, beat.duration,
+                    this.stepForm.time_signature_numerator, this.stepForm.time_signature_denominator)
                 : this.tabDraft.breaks;
             this.recordTabEditorUndo();
-            this.tabDraft = { ...this.tabDraft, beats: normalizeTabTies(normalizeTabLegato(beats)), breaks };
+            this.tabDraft = {
+                ...this.tabDraft,
+                duration: beat.duration,
+                dotted: Boolean(beat.dotted),
+                tuplet: beat.tuplet ?? null,
+                beats: normalizeTabTies(normalizeTabLegato(beats)),
+                breaks,
+            };
             this.tabSelectedIndex = Math.min(beats.length, index + 1);
             this.tabInsertAtBar = false;
             this.tabSelectedIndices = [];
