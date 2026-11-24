@@ -189,3 +189,139 @@ test('MusicXML with no editable measures explains that complete score playback r
         /No compatible measures found for editing\. The full score is still available for playback\./,
     )
 })
+
+
+function guitarProMeasure(number, { tempo, gap = false, missingFret = false, connection = false } = {}) {
+    const standard = [0, 1, 2, 3].map(() => el('note', [
+        el('duration', '4'), el('staff', '1'), el('voice', '1'),
+        el('notations', [el('technical')]),
+    ]))
+    const tab = [2, 4, 6, 8].map((fret, index) => el('note', [
+        el('duration', '4'), el('staff', '2'), el('voice', '5'),
+        el('notations', [
+            el('technical', [el('string', '6'),
+                ...(missingFret && index === 0 ? [] : [el('fret', String(fret))])]),
+            ...(connection && index === 0 ? [el('slide', [], { type: 'start' })] : []),
+        ]),
+        ...(index === 1 ? [el('play', [el('mute', 'palm')])] : []),
+    ]))
+    return el('measure', [
+        ...(number === 1 ? [el('attributes', [
+            el('divisions', '4'),
+            el('clef', [el('sign', 'G')], { number: '1' }),
+            el('clef', [el('sign', 'TAB')], { number: '2' }),
+        ])] : []),
+        ...(tempo ? [el('direction', [el('sound', [], { tempo: String(tempo) })])] : []),
+        ...standard, el('backup', [el('duration', '16')]),
+        ...(gap ? [el('forward', [el('duration', '4')])] : []),
+        ...tab,
+    ], { number: String(number) })
+}
+
+function importMeasures(measures) {
+    const score = el('score-partwise', [el('part', measures)])
+    return parseMusicXmlTab('<score-partwise/>', {
+        parseFromString() {
+            return { documentElement: score, getElementsByTagName: name => score.getElementsByTagName(name) }
+        },
+    })
+}
+
+test('Guitar Pro dual-staff export imports the TAB voice without duplicating notes', () => {
+    const imported = importMeasures([guitarProMeasure(1), guitarProMeasure(2)])
+    assert.deepEqual(imported.warnings, [])
+    assert.deepEqual(imported.limitations, [])
+    assert.equal(imported.sections.length, 1)
+    const { beats, breaks } = imported.sections[0].draft
+    assert.deepEqual(beats.map(beat => beat.fret), [2, 4, 6, 8, 2, 4, 6, 8])
+    assert.ok(beats.every(beat => beat.string === 6))
+    assert.equal(beats[1].palmMute, true)
+    assert.deepEqual(breaks, [4])
+})
+
+test('Guitar Pro import rejects offsets and missing fret rather than inventing notes', () => {
+    const imported = importMeasures([
+        guitarProMeasure(1), guitarProMeasure(2, { gap: true }),
+        guitarProMeasure(3, { missingFret: true }),
+    ])
+    assert.equal(imported.warnings.length, 2)
+    assert.match(imported.warnings[0], /Measure 2: Overlapping notes or offsets/)
+    assert.match(imported.warnings[1], /Measure 3: MusicXML must contain valid guitar string and fret/)
+})
+
+test('MusicXML identifies tempo changes and unsupported connections separately from invalid measures', () => {
+    const imported = importMeasures([
+        guitarProMeasure(1, { tempo: 173 }),
+        guitarProMeasure(2, { tempo: 183, connection: true }),
+    ])
+    assert.deepEqual(imported.warnings, [])
+    assert.equal(imported.sections[0].bpm, 173)
+    assert.equal(imported.limitations.length, 2)
+    assert.match(imported.limitations[0], /tempo changes/)
+    assert.match(imported.limitations[1], /slide connections/)
+})
+
+
+function connectionNote(fret, endpoints = [], technical = []) {
+    return el('note', [
+        el('duration', '4'),
+        el('notations', [
+            el('technical', [el('string', '1'), el('fret', String(fret)), ...technical]),
+            ...endpoints,
+        ]),
+    ])
+}
+
+const endpoint = (kind, type, number = '1') => el(kind, [], { type, number })
+const connectionMeasure = (number, notes) => el('measure', [
+    el('attributes', [el('divisions', '4')]), ...notes,
+], { number: String(number) })
+
+test('MusicXML imports a tie across a measure boundary and a legato slide', () => {
+    const imported = importMeasures([
+        connectionMeasure(1, [connectionNote(2), connectionNote(3), connectionNote(5),
+            connectionNote(7, [endpoint('tied', 'start')])]),
+        connectionMeasure(2, [
+            connectionNote(7, [endpoint('tied', 'stop')]),
+            connectionNote(8, [endpoint('slur', 'start'), endpoint('slide', 'start', '3')]),
+            connectionNote(4, [endpoint('slur', 'stop'), endpoint('slide', 'stop', '3')]),
+            connectionNote(2),
+        ]),
+    ])
+    assert.deepEqual(imported.warnings, [])
+    assert.deepEqual(imported.limitations, [])
+    const draft = imported.sections[0].draft
+    assert.equal(draft.beats[4].tie, true)
+    assert.equal(draft.beats[5].slide, 'sl')
+    assert.ok(draft.beats.every(beat => !Object.hasOwn(beat, 'connections')))
+    assert.match(serializeTabDraft(draft), /7\.1\{t\}/)
+    assert.match(serializeTabDraft(draft), /8\.1\{sl\}/)
+})
+
+test('MusicXML imports explicit hammer-on, pull-off and ordinary slide endpoints', () => {
+    const imported = importMeasures([
+        connectionMeasure(1, [
+            connectionNote(2, [], [endpoint('hammer-on', 'start')]),
+            connectionNote(4, [], [endpoint('hammer-on', 'stop'), endpoint('pull-off', 'start')]),
+            connectionNote(2, [endpoint('slide', 'start')], [endpoint('pull-off', 'stop')]),
+            connectionNote(7, [endpoint('slide', 'stop')]),
+        ]),
+    ])
+    assert.deepEqual(imported.limitations, [])
+    const beats = imported.sections[0].draft.beats
+    assert.equal(beats[0].legato, true)
+    assert.equal(beats[1].legato, true)
+    assert.equal(beats[2].slide, 'ss')
+})
+
+test('MusicXML does not guess the technique represented by an isolated slur', () => {
+    const imported = importMeasures([
+        connectionMeasure(1, [
+            connectionNote(2, [endpoint('slur', 'start')]),
+            connectionNote(4, [endpoint('slur', 'stop')]),
+            connectionNote(5), connectionNote(7),
+        ]),
+    ])
+    assert.match(imported.limitations[0], /slur connections/)
+    assert.equal(imported.sections[0].draft.beats[0].legato, undefined)
+})

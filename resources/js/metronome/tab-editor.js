@@ -234,7 +234,7 @@ export function tabEditor() {
     prototypeMusicXmlIssue: '',
     canImportPrototypeMusicXmlForEditing() {
         const imported = this.prototypeMusicXmlImport
-        return Boolean(imported?.sections?.length === 1 && !imported.warnings?.length &&
+        return Boolean(imported?.sections?.length === 1 && !imported.warnings?.length && !imported.limitations?.length &&
             imported.sections[0].firstMeasure === 1)
     },
     prototypeMusicXmlHasMultipleTimeSignatures() {

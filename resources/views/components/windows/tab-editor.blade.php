@@ -166,6 +166,9 @@
                             </div>
 
                             <p x-show="prototypeMusicXmlIssue" x-text="prototypeMusicXmlIssue"></p>
+                            <template x-for="limitation in (prototypeMusicXmlImport?.limitations ?? [])" :key="limitation">
+                                <p x-text="limitation"></p>
+                            </template>
                             
                             <div x-show="prototypeMusicXmlImport?.warnings?.length">
                                 <strong>Unsupported measures</strong>

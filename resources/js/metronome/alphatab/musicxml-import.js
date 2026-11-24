@@ -1,9 +1,9 @@
-import { createTabDraft, TAB_DURATIONS, tabBeatUnits } from './tab-editor.js'
+import { createTabDraft, TAB_DURATIONS, tabBeatUnits, tabTieSource, tabLegatoDirection } from './tab-editor.js'
 
 const SUPPORTED_DENOMINATORS = [2, 4, 8, 16]
 
 function child(element, tag) {
-    return Array.from(element?.children ?? []).find(node => node.localName === tag) ?? null
+    return children(element, tag)[0] ?? null
 }
 
 function children(element, tag) {
@@ -38,13 +38,79 @@ function parseNote(note, divisions) {
     const rhythm = { ...(dots.length ? { dotted: true } : {}), ...(modification ? { tuplet: 3 } : {}) }
     if (child(note, 'rest')) return { rest: true, duration, ...rhythm, chord: false }
     const technical = child(child(note, 'notations'), 'technical')
-    const string = Number(value(technical, 'string'))
-    const fret = Number(value(technical, 'fret'))
+    const string = Number(value(technical, 'string') ?? NaN)
+    const fret = Number(value(technical, 'fret') ?? NaN)
     if (!Number.isInteger(string) || string < 1 || string > 6 ||
         !Number.isInteger(fret) || fret < 0 || fret > 24) {
         throw new Error('MusicXML must contain valid guitar string and fret positions (1–6, 0–24)')
     }
-    return { string, fret, duration, ...rhythm, chord: Boolean(child(note, 'chord')) }
+    const palmMute = value(child(note, 'play'), 'mute') === 'palm'
+    const connections = noteConnections(note)
+    return { string, fret, duration, ...rhythm, ...(palmMute ? { palmMute: true } : {}), chord: Boolean(child(note, 'chord')), ...(connections.length ? { connections } : {}) }
+}
+
+// Retain connection endpoints until the complete section is available:
+// ties and slides can cross measure boundaries.
+function noteConnections(note) {
+    const notation = child(note, 'notations')
+    const technical = child(notation, 'technical')
+    const ties = [...children(note, 'tie'), ...children(notation, 'tied')]
+    const result = [...new Set(ties.map(node => node.getAttribute('type')))]
+        .map(type => ({ kind: 'tie', type, number: '1' }))
+    for (const [parent, tags] of [[notation, ['slide', 'glissando', 'slur']], [technical, ['hammer-on', 'pull-off']]]) {
+        for (const kind of tags) {
+            for (const node of children(parent, kind)) {
+                result.push({ kind, type: node.getAttribute('type'), number: node.getAttribute('number') ?? '1' })
+            }
+        }
+    }
+    return result
+}
+
+function resolveConnections(beats, limitations) {
+    const endpoints = beats.map(beat => beat.connections ?? [])
+    const clean = beats.map(({ connections, ...beat }) => beat)
+    const consumed = endpoints.map(() => new Set())
+    const warn = kind => limitations.add('This score contains ' + kind + ' connections that cannot be represented by the editable tablature.')
+    for (let i = 0; i < endpoints.length; i++) {
+        for (const [index, start] of endpoints[i].entries()) {
+            if (start.type !== 'start' || consumed[i].has(index)) continue
+            const next = endpoints[i + 1] ?? []
+            const stop = next.findIndex((end, j) => !consumed[i + 1].has(j) &&
+                end.type === 'stop' && end.kind === start.kind && end.number === start.number)
+            if (stop < 0 || clean[i].notes || clean[i + 1]?.notes) continue
+            const direction = tabLegatoDirection(clean, i)
+            if (start.kind === 'tie' && tabTieSource(clean, i + 1) !== null) {
+                clean[i + 1].tie = true
+            } else if ((start.kind === 'slide' && direction) ||
+                (start.kind === 'hammer-on' && direction === 'H') ||
+                (start.kind === 'pull-off' && direction === 'P')) {
+                // A matching slur accompanying a slide denotes a legato slide.
+                // An unaccompanied slur is ambiguous and remains unsupported.
+                const slurStart = endpoints[i].findIndex((e, j) => !consumed[i].has(j) &&
+                    e.kind === 'slur' && e.type === 'start' &&
+                    next.some((n, k) => !consumed[i + 1].has(k) &&
+                        n.kind === 'slur' && n.type === 'stop' && n.number === e.number))
+                if (slurStart >= 0) {
+                    const slurStop = next.findIndex((e, j) => !consumed[i + 1].has(j) &&
+                        e.kind === 'slur' && e.type === 'stop' && e.number === endpoints[i][slurStart].number)
+                    consumed[i].add(slurStart)
+                    consumed[i + 1].add(slurStop)
+                }
+                if (start.kind === 'slide') clean[i].slide = slurStart >= 0 ? 'sl' : 'ss'
+                else clean[i].legato = true
+            } else continue
+            consumed[i].add(index)
+            consumed[i + 1].add(stop)
+        }
+    }
+    for (let i = 0; i < endpoints.length; i++) {
+        for (const [index, endpoint] of endpoints[i].entries()) {
+            if (!consumed[i].has(index)) warn(endpoint.kind)
+        }
+        if (clean[i].slide && clean[i].legato) warn('conflicting slide and legato')
+    }
+    return clean
 }
 
 function fullMeasureRests(capacity) {
@@ -60,21 +126,70 @@ function fullMeasureRests(capacity) {
     return rests
 }
 
-function readMeasure(measure, divisions, signature) {
+// A Guitar Pro export may contain the same instrument twice: standard
+// notation and TAB. Prefer the explicitly declared TAB staff, not a voice ID.
+function tablatureStaff(part) {
+    for (const measure of children(part, 'measure')) {
+        const clefs = children(child(measure, 'attributes'), 'clef')
+        const tab = clefs.find(clef => value(clef, 'sign') === 'TAB')
+        if (tab) return tab.getAttribute('number') || '1'
+    }
+    return null
+}
+
+function staffOf(note) {
+    return value(note, 'staff') ?? '1'
+}
+
+// Track the MusicXML cursor across both staves so that filtering does not
+// accidentally flatten simultaneous voices, gaps or overlapping notes.
+function measureNotes(measure, staff) {
+    const selected = []
+    let cursor = 0
+    let onset = 0
+    let selectedEnd = 0
+    let voice = null
+    for (const node of Array.from(measure.children)) {
+        if (['backup', 'forward'].includes(node.localName)) {
+            if (staff === null) throw new Error('Multiple voices and offsets are not supported yet')
+            const ticks = requiredPositiveInteger(Number(value(node, 'duration')), 'offset duration')
+            cursor += node.localName === 'backup' ? -ticks : ticks
+            if (cursor < 0) throw new Error('Invalid MusicXML offset')
+            continue
+        }
+        if (node.localName !== 'note') continue
+        const chord = Boolean(child(node, 'chord'))
+        const duration = requiredPositiveInteger(Number(value(node, 'duration')), 'note duration')
+        if (!chord) {
+            onset = cursor
+            cursor += duration
+        }
+        if (staff !== null && staffOf(node) !== staff) continue
+        const noteVoice = value(node, 'voice') ?? '1'
+        if ((staff === null && noteVoice !== '1') || (voice !== null && voice !== noteVoice)) {
+            throw new Error('Multiple voices are not supported yet')
+        }
+        voice = noteVoice
+        if (chord ? !selected.length || onset !== selectedEnd - duration : onset !== selectedEnd) {
+            throw new Error('Overlapping notes or offsets are not supported yet')
+        }
+        if (!chord) selectedEnd = onset + duration
+        selected.push(node)
+    }
+    if (!selected.length && children(measure, 'note').length) {
+        throw new Error('No notes found on the tablature staff')
+    }
+    return selected
+}
+
+function readMeasure(measure, divisions, signature, staff) {
     const beats = []
-    const notes = children(measure, 'note')
     const capacity = signature.numerator * 16 / signature.denominator
+    const notes = measureNotes(measure, staff)
     if (notes.length === 1 && child(notes[0], 'rest')?.getAttribute('measure') === 'yes') {
         return fullMeasureRests(capacity)
     }
-    for (const node of Array.from(measure.children)) {
-        if (['backup', 'forward'].includes(node.localName)) {
-            throw new Error('Multiple voices and offsets are not supported yet')
-        }
-        if (node.localName !== 'note') continue
-        if (value(node, 'voice') && value(node, 'voice') !== '1') {
-            throw new Error('Multiple voices are not supported yet')
-        }
+    for (const node of notes) {
         const note = parseNote(node, divisions)
         if (note.chord) {
             const previous = beats.at(-1)
@@ -86,7 +201,12 @@ function readMeasure(measure, divisions, signature) {
                 throw new Error('Multiple notes on the same string cannot form a chord')
             }
             notes.push({ string: note.string, fret: note.fret })
-            beats[beats.length - 1] = { duration: note.duration, ...(note.dotted ? { dotted: true } : {}), ...(note.tuplet === 3 ? { tuplet: 3 } : {}), notes }
+            if (Boolean(previous.palmMute) !== Boolean(note.palmMute)) {
+                throw new Error('Mixed palm mute within a chord is not supported yet')
+            }
+            const { string, fret, connections: previousConnections = [], ...rhythm } = previous
+            const connections = [...previousConnections, ...(note.connections ?? [])]
+            beats[beats.length - 1] = { ...rhythm, notes, ...(connections.length ? { connections } : {}) }
         } else {
             const { chord, ...single } = note
             beats.push(single)
@@ -125,12 +245,14 @@ export function parseMusicXmlTab(xmlText, parser = null) {
     const parts = children(score, 'part')
     const part = parts.find(item => Array.from(item.getElementsByTagName('fret')).length > 0)
     if (!part) throw new Error('No tablature with string and fret information was found')
+    const staff = tablatureStaff(part)
     let numerator = 4
     let denominator = 4
     let divisions = 1
     let bpm = 100
     const sections = []
     const warnings = []
+    const limitations = new Set()
     let active = null
     const measures = children(part, 'measure')
     for (const [i, measure] of measures.entries()) {
@@ -145,13 +267,21 @@ export function parseMusicXmlTab(xmlText, parser = null) {
         if (numerator > 16 || !SUPPORTED_DENOMINATORS.includes(denominator)) {
             throw new Error('Time signatures must use 1–16 over 2, 4, 8 or 16')
         }
-        const tempo = Number(Array.from(measure.getElementsByTagName('sound'))
-            .find(node => node.hasAttribute('tempo'))?.getAttribute('tempo'))
-        if (Number.isFinite(tempo) && tempo >= 30 && tempo <= 400) bpm = Math.round(tempo)
+        const tempos = Array.from(measure.getElementsByTagName('sound'))
+            .filter(node => node.hasAttribute('tempo'))
+            .map(node => Number(node.getAttribute('tempo')))
+            .filter(tempo => Number.isFinite(tempo) && tempo >= 30 && tempo <= 400)
+            .map(Math.round)
+        for (const [index, tempo] of tempos.entries()) {
+            if ((i > 0 || index > 0) && tempo !== bpm) {
+                limitations.add('This score contains tempo changes. The editor currently supports one BPM per exercise.')
+            }
+            bpm = tempo
+        }
         const signature = { numerator, denominator }
         let measureBeats
         try {
-            measureBeats = readMeasure(measure, divisions, signature)
+            measureBeats = readMeasure(measure, divisions, signature, staff)
         } catch (error) {
             warnings.push('Measure ' + (i + 1) + ': ' + error.message)
             active = null
@@ -167,7 +297,10 @@ export function parseMusicXmlTab(xmlText, parser = null) {
         active.draft.beats.push(...measureBeats)
     }
     if (!sections.length) throw new Error('No compatible measures found for editing. The full score is still available for playback.')
+    for (const section of sections) {
+        section.draft.beats = resolveConnections(section.draft.beats, limitations)
+    }
     const title = value(child(score, 'work'), 'work-title') ??
         value(score, 'movement-title') ?? 'Imported tablature'
-    return { title, sections, warnings }
+    return { title, sections, warnings, limitations: [...limitations] }
 }
