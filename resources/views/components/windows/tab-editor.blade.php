@@ -331,6 +331,15 @@
                             title="Toggle palm mute on selected notes (M)">
                             <span aria-hidden="true">P.M.</span> Palm mute
                         </button>
+                        <template x-for="stroke in [{ code: 'sd', name: 'Downstroke', symbol: '⊓' }, { code: 'su', name: 'Upstroke', symbol: 'V' }]" :key="stroke.code">
+                            <button type="button" class="tab-editor__palette-tool"
+                                :class="{ 'is-active': tabDraft.beats[tabSelectedIndex]?.pickStroke === stroke.code }"
+                                :aria-pressed="(tabDraft.beats[tabSelectedIndex]?.pickStroke === stroke.code).toString()"
+                                :title="stroke.name" @click="toggleTabEditorPickStroke(stroke.code)">
+                                <span aria-hidden="true" x-text="stroke.symbol"></span>
+                                <span x-text="stroke.name"></span>
+                            </button>
+                        </template>
                         <div class="tab-editor__slide-tool" x-data="{
                             slideOpen: false,
                             slideAbove: false,
