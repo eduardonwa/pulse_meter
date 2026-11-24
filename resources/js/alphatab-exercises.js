@@ -13,6 +13,12 @@ const renderedBpms = new WeakMap()
 const playbackRequests = new WeakMap()
 const editorScoreCursors = new WeakMap()
 
+// AlphaTex/Dorelog number strings from the top; AlphaTab's Note.string
+// numbers them from the bottom. Convert only at the renderer boundary.
+function editorStringFromAlphaTab(value) {
+    return Number.isInteger(value) && value >= 1 && value <= 6 ? 7 - value : null
+}
+
 // A BeatBounds.visualBounds spans the rhythmic position (and can include
 // both notation and TAB staves). It cannot locate a guitar string. Use the
 // individual number bounds from AlphaTab, including for chord notes.
@@ -22,9 +28,9 @@ function editorScoreNoteHeads(beatBounds) {
     // below standard notation, so use the lowest rendering of each string.
     const perString = new Map()
     for (const item of beatBounds.notes) {
-        const string = Number(item.note?.string)
+        const string = editorStringFromAlphaTab(item.note?.string)
         const rect = item.noteHeadBounds
-        if (!Number.isInteger(string) || string < 1 || string > 6 ||
+        if (string === null ||
             !rect || !Number.isFinite(rect.x) || !Number.isFinite(rect.y)) continue
         const centerY = rect.y + rect.h / 2
         if (!perString.has(string) || centerY > perString.get(string).centerY) {
@@ -318,7 +324,7 @@ async function mountAlphaTab(element) {
                         element,
                         measureIndex: beat.voice?.bar?.masterBar?.index ?? beat.voice?.bar?.index,
                         beatIndex: beat.index,
-                        string: note?.string ?? null,
+                        string: editorStringFromAlphaTab(note?.string),
                     },
                 }))
             }
