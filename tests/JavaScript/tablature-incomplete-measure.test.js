@@ -135,3 +135,28 @@ test('inserting a final rest clears inherited triplet when only a sixteenth rema
     assert.deepEqual(instance.tabDraft.beats.at(-1), { rest: true, duration: 16 })
     assert.equal(instance.tabEditorMeasureStatus(), '1 measure(s) · all complete')
 })
+
+test('R keyboard shortcut inserts a sixteenth rest at the final insertion slot', () => {
+    const instance = editor()
+    instance.stepForm = { time_signature_numerator: 4, time_signature_denominator: 4 }
+    instance.tabDraft = {
+        ...createTabDraft(),
+        duration: 16,
+        beats: [
+            ...Array.from({ length: 7 }, (_, fret) => ({ fret, string: 6, duration: 8 })),
+            { fret: 7, string: 6, duration: 16 },
+        ],
+        breaks: [],
+    }
+    instance.selectTabEditorInsertion(8, 6)
+    let prevented = false
+    instance.handleTabEditorKey({
+        key: 'r',
+        target: { tagName: 'DIV' },
+        ctrlKey: false, metaKey: false, altKey: false, repeat: false,
+        preventDefault() { prevented = true },
+    })
+    assert.equal(prevented, true)
+    assert.deepEqual(instance.tabDraft.beats.at(-1), { rest: true, duration: 16 })
+    assert.equal(instance.tabEditorMeasureStatus(), '1 measure(s) · all complete')
+})
