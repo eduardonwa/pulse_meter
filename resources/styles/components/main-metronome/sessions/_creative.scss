@@ -669,7 +669,12 @@
         &__subdivision {
             .heading {
                 padding-block-start: $size-3;
+
+                @include mq(medium) {
+                    padding-block-start: 0;
+                }
             }
+
             .subdivision-options {
                 display: grid;
                 grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -692,10 +697,6 @@
             display: flex;
             flex-direction: column;
             flex-wrap: wrap;
-            
-            @include mq(medium) {
-                border-inline-end: var(--border);
-            }
 
             .tool-group {
                 display: flex;
