@@ -88,18 +88,17 @@
             .tab-editor-score-caret {
                 position: absolute;
                 z-index: 15;
-                width: 3px;
-                border-radius: 2px;
-                background: hsl(var(--sol-600));
-                box-shadow: 0 0 0 2px hsl(var(--neutral-100) / .75);
+                border: 2px solid hsl(var(--sol-600));
+                border-radius: 4px;
+                background: hsl(var(--sol-500) / .12);
+                box-shadow: 0 0 0 1px hsl(var(--neutral-100) / .85);
                 pointer-events: none;
-                transform: translateX(-50%);
+                transform: translate(-50%, -50%);
             }
 
             .tab-editor-score-caret.is-insertion {
-                width: 2px;
-                background: hsl(var(--neutral-900));
-                border-left: 1px solid hsl(var(--neutral-100));
+                border-style: dashed;
+                background: hsl(var(--sol-500) / .06);
             }
 
             // alphaTab animates the beat cursor; soften the abrupt bar-wide
