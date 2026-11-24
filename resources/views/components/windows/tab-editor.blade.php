@@ -203,8 +203,8 @@
                 @pointercancel.window="endTabDrag()"
             >
                 <aside class="tab-editor__rhythm" aria-label="Tablature tools">
-                    <section class="tab-editor__palette-section" aria-labelledby="tab-palette-rhythm-heading">
-                        <h3 id="tab-palette-rhythm-heading" class="tab-editor__palette-heading">Rhythm</h3>
+                    <details class="tab-editor__palette-section" open>
+                        <summary class="tab-editor__palette-heading">Rhythm<x-lucide-chevron-down aria-hidden="true" /></summary>
                         <div class="tab-editor__palette-durations" role="group" aria-label="Note duration">
                         <template x-for="item in [
                             { duration: 1, name: 'Whole', symbol: '𝅝' },
@@ -221,10 +221,10 @@
                         </template>
                     </div>
 
-                    </section>
+                    </details>
 
-                    <section class="tab-editor__palette-section" aria-labelledby="tab-palette-notation-heading">
-                        <h3 id="tab-palette-notation-heading" class="tab-editor__palette-heading">Notation</h3>
+                    <details class="tab-editor__palette-section" open>
+                        <summary class="tab-editor__palette-heading">Notation<x-lucide-chevron-down aria-hidden="true" /></summary>
                         <div class="tab-editor__palette-effects" role="group" aria-label="Notation controls">
                         <button type="button" class="tab-editor__palette-tool" :class="{ 'is-active': tabDraft.dotted }" :aria-pressed="Boolean(tabDraft.dotted).toString()" @click="setTabEditorRhythm({ dotted: !tabDraft.dotted })" title="Dotted duration: one and a half times the selected value">
                             <span aria-hidden="true">♩.</span> Dotted
@@ -239,10 +239,10 @@
                         </button>
 
                         </div>
-                    </section>
+                    </details>
 
-                    <section class="tab-editor__palette-section" aria-labelledby="tab-palette-techniques-heading">
-                        <h3 id="tab-palette-techniques-heading" class="tab-editor__palette-heading">Techniques</h3>
+                    <details class="tab-editor__palette-section" open>
+                        <summary class="tab-editor__palette-heading">Techniques<x-lucide-chevron-down aria-hidden="true" /></summary>
                         <div class="tab-editor__palette-effects" role="group" aria-label="Playing techniques">
                         <button type="button" class="tab-editor__palette-tool"
                             :class="{ 'is-active': Boolean(tabDraft.beats[tabSelectedIndex]?.legato) && tabEditorLegatoDirection(tabSelectedIndex) === 'H' }"
@@ -259,7 +259,7 @@
                             <span aria-hidden="true">P</span> Pull-off
                         </button>
                         </div>
-                    </section>
+                    </details>
                 </aside>
 
                 <div class="tab-editor__score" x-ref="tabEditorScore" @pointerup.window="endTabDrag()" @pointercancel.window="endTabDrag()" @resize.window="updateTabEditorWidth()" tabindex="0" role="group" aria-label="Interactive six-string tablature">
