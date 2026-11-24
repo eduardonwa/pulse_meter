@@ -146,7 +146,8 @@ export function copyTabFragment(draft, indices, numerator = 4, denominator = 4) 
         });
         return { beats, fullRest: isTabFullMeasureRest(measure.notes),
             wholeMeasure: beats.length === measure.notes.length,
-            ...(beats.length === measure.notes.length && draft.tempos?.[measureIndex] !== undefined ? { tempo: draft.tempos[measureIndex] } : {}) };
+            ...(beats.length === measure.notes.length && draft.tempos?.[measureIndex] !== undefined ? { tempo: draft.tempos[measureIndex] } : {}),
+            ...(beats.length === measure.notes.length ? { signature: tabSignatureAt(draft, measureIndex, numerator, denominator) } : {}) };
     }).filter(group => group.beats.length);
 }
 
@@ -155,15 +156,14 @@ export function copyTabFragment(draft, indices, numerator = 4, denominator = 4) 
 export function pasteTabFragment(draft, index, fragment, numerator = 4, denominator = 4, insertion = false) {
     if (!fragment.length) return null;
     const measures = layoutTabMeasures(draft, numerator, denominator);
-    const capacity = Number(numerator) * 16 / Number(denominator);
     const groups = measures.map(measure => measure.notes.map(({ index: _, ...beat }) => beat));
     const previous = insertion && index > 0
         ? measures.findIndex(measure => measure.endIndex === index - 1) : -1;
     const current = measures.findIndex(measure => measure.notes.some(note => note.index === index));
     const firstGroup = fragment[0];
-    const firstSize = firstGroup.fullRest ? capacity : tabBeatUnits(firstGroup.beats[0]);
+    const firstSize = firstGroup.fullRest ? Infinity : tabBeatUnits(firstGroup.beats[0]);
     const usePrevious = previous >= 0 && !firstGroup.wholeMeasure &&
-        measures[previous].used + firstSize <= capacity + 1e-7;
+        measures[previous].used + firstSize <= measures[previous].capacity + 1e-7;
     const target = usePrevious ? previous : current >= 0 ? current : groups.length;
     const original = groups[target] ?? [];
     const offset = usePrevious ? original.length : current >= 0 ? index - measures[current].notes[0].index : 0;
@@ -171,9 +171,20 @@ export function pasteTabFragment(draft, index, fragment, numerator = 4, denomina
     const prefix = replaceRest ? [] : original.slice(0, offset);
     const suffix = replaceRest ? [] : original.slice(offset);
     const packed = [];
+    const packedSignatures = [];
+    const destinationSignature = tabSignatureAt(draft, target, numerator, denominator);
+    let signature = destinationSignature;
+    let capacity = signature.numerator * 16 / signature.denominator;
     let bar = [], used = 0;
+    const setSignature = next => {
+        signature = next;
+        capacity = signature.numerator * 16 / signature.denominator;
+    };
     const flush = () => {
-        if (bar.length) packed.push(bar);
+        if (bar.length) {
+            packed.push(bar);
+            packedSignatures.push(signature);
+        }
         bar = [];
         used = 0;
     };
@@ -192,10 +203,14 @@ export function pasteTabFragment(draft, index, fragment, numerator = 4, denomina
     let count = 0;
     copied.forEach((group, i) => {
         if (i > 0 || group.wholeMeasure) flush();
+        if (group.wholeMeasure) setSignature(group.signature ?? destinationSignature);
         if (group.wholeMeasure && group.tempo !== undefined) pastedTempos[target + packed.length] = group.tempo;
         group.beats.forEach(beat => append(beat, group.fullRest));
         count += group.beats.length;
-        if (group.wholeMeasure) flush();
+        if (group.wholeMeasure) {
+            flush();
+            setSignature(destinationSignature);
+        }
     });
     suffix.forEach(beat => append(beat, isTabFullMeasureRest(original)));
     flush();
@@ -204,6 +219,23 @@ export function pasteTabFragment(draft, index, fragment, numerator = 4, denomina
     if (original.length && draft.tempos?.[target] !== undefined) {
         const destination = prefix.length || replaceRest ? target : target + Math.max(0, packed.length - 1);
         if (destination > 0) tempos[destination] = draft.tempos[target];
+    }
+    // Rebuild only the meter instructions affected by the insertion. Existing
+    // measures keep their effective signature, including inherited signatures.
+    const signatures = shiftTabMeasureChanges(draft.signatures, target, original.length ? 1 : 0, packed.length);
+    const sameSignature = (a, b) => a.numerator === b.numerator && a.denominator === b.denominator;
+    let preceding = tabSignatureAt(draft, target - 1, numerator, denominator);
+    const initialSignature = target === 0 ? packedSignatures[0] : undefined;
+    for (const [i, value] of packedSignatures.entries()) {
+        const at = target + i;
+        if (at > 0 && (!sameSignature(preceding, value) ||
+            (i === 0 && draft.signatures?.[target] && !prefix.length && replaceRest))) signatures[at] = value;
+        preceding = value;
+    }
+    const following = target + (original.length ? 1 : 0);
+    if (following < groups.length) {
+        const value = tabSignatureAt(draft, following, numerator, denominator);
+        if (!sameSignature(preceding, value)) signatures[target + packed.length] = value;
     }
     const initialBpm = pastedTempos[0];
     for (const [measure, tempo] of Object.entries(pastedTempos)) {
@@ -226,7 +258,7 @@ export function pasteTabFragment(draft, index, fragment, numerator = 4, denomina
         beats[start + count] = { ...beats[start + count] };
         delete beats[start + count].tie;
     }
-    return { draft: { ...draft, beats: normalizeTabTies(normalizeTabLegato(beats)), breaks, tempos }, start, count, ...(initialBpm !== undefined ? { initialBpm } : {}) };
+    return { draft: { ...draft, beats: normalizeTabTies(normalizeTabLegato(beats)), breaks, tempos, signatures }, start, count, ...(initialBpm !== undefined ? { initialBpm } : {}), ...(initialSignature ? { initialSignature } : {}) };
 }
 
 export function shiftTabBreaks(breaks, index, delta) {
