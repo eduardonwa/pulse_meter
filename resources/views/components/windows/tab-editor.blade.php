@@ -301,6 +301,7 @@
                                             >
                                                 <span x-text="column.insertion ? (stringIndex + 1 === tabDraft.string ? '+' : '·') : (tabEditorNoteAt(column.index, stringIndex + 1) ?? '·')"></span>
                                                 <span class="tab-editor__palm-mute-mark"
+                                                    :class="{ 'has-legato': tabEditorLegatoAt(column.index, stringIndex + 1) }"
                                                     x-show="!column.insertion && tabEditorPalmMuteAt(column.index, stringIndex + 1)"
                                                     x-cloak aria-hidden="true">P.M.</span>
                                                 <template x-if="!column.insertion && tabEditorLegatoSegment(column.index, stringIndex + 1, system)">
