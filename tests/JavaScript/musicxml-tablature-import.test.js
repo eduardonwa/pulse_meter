@@ -189,3 +189,74 @@ test('MusicXML with no editable measures explains that complete score playback r
         /No compatible measures found for editing\. The full score is still available for playback\./,
     )
 })
+
+
+function guitarProMeasure(number, { tempo, gap = false, missingFret = false, connection = false } = {}) {
+    const standard = [0, 1, 2, 3].map(() => el('note', [
+        el('duration', '4'), el('staff', '1'), el('voice', '1'),
+        el('notations', [el('technical')]),
+    ]))
+    const tab = [2, 4, 6, 8].map((fret, index) => el('note', [
+        el('duration', '4'), el('staff', '2'), el('voice', '5'),
+        el('notations', [
+            el('technical', [el('string', '6'),
+                ...(missingFret && index === 0 ? [] : [el('fret', String(fret))])]),
+            ...(connection && index === 0 ? [el('slide', [], { type: 'start' })] : []),
+        ]),
+        ...(index === 1 ? [el('play', [el('mute', 'palm')])] : []),
+    ]))
+    return el('measure', [
+        ...(number === 1 ? [el('attributes', [
+            el('divisions', '4'),
+            el('clef', [el('sign', 'G')], { number: '1' }),
+            el('clef', [el('sign', 'TAB')], { number: '2' }),
+        ])] : []),
+        ...(tempo ? [el('direction', [el('sound', [], { tempo: String(tempo) })])] : []),
+        ...standard, el('backup', [el('duration', '16')]),
+        ...(gap ? [el('forward', [el('duration', '4')])] : []),
+        ...tab,
+    ], { number: String(number) })
+}
+
+function importMeasures(measures) {
+    const score = el('score-partwise', [el('part', measures)])
+    return parseMusicXmlTab('<score-partwise/>', {
+        parseFromString() {
+            return { documentElement: score, getElementsByTagName: name => score.getElementsByTagName(name) }
+        },
+    })
+}
+
+test('Guitar Pro dual-staff export imports the TAB voice without duplicating notes', () => {
+    const imported = importMeasures([guitarProMeasure(1), guitarProMeasure(2)])
+    assert.deepEqual(imported.warnings, [])
+    assert.deepEqual(imported.limitations, [])
+    assert.equal(imported.sections.length, 1)
+    const { beats, breaks } = imported.sections[0].draft
+    assert.deepEqual(beats.map(beat => beat.fret), [2, 4, 6, 8, 2, 4, 6, 8])
+    assert.ok(beats.every(beat => beat.string === 6))
+    assert.equal(beats[1].palmMute, true)
+    assert.deepEqual(breaks, [4])
+})
+
+test('Guitar Pro import rejects offsets and missing fret rather than inventing notes', () => {
+    const imported = importMeasures([
+        guitarProMeasure(1), guitarProMeasure(2, { gap: true }),
+        guitarProMeasure(3, { missingFret: true }),
+    ])
+    assert.equal(imported.warnings.length, 2)
+    assert.match(imported.warnings[0], /Measure 2: Overlapping notes or offsets/)
+    assert.match(imported.warnings[1], /Measure 3: MusicXML must contain valid guitar string and fret/)
+})
+
+test('MusicXML identifies tempo changes and unsupported connections separately from invalid measures', () => {
+    const imported = importMeasures([
+        guitarProMeasure(1, { tempo: 173 }),
+        guitarProMeasure(2, { tempo: 183, connection: true }),
+    ])
+    assert.deepEqual(imported.warnings, [])
+    assert.equal(imported.sections[0].bpm, 173)
+    assert.equal(imported.limitations.length, 2)
+    assert.match(imported.limitations[0], /tempo changes/)
+    assert.match(imported.limitations[1], /ties, slides or slurs/)
+})
