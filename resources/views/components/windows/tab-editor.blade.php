@@ -349,6 +349,8 @@
                 <span x-ref="tabEditorScoreFocus" class="sr-only" tabindex="-1">Tab keyboard controls</span>
                 <div class="tab-editor__score-preview" x-show="!tabFullMusicXml && tabScoreView === 'score'" x-cloak>
                     <p class="tab-editor__score-preview-hint">Score editor · Click a note, then use the keyboard or tools.</p>
+                    <p x-show="tabSelectedIndices.length && tabSelectedIndex < tabDraft.beats.length"
+                        x-text="`Selected position ${tabSelectedIndex + 1} · string ${tabDraft.string} · use 0–9 to change fret, R for rest, H/P/M/L for techniques.`"></p>
                     <p class="tab-editor__score-preview-error" role="status" x-show="tabScorePreviewError" x-text="tabScorePreviewError"></p>
                     <p class="tab-editor__score-preview-empty" x-show="!tabDraft.beats.length">Add notes in Grid to see your score here.</p>
                 </div>
