@@ -180,12 +180,24 @@ export function tablatureEditorMethods() {
                 ? tabLegatoDirection(this.tabDraft.beats, index) : null;
         },
 
-        toggleTabEditorLegato() {
+        tabEditorLegatoSegment(index, string, system) {
+            const direction = this.tabEditorLegatoAt(index, string);
+            if (!direction) return null;
+            const currentColumn = system.findIndex(column => !column.insertion && column.index === index);
+            if (currentColumn < 0) return null;
+            const nextColumn = system.findIndex(column => !column.insertion && column.index === index + 1);
+            if (nextColumn < 0) return null;
+            // A barline insertion column may sit between the notes; derive the
+            // horizontal distance from the displayed columns, not beat indices.
+            return { direction, width: (nextColumn - currentColumn) * 40 };
+        },
+
+        toggleTabEditorLegato(technique) {
             this.finishPendingTabDigit(false);
             const index = this.tabSelectedIndex;
             if (this.tabInsertAtBar) return;
             try {
-                const beats = toggleTabLegato(this.tabDraft.beats, index);
+                const beats = toggleTabLegato(this.tabDraft.beats, index, technique);
                 this.recordTabEditorUndo();
                 this.tabDraft = { ...this.tabDraft, beats: normalizeTabLegato(beats) };
             } catch (error) {
