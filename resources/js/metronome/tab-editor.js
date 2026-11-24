@@ -35,9 +35,13 @@ export function tabEditor() {
         const beatIndex = measures[measureIndex].notes.findIndex(note => note.index === anchorIndex)
         const after = Boolean(fitsPrevious)
         const newMeasure = insertion && this.tabSelectedIndex >= count && !after
+        const selected = new Set(this.tabSelectedIndices)
+        const range = selected.size > 1 ? measures.flatMap((measure, m) =>
+            measure.notes.flatMap((note, b) => selected.has(note.index)
+                ? [{ measureIndex: m, beatIndex: b }] : [])) : []
         window.dispatchEvent(new CustomEvent('alphatab:editor-caret', {
             detail: { element, selection: {
-                measureIndex, beatIndex, insertion, after, newMeasure, string: this.tabDraft.string,
+                measureIndex, beatIndex, insertion, after, newMeasure, range, string: this.tabDraft.string,
             } },
         }))
     },
