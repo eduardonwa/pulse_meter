@@ -1,5 +1,5 @@
 import { isAlphaTabCountInEnabled } from './metronome/alphatab/count-in-preference.js'
-import { playbackAlphaTex } from './metronome/alphatab/tab-editor.js'
+import { editorPreviewAlphaTex } from './metronome/alphatab/tab-editor.js'
 import { installMidiReloadListener, loadReplacementMusicXml } from './metronome/alphatab/midi-reload.js'
 import { fixAlphaTabMidiInfoGetter } from './metronome/alphatab/fix-midi-info-getter.js'
 let alphaTabModule = null
@@ -537,7 +537,7 @@ async function mountAlphaTab(element) {
             // Do not pass it through the limited Dorelog editor or alphaTex.
             api.load(new TextEncoder().encode(originalMusicXml))
         } else {
-            api.tex(applyMetadata(playbackAlphaTex(pattern), { bpm }))
+            api.tex(applyMetadata(editorPreviewAlphaTex(pattern, element.dataset.scoreEditable === 'true'), { bpm }))
         }
 
         instances.set(element, api)
@@ -588,7 +588,7 @@ window.addEventListener('alphatab:update', async event => {
 
     if (!element || !alphaTex) return
 
-    const renderedAlphaTex = applyMetadata(playbackAlphaTex(alphaTex), metadata)
+    const renderedAlphaTex = applyMetadata(editorPreviewAlphaTex(alphaTex, element.dataset.scoreEditable === 'true'), metadata)
 
     element.dataset.alphaTex = encodeBase64(alphaTex)
     element.dataset.bpm = String(bpm)
@@ -630,7 +630,7 @@ window.addEventListener('alphatab:preview-draft', async event => {
     const request = ++playbackGeneration
     playbackRequests.set(element, request)
     const pattern = alphaTex
-        ? applyMetadata(playbackAlphaTex(alphaTex), { bpm: Number(bpm) || 100, instrument: Number(instrument ?? 25) })
+        ? applyMetadata(editorPreviewAlphaTex(alphaTex, element.dataset.scoreEditable === 'true'), { bpm: Number(bpm) || 100, instrument: Number(instrument ?? 25) })
         : null
     if (musicXml) {
         element.dataset.musicxml = musicXml
@@ -823,7 +823,7 @@ window.addEventListener('alphatab:set-bpm', async event => {
 
         api.stop()
         api.playbackSpeed = 1
-        api.tex(applyMetadata(playbackAlphaTex(decodeBase64(encodedAlphaTex)), { bpm }))
+        api.tex(applyMetadata(editorPreviewAlphaTex(decodeBase64(encodedAlphaTex), element.dataset.scoreEditable === 'true'), { bpm }))
         renderedBpms.set(element, bpm)
         return
     }
