@@ -157,24 +157,43 @@
                                 @keydown.escape.stop="shortcutsOpen = false"
                             >
                                 <strong>Keyboard shortcuts</strong>
-                                <dl>
-                                    <div><dt>Enter fret</dt><dd>0-9</dd></div>
-                                    <div><dt>Navigate notes</dt><dd>← / →</dd></div>
-                                    <div><dt>Change string</dt><dd>↑ / ↓</dd></div>
-                                    <div><dt>Change duration</dt><dd>+ / -</dd></div>
-                                    <div><dt>Hammer-on</dt><dd>H</dd></div>
-                                    <div><dt>Pull-off</dt><dd>P</dd></div>
-                                    <div><dt>Palm mute</dt><dd>M</dd></div>
-                                    <div><dt>Tie</dt><dd>L</dd></div>
-                                    <div><dt>Rest</dt><dd>R</dd></div>
-                                    <div><dt>Extend selection</dt><dd>Shift + ← / →</dd></div>
-                                    <div><dt>Previous / next measure</dt><dd>Ctrl/Cmd + Shift + ← / →</dd></div>
-                                    <div><dt>Copy / cut / paste</dt><dd>Ctrl/Cmd + C / X / V</dd></div>
-                                    <div><dt>Undo</dt><dd>Ctrl/Cmd + Z</dd></div>
-                                    <div><dt>Redo</dt><dd>Ctrl/Cmd + Shift + Z</dd></div>
-                                    <div><dt>Clear note</dt><dd>Backspace</dd></div>
-                                    <div><dt>Delete position</dt><dd>Delete</dd></div>
-                                </dl>
+                                <section class="tab-editor__shortcuts-group">
+                                    <h4>Navigation &amp; selection</h4>
+                                    <dl>
+                                        <div><dt>Navigate notes</dt><dd>← / →</dd></div>
+                                        <div><dt>Change string</dt><dd>↑ / ↓</dd></div>
+                                        <div><dt>Previous / next measure</dt><dd>Ctrl/Cmd + Shift + ← / →</dd></div>
+                                        <div><dt>Extend selection</dt><dd>Shift + ← / →</dd></div>
+                                    </dl>
+                                </section>
+                                <section class="tab-editor__shortcuts-group">
+                                    <h4>Note &amp; rhythm entry</h4>
+                                    <dl>
+                                        <div><dt>Enter fret</dt><dd>0-9</dd></div>
+                                        <div><dt>Insert position</dt><dd>I</dd></div>
+                                        <div><dt>Rest</dt><dd>R</dd></div>
+                                        <div><dt>Change duration</dt><dd>+ / -</dd></div>
+                                    </dl>
+                                </section>
+                                <section class="tab-editor__shortcuts-group">
+                                    <h4>Techniques</h4>
+                                    <dl>
+                                        <div><dt>Hammer-on</dt><dd>H</dd></div>
+                                        <div><dt>Pull-off</dt><dd>P</dd></div>
+                                        <div><dt>Palm mute</dt><dd>M</dd></div>
+                                        <div><dt>Tie</dt><dd>L</dd></div>
+                                    </dl>
+                                </section>
+                                <section class="tab-editor__shortcuts-group">
+                                    <h4>Editing</h4>
+                                    <dl>
+                                        <div><dt>Copy / cut / paste</dt><dd>Ctrl/Cmd + C / X / V</dd></div>
+                                        <div><dt>Clear note</dt><dd>Backspace</dd></div>
+                                        <div><dt>Delete position</dt><dd>Delete</dd></div>
+                                        <div><dt>Undo</dt><dd>Ctrl/Cmd + Z</dd></div>
+                                        <div><dt>Redo</dt><dd>Ctrl/Cmd + Shift + Z</dd></div>
+                                    </dl>
+                                </section>
                             </div>
                         </div>
                     </div>
@@ -237,6 +256,10 @@
                             <span aria-hidden="true">3:2</span> Triplet
                         </button>
 
+                        <button type="button" class="tab-editor__palette-tool tab-editor__insert-position" @click="prepareTabEditorScoreInsertion()" title="Insert a position after the current note (I)">
+                            <span aria-hidden="true">+</span> Insert position
+                        </button>
+
                         <button type="button" class="tab-editor__palette-tool" @click="addTabEditorRest()" title="Insert or replace with a rest">
                             <span aria-hidden="true">𝄽</span> Rest
                         </button>
@@ -281,7 +304,6 @@
 
                 <div class="tab-editor__score-preview" x-show="!tabFullMusicXml" x-cloak
                     x-ref="tabEditorScoreKeyboard" tabindex="0" role="group" aria-label="Score keyboard editor">
-                    <button type="button" class="button" data-type="outline" @click="prepareTabEditorScoreInsertion()" title="Insert a position after the current note (I)">Insert position (I)</button>
                     <button type="button" class="button" data-type="outline" @click="deleteTabEditorMeasure()" :disabled="!tabDraft.beats.length" title="Delete selected measure">Delete measure</button>
                     <p x-show="tabInsertAtBar" x-cloak>Insertion cursor at position <span x-text="tabSelectedIndex + 1"></span> · choose a duration, then type a fret or R.</p>
                     <p x-show="tabSelectedIndices.length === 1 && tabSelectedIndex < tabDraft.beats.length"
