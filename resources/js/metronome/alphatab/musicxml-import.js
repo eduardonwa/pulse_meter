@@ -1,4 +1,4 @@
-import { createTabDraft, TAB_DURATIONS, tabBeatUnits, tabTieSource, tabLegatoDirection } from './tab-editor.js'
+import { createTabDraft, TAB_DURATIONS, tabBeatUnits, tabTieSource, tabLegatoDirection, tabTempoAt } from './tab-editor.js'
 
 const SUPPORTED_DENOMINATORS = [2, 4, 8, 16]
 
@@ -267,16 +267,30 @@ export function parseMusicXmlTab(xmlText, parser = null) {
         if (numerator > 16 || !SUPPORTED_DENOMINATORS.includes(denominator)) {
             throw new Error('Time signatures must use 1–16 over 2, 4, 8 or 16')
         }
-        const tempos = Array.from(measure.getElementsByTagName('sound'))
-            .filter(node => node.hasAttribute('tempo'))
-            .map(node => Number(node.getAttribute('tempo')))
-            .filter(tempo => Number.isFinite(tempo) && tempo >= 30 && tempo <= 400)
-            .map(Math.round)
-        for (const [index, tempo] of tempos.entries()) {
-            if ((i > 0 || index > 0) && tempo !== bpm) {
-                limitations.add('This score contains tempo changes. The editor currently supports one BPM per exercise.')
+        // Only bar-start tempo instructions are representable in the editor.
+        // Keep the native score available when a change occurs within a bar.
+        let cursor = 0
+        let measureBpm = bpm
+        for (const node of measure.children) {
+            const duration = Number(value(node, 'duration'))
+            if (node.localName === 'note' && !child(node, 'chord')) cursor += duration
+            else if (node.localName === 'backup') cursor -= duration
+            else if (node.localName === 'forward') cursor += duration
+            const sounds = node.localName === 'sound' ? [node] : Array.from(node.getElementsByTagName('sound'))
+            for (const sound of sounds.filter(item => item.hasAttribute('tempo'))) {
+                const tempo = Number(sound.getAttribute('tempo'))
+                if (!Number.isInteger(tempo) || tempo < 30 || tempo > 400) {
+                    limitations.add('This score contains tempo values outside the editable BPM range (30–400, whole numbers).')
+                    continue
+                }
+                const offset = Number(value(sound, 'offset') ?? value(node, 'offset') ?? 0)
+                if (cursor + offset !== 0) {
+                    if (tempo !== bpm) limitations.add('This score contains tempo changes within measures. The editor supports changes at the beginning of a measure.')
+                } else if (measureBpm !== bpm && measureBpm !== tempo) {
+                    limitations.add('This score contains conflicting tempo instructions at a measure boundary.')
+                } else measureBpm = tempo
+                bpm = tempo
             }
-            bpm = tempo
         }
         const signature = { numerator, denominator }
         let measureBeats
@@ -288,12 +302,17 @@ export function parseMusicXmlTab(xmlText, parser = null) {
             continue
         }
         if (!active || active.numerator !== numerator || active.denominator !== denominator) {
-            active = { numerator, denominator, bpm, firstMeasure: i + 1, lastMeasure: i + 1,
+            active = { numerator, denominator, bpm: measureBpm, firstMeasure: i + 1, lastMeasure: i + 1,
                 draft: createTabDraft() }
             sections.push(active)
         }
+        if (active.draft.beats.length) {
+            const measureIndex = i + 1 - active.firstMeasure
+            const previousBpm = tabTempoAt(active.draft, measureIndex - 1, active.bpm)
+            if (measureBpm !== previousBpm) active.draft.tempos[measureIndex] = measureBpm
+            active.draft.breaks.push(active.draft.beats.length)
+        }
         active.lastMeasure = i + 1
-        if (active.draft.beats.length) active.draft.breaks.push(active.draft.beats.length)
         active.draft.beats.push(...measureBeats)
     }
     if (!sections.length) throw new Error('No compatible measures found for editing. The full score is still available for playback.')
