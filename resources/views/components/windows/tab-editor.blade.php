@@ -208,7 +208,7 @@
 
             {{-- main editing area --}}
             <section class="tab-editor__workspace" :class="{ 'is-imported-score': Boolean(tabFullMusicXml) }" aria-label="Tablature workspace"
-                x-init="$nextTick(() => updateTabEditorWidth()); $watch('tabDraft', () => { if (tabScoreView === 'score') $nextTick(() => renderTabScorePreview()) }); $watch('stepForm.bpm', () => { if (tabScoreView === 'score') $nextTick(() => renderTabScorePreview()) }); $watch('stepForm.time_signature_numerator', () => { if (tabScoreView === 'score') $nextTick(() => renderTabScorePreview()) }); $watch('stepForm.time_signature_denominator', () => { if (tabScoreView === 'score') $nextTick(() => renderTabScorePreview()) }); $watch('tabSelectedIndex', () => $nextTick(() => syncTabEditorScoreCaret())); $watch('tabDraft.string', () => $nextTick(() => syncTabEditorScoreCaret())); $watch('tabInsertAtBar', () => $nextTick(() => syncTabEditorScoreCaret()))"
+                x-init="$nextTick(() => updateTabEditorWidth()); $watch('tabDraft', () => { if (tabScoreView === 'score') $nextTick(() => renderTabScorePreview()) }); $watch('stepForm.bpm', () => { if (tabScoreView === 'score') $nextTick(() => renderTabScorePreview()) }); $watch('stepForm.time_signature_numerator', () => { if (tabScoreView === 'score') $nextTick(() => renderTabScorePreview()) }); $watch('stepForm.time_signature_denominator', () => { if (tabScoreView === 'score') $nextTick(() => renderTabScorePreview()) }); $watch('tabSelectedIndex', () => $nextTick(() => syncTabEditorScoreCaret())); $watch('tabSelectedIndices', () => $nextTick(() => syncTabEditorScoreCaret())); $watch('tabDraft.string', () => $nextTick(() => syncTabEditorScoreCaret())); $watch('tabInsertAtBar', () => $nextTick(() => syncTabEditorScoreCaret()))"
                 @keydown="handleTabEditorKey($event)"
                 @resize.window="updateTabEditorWidth()"
                 @pointerup.window="endTabDrag()"
@@ -350,18 +350,19 @@
                 <span x-ref="tabEditorScoreFocus" class="sr-only" tabindex="-1">Tab keyboard controls</span>
                 <div class="tab-editor__score-preview" x-show="!tabFullMusicXml && tabScoreView === 'score'" x-cloak
                     x-ref="tabEditorScoreKeyboard" tabindex="0" role="group" aria-label="Score keyboard editor">
-                    <p class="tab-editor__score-preview-hint">Click a note to edit. Arrow keys navigate and extend the score · I inserts a position · 0–9 enters frets · R inserts a rest.</p>
+                    <p class="tab-editor__score-preview-hint">Click a note to edit. Arrow keys navigate · Shift + arrows or drag selects a range · I inserts a position · 0–9 enters frets · R inserts a rest.</p>
                     <button type="button" class="button" data-type="outline" @click="prepareTabEditorScoreInsertion()" title="Insert a position after the current note (I)">Insert position (I)</button>
                     <button type="button" class="button" data-type="outline" @click="deleteTabEditorMeasure()" :disabled="!tabDraft.beats.length" title="Delete selected measure">Delete measure</button>
                     <p x-show="tabInsertAtBar" x-cloak>Insertion cursor at position <span x-text="tabSelectedIndex + 1"></span> · choose a duration, then type a fret or R.</p>
-                    <p x-show="tabSelectedIndices.length && tabSelectedIndex < tabDraft.beats.length"
+                    <p x-show="tabSelectedIndices.length === 1 && tabSelectedIndex < tabDraft.beats.length"
                         x-text="`Selected position ${tabSelectedIndex + 1} · string ${tabDraft.string} · use 0–9 to change fret, R for rest, H/P/M/L for techniques.`"></p>
+                    <p x-show="tabSelectedIndices.length > 1" x-text="`${tabSelectedIndices.length} positions selected`"></p>
                     <p class="tab-editor__score-preview-error" role="status" x-show="tabScorePreviewError" x-text="tabScorePreviewError"></p>
                 </div>
                 {{-- The playback renderer also supplies the score view; one AlphaTab instance. --}}
                 <div class="tab-editor__playback-host"
                     :class="{ 'is-full-score': tabFullMusicXml || tabScoreView === 'score' }"
-                    x-ref="tabEditorPreview" data-alphatab data-admin-preview="true"
+                    x-ref="tabEditorPreview" data-alphatab data-admin-preview="true" :data-score-editable="(!tabFullMusicXml && tabScoreView === 'score').toString()"
                     :aria-hidden="(!tabFullMusicXml && tabScoreView !== 'score').toString()"></div>
             </section>
 
