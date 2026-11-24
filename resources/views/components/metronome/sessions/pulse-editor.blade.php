@@ -1,7 +1,8 @@
 <div class="pulse-editor">
     <x-metronome.creative-transport variant="mobile" />
 
-    <div class="time-signature flow">
+    <div class="time-signature">
+        <div class="time-signature__content flow">
         <x-metronome.pulse-beats
             groups="getPatternGroups()"
             beat-action="applyEditorTool(item.beat)"
@@ -116,6 +117,7 @@
             <button class="button" data-type="primary" data-variant="outline" type="button" @click="openPulsePatternNameDialog('copy')" x-show="pulseDraft.origin === 'preset' || pulseDraft.origin === 'user'">
                 Save as copy
             </button>
+        </div>
         </div>
     </div>
 
