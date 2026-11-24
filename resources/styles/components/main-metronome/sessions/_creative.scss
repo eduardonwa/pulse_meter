@@ -403,7 +403,6 @@
     }
 
     .pulse-settings-sheet {
-        // Override the shared 80dvh dialog height for this compact settings panel.
         height: fit-content;
         max-height: min(90dvh, 34rem);
 
@@ -511,8 +510,6 @@
                 padding-inline: $size-4;
             }
 
-            // The control-row is a wrapper: its inner sections own the
-            // horizontal inset so their dividers can span the full width.
             > .time-signature__control-row {
                 padding-inline: 0;
 
@@ -531,7 +528,6 @@
                     padding-inline: 0;
                 }
 
-                // Keep section dividers edge-to-edge, but inset their content.
                 > .time-signature__beats {
                     padding-inline: $size-4;
                 }
@@ -733,10 +729,6 @@
 
             @include mq(medium) {
                 display: grid;
-                grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
-            }
-
-            @include mq(large) {
                 grid-template-columns: repeat(2, minmax(0, 1fr));
             }
         }
