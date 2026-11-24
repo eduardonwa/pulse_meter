@@ -19,7 +19,10 @@
         }
     }
 
-    &__utility-actions { padding-block-start: $size-3; }
+    &__utility-actions {
+        align-items: center;
+        flex-wrap: wrap;
+    }
 
     &__field {
         display: flex;
