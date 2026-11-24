@@ -69,6 +69,27 @@ function editorScoreGeometry(element, api) {
     }
 }
 
+// Keep editing inside the dialog's visible score area, above its sticky dock.
+function revealEditorScorePosition(element, target) {
+    if (!target || element.dataset.scoreEditable !== 'true' ||
+        element.classList.contains('is-playing')) return
+    const dialog = element.closest('.tab-editor-dialog')
+    if (!dialog?.open) return
+    const rect = target.getBoundingClientRect()
+    const host = element.getBoundingClientRect()
+    const dock = dialog.querySelector('.tab-editor__bottom-dock')?.getBoundingClientRect()
+    const viewport = dialog.getBoundingClientRect()
+    const top = viewport.top + dialog.clientTop
+    const bottom = Math.min(top + dialog.clientHeight, dock?.top ?? Infinity)
+    const margin = 12
+    if (rect.top < top + margin) dialog.scrollTop += rect.top - top - margin
+    else if (rect.bottom > bottom - margin) dialog.scrollTop += rect.bottom - bottom + margin
+    const left = host.left + element.clientLeft
+    const right = left + element.clientWidth
+    if (rect.left < left + margin) element.scrollLeft += rect.left - left - margin
+    else if (rect.right > right - margin) element.scrollLeft += rect.right - right + margin
+}
+
 function updateEditorScoreCaret(element, api) {
     const selection = editorScoreCursors.get(element)
     let caret = element.querySelector(':scope > .tab-editor-score-caret')
@@ -95,6 +116,7 @@ function updateEditorScoreCaret(element, api) {
         overlay.className = 'tab-editor-score-range'
         overlay.setAttribute('aria-hidden', 'true')
         const fragment = document.createDocumentFragment()
+        let activeMark = null
         for (const position of selection.range) {
             const bounds = boundsAt(position.measureIndex, position.beatIndex)
             if (!bounds) continue
@@ -110,9 +132,11 @@ function updateEditorScoreCaret(element, api) {
             mark.style.width = `${rect.w}px`
             mark.style.height = `${lines[5] - lines[0] + spacing}px`
             fragment.appendChild(mark)
+            if (position.measureIndex === selection.measureIndex && position.beatIndex === selection.beatIndex) activeMark = mark
         }
         overlay.appendChild(fragment)
         element.appendChild(overlay)
+        revealEditorScorePosition(element, activeMark)
         return
     }
     const { measureIndex, beatIndex, insertion, after, newMeasure } = selection
@@ -153,6 +177,7 @@ function updateEditorScoreCaret(element, api) {
     caret.style.top = `${top(centerY)}px`
     caret.style.width = '23px'
     caret.style.height = '21px'
+    revealEditorScorePosition(element, caret)
 }
 
 // Use one pointer path for both notes and empty strings. AlphaTab's separate
