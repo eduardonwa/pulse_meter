@@ -333,6 +333,7 @@
                         </button>
                         <div class="tab-editor__slide-tool" x-data="{
                             slideOpen: false,
+                            slideAbove: false,
                             selectedSlide: 'ss',
                             slides: [
                                 { code: 'ss', name: 'Slide', symbol: '/' },
@@ -354,11 +355,19 @@
                                 </button>
                                 <button type="button" class="tab-editor__slide-toggle" aria-label="Choose slide type"
                                     aria-controls="tab-editor-slide-options" :aria-expanded="slideOpen.toString()"
-                                    @click="slideOpen = !slideOpen">
+                                    @click="slideOpen = !slideOpen; if (slideOpen) $nextTick(() => {
+                                        const trigger = $el.getBoundingClientRect();
+                                        const dialog = $el.closest('dialog').getBoundingClientRect();
+                                        const dock = $el.closest('.tab-editor').querySelector('.tab-editor__bottom-dock').getBoundingClientRect();
+                                        const bottom = Math.min(dialog.bottom, window.innerHeight, dock.top);
+                                        const above = trigger.top - Math.max(dialog.top, 0);
+                                        const below = bottom - trigger.bottom;
+                                        slideAbove = $refs.slideOptions.offsetHeight > below && above > below;
+                                    })">
                                     <x-lucide-chevron-down width="16" height="16" aria-hidden="true" />
                                 </button>
                             </div>
-                            <div id="tab-editor-slide-options" class="tab-editor__slide-options" x-show="slideOpen" x-cloak role="group" aria-label="Slide types">
+                            <div id="tab-editor-slide-options" class="tab-editor__slide-options" x-ref="slideOptions" :class="{ 'opens-above': slideAbove }" x-show="slideOpen" x-cloak role="group" aria-label="Slide types">
                                 <template x-for="slide in slides" :key="slide.code">
                                     <button type="button" class="tab-editor__palette-tool"
                                         :aria-pressed="(selectedSlide === slide.code).toString()"
