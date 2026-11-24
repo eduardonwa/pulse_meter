@@ -604,6 +604,14 @@ export function tablatureEditorMethods() {
                 .sort((a, b) => b - a);
             if (!selected.length) return;
             this.recordTabEditorUndo();
+            const removed = this.tabEditorMeasureLayout().map((measure, index) => ({ measure, index }))
+                .filter(({ measure }) => measure.notes.every(note => selected.includes(note.index)))
+                .map(({ index }) => index).reverse();
+            let tempos = this.tabDraft.tempos ?? {};
+            for (const index of removed) {
+                if (index === 0 && tempos[1] !== undefined) this.stepForm.bpm = tempos[1];
+                tempos = shiftTabMeasureTempos(tempos, index, 1);
+            }
             const beats = [...this.tabDraft.beats];
             let breaks = [...(this.tabDraft.breaks ?? [])];
             for (const index of selected) {
@@ -611,7 +619,7 @@ export function tablatureEditorMethods() {
                 breaks = updateTabBreaks(breaks, index, 'delete', beats.length);
             }
             if (!beats.length) beats.push({ rest: true, duration: 1 });
-            this.tabDraft = { ...this.tabDraft, beats: normalizeTabTies(normalizeTabLegato(beats)), breaks };
+            this.tabDraft = { ...this.tabDraft, beats: normalizeTabTies(normalizeTabLegato(beats)), breaks, tempos };
             this.selectTabEditorCell(Math.min(selected.at(-1), beats.length - 1), this.tabDraft.string);
         },
 
