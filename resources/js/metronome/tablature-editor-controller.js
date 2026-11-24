@@ -719,6 +719,17 @@ export function tablatureEditorMethods() {
             } else if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
                 event.preventDefault();
                 const delta = event.key === 'ArrowLeft' ? -1 : 1;
+                if (this.tabScoreView === 'score' && event.shiftKey && (event.ctrlKey || event.metaKey) && !event.altKey) {
+                    this.finishPendingTabDigit(false);
+                    const measures = this.tabEditorMeasureLayout();
+                    const index = Math.min(this.tabDraft.beats.length - 1,
+                        Math.max(0, this.tabSelectedIndex - (this.tabInsertAtBar ? 1 : 0)));
+                    const current = measures.findIndex(measure =>
+                        measure.notes.some(note => note.index === index));
+                    const target = measures[current + delta]?.notes[0];
+                    if (current >= 0 && target) this.selectTabEditorCell(target.index, this.tabDraft.string);
+                    return;
+                }
                 // Shift+Arrow selects existing beats only. The extra caret
                 // position after the final beat must not clear the selection
                 // when key repeat continues at the end of the score.
