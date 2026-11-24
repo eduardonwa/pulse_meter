@@ -290,7 +290,7 @@
                     </details>
                 </aside>
 
-                <div class="tab-editor__score" x-show="!tabFullMusicXml && tabScoreView === 'grid'" x-ref="tabEditorScore" @pointerup.window="endTabDrag()" @pointercancel.window="endTabDrag()" @resize.window="updateTabEditorWidth()" tabindex="0" role="group" aria-label="Interactive six-string tablature">
+                <div class="tab-editor__score" x-show="!tabFullMusicXml && tabScoreView === 'grid'" x-ref="tabEditorScore" tabindex="0" role="group" aria-label="Interactive six-string tablature">
                     <template x-for="(system, systemIndex) in tabEditorSystems()" :key="systemIndex">
                         <div class="tab-editor__system">
                             <div class="tab-editor__string-labels">
