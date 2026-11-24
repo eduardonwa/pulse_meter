@@ -160,3 +160,31 @@ test('R keyboard shortcut inserts a sixteenth rest at the final insertion slot',
     assert.deepEqual(instance.tabDraft.beats.at(-1), { rest: true, duration: 16 })
     assert.equal(instance.tabEditorMeasureStatus(), '1 measure(s) · all complete')
 })
+
+test('Score click selects the corresponding note using the existing tab editor model', () => {
+    const instance = editor()
+    const preview = {}
+    instance.$refs = { tabEditorPreview: preview, tabEditorScoreFocus: { focus() {} } }
+    instance.$nextTick = callback => callback()
+    instance.tabScoreView = 'score'
+    instance.tabFullMusicXml = null
+    instance.tabDraft.breaks = []
+    instance.selectTabEditorScoreBeat({
+        detail: { element: preview, measureIndex: 0, beatIndex: 2, string: 1 },
+    })
+    assert.equal(instance.tabSelectedIndex, 2)
+    assert.equal(instance.tabDraft.string, 1)
+    assert.deepEqual(instance.tabSelectedIndices, [2])
+})
+
+test('Score click is ignored when viewing the editable Grid', () => {
+    const instance = editor()
+    const preview = {}
+    instance.$refs = { tabEditorPreview: preview }
+    instance.tabScoreView = 'grid'
+    instance.tabSelectedIndex = 0
+    instance.selectTabEditorScoreBeat({
+        detail: { element: preview, measureIndex: 0, beatIndex: 3, string: 1 },
+    })
+    assert.equal(instance.tabSelectedIndex, 0)
+})
