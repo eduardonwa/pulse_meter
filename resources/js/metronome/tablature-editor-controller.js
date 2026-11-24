@@ -1,6 +1,6 @@
 import {
     createTabDraft, appendTabNote, serializeTabDraft, parseTabDraft,
-    layoutTabMeasures, selectTabNoteIndices, changeSelectedTabDurations,
+    layoutTabMeasures, isTabFullMeasureRest, selectTabNoteIndices, changeSelectedTabDurations,
     changeSelectedTabRhythm, tabBeatUnits, clearTabNotes, updateTabBreaks,
     breaksForInsertedTabNote, tabBeatNotes, setTabBeatNote,
     removeTabNoteAtString, tabLegatoDirection, toggleTabLegato, normalizeTabLegato, toggleTabPalmMute, tabTieSource, toggleTabTie, normalizeTabTies, TAB_DURATIONS
@@ -115,6 +115,38 @@ export function tablatureEditorMethods() {
                 }
             }
             return columns;
+        },
+
+        appendTabEditorMeasure() {
+            this.finishPendingTabDigit(false);
+            this.recordTabEditorUndo();
+            const index = this.tabDraft.beats.length;
+            const beats = [...this.tabDraft.beats, { rest: true, duration: 1 }];
+            const breaks = index ? [...this.tabDraft.breaks, index] : [];
+            this.tabDraft = { ...this.tabDraft, beats, breaks };
+            this.selectTabEditorCell(index, this.tabDraft.string);
+            this.$nextTick(() => this.$refs.tabEditorScoreKeyboard?.focus());
+        },
+
+        deleteTabEditorMeasure() {
+            const measures = this.tabEditorMeasureLayout();
+            const index = Math.min(this.tabSelectedIndex, this.tabDraft.beats.length - 1);
+            const measure = measures.find(item => item.notes.some(note => note.index === index));
+            if (!measure) return;
+            this.finishPendingTabDigit(false);
+            this.recordTabEditorUndo();
+            const start = measure.notes[0].index;
+            const length = measure.notes.length;
+            const beats = [...this.tabDraft.beats];
+            beats.splice(start, length);
+            const breaks = [...new Set(this.tabDraft.breaks
+                .filter(position => position < start || position > measure.endIndex)
+                .map(position => position > measure.endIndex ? position - length : position)
+                .filter(position => position > 0 && position < beats.length))];
+            if (!beats.length) beats.push({ rest: true, duration: 1 });
+            this.tabDraft = { ...this.tabDraft, beats: normalizeTabTies(normalizeTabLegato(beats)), breaks };
+            this.selectTabEditorCell(Math.min(start, beats.length - 1), this.tabDraft.string);
+            this.$nextTick(() => this.$refs.tabEditorScoreKeyboard?.focus());
         },
 
         prepareTabEditorScoreInsertion() {
@@ -307,13 +339,16 @@ export function tablatureEditorMethods() {
             this.tabInsertAtBar = false;
             this.finishPendingTabDigit(false);
             const note = this.tabDraft.beats[index];
+            const fullRest = this.tabScoreView === 'score' && note?.rest &&
+                this.tabEditorMeasureLayout().some(measure =>
+                    measure.endIndex === index && isTabFullMeasureRest(measure.notes));
             this.tabDraft = {
                 ...this.tabDraft,
                 string,
                 fret: tabBeatNotes(note).find(n => n.string === string)?.fret ?? 0,
-                duration: note?.duration ?? this.tabDraft.duration,
-                dotted: note ? Boolean(note.dotted) : Boolean(this.tabDraft.dotted),
-                tuplet: note ? (note.tuplet ?? null) : this.tabDraft.tuplet,
+                duration: fullRest ? this.tabDraft.duration : (note?.duration ?? this.tabDraft.duration),
+                dotted: note && !fullRest ? Boolean(note.dotted) : Boolean(this.tabDraft.dotted),
+                tuplet: note && !fullRest ? (note.tuplet ?? null) : this.tabDraft.tuplet,
             };
         },
 
@@ -673,6 +708,14 @@ export function tablatureEditorMethods() {
                 // position after the final beat must not clear the selection
                 // when key repeat continues at the end of the score.
                 const lastIndex = this.tabDraft.beats.length - 1;
+                if (this.tabScoreView === 'score' && delta === 1 && !event.shiftKey &&
+                    this.tabSelectedIndex >= lastIndex) {
+                    const last = this.tabEditorMeasureLayout().at(-1);
+                    if (!last || last.complete || this.tabSelectedIndex > lastIndex) {
+                        this.appendTabEditorMeasure();
+                        return;
+                    }
+                }
                 if (event.shiftKey && lastIndex < 0) return;
                 const maxIndex = event.shiftKey ? lastIndex : this.tabDraft.beats.length;
                 const index = Math.max(0, Math.min(maxIndex, this.tabSelectedIndex + delta));
