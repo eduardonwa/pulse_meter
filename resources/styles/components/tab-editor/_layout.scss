@@ -48,7 +48,23 @@
     }
 
     &__edit-toolbar > .tab-editor__quick-settings {
+        align-items: center;
+        flex-wrap: wrap;
         margin-inline-end: $size-3;
+
+        .tab-editor__field {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            width: auto;
+            padding-block: 0;
+        }
+
+        .tab-editor__time-signature {
+            display: flex;
+            align-items: center;
+            gap: $size-2;
+        }
     }
 
     &__edit-group {
