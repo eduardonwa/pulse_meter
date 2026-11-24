@@ -141,6 +141,15 @@ export function tablatureEditorMethods() {
             this.tabDraft = setTabMeasureTempo(this.tabDraft, index, null);
         },
 
+        removeTabEditorMeasureTempos(indices) {
+            let tempos = this.tabDraft.tempos ?? {};
+            for (const index of [...indices].sort((a, b) => b - a)) {
+                if (index === 0 && tempos[1] !== undefined) this.stepForm.bpm = tempos[1];
+                tempos = shiftTabMeasureTempos(tempos, index, 1);
+            }
+            return tempos;
+        },
+
         deleteTabEditorMeasure() {
             const measures = this.tabEditorMeasureLayout();
             const measureIndex = this.tabEditorActiveMeasureIndex(measures);
@@ -157,10 +166,7 @@ export function tablatureEditorMethods() {
                 .map(position => position > measure.endIndex ? position - length : position)
                 .filter(position => position > 0 && position < beats.length))];
             if (!beats.length) beats.push({ rest: true, duration: 1 });
-            const tempos = shiftTabMeasureTempos(this.tabDraft.tempos, measureIndex, 1);
-            if (measureIndex === 0 && this.tabDraft.tempos?.[1] !== undefined) {
-                this.stepForm.bpm = this.tabDraft.tempos[1];
-            }
+            const tempos = this.removeTabEditorMeasureTempos([measureIndex]);
             this.tabDraft = { ...this.tabDraft, beats: normalizeTabTies(normalizeTabLegato(beats)), breaks, tempos };
             this.selectTabEditorCell(Math.min(start, beats.length - 1), this.tabDraft.string);
             this.$nextTick(() => this.$refs.tabEditorScoreKeyboard?.focus());
@@ -606,12 +612,8 @@ export function tablatureEditorMethods() {
             this.recordTabEditorUndo();
             const removed = this.tabEditorMeasureLayout().map((measure, index) => ({ measure, index }))
                 .filter(({ measure }) => measure.notes.every(note => selected.includes(note.index)))
-                .map(({ index }) => index).reverse();
-            let tempos = this.tabDraft.tempos ?? {};
-            for (const index of removed) {
-                if (index === 0 && tempos[1] !== undefined) this.stepForm.bpm = tempos[1];
-                tempos = shiftTabMeasureTempos(tempos, index, 1);
-            }
+                .map(({ index }) => index);
+            const tempos = this.removeTabEditorMeasureTempos(removed);
             const beats = [...this.tabDraft.beats];
             let breaks = [...(this.tabDraft.breaks ?? [])];
             for (const index of selected) {
@@ -647,6 +649,7 @@ export function tablatureEditorMethods() {
                 if (!result) return;
                 this.recordTabEditorUndo();
                 this.tabDraft = result.draft;
+                if (result.initialBpm !== undefined) this.stepForm.bpm = result.initialBpm;
                 this.selectTabEditorCell(result.start, this.tabDraft.string);
                 this.tabSelectedIndices = Array.from({ length: result.count }, (_, i) => result.start + i);
                 this.tabSelectedIndex = result.start + result.count - 1;
