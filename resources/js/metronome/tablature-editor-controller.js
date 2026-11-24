@@ -28,7 +28,7 @@ export function tablatureEditorMethods() {
             this.prepareRedesignEditor();
             this.$nextTick(() => {
                 this.$refs.tabEditorDialog?.showModal();
-                this.updateTabEditorWidth();
+                this.initializeTabScoreView();
             });
         },
 
@@ -74,7 +74,7 @@ export function tablatureEditorMethods() {
             this.prepareRedesignEditor();
             this.$nextTick(() => {
                 this.$refs.tabEditorDialog?.showModal();
-                this.updateTabEditorWidth();
+                this.initializeTabScoreView();
             });
         },
 
