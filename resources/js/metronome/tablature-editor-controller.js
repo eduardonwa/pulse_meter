@@ -436,15 +436,18 @@ export function tablatureEditorMethods() {
                 ...(this.tabDraft.dotted ? { dotted: true } : {}),
                 ...(this.tabDraft.tuplet === 3 ? { tuplet: 3 } : {}),
             };
-            // A + slot is tied to an incomplete measure. Do not carry a
-            // previously selected dotted/triplet rhythm into its last beat.
-            if (inserting && this.tabInsertAtBar) {
+            // Any insertion at an incomplete measure boundary must use the
+            // remaining musical space. An earlier dotted/triplet selection
+            // must not make a sixteenth rest too long or too short.
+            if (inserting) {
                 const measure = this.tabEditorMeasureLayout().find(item =>
                     item.endIndex + 1 === index && item.used < item.capacity - 1e-7
                 );
                 if (measure) {
                     const remaining = measure.capacity - measure.used;
-                    if (tabBeatUnits(beat) > remaining + 1e-7) {
+                    if (Math.abs(tabBeatUnits(beat) - remaining) > 1e-7 &&
+                        (tabBeatUnits(beat) > remaining + 1e-7 ||
+                         (index === this.tabDraft.beats.length && remaining <= 1 + 1e-7))) {
                         const duration = [1, 2, 4, 8, 16].find(value =>
                             16 / value <= remaining + 1e-7
                         );
