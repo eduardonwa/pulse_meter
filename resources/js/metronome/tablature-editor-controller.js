@@ -3,7 +3,7 @@ import {
     layoutTabMeasures, selectTabNoteIndices, changeSelectedTabDurations,
     changeSelectedTabRhythm, tabBeatUnits, clearTabNotes, updateTabBreaks,
     breaksForInsertedTabNote, tabBeatNotes, setTabBeatNote,
-    removeTabNoteAtString, TAB_DURATIONS
+    removeTabNoteAtString, tabLegatoDirection, toggleTabLegato, TAB_DURATIONS
 } from "./alphatab/tab-editor.js";
 
 // The Alpine component spreads these actions into its existing exercise state.
@@ -171,6 +171,26 @@ export function tablatureEditorMethods() {
 
         tabEditorMeasureIssues() {
             return this.tabEditorMeasureWarnings().filter(measure => measure.status !== 'complete');
+        },
+
+        tabEditorLegatoAt(index, string) {
+            const beat = this.tabDraft.beats[index];
+            if (!beat?.legato || !tabLegatoDirection(this.tabDraft.beats, index)) return null;
+            return tabBeatNotes(beat)[0]?.string === string
+                ? tabLegatoDirection(this.tabDraft.beats, index) : null;
+        },
+
+        toggleTabEditorLegato() {
+            this.finishPendingTabDigit(false);
+            const index = this.tabSelectedIndex;
+            if (this.tabInsertAtBar) return;
+            try {
+                const beats = toggleTabLegato(this.tabDraft.beats, index);
+                this.recordTabEditorUndo();
+                this.tabDraft = { ...this.tabDraft, beats };
+            } catch (error) {
+                this.showToast?.(error.message, 'error');
+            }
         },
 
         tabEditorNoteAt(index, string) {
