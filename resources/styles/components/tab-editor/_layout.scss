@@ -132,7 +132,7 @@
             width: 100%;
         }
 
-        &__workspace:has(> .tab-editor__rhythm[style*="display: none"]) .tab-editor__playback-host.is-full-score {
+        &__workspace.is-imported-score .tab-editor__playback-host.is-full-score {
             grid-column: 1 / -1;
             grid-row: 1;
         }
