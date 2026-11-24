@@ -98,12 +98,18 @@
                 align-items: center;
                 width: 100%;
                 margin: 0;
-                padding-block: $size-4;
+                padding: $size-4;
                 background: $color-neutral-100;
                 border-block-end: var(--border);
 
                 .creative-transport__tempo {
                     min-width: 0;
+                    justify-content: flex-start;
+                }
+
+                .creative-transport__bpm {
+                    flex: 1 1 auto;
+                    width: 100%;
                 }
 
                 .creative-transport__play {
