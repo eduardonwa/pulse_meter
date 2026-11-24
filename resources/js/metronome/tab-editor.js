@@ -8,6 +8,7 @@ export function tabEditor() {
     prototypeMessageType: 'success',
     tabScoreView: 'grid',
     tabScorePreviewError: '',
+    tabScoreRenderedKey: '',
     setTabScoreView(view) {
         if (!['grid', 'score'].includes(view) || this.tabScoreView === view) return
         this.tabScoreView = view
@@ -30,9 +31,11 @@ export function tabEditor() {
             this.tabScorePreviewError = error?.message || 'Unable to render this tablature.'
             return
         }
-        // A render-only update replaces the score in the same AlphaTab
-        // instance; the next Play must load its current audio, not resume
-        // a cached version of the previous draft.
+        const renderKey = [alphaTex, this.stepForm.bpm, this.tabDraft.instrument].join('|')
+        if (renderKey === this.tabScoreRenderedKey) return
+        this.tabScoreRenderedKey = renderKey
+        // Only structural edits need a new rendering. Clicking a note
+        // also touches the draft selection, but should not redraw the page.
         this.prototypePlaybackScore = null
         window.dispatchEvent(new CustomEvent('alphatab:preview-draft', {
             detail: { element, alphaTex, bpm: Number(this.stepForm.bpm),
@@ -48,6 +51,7 @@ export function tabEditor() {
     prepareRedesignEditor() {
         this.tabScoreView = 'grid'
         this.tabScorePreviewError = ''
+        this.tabScoreRenderedKey = ''
         this.prototypeMessage = ''
         this.prototypeMessageType = 'success'
         this.prototypePlaying = false
