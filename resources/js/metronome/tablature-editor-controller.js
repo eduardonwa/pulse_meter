@@ -595,6 +595,12 @@ export function tablatureEditorMethods() {
             if (tag === 'BUTTON' && !event.target?.classList?.contains('tab-editor__cell')) return;
             const techniqueKey = event.key.toLowerCase();
             if (!event.ctrlKey && !event.metaKey && !event.altKey && !event.repeat &&
+                techniqueKey === 'r') {
+                event.preventDefault();
+                this.addTabEditorRest();
+                return;
+            }
+            if (!event.ctrlKey && !event.metaKey && !event.altKey && !event.repeat &&
                 techniqueKey === 'l') {
                 event.preventDefault();
                 this.toggleTabEditorTie();
