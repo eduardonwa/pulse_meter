@@ -166,6 +166,7 @@
                                     <div><dt>Pull-off</dt><dd>P</dd></div>
                                     <div><dt>Palm mute</dt><dd>M</dd></div>
                                     <div><dt>Tie</dt><dd>L</dd></div>
+                                    <div><dt>Rest</dt><dd>R</dd></div>
                                     <div><dt>Extend selection</dt><dd>Shift + ← / →</dd></div>
                                     <div><dt>Undo</dt><dd>Ctrl/Cmd + Z</dd></div>
                                     <div><dt>Redo</dt><dd>Ctrl/Cmd + Shift + Z</dd></div>
