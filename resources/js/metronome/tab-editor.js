@@ -21,15 +21,23 @@ export function tabEditor() {
         }
         const count = this.tabDraft.beats.length
         const insertion = Boolean(this.tabInsertAtBar || this.tabSelectedIndex >= count)
-        const index = Math.max(0, Math.min(this.tabSelectedIndex, count - 1))
         const measures = this.tabEditorMeasureLayout()
+        const index = Math.max(0, Math.min(this.tabSelectedIndex, count - 1))
+        const previousMeasure = insertion && this.tabSelectedIndex > 0
+            ? measures.find(measure => measure.endIndex === this.tabSelectedIndex - 1)
+            : null
+        const fitsPrevious = previousMeasure &&
+            previousMeasure.used + tabBeatUnits(this.tabDraft) <= previousMeasure.capacity + 1e-7
+        const anchorIndex = fitsPrevious ? this.tabSelectedIndex - 1 : index
         const measureIndex = measures.findIndex(measure =>
-            measure.notes.some(note => note.index === index))
+            measure.notes.some(note => note.index === anchorIndex))
         if (measureIndex < 0) return
-        const beatIndex = measures[measureIndex].notes.findIndex(note => note.index === index)
+        const beatIndex = measures[measureIndex].notes.findIndex(note => note.index === anchorIndex)
+        const after = Boolean(fitsPrevious)
+        const newMeasure = insertion && this.tabSelectedIndex >= count && !after
         window.dispatchEvent(new CustomEvent('alphatab:editor-caret', {
             detail: { element, selection: {
-                measureIndex, beatIndex, insertion, string: this.tabDraft.string,
+                measureIndex, beatIndex, insertion, after, newMeasure, string: this.tabDraft.string,
             } },
         }))
     },
