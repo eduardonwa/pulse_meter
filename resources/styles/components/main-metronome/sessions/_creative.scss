@@ -513,11 +513,24 @@
                     padding-inline: 0;
                 }
 
+                // Keep section dividers edge-to-edge, but inset their content.
+                > .time-signature__beats {
+                    padding-inline: $size-4;
+                }
+
+                > .time-signature__editing-row {
+                    > .time-signature__rhythm-tools,
+                    > .time-signature__subdivision {
+                        min-width: 0;
+                        padding-inline: $size-4;
+                    }
+                }
+
                 > .time-signature__control-row {
                     > .time-signature__playback,
                     > .pulse-settings-bar,
                     > .time-signature__actions {
-                        padding-inline: 0;
+                        padding-inline: $size-4;
                     }
                 }
             }
