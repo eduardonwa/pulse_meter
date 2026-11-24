@@ -117,6 +117,24 @@ export function tablatureEditorMethods() {
             return columns;
         },
 
+        selectTabEditorScoreBeat(event) {
+            const detail = event?.detail;
+            if (!detail || detail.element !== this.$refs.tabEditorPreview ||
+                this.tabScoreView !== 'score' || this.tabFullMusicXml) return;
+            const measureIndex = Number(detail.measureIndex);
+            const beatIndex = Number(detail.beatIndex);
+            if (!Number.isInteger(measureIndex) || !Number.isInteger(beatIndex)) return;
+            const measure = this.tabEditorMeasureLayout()[measureIndex];
+            const position = measure?.notes?.[beatIndex]?.index;
+            if (!Number.isInteger(position)) return;
+            const notes = tabBeatNotes(this.tabDraft.beats[position]);
+            const requestedString = Number(detail.string);
+            const string = Number.isInteger(requestedString) && requestedString >= 1 && requestedString <= 6
+                ? requestedString : (notes[0]?.string ?? this.tabDraft.string);
+            this.selectTabEditorCell(position, string);
+            this.$nextTick(() => this.$refs.tabEditorScoreFocus?.focus());
+        },
+
         tabEditorSystems() {
             const columns = Math.max(1, Math.floor((this.tabViewportWidth - 68) / 48));
             const display = this.tabEditorDisplayColumns();
