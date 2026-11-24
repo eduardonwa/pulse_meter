@@ -468,6 +468,7 @@
     }
 
     .time-signature {
+        --flow-spacer: 1rem;
         --border: 1px solid hsl(var(--neutral-950) / .2);
         border: var(--border);
         border-radius: $border-radius-2;
