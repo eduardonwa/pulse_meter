@@ -111,7 +111,7 @@ export function layoutTabMeasures(draft, numerator = 4, denominator = 4) {
 // The clipboard contains only musical data; no renderer or selection state.
 export function copyTabFragment(draft, indices, numerator = 4, denominator = 4) {
     const selected = new Set(indices);
-    return layoutTabMeasures(draft, numerator, denominator).map(measure => {
+    return layoutTabMeasures(draft, numerator, denominator).map((measure, measureIndex) => {
         const beats = measure.notes.filter(note => selected.has(note.index)).map(({ index, ...note }) => {
             const beat = JSON.parse(JSON.stringify(note));
             if (!selected.has(index - 1)) delete beat.tie;
@@ -122,7 +122,8 @@ export function copyTabFragment(draft, indices, numerator = 4, denominator = 4) 
             return beat;
         });
         return { beats, fullRest: isTabFullMeasureRest(measure.notes),
-            wholeMeasure: beats.length === measure.notes.length };
+            wholeMeasure: beats.length === measure.notes.length,
+            ...(beats.length === measure.notes.length && draft.tempos?.[measureIndex] !== undefined ? { tempo: draft.tempos[measureIndex] } : {}) };
     }).filter(group => group.beats.length);
 }
 
@@ -164,15 +165,26 @@ export function pasteTabFragment(draft, index, fragment, numerator = 4, denomina
     prefix.forEach(beat => append(beat));
     const start = groups.slice(0, target).reduce((total, group) => total + group.length, 0) + prefix.length;
     const copied = JSON.parse(JSON.stringify(fragment));
+    const pastedTempos = {};
     let count = 0;
     copied.forEach((group, i) => {
         if (i > 0 || group.wholeMeasure) flush();
+        if (group.wholeMeasure && group.tempo !== undefined) pastedTempos[target + packed.length] = group.tempo;
         group.beats.forEach(beat => append(beat, group.fullRest));
         count += group.beats.length;
         if (group.wholeMeasure) flush();
     });
     suffix.forEach(beat => append(beat, isTabFullMeasureRest(original)));
     flush();
+    const tempos = shiftTabMeasureTempos(draft.tempos, target, original.length ? 1 : 0, packed.length);
+    // Preserve the destination's instruction at its original surviving content.
+    if (original.length && draft.tempos?.[target] !== undefined) {
+        const destination = prefix.length || replaceRest ? target : target + Math.max(0, packed.length - 1);
+        if (destination > 0) tempos[destination] = draft.tempos[target];
+    }
+    for (const [measure, tempo] of Object.entries(pastedTempos)) {
+        if (Number(measure) > 0) tempos[measure] = tempo;
+    }
     groups.splice(target, original.length ? 1 : 0, ...packed);
     const beats = [], breaks = [];
     for (const group of groups) {
@@ -190,7 +202,7 @@ export function pasteTabFragment(draft, index, fragment, numerator = 4, denomina
         beats[start + count] = { ...beats[start + count] };
         delete beats[start + count].tie;
     }
-    return { draft: { ...draft, beats: normalizeTabTies(normalizeTabLegato(beats)), breaks }, start, count };
+    return { draft: { ...draft, beats: normalizeTabTies(normalizeTabLegato(beats)), breaks, tempos }, start, count };
 }
 
 export function shiftTabBreaks(breaks, index, delta) {
