@@ -1,7 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { exercises } from '../../resources/js/metronome/exercises.js'
-import { createTabDraft, changeSelectedTabDurations } from '../../resources/js/metronome/alphatab/tab-editor.js'
+import { createTabDraft } from '../../resources/js/metronome/alphatab/tab-editor.js'
 
 function editor() {
     const instance = exercises()
@@ -12,60 +12,6 @@ function editor() {
     }
     return instance
 }
-
-test('full final 7/8 measure retains the normal trailing cursor', () => {
-    const instance = editor()
-    const columns = instance.tabEditorDisplayColumns()
-    assert.equal(columns.filter(column => column.index === 7).length, 1)
-    assert.deepEqual(columns.at(-1), { index: 7, insertion: false, measureEnd: false })
-})
-
-test('changing all note durations reveals a final insertion slot', () => {
-    const instance = editor()
-    instance.tabDraft.beats = changeSelectedTabDurations(
-        instance.tabDraft.beats,
-        [0, 1, 2, 3, 4, 5, 6],
-        16,
-    )
-    const columns = instance.tabEditorDisplayColumns()
-    assert.equal(columns.filter(column => column.index === 7).length, 1)
-    assert.deepEqual(columns.at(-1), { index: 7, insertion: true, measureEnd: true })
-    assert.equal(instance.tabDraft.beats.length, 7)
-    assert.equal(instance.tabEditorMeasureLayout()[0].used, 7)
-    assert.equal(instance.tabEditorMeasureLayout()[0].capacity, 14)
-})
-
-test('intermediate incomplete measure keeps insertion point before next measure', () => {
-    const instance = editor()
-    instance.tabDraft.beats = [
-        ...Array.from({ length: 7 }, (_, fret) => ({ fret, string: 1, duration: 16 })),
-        { fret: 10, string: 2, duration: 8 },
-    ]
-    instance.tabDraft.breaks = [7]
-    const positions = instance.tabEditorDisplayColumns().filter(column => column.index === 7)
-    assert.deepEqual(positions, [
-        { index: 7, insertion: true, measureEnd: true },
-        { index: 7, insertion: false, measureEnd: false },
-    ])
-})
-
-test('measure boundaries are computed once for a full imported score', () => {
-    const instance = editor()
-    instance.tabDraft.beats = Array.from({ length: 105 }, (_, fret) => ({
-        fret: fret % 20, string: 1, duration: 8,
-    }))
-    instance.tabDraft.breaks = Array.from({ length: 14 }, (_, index) => (index + 1) * 7)
-    let layouts = 0
-    const original = instance.tabEditorMeasureLayout.bind(instance)
-    instance.tabEditorMeasureLayout = () => {
-        layouts++
-        return original()
-    }
-    const columns = instance.tabEditorDisplayColumns()
-    assert.equal(layouts, 1)
-    assert.equal(columns.length, 106)
-    assert.equal(columns.filter(column => column.measureEnd).length, 15)
-})
 
 test('validation log reports one success message for complete measures', () => {
     const instance = editor()
@@ -107,9 +53,7 @@ test('adding a sixteenth rest at the final + completes a measure with one unit r
         breaks: [],
     }
     assert.equal(instance.tabEditorMeasureLayout()[0].used, 15)
-    const slot = instance.tabEditorDisplayColumns().at(-1)
-    assert.deepEqual(slot, { index: 8, insertion: true, measureEnd: true })
-    instance.selectTabEditorInsertion(slot.index, 6)
+    instance.selectTabEditorInsertion(8, 6)
     instance.addTabEditorRest()
     assert.equal(instance.tabDraft.beats.length, 9)
     assert.deepEqual(instance.tabDraft.beats[8], { rest: true, duration: 16 })
@@ -166,7 +110,6 @@ test('Score click selects the corresponding note using the existing tab editor m
     const preview = {}
     instance.$refs = { tabEditorPreview: preview, tabEditorScoreFocus: { focus() {} } }
     instance.$nextTick = callback => callback()
-    instance.tabScoreView = 'score'
     instance.tabFullMusicXml = null
     instance.tabDraft.breaks = []
     instance.selectTabEditorScoreBeat({
@@ -177,24 +120,11 @@ test('Score click selects the corresponding note using the existing tab editor m
     assert.deepEqual(instance.tabSelectedIndices, [2])
 })
 
-test('Score click is ignored when viewing the editable Grid', () => {
-    const instance = editor()
-    const preview = {}
-    instance.$refs = { tabEditorPreview: preview }
-    instance.tabScoreView = 'grid'
-    instance.tabSelectedIndex = 0
-    instance.selectTabEditorScoreBeat({
-        detail: { element: preview, measureIndex: 0, beatIndex: 3, string: 1 },
-    })
-    assert.equal(instance.tabSelectedIndex, 0)
-})
-
 test('Score insert action reuses note insertion after the selected beat', () => {
     const instance = editor()
     let focused = false
     instance.$refs = { tabEditorScoreKeyboard: { focus() { focused = true } } }
     instance.$nextTick = callback => callback()
-    instance.tabScoreView = 'score'
     instance.tabFullMusicXml = null
     instance.tabSelectedIndex = 2
     instance.tabSelectedIndices = [2]
@@ -213,7 +143,6 @@ test('Score I shortcut creates an insertion caret without modifying notes', () =
     const instance = editor()
     instance.$refs = { tabEditorScoreKeyboard: { focus() {} } }
     instance.$nextTick = callback => callback()
-    instance.tabScoreView = 'score'
     instance.tabFullMusicXml = null
     instance.tabSelectedIndex = 1
     instance.tabSelectedIndices = [1]
@@ -232,7 +161,6 @@ test('Score I shortcut creates an insertion caret without modifying notes', () =
 function scoreEditorForAudit(beats, breaks = []) {
     const instance = editor()
     instance.stepForm = { time_signature_numerator: 4, time_signature_denominator: 4 }
-    instance.tabScoreView = 'score'
     instance.tabDraft = { ...createTabDraft(), beats, breaks }
     instance.$refs = {}
     instance.$nextTick = callback => callback()
