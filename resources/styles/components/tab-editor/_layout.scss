@@ -85,8 +85,24 @@
                 }
             }
 
-            &.is-playing .tab-editor-score-caret {
-                display: none;
+            &.is-playing {
+                .tab-editor-score-caret,
+                .tab-editor-score-range {
+                    display: none;
+                }
+            }
+
+            .tab-editor-score-range {
+                position: absolute;
+                inset: 0;
+                z-index: 15;
+                pointer-events: none;
+            }
+
+            .tab-editor-score-range-beat {
+                position: absolute;
+                background: hsl(var(--sol-500) / .20);
+                box-shadow: inset 0 0 0 1px hsl(var(--sol-600) / .35);
             }
 
             .tab-editor-score-caret {
