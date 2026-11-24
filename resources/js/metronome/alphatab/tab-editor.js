@@ -111,6 +111,14 @@ export function tabLegatoDirection(beats, index) {
     return next[0].fret > current[0].fret ? 'H' : 'P';
 }
 
+// Editing a fret, string, or beat can invalidate an existing link.
+// Remove only orphaned links while preserving all valid legato effects.
+export function normalizeTabLegato(beats) {
+    return beats.map((beat, index) => beat.legato && !tabLegatoDirection(beats, index)
+        ? (() => { const { legato, ...rest } = beat; return rest; })()
+        : beat);
+}
+
 export function toggleTabLegato(beats, index) {
     if (!tabLegatoDirection(beats, index)) {
         throw new RangeError('Legato needs two consecutive notes on the same string at different frets.');
