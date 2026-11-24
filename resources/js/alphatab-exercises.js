@@ -31,8 +31,9 @@ function updateEditorScoreCaret(element, api) {
         caret?.remove()
         return
     }
-    const rect = bounds.visualBounds
-    if (!Number.isFinite(rect.x) || !Number.isFinite(rect.y)) return
+    const noteBounds = bounds.notes?.find(item => item.note?.string === selection.string)
+    const rect = noteBounds?.noteHeadBounds ?? bounds.visualBounds
+    if (!rect || !Number.isFinite(rect.x) || !Number.isFinite(rect.y)) return
     if (!caret) {
         caret = document.createElement('div')
         caret.className = 'tab-editor-score-caret'
@@ -42,7 +43,7 @@ function updateEditorScoreCaret(element, api) {
     caret.classList.toggle('is-insertion', Boolean(insertion))
     caret.style.left = `${rect.x + (insertion ? 0 : rect.w / 2)}px`
     caret.style.top = `${rect.y}px`
-    caret.style.height = `${Math.max(rect.h, 26)}px`
+    caret.style.height = `${Math.max(rect.h, noteBounds ? 18 : 26)}px`
 }
 
 // Track the actual score loaded into an alphaTab instance, not just its dataset.
