@@ -40,6 +40,17 @@
         border-block-end: 1px solid hsl(var(--neutral-800) / .15);
     }
 
+    &__edit-actions {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: $size-2;
+    }
+
+    &__edit-toolbar > .tab-editor__quick-settings {
+        margin-inline-end: $size-3;
+    }
+
     &__edit-group {
         display: flex;
         align-items: center;
@@ -231,9 +242,15 @@
             width: 100%;
         }
 
-        &__workspace.is-imported-score .tab-editor__playback-host.is-full-score {
-            grid-column: 1 / -1;
-            grid-row: 1;
+        &__workspace.is-imported-score {
+            .tab-editor__edit-toolbar {
+                grid-column: 1 / -1;
+            }
+
+            .tab-editor__playback-host.is-full-score {
+                grid-column: 1 / -1;
+                grid-row: 2;
+            }
         }
     }
 }
