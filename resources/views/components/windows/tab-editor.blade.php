@@ -133,6 +133,12 @@
                         </div>
                     </div>
 
+                    <div class="tab-editor__view-switch" x-show="!tabFullMusicXml" x-cloak role="group" aria-label="Tablature view">
+                        <button type="button" :class="{ 'is-active': tabScoreView === 'grid' }"
+                            :aria-pressed="(tabScoreView === 'grid').toString()" @click="setTabScoreView('grid')">Grid</button>
+                        <button type="button" :class="{ 'is-active': tabScoreView === 'score' }"
+                            :aria-pressed="(tabScoreView === 'score').toString()" @click="setTabScoreView('score')">Score</button>
+                    </div>
                     <div class="tab-editor__utility-actions">
                         <button class="button" data-type="outline" type="button"
                             aria-controls="tab-editor-info-panel"
@@ -199,13 +205,14 @@
             </section>
 
             {{-- main editing area --}}
-            <section class="tab-editor__workspace" x-show="!tabFullMusicXml" aria-label="Tablature workspace" x-init="$nextTick(() => updateTabEditorWidth())"
+            <section class="tab-editor__workspace" aria-label="Tablature workspace"
+                x-init="$nextTick(() => updateTabEditorWidth()); $watch('tabDraft', () => { if (tabScoreView === 'score') $nextTick(() => renderTabScorePreview()) }); $watch('stepForm.bpm', () => { if (tabScoreView === 'score') $nextTick(() => renderTabScorePreview()) }); $watch('stepForm.time_signature_numerator', () => { if (tabScoreView === 'score') $nextTick(() => renderTabScorePreview()) }); $watch('stepForm.time_signature_denominator', () => { if (tabScoreView === 'score') $nextTick(() => renderTabScorePreview()) })"
                 @keydown="handleTabEditorKey($event)"
                 @resize.window="updateTabEditorWidth()"
                 @pointerup.window="endTabDrag()"
                 @pointercancel.window="endTabDrag()"
             >
-                <aside class="tab-editor__rhythm" aria-label="Tablature tools">
+                <aside class="tab-editor__rhythm" x-show="!tabFullMusicXml" aria-label="Tablature tools">
                     <details class="tab-editor__palette-section" open>
                         <summary class="tab-editor__palette-heading">Rhythm<x-lucide-chevron-down aria-hidden="true" /></summary>
                         <div class="tab-editor__palette-durations" role="group" aria-label="Note duration">
@@ -279,7 +286,7 @@
                     </details>
                 </aside>
 
-                <div class="tab-editor__score" x-ref="tabEditorScore" @pointerup.window="endTabDrag()" @pointercancel.window="endTabDrag()" @resize.window="updateTabEditorWidth()" tabindex="0" role="group" aria-label="Interactive six-string tablature">
+                <div class="tab-editor__score" x-show="!tabFullMusicXml && tabScoreView === 'grid'" x-ref="tabEditorScore" @pointerup.window="endTabDrag()" @pointercancel.window="endTabDrag()" @resize.window="updateTabEditorWidth()" tabindex="0" role="group" aria-label="Interactive six-string tablature">
                     <template x-for="(system, systemIndex) in tabEditorSystems()" :key="systemIndex">
                         <div class="tab-editor__system">
                             <div class="tab-editor__string-labels">
@@ -339,11 +346,17 @@
                 </div>
                 
                 <span x-ref="tabEditorScoreFocus" class="sr-only" tabindex="-1">Tab keyboard controls</span>
-
+                <div class="tab-editor__score-preview" x-show="!tabFullMusicXml && tabScoreView === 'score'" x-cloak>
+                    <p class="tab-editor__score-preview-hint">Score preview · Edit notes in Grid for now.</p>
+                    <p class="tab-editor__score-preview-error" role="status" x-show="tabScorePreviewError" x-text="tabScorePreviewError"></p>
+                    <p class="tab-editor__score-preview-empty" x-show="!tabDraft.beats.length">Add notes in Grid to see your score here.</p>
+                </div>
+                {{-- The playback renderer also supplies the score view; one AlphaTab instance. --}}
+                <div class="tab-editor__playback-host"
+                    :class="{ 'is-full-score': tabFullMusicXml || tabScoreView === 'score' }"
+                    x-ref="tabEditorPreview" data-alphatab data-admin-preview="true"
+                    :aria-hidden="(!tabFullMusicXml && tabScoreView !== 'score').toString()"></div>
             </section>
-
-            {{-- Playback uses the existing alphaTab engine without replacing the editable grid. --}}
-            <div class="tab-editor__playback-host" :class="{ 'is-full-score': tabFullMusicXml }" x-ref="tabEditorPreview" data-alphatab data-admin-preview="true" :aria-hidden="(!tabFullMusicXml).toString()"></div>
 
             {{-- Keep the validation log and playback footer docked together. --}}
             <div class="tab-editor__bottom-dock">
