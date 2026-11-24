@@ -72,13 +72,24 @@
 
         cursor: pointer;
 
-        .tab-editor__legato-mark {
+        .tab-editor__legato-arc {
             position: absolute;
-            top: -4px;
-            right: 1px;
-            font-size: 10px;
-            font-weight: 800;
+            z-index: 4;
+            top: -16px;
+            left: 50%;
+            overflow: visible;
+            pointer-events: none;
             color: hsl(var(--primary-800));
+
+            text {
+                font-size: 10px;
+                font-weight: 700;
+                fill: hsl(var(--primary-800));
+                paint-order: stroke;
+                stroke: hsl(var(--neutral-100));
+                stroke-width: 3px;
+                stroke-linejoin: round;
+            }
         }
 
         &.is-insertion {
