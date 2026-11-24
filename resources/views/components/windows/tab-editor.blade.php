@@ -300,15 +300,18 @@
                         </button>
                         </div>
                     </details>
+                    <details class="tab-editor__palette-section" open>
+                        <summary class="tab-editor__palette-heading">Editing<x-lucide-chevron-down aria-hidden="true" /></summary>
+                        <div class="tab-editor__palette-effects" role="group" aria-label="Editing controls">
+                            <button type="button" class="tab-editor__palette-tool" @click="deleteTabEditorMeasure()" :disabled="!tabDraft.beats.length" title="Delete selected measure">
+                                <span aria-hidden="true">−</span> Delete measure
+                            </button>
+                        </div>
+                    </details>
                 </aside>
 
                 <div class="tab-editor__score-preview" x-show="!tabFullMusicXml" x-cloak
                     x-ref="tabEditorScoreKeyboard" tabindex="0" role="group" aria-label="Score keyboard editor">
-                    <button type="button" class="button" data-type="outline" @click="deleteTabEditorMeasure()" :disabled="!tabDraft.beats.length" title="Delete selected measure">Delete measure</button>
-                    <p x-show="tabInsertAtBar" x-cloak>Insertion cursor at position <span x-text="tabSelectedIndex + 1"></span> · choose a duration, then type a fret or R.</p>
-                    <p x-show="tabSelectedIndices.length === 1 && tabSelectedIndex < tabDraft.beats.length"
-                        x-text="`Selected position ${tabSelectedIndex + 1} · string ${tabDraft.string} · use 0–9 to change fret, R for rest, H/P/M/L for techniques.`"></p>
-                    <p x-show="tabSelectedIndices.length > 1" x-text="`${tabSelectedIndices.length} positions selected`"></p>
                     <p class="tab-editor__score-preview-error" role="status" x-show="tabScorePreviewError" x-text="tabScorePreviewError"></p>
                 </div>
                 {{-- The playback renderer also supplies the score view; one AlphaTab instance. --}}
