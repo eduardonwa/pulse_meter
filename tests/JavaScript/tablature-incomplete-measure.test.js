@@ -188,3 +188,43 @@ test('Score click is ignored when viewing the editable Grid', () => {
     })
     assert.equal(instance.tabSelectedIndex, 0)
 })
+
+test('Score insert action reuses note insertion after the selected beat', () => {
+    const instance = editor()
+    let focused = false
+    instance.$refs = { tabEditorScoreKeyboard: { focus() { focused = true } } }
+    instance.$nextTick = callback => callback()
+    instance.tabScoreView = 'score'
+    instance.tabFullMusicXml = null
+    instance.tabSelectedIndex = 2
+    instance.tabSelectedIndices = [2]
+    instance.prepareTabEditorScoreInsertion()
+    assert.equal(instance.tabInsertAtBar, true)
+    assert.equal(instance.tabSelectedIndex, 3)
+    assert.equal(focused, true)
+    instance.tabDraft = { ...instance.tabDraft, string: 1, fret: 9 }
+    instance.addTabEditorNote()
+    assert.equal(instance.tabDraft.beats.length, 8)
+    assert.equal(instance.tabDraft.beats[3].fret, 9)
+    assert.equal(instance.tabDraft.beats[4].fret, 3)
+})
+
+test('Score I shortcut creates an insertion caret without modifying notes', () => {
+    const instance = editor()
+    instance.$refs = { tabEditorScoreKeyboard: { focus() {} } }
+    instance.$nextTick = callback => callback()
+    instance.tabScoreView = 'score'
+    instance.tabFullMusicXml = null
+    instance.tabSelectedIndex = 1
+    instance.tabSelectedIndices = [1]
+    let prevented = false
+    instance.handleTabEditorKey({
+        key: 'i', target: { tagName: 'DIV' },
+        ctrlKey: false, metaKey: false, altKey: false, repeat: false,
+        preventDefault() { prevented = true },
+    })
+    assert.equal(prevented, true)
+    assert.equal(instance.tabDraft.beats.length, 7)
+    assert.equal(instance.tabSelectedIndex, 2)
+    assert.equal(instance.tabInsertAtBar, true)
+})
