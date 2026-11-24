@@ -228,3 +228,61 @@ test('Score I shortcut creates an insertion caret without modifying notes', () =
     assert.equal(instance.tabSelectedIndex, 2)
     assert.equal(instance.tabInsertAtBar, true)
 })
+
+function scoreEditorForAudit(beats, breaks = []) {
+    const instance = editor()
+    instance.stepForm = { time_signature_numerator: 4, time_signature_denominator: 4 }
+    instance.tabScoreView = 'score'
+    instance.tabDraft = { ...createTabDraft(), beats, breaks }
+    instance.$refs = {}
+    instance.$nextTick = callback => callback()
+    return instance
+}
+
+test('deleting the entire score leaves one editable measure and can be undone', () => {
+    const instance = scoreEditorForAudit([{ fret: 3, string: 6, duration: 8 }])
+    instance.selectTabEditorCell(0, 6)
+    instance.undoTabEditorNote()
+    assert.deepEqual(instance.tabDraft.beats, [{ rest: true, duration: 1 }])
+    instance.undoTabEditorChange()
+    assert.equal(instance.tabDraft.beats[0].fret, 3)
+});
+
+test('automatic bar creation belongs to the same undo operation as note entry', () => {
+    const instance = scoreEditorForAudit([
+        ...Array.from({ length: 7 }, () => ({ fret: 3, string: 6, duration: 8 })),
+    ])
+    instance.tabSelectedIndex = 7
+    instance.tabDraft = { ...instance.tabDraft, fret: 5, string: 6, duration: 8 }
+    instance.addTabEditorNote()
+    assert.equal(instance.tabEditorMeasureLayout().length, 2)
+    assert.equal(instance.tabUndoHistory.length, 1)
+    instance.undoTabEditorChange()
+    assert.equal(instance.tabDraft.beats.length, 7)
+    instance.redoTabEditorChange()
+    assert.equal(instance.tabEditorMeasureLayout().length, 2)
+});
+
+test('measure deletion at an insertion slot targets the preceding incomplete bar', () => {
+    const instance = scoreEditorForAudit([
+        { fret: 3, string: 6, duration: 8 },
+        { fret: 9, string: 6, duration: 8 },
+    ], [1])
+    instance.tabSelectedIndex = 1
+    instance.tabInsertAtBar = true
+    instance.deleteTabEditorMeasure()
+    assert.deepEqual(instance.tabDraft.beats.map(beat => beat.fret), [9])
+    assert.deepEqual(instance.tabDraft.breaks, [])
+});
+
+test('undo restores the actual range anchor rather than its last selected index', () => {
+    const instance = scoreEditorForAudit(Array.from({ length: 4 }, (_, fret) =>
+        ({ fret, string: 6, duration: 8 })))
+    instance.selectTabEditorCell(0, 6)
+    instance.selectTabEditorCell(2, 6, { shiftKey: true })
+    instance.changeTabEditorDuration(16)
+    instance.undoTabEditorChange()
+    assert.equal(instance.tabSelectionAnchor, 0)
+    instance.selectTabEditorCell(1, 6, { shiftKey: true })
+    assert.deepEqual(instance.tabSelectedIndices, [0, 1])
+});
