@@ -205,8 +205,17 @@
                     <div class="tab-editor__quick-settings">
                         <label class="tab-editor__field">
                             <span>BPM</span>
-                            <input type="number" min="30" max="400" x-model.number="stepForm.bpm">
+                            <input type="number" min="30" max="400" :value="tabEditorCurrentBpm()"
+                                @change="changeTabEditorBpm($event.target.value); $event.target.value = tabEditorCurrentBpm()"
+                                :title="tabFullMusicXml ? 'Initial playback tempo' : 'Tempo from selected measure'">
                         </label>
+
+                        <button type="button" class="button" data-type="outline"
+                            x-show="!tabFullMusicXml && tabEditorHasTempoChange()" x-cloak
+                            @click="removeTabEditorTempoChange()" title="Remove tempo change and inherit previous tempo"
+                            aria-label="Remove tempo change">
+                            <x-lucide-x width="16" height="16" aria-hidden="true" />
+                        </button>
 
                         <div class="tab-editor__field">
                             <span>Time signature</span>
