@@ -79,7 +79,10 @@ export function copyTabFragment(draft, indices, numerator = 4, denominator = 4) 
         const beats = measure.notes.filter(note => selected.has(note.index)).map(({ index, ...note }) => {
             const beat = JSON.parse(JSON.stringify(note));
             if (!selected.has(index - 1)) delete beat.tie;
-            if (!selected.has(index + 1)) delete beat.legato;
+            if (!selected.has(index + 1)) {
+                delete beat.legato;
+                if (['ss', 'sl'].includes(beat.slide)) delete beat.slide;
+            }
             return beat;
         });
         return { beats, fullRest: isTabFullMeasureRest(measure.notes),
@@ -142,9 +145,10 @@ export function pasteTabFragment(draft, index, fragment, numerator = 4, denomina
     }
     // Inserting changes adjacency at both ends. Do not create unintended
     // links from existing notes into the pasted material.
-    if (start > 0 && beats[start - 1].legato) {
+    if (start > 0 && (beats[start - 1].legato || ['ss', 'sl'].includes(beats[start - 1].slide))) {
         beats[start - 1] = { ...beats[start - 1] };
         delete beats[start - 1].legato;
+        if (['ss', 'sl'].includes(beats[start - 1].slide)) delete beats[start - 1].slide;
     }
     if (beats[start + count]?.tie) {
         beats[start + count] = { ...beats[start + count] };
@@ -203,10 +207,37 @@ export function tabLegatoDirection(beats, index) {
 
 // Editing a fret, string, or beat can invalidate an existing link.
 // Remove only orphaned links while preserving all valid legato effects.
+export const TAB_SLIDES = ['ss', 'sl', 'sib', 'sia', 'sou', 'sod'];
+
+function validTabSlide(beats, index, slide) {
+    return TAB_SLIDES.includes(slide) && tabBeatNotes(beats[index]).length === 1 &&
+        (!['ss', 'sl'].includes(slide) || Boolean(tabLegatoDirection(beats, index)));
+}
+
+export function toggleTabSlide(beats, index, slide) {
+    if (!validTabSlide(beats, index, slide)) {
+        throw new RangeError('Slide requires a single note; connected slides need a different fret on the same string next.');
+    }
+    return beats.map((beat, i) => {
+        if (i !== index) return beat;
+        const { slide: previous, ...rest } = beat;
+        return previous === slide ? rest : { ...rest, legato: false, slide };
+    });
+}
+
 export function normalizeTabLegato(beats) {
-    return beats.map((beat, index) => beat.legato && !tabLegatoDirection(beats, index)
-        ? (() => { const { legato, ...rest } = beat; return rest; })()
-        : beat);
+    return beats.map((beat, index) => {
+        let result = beat;
+        if (beat.legato && !tabLegatoDirection(beats, index)) {
+            const { legato, ...rest } = result;
+            result = rest;
+        }
+        if (beat.slide && !validTabSlide(beats, index, beat.slide)) {
+            const { slide, ...rest } = result;
+            result = rest;
+        }
+        return result;
+    });
 }
 
 export function toggleTabLegato(beats, index, technique = null) {
@@ -220,7 +251,7 @@ export function toggleTabLegato(beats, index, technique = null) {
             : 'Pull-off requires the following fret to be lower.');
     }
     return beats.map((beat, i) => i === index
-        ? { ...beat, ...(beat.legato ? { legato: false } : { legato: true }) }
+        ? { ...beat, slide: undefined, ...(beat.legato ? { legato: false } : { legato: true }) }
         : beat);
 }
 
@@ -291,7 +322,10 @@ export function serializeTabDraft(draft, numerator = 4, bpm = 100, denominator =
         if (beat.legato && !tabLegatoDirection(draft.beats, beat.index)) {
             throw new RangeError('Legato needs two consecutive notes on the same string at different frets.');
         }
-        const effects = [beat.legato ? 'h' : null, beat.palmMute ? 'pm' : null, beat.tie ? 't' : null].filter(Boolean);
+        if (beat.slide && (!validTabSlide(draft.beats, beat.index, beat.slide) || beat.legato)) {
+            throw new RangeError('Invalid slide.');
+        }
+        const effects = [beat.legato ? 'h' : null, beat.palmMute ? 'pm' : null, beat.tie ? 't' : null, beat.slide].filter(Boolean);
         const content = beat.rest ? 'r' : notes.length === 1
             ? `${notes[0].fret}.${notes[0].string}${effects.length ? `{${effects.join(' ')}}` : ''}`
             : `(${notes.map(note => `${note.fret}.${note.string}${beat.palmMute ? '{pm}' : ''}`).join(' ')})`;
@@ -324,7 +358,7 @@ export function parseTabDraft(alphaTex) {
     const breaks = [];
     for (const measure of content[4].split('|')) {
         if (beats.length) breaks.push(beats.length);
-        const tokens = measure.trim().match(/:\d+\s+(?:\((?:\d+\.\d+(?:\{pm\})?\s*){2,6}\)|\d+\.\d+(?:\{(?:h(?: pm)?(?: t)?|pm(?: t)?|t)\})?|r)(?:\s+\{\s*(?:d|tu 3)(?:\s+(?:d|tu 3))?\s*\})?/g) ?? [];
+        const tokens = measure.trim().match(/:\d+\s+(?:\((?:\d+\.\d+(?:\{pm\})?\s*){2,6}\)|\d+\.\d+(?:\{(?:(?:h|pm|t|ss|sl|sib|sia|sou|sod)(?: (?:h|pm|t|ss|sl|sib|sia|sou|sod))*)\})?|r)(?:\s+\{\s*(?:d|tu 3)(?:\s+(?:d|tu 3))?\s*\})?/g) ?? [];
         if (!tokens.length || tokens.join(' ').replace(/\s+/g, ' ') !== measure.trim().replace(/\s+/g, ' ')) {
             throw new Error('This tablature contains unsupported notation');
         }
@@ -345,10 +379,14 @@ export function parseTabDraft(alphaTex) {
                 ? body.slice(1, -1).trim().split(/\s+/)
                 : [body];
             const notes = raw.map(part => {
-                const note = /^(\d+)\.(\d+)(?:\{(h(?: pm)?(?: t)?|pm(?: t)?|t)\})?$/.exec(part);
-                if (!note || ((note[3]?.includes('h') || note[3]?.split(' ').includes('t')) && raw.length !== 1)) throw new Error('Unsupported chord');
+                const note = /^(\d+)\.(\d+)(?:\{((?:h|pm|t|ss|sl|sib|sia|sou|sod)(?: (?:h|pm|t|ss|sl|sib|sia|sou|sod))*)\})?$/.exec(part);
+                if (!note) throw new Error('Unsupported note');
+                const properties = note[3]?.split(' ') ?? [];
+                const slide = properties.find(property => TAB_SLIDES.includes(property));
+                if (raw.length !== 1 && properties.some(property => property !== 'pm')) throw new Error('Unsupported chord');
                 return { fret: Number(note[1]), string: Number(note[2]),
-                    ...(note[3]?.includes('h') ? { legato: true } : {}),
+                    ...(properties.includes('h') ? { legato: true } : {}),
+                    ...(slide ? { slide } : {}),
                     ...(note[3]?.includes('pm') ? { palmMute: true } : {}),
                     ...(note[3]?.split(' ').includes('t') ? { tie: true } : {}) };
             });
