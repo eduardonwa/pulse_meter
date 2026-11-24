@@ -152,9 +152,7 @@
                         
                         <div class="tab-editor__import-details">
                             <p x-show="prototypeMusicXmlImport?.sections?.length > 1"
-                                x-text="prototypeMusicXmlHasMultipleTimeSignatures()
-                                    ? 'This score contains separate sections, including changes of time signature. The editor currently supports one time signature per exercise.'
-                                    : 'This score contains separate sections because some measures cannot be edited.'"></p>
+                                >This score contains separate sections because some measures cannot be edited.</p>
 
                             <div x-show="(prototypeMusicXmlImport?.sections?.length ?? 0) > 1">
                                 <strong>Compatible sections</strong>
@@ -220,13 +218,13 @@
                         <div class="tab-editor__field">
                             <span>Time signature</span>
                             <div class="tab-editor__time-signature">
-                                <select x-model.number="stepForm.time_signature_numerator" aria-label="Beats per measure">
+                                <select :value="tabEditorCurrentSignature().numerator" @change="changeTabEditorSignature($event.target.value, tabEditorCurrentSignature().denominator)" aria-label="Beats per measure">
                                     @foreach (range(1, 16) as $numerator)
                                         <option value="{{ $numerator }}">{{ $numerator }}</option>
                                     @endforeach
                                 </select>
                                 <span aria-hidden="true">/</span>
-                                <select x-model.number="stepForm.time_signature_denominator" aria-label="Beat note value">
+                                <select :value="tabEditorCurrentSignature().denominator" @change="changeTabEditorSignature(tabEditorCurrentSignature().numerator, $event.target.value)" aria-label="Beat note value">
                                     <option value="2">2</option>
                                     <option value="4">4</option>
                                     <option value="8">8</option>
@@ -234,6 +232,12 @@
                                 </select>
                             </div>
                         </div>
+                        <button type="button" class="button" data-type="outline"
+                            x-show="!tabFullMusicXml && tabEditorHasSignatureChange()" x-cloak
+                            @click="removeTabEditorSignatureChange()" title="Remove time signature change"
+                            aria-label="Remove time signature change">
+                            <x-lucide-x width="16" height="16" aria-hidden="true" />
+                        </button>
                     </div>
                     <div class="tab-editor__edit-actions" x-show="!tabFullMusicXml" x-cloak role="group" aria-label="Editing tools">
                     <div class="tab-editor__edit-group" role="group" aria-label="History">
