@@ -815,6 +815,7 @@
 
                 > .pulse-settings-bar {
                     grid-area: settings;
+                    padding-block-start: $size-4;
                     padding-block-end: 0;
                     align-items: stretch;
 
@@ -825,6 +826,7 @@
 
                 > .time-signature__actions {
                     grid-area: actions;
+                    padding-block-start: $size-4;
                 }
             }
         }
