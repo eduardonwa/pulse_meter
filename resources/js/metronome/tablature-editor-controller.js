@@ -173,6 +173,10 @@ export function tablatureEditorMethods() {
             return this.tabEditorMeasureWarnings().filter(measure => measure.status !== 'complete');
         },
 
+        tabEditorLegatoDirection(index) {
+            return tabLegatoDirection(this.tabDraft.beats, index);
+        },
+
         tabEditorLegatoAt(index, string) {
             const beat = this.tabDraft.beats[index];
             if (!beat?.legato || !tabLegatoDirection(this.tabDraft.beats, index)) return null;
