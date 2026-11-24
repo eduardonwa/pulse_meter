@@ -29,8 +29,7 @@ export function tabEditor() {
         const fitsPrevious = previousMeasure &&
             previousMeasure.used + tabBeatUnits(this.tabDraft) <= previousMeasure.capacity + 1e-7
         const anchorIndex = fitsPrevious ? this.tabSelectedIndex - 1 : index
-        const measureIndex = measures.findIndex(measure =>
-            measure.notes.some(note => note.index === anchorIndex))
+        const measureIndex = this.tabEditorActiveMeasureIndex(measures)
         if (measureIndex < 0) return
         const beatIndex = measures[measureIndex].notes.findIndex(note => note.index === anchorIndex)
         const after = Boolean(fitsPrevious)
@@ -50,6 +49,7 @@ export function tabEditor() {
         this.tabScoreView = view
         this.$nextTick(() => {
             if (view === 'score') {
+                this.stopPrototypePlayheadAnimation()
                 if (!this.tabDraft.beats.length) {
                     // A new score starts with one editable measure.
                     this.tabDraft = { ...this.tabDraft, beats: [{ rest: true, duration: 1 }], breaks: [] }
@@ -195,7 +195,7 @@ export function tabEditor() {
         })
     },
     paintPrototypePlayhead(progress) {
-        if (!this.prototypeScoreStarted || this.tabFullMusicXml || !this.tabDraft.beats.length) return
+        if (this.tabScoreView !== 'grid' || !this.prototypeScoreStarted || this.tabFullMusicXml || !this.tabDraft.beats.length) return
         const beats = this.tabDraft.beats
         const units = beats.map(beat => tabBeatUnits(beat))
         const total = units.reduce((sum, unit) => sum + unit, 0)
@@ -214,7 +214,7 @@ export function tabEditor() {
         this.paintPrototypePlayheadBeat(index, fraction)
     },
     paintPrototypePlayheadBeat(index, fraction = 0) {
-        if (!this.prototypeScoreStarted || this.tabFullMusicXml) return
+        if (this.tabScoreView !== 'grid' || !this.prototypeScoreStarted || this.tabFullMusicXml) return
         const grids = this.$refs.tabEditorScore?.querySelectorAll('.tab-editor__grid')
         grids?.forEach(grid => {
             const cursor = grid.querySelector('.tab-editor__playhead')
@@ -233,10 +233,10 @@ export function tabEditor() {
         })
     },
     startPrototypePlayheadAnimation() {
-        if (!this.prototypeScoreStarted || this.tabFullMusicXml || this.prototypePlayheadFrame !== null) return
+        if (this.tabScoreView !== 'grid' || !this.prototypeScoreStarted || this.tabFullMusicXml || this.prototypePlayheadFrame !== null) return
         const frame = now => {
             this.prototypePlayheadFrame = null
-            if (!this.prototypePlaying || this.tabFullMusicXml) return
+            if (this.tabScoreView !== 'grid' || !this.prototypePlaying || this.tabFullMusicXml) return
             const beatClock = this.prototypeBeatClock
             if (beatClock && beatClock.duration > 0) {
                 // Each beat notification is an audio-timed anchor. This avoids
@@ -258,7 +258,7 @@ export function tabEditor() {
     // Approximate the destination immediately from the editable rhythm;
     // alphaTab corrects it using the actual MIDI tick after a seek.
     showPrototypeBeatAtPercent(percent) {
-        if (this.tabFullMusicXml) { this.prototypePlayingBeatIndex = null; return }
+        if (this.tabScoreView !== 'grid' || this.tabFullMusicXml) { this.prototypePlayingBeatIndex = null; return }
         const beats = this.tabDraft.beats
         if (!beats.length) {
             this.prototypePlayingBeatIndex = null
@@ -276,7 +276,7 @@ export function tabEditor() {
         }
     },
     syncPrototypePlayedBeat(event) {
-        if (event.detail?.element !== this.$refs.tabEditorPreview) return
+        if (this.tabScoreView !== 'grid' || event.detail?.element !== this.$refs.tabEditorPreview) return
         const measureIndex = Number(event.detail.measureIndex)
         const beatIndex = Number(event.detail.beatIndex)
         if (!Number.isInteger(measureIndex) || !Number.isInteger(beatIndex) ||
@@ -306,7 +306,7 @@ export function tabEditor() {
         this.prototypePlayingBeatIndex = null
     },
     startPrototypeScorePlayhead(event) {
-        if (event.detail?.element !== this.$refs.tabEditorPreview || this.tabFullMusicXml) return
+        if (this.tabScoreView !== 'grid' || event.detail?.element !== this.$refs.tabEditorPreview || this.tabFullMusicXml) return
         this.prototypeScoreStarted = true
         this.prototypePlayheadClock = {
             current: this.prototypeCurrentMs, duration: this.prototypeDurationMs, at: performance.now(),
