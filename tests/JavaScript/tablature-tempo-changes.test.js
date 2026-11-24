@@ -139,3 +139,26 @@ test('initial BPM changes are also restored by undo and redo', () => {
     assert.equal(state.stepForm.bpm, 140)
     assert.deepEqual(state.tabDraft.tempos, { 1: 183, 3: 190 })
 })
+
+
+test('pasting a tempo-bearing measure at the start updates the initial BPM', () => {
+    const state = editor()
+    state.tabClipboard = copyTabFragment(state.tabDraft, [4, 5, 6, 7])
+    state.tabSelectedIndex = 0
+    state.tabSelectedIndices = [0]
+    state.pasteTabEditorSelection()
+    assert.equal(state.stepForm.bpm, 183)
+    assert.equal(Object.hasOwn(state.tabDraft.tempos, 0), false)
+    state.undoTabEditorChange()
+    assert.equal(state.stepForm.bpm, 120)
+    assert.deepEqual(state.tabDraft.tempos, { 1: 183, 3: 190 })
+})
+
+test('deleting every beat of a tempo-bearing measure removes its tempo instruction', () => {
+    const state = editor()
+    state.tabSelectedIndices = [4, 5, 6, 7]
+    state.undoTabEditorNote()
+    assert.deepEqual(state.tabDraft.tempos, { 2: 190 })
+    assert.deepEqual(state.tabDraft.breaks, [4, 8])
+    assert.equal(state.tabEditorCurrentBpm(), 120)
+})
