@@ -261,7 +261,18 @@
                     </div>
                 </div>
 
-                <aside class="tab-editor__rhythm" x-show="!tabFullMusicXml" aria-label="Tablature tools">
+                <aside class="tab-editor__rhythm" x-show="!tabFullMusicXml" aria-label="Tablature tools"
+                    x-data="{
+                        dockObserver: null,
+                        init() {
+                            const dock = this.$el.closest('.tab-editor').querySelector('.tab-editor__bottom-dock');
+                            const update = () => this.$el.style.setProperty('--tab-editor-dock-height', dock.offsetHeight + 'px');
+                            this.dockObserver = new ResizeObserver(update);
+                            this.dockObserver.observe(dock);
+                            update();
+                        },
+                        destroy() { this.dockObserver?.disconnect(); }
+                    }">
                     <details class="tab-editor__palette-section" open>
                         <summary class="tab-editor__palette-heading">Rhythm<x-lucide-chevron-down aria-hidden="true" /></summary>
                         <div class="tab-editor__palette-durations" role="group" aria-label="Note duration">
@@ -369,9 +380,12 @@
                                         const dialog = $el.closest('dialog').getBoundingClientRect();
                                         const dock = $el.closest('.tab-editor').querySelector('.tab-editor__bottom-dock').getBoundingClientRect();
                                         const bottom = Math.min(dialog.bottom, window.innerHeight, dock.top);
-                                        const above = trigger.top - Math.max(dialog.top, 0);
-                                        const below = bottom - trigger.bottom;
-                                        slideAbove = $refs.slideOptions.offsetHeight > below && above > below;
+                                        const palette = $el.closest('.tab-editor__rhythm').getBoundingClientRect();
+                                        const above = Math.max(0, trigger.top - Math.max(dialog.top, palette.top, 0));
+                                        const below = Math.max(0, Math.min(bottom, palette.bottom) - trigger.bottom);
+                                        $refs.slideOptions.style.removeProperty('max-height');
+                                        slideAbove = $refs.slideOptions.scrollHeight > below && above > below;
+                                        $refs.slideOptions.style.maxHeight = (slideAbove ? above : below) + 'px';
                                     })">
                                     <x-lucide-chevron-down width="16" height="16" aria-hidden="true" />
                                 </button>
