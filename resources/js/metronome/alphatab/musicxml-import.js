@@ -101,7 +101,9 @@ function measureNotes(measure, staff, capacityTicks) {
         }
         if (staff !== null && staffOf(node) !== staff) continue
         const noteVoice = value(node, 'voice') ?? '1'
-        if (voice !== null && voice !== noteVoice) throw new Error('Multiple voices are not supported yet')
+        if ((staff === null && noteVoice !== '1') || (voice !== null && voice !== noteVoice)) {
+            throw new Error('Multiple voices are not supported yet')
+        }
         voice = noteVoice
         if (chord ? !selected.length || onset !== selectedEnd - duration : onset !== selectedEnd) {
             throw new Error('Overlapping notes or offsets are not supported yet')
@@ -187,6 +189,8 @@ export function parseMusicXmlTab(xmlText, parser = null) {
     let bpm = 100
     const sections = []
     const warnings = []
+    const limitations = new Set()
+    let initialTempo = null
     let active = null
     const measures = children(part, 'measure')
     for (const [i, measure] of measures.entries()) {
@@ -203,7 +207,14 @@ export function parseMusicXmlTab(xmlText, parser = null) {
         }
         const tempo = Number(Array.from(measure.getElementsByTagName('sound'))
             .find(node => node.hasAttribute('tempo'))?.getAttribute('tempo'))
-        if (Number.isFinite(tempo) && tempo >= 30 && tempo <= 400) bpm = Math.round(tempo)
+        if (Number.isFinite(tempo) && tempo >= 30 && tempo <= 400) {
+            const nextBpm = Math.round(tempo)
+            if ((initialTempo !== null && nextBpm !== bpm) || (i > 0 && nextBpm !== bpm)) {
+                limitations.add('This score contains tempo changes. The editor currently supports one BPM per exercise.')
+            }
+            bpm = nextBpm
+            initialTempo ??= bpm
+        }
         const signature = { numerator, denominator }
         let measureBeats
         try {
@@ -212,6 +223,15 @@ export function parseMusicXmlTab(xmlText, parser = null) {
             warnings.push('Measure ' + (i + 1) + ': ' + error.message)
             active = null
             continue
+        }
+        for (const note of children(measure, 'note')) {
+            if (staff !== null && staffOf(note) !== staff) continue
+            const notations = child(note, 'notations')
+            if (children(note, 'tie').length || children(notations, 'tied').length ||
+                children(notations, 'slide').length || children(notations, 'glissando').length ||
+                children(notations, 'slur').length) {
+                limitations.add('This score contains ties, slides or slurs that the MusicXML editor import does not yet preserve.')
+            }
         }
         if (!active || active.numerator !== numerator || active.denominator !== denominator) {
             active = { numerator, denominator, bpm, firstMeasure: i + 1, lastMeasure: i + 1,
@@ -225,5 +245,5 @@ export function parseMusicXmlTab(xmlText, parser = null) {
     if (!sections.length) throw new Error('No compatible measures found for editing. The full score is still available for playback.')
     const title = value(child(score, 'work'), 'work-title') ??
         value(score, 'movement-title') ?? 'Imported tablature'
-    return { title, sections, warnings }
+    return { title, sections, warnings, limitations: [...limitations] }
 }
