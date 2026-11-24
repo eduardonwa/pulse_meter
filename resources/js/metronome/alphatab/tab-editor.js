@@ -13,6 +13,10 @@ function tabRhythmProperties(beat) {
     const properties = [];
     if (beat.dotted) properties.push('d');
     if (beat.tuplet === 3) properties.push('tu 3');
+    if (beat.pickStroke) {
+        if (beat.rest || !['sd', 'su'].includes(beat.pickStroke)) throw new RangeError('Invalid pick stroke');
+        properties.push(beat.pickStroke);
+    }
     return properties.length ? ` { ${properties.join(' ')} }` : '';
 }
 
@@ -79,7 +83,10 @@ export function copyTabFragment(draft, indices, numerator = 4, denominator = 4) 
         const beats = measure.notes.filter(note => selected.has(note.index)).map(({ index, ...note }) => {
             const beat = JSON.parse(JSON.stringify(note));
             if (!selected.has(index - 1)) delete beat.tie;
-            if (!selected.has(index + 1)) delete beat.legato;
+            if (!selected.has(index + 1)) {
+                delete beat.legato;
+                if (['ss', 'sl'].includes(beat.slide)) delete beat.slide;
+            }
             return beat;
         });
         return { beats, fullRest: isTabFullMeasureRest(measure.notes),
@@ -142,9 +149,10 @@ export function pasteTabFragment(draft, index, fragment, numerator = 4, denomina
     }
     // Inserting changes adjacency at both ends. Do not create unintended
     // links from existing notes into the pasted material.
-    if (start > 0 && beats[start - 1].legato) {
+    if (start > 0 && (beats[start - 1].legato || ['ss', 'sl'].includes(beats[start - 1].slide))) {
         beats[start - 1] = { ...beats[start - 1] };
         delete beats[start - 1].legato;
+        if (['ss', 'sl'].includes(beats[start - 1].slide)) delete beats[start - 1].slide;
     }
     if (beats[start + count]?.tie) {
         beats[start + count] = { ...beats[start + count] };
@@ -203,10 +211,37 @@ export function tabLegatoDirection(beats, index) {
 
 // Editing a fret, string, or beat can invalidate an existing link.
 // Remove only orphaned links while preserving all valid legato effects.
+export const TAB_SLIDES = ['ss', 'sl', 'sib', 'sia', 'sou', 'sod'];
+
+function validTabSlide(beats, index, slide) {
+    return TAB_SLIDES.includes(slide) && tabBeatNotes(beats[index]).length === 1 &&
+        (!['ss', 'sl'].includes(slide) || Boolean(tabLegatoDirection(beats, index)));
+}
+
+export function toggleTabSlide(beats, index, slide) {
+    if (!validTabSlide(beats, index, slide)) {
+        throw new RangeError('Slide requires a single note; connected slides need a different fret on the same string next.');
+    }
+    return beats.map((beat, i) => {
+        if (i !== index) return beat;
+        const { slide: previous, ...rest } = beat;
+        return previous === slide ? rest : { ...rest, legato: false, slide };
+    });
+}
+
 export function normalizeTabLegato(beats) {
-    return beats.map((beat, index) => beat.legato && !tabLegatoDirection(beats, index)
-        ? (() => { const { legato, ...rest } = beat; return rest; })()
-        : beat);
+    return beats.map((beat, index) => {
+        let result = beat;
+        if (beat.legato && !tabLegatoDirection(beats, index)) {
+            const { legato, ...rest } = result;
+            result = rest;
+        }
+        if (beat.slide && !validTabSlide(beats, index, beat.slide)) {
+            const { slide, ...rest } = result;
+            result = rest;
+        }
+        return result;
+    });
 }
 
 export function toggleTabLegato(beats, index, technique = null) {
@@ -220,7 +255,7 @@ export function toggleTabLegato(beats, index, technique = null) {
             : 'Pull-off requires the following fret to be lower.');
     }
     return beats.map((beat, i) => i === index
-        ? { ...beat, ...(beat.legato ? { legato: false } : { legato: true }) }
+        ? { ...beat, slide: undefined, ...(beat.legato ? { legato: false } : { legato: true }) }
         : beat);
 }
 
@@ -266,6 +301,18 @@ export function toggleTabPalmMute(beats, indices) {
         : beat);
 }
 
+export function toggleTabPickStroke(beats, indices, direction) {
+    if (!['sd', 'su'].includes(direction)) throw new RangeError('Invalid pick stroke');
+    const targets = new Set(indices.filter(index => tabBeatNotes(beats[index]).length));
+    if (!targets.size) return beats;
+    const enable = [...targets].some(index => beats[index].pickStroke !== direction);
+    return beats.map((beat, index) => {
+        if (!targets.has(index)) return beat;
+        const { pickStroke, ...rest } = beat;
+        return enable ? { ...rest, pickStroke: direction } : rest;
+    });
+}
+
 export function setTabBeatNote(beat, fret, string) {
     if (!beat || beat.rest || !Number.isInteger(fret) || fret < 0 || fret > 24 ||
         !Number.isInteger(string) || string < 1 || string > 6) throw new RangeError('Invalid note');
@@ -291,7 +338,10 @@ export function serializeTabDraft(draft, numerator = 4, bpm = 100, denominator =
         if (beat.legato && !tabLegatoDirection(draft.beats, beat.index)) {
             throw new RangeError('Legato needs two consecutive notes on the same string at different frets.');
         }
-        const effects = [beat.legato ? 'h' : null, beat.palmMute ? 'pm' : null, beat.tie ? 't' : null].filter(Boolean);
+        if (beat.slide && (!validTabSlide(draft.beats, beat.index, beat.slide) || beat.legato)) {
+            throw new RangeError('Invalid slide.');
+        }
+        const effects = [beat.legato ? 'h' : null, beat.palmMute ? 'pm' : null, beat.tie ? 't' : null, beat.slide].filter(Boolean);
         const content = beat.rest ? 'r' : notes.length === 1
             ? `${notes[0].fret}.${notes[0].string}${effects.length ? `{${effects.join(' ')}}` : ''}`
             : `(${notes.map(note => `${note.fret}.${note.string}${beat.palmMute ? '{pm}' : ''}`).join(' ')})`;
@@ -324,7 +374,7 @@ export function parseTabDraft(alphaTex) {
     const breaks = [];
     for (const measure of content[4].split('|')) {
         if (beats.length) breaks.push(beats.length);
-        const tokens = measure.trim().match(/:\d+\s+(?:\((?:\d+\.\d+(?:\{pm\})?\s*){2,6}\)|\d+\.\d+(?:\{(?:h(?: pm)?(?: t)?|pm(?: t)?|t)\})?|r)(?:\s+\{\s*(?:d|tu 3)(?:\s+(?:d|tu 3))?\s*\})?/g) ?? [];
+        const tokens = measure.trim().match(/:\d+\s+(?:\((?:\d+\.\d+(?:\{pm\})?\s*){2,6}\)|\d+\.\d+(?:\{(?:(?:h|pm|t|ss|sl|sib|sia|sou|sod)(?: (?:h|pm|t|ss|sl|sib|sia|sou|sod))*)\})?|r)(?:\s+\{\s*(?:d|tu 3|sd|su)(?:\s+(?:d|tu 3|sd|su))*\s*\})?/g) ?? [];
         if (!tokens.length || tokens.join(' ').replace(/\s+/g, ' ') !== measure.trim().replace(/\s+/g, ' ')) {
             throw new Error('This tablature contains unsupported notation');
         }
@@ -334,10 +384,11 @@ export function parseTabDraft(alphaTex) {
             const duration = Number(match[1]);
             const body = match[2];
             const effects = match[3]?.trim() ?? '';
-            if (!['', 'd', 'tu 3', 'd tu 3'].includes(effects)) throw new Error('Unsupported rhythm effects');
-            const rhythm = { ...(effects.includes('d') ? { dotted: true } : {}), ...(effects.includes('tu 3') ? { tuplet: 3 } : {}) };
+            if (!/^(?:d ?)?(?:tu 3 ?)?(?:sd|su)?$/.test(effects)) throw new Error('Unsupported beat effects');
+            const rhythm = { ...(effects.split(' ').includes('d') ? { dotted: true } : {}), ...(effects.includes('tu 3') ? { tuplet: 3 } : {}), ...(effects.split(' ').includes('sd') ? { pickStroke: 'sd' } : effects.split(' ').includes('su') ? { pickStroke: 'su' } : {}) };
             if (!TAB_DURATIONS.includes(duration)) throw new Error('Unsupported duration');
             if (body === 'r') {
+                if (rhythm.pickStroke) throw new Error('Pick stroke requires a note');
                 beats.push({ rest: true, duration, ...rhythm });
                 continue;
             }
@@ -345,10 +396,14 @@ export function parseTabDraft(alphaTex) {
                 ? body.slice(1, -1).trim().split(/\s+/)
                 : [body];
             const notes = raw.map(part => {
-                const note = /^(\d+)\.(\d+)(?:\{(h(?: pm)?(?: t)?|pm(?: t)?|t)\})?$/.exec(part);
-                if (!note || ((note[3]?.includes('h') || note[3]?.split(' ').includes('t')) && raw.length !== 1)) throw new Error('Unsupported chord');
+                const note = /^(\d+)\.(\d+)(?:\{((?:h|pm|t|ss|sl|sib|sia|sou|sod)(?: (?:h|pm|t|ss|sl|sib|sia|sou|sod))*)\})?$/.exec(part);
+                if (!note) throw new Error('Unsupported note');
+                const properties = note[3]?.split(' ') ?? [];
+                const slide = properties.find(property => TAB_SLIDES.includes(property));
+                if (raw.length !== 1 && properties.some(property => property !== 'pm')) throw new Error('Unsupported chord');
                 return { fret: Number(note[1]), string: Number(note[2]),
-                    ...(note[3]?.includes('h') ? { legato: true } : {}),
+                    ...(properties.includes('h') ? { legato: true } : {}),
+                    ...(slide ? { slide } : {}),
                     ...(note[3]?.includes('pm') ? { palmMute: true } : {}),
                     ...(note[3]?.split(' ').includes('t') ? { tie: true } : {}) };
             });
@@ -412,8 +467,8 @@ export function removeTabNoteAtString(beat, string) {
     if (!notes.some(note => note.string === string)) return beat;
     const remaining = notes.filter(note => note.string !== string);
     if (!remaining.length) return { rest: true, duration: beat.duration, ...(beat.dotted ? { dotted: true } : {}), ...(beat.tuplet === 3 ? { tuplet: 3 } : {}) };
-    if (remaining.length === 1) return { ...remaining[0], duration: beat.duration, ...(beat.dotted ? { dotted: true } : {}), ...(beat.tuplet === 3 ? { tuplet: 3 } : {}) };
-    return { notes: remaining, duration: beat.duration, ...(beat.dotted ? { dotted: true } : {}), ...(beat.tuplet === 3 ? { tuplet: 3 } : {}) };
+    if (remaining.length === 1) return { ...remaining[0], ...(beat.pickStroke ? { pickStroke: beat.pickStroke } : {}), duration: beat.duration, ...(beat.dotted ? { dotted: true } : {}), ...(beat.tuplet === 3 ? { tuplet: 3 } : {}) };
+    return { notes: remaining, ...(beat.pickStroke ? { pickStroke: beat.pickStroke } : {}), duration: beat.duration, ...(beat.dotted ? { dotted: true } : {}), ...(beat.tuplet === 3 ? { tuplet: 3 } : {}) };
 }
 
 // Derive playable, meter-safe alphaTex without modifying saved tablature.

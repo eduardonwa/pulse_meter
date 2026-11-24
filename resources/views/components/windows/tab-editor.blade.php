@@ -261,7 +261,37 @@
                     </div>
                 </div>
 
-                <aside class="tab-editor__rhythm" x-show="!tabFullMusicXml" aria-label="Tablature tools">
+                <aside class="tab-editor__rhythm" x-show="!tabFullMusicXml" aria-label="Tablature tools"
+                    x-data="{
+                        paletteObserver: null,
+                        updatePaletteHeight: null,
+                        paletteDialog: null,
+                        init() {
+                            const palette = this.$el;
+                            const dialog = palette.closest('dialog');
+                            const dock = palette.closest('.tab-editor').querySelector('.tab-editor__bottom-dock');
+                            this.paletteDialog = dialog;
+                            this.updatePaletteHeight = () => {
+                                if (!palette.getClientRects().length) return;
+                                const top = Math.max(palette.getBoundingClientRect().top, dialog.getBoundingClientRect().top, 0);
+                                const bottom = Math.min(dock.getBoundingClientRect().top, dialog.getBoundingClientRect().bottom, window.innerHeight);
+                                palette.style.setProperty('--tab-editor-palette-height', Math.max(0, bottom - top) + 'px');
+                            };
+                            this.paletteObserver = new ResizeObserver(this.updatePaletteHeight);
+                            this.paletteObserver.observe(dialog);
+                            this.paletteObserver.observe(dock);
+                            this.paletteObserver.observe(palette.closest('.tab-editor__workspace').querySelector('.tab-editor__edit-toolbar'));
+                            this.paletteObserver.observe(palette.closest('.tab-editor').querySelector('.tab-editor__utility-bar'));
+                            dialog.addEventListener('scroll', this.updatePaletteHeight, { passive: true });
+                            window.addEventListener('resize', this.updatePaletteHeight);
+                            this.$nextTick(this.updatePaletteHeight);
+                        },
+                        destroy() {
+                            this.paletteObserver?.disconnect();
+                            this.paletteDialog?.removeEventListener('scroll', this.updatePaletteHeight);
+                            window.removeEventListener('resize', this.updatePaletteHeight);
+                        }
+                    }">
                     <details class="tab-editor__palette-section" open>
                         <summary class="tab-editor__palette-heading">Rhythm<x-lucide-chevron-down aria-hidden="true" /></summary>
                         <div class="tab-editor__palette-durations" role="group" aria-label="Note duration">
@@ -331,6 +361,72 @@
                             title="Toggle palm mute on selected notes (M)">
                             <span aria-hidden="true">P.M.</span> Palm mute
                         </button>
+                        <template x-for="stroke in [{ code: 'sd', name: 'Downstroke', symbol: '⊓' }, { code: 'su', name: 'Upstroke', symbol: 'V' }]" :key="stroke.code">
+                            <button type="button" class="tab-editor__palette-tool"
+                                :class="{ 'is-active': tabDraft.beats[tabSelectedIndex]?.pickStroke === stroke.code }"
+                                :aria-pressed="(tabDraft.beats[tabSelectedIndex]?.pickStroke === stroke.code).toString()"
+                                :title="stroke.name" @click="toggleTabEditorPickStroke(stroke.code)">
+                                <span aria-hidden="true" x-text="stroke.symbol"></span>
+                                <span x-text="stroke.name"></span>
+                            </button>
+                        </template>
+                        <div class="tab-editor__slide-tool" x-data="{
+                            slideOpen: false,
+                            selectedSlide: 'ss',
+                            slides: [
+                                { code: 'ss', name: 'Slide', symbol: '/' },
+                                { code: 'sl', name: 'Legato slide', symbol: '⌣/' },
+                                { code: 'sib', name: 'Slide in from below', symbol: '↗' },
+                                { code: 'sia', name: 'Slide in from above', symbol: '↘' },
+                                { code: 'sou', name: 'Slide out upwards', symbol: '↗' },
+                                { code: 'sod', name: 'Slide out downwards', symbol: '↘' }
+                            ]
+                        }" @click.outside="slideOpen = false" @keydown.escape.stop="slideOpen = false"
+                            @scroll.window.capture="if (slideOpen && $event.target !== $refs.slideOptions) slideOpen = false"
+                            @resize.window="slideOpen = false">
+                            <div class="tab-editor__slide-split">
+                                <button type="button" class="tab-editor__palette-tool"
+                                    :class="{ 'is-active': tabDraft.beats[tabSelectedIndex]?.slide === selectedSlide }"
+                                    :aria-pressed="(tabDraft.beats[tabSelectedIndex]?.slide === selectedSlide).toString()"
+                                    :title="slides.find(slide => slide.code === selectedSlide).name"
+                                    @click="toggleTabEditorSlide(selectedSlide)">
+                                    <span aria-hidden="true" x-text="slides.find(slide => slide.code === selectedSlide).symbol"></span>
+                                    <span x-text="slides.find(slide => slide.code === selectedSlide).name"></span>
+                                </button>
+                                <button type="button" class="tab-editor__slide-toggle" aria-label="Choose slide type"
+                                    aria-controls="tab-editor-slide-options" :aria-expanded="slideOpen.toString()"
+                                    @click="slideOpen = !slideOpen; if (slideOpen) $nextTick(() => {
+                                        const trigger = $el.parentElement.getBoundingClientRect();
+                                        const dialog = $el.closest('dialog').getBoundingClientRect();
+                                        const dock = $el.closest('.tab-editor').querySelector('.tab-editor__bottom-dock').getBoundingClientRect();
+                                        const menu = $refs.slideOptions;
+                                        const top = Math.max(dialog.top, 0);
+                                        const bottom = Math.min(dialog.bottom, window.innerHeight, dock.top);
+                                        const left = Math.max(dialog.left, 0);
+                                        const right = Math.min(dialog.right, window.innerWidth);
+                                        menu.style.maxWidth = Math.max(0, right - left) + 'px';
+                                        menu.style.removeProperty('max-height');
+                                        const above = Math.max(0, trigger.top - top);
+                                        const below = Math.max(0, bottom - trigger.bottom);
+                                        const opensAbove = menu.scrollHeight > below && above > below;
+                                        menu.style.maxHeight = (opensAbove ? above : below) + 'px';
+                                        menu.style.left = Math.max(left, Math.min(trigger.left, right - menu.offsetWidth)) + 'px';
+                                        menu.style.top = (opensAbove ? trigger.top - menu.offsetHeight : trigger.bottom) + 'px';
+                                    })">
+                                    <x-lucide-chevron-down width="16" height="16" aria-hidden="true" />
+                                </button>
+                            </div>
+                            <div id="tab-editor-slide-options" class="tab-editor__slide-options" x-ref="slideOptions" x-show="slideOpen" x-cloak role="group" aria-label="Slide types">
+                                <template x-for="slide in slides" :key="slide.code">
+                                    <button type="button" class="tab-editor__palette-tool"
+                                        :aria-pressed="(selectedSlide === slide.code).toString()"
+                                        @click="selectedSlide = slide.code; slideOpen = false">
+                                        <span aria-hidden="true" x-text="slide.symbol"></span>
+                                        <span x-text="slide.name"></span>
+                                    </button>
+                                </template>
+                            </div>
+                        </div>
                         </div>
                     </details>
                 </aside>
