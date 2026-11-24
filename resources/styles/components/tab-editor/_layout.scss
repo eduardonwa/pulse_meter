@@ -75,6 +75,33 @@
             
             pointer-events: auto;
 
+            // AlphaTab's playback cursor is not the editor's input caret.
+            // Its bar/beat overlays appear only while the player is running.
+            &:not(.is-playing) {
+                .at-cursor-bar,
+                .at-cursor-beat,
+                .at-selection {
+                    display: none !important;
+                }
+            }
+
+            .tab-editor-score-caret {
+                position: absolute;
+                z-index: 15;
+                width: 3px;
+                border-radius: 2px;
+                background: hsl(var(--sol-600));
+                box-shadow: 0 0 0 2px hsl(var(--neutral-100) / .75);
+                pointer-events: none;
+                transform: translateX(-50%);
+            }
+
+            .tab-editor-score-caret.is-insertion {
+                width: 2px;
+                background: hsl(var(--neutral-900));
+                border-left: 1px solid hsl(var(--neutral-100));
+            }
+
             // alphaTab animates the beat cursor; soften the abrupt bar-wide
             // highlight and use a more legible moving line.
             .at-cursor-bar {
