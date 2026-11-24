@@ -231,15 +231,15 @@
                         </button>
 
                         <button type="button" class="tab-editor__palette-tool"
-                            :class="{ 'is-active': Boolean(tabDraft.beats[tabSelectedIndex]?.legato) && tabLegatoDirection(tabDraft.beats, tabSelectedIndex) === 'H' }"
-                            :aria-pressed="(Boolean(tabDraft.beats[tabSelectedIndex]?.legato) && tabLegatoDirection(tabDraft.beats, tabSelectedIndex) === 'H').toString()"
+                            :class="{ 'is-active': Boolean(tabDraft.beats[tabSelectedIndex]?.legato) && tabEditorLegatoDirection(tabSelectedIndex) === 'H' }"
+                            :aria-pressed="(Boolean(tabDraft.beats[tabSelectedIndex]?.legato) && tabEditorLegatoDirection(tabSelectedIndex) === 'H').toString()"
                             @click="toggleTabEditorLegato('H')"
                             title="Hammer-on: connect to the next higher fret on the same string">
                             <span aria-hidden="true">H</span> Hammer-on
                         </button>
                         <button type="button" class="tab-editor__palette-tool"
-                            :class="{ 'is-active': Boolean(tabDraft.beats[tabSelectedIndex]?.legato) && tabLegatoDirection(tabDraft.beats, tabSelectedIndex) === 'P' }"
-                            :aria-pressed="(Boolean(tabDraft.beats[tabSelectedIndex]?.legato) && tabLegatoDirection(tabDraft.beats, tabSelectedIndex) === 'P').toString()"
+                            :class="{ 'is-active': Boolean(tabDraft.beats[tabSelectedIndex]?.legato) && tabEditorLegatoDirection(tabSelectedIndex) === 'P' }"
+                            :aria-pressed="(Boolean(tabDraft.beats[tabSelectedIndex]?.legato) && tabEditorLegatoDirection(tabSelectedIndex) === 'P').toString()"
                             @click="toggleTabEditorLegato('P')"
                             title="Pull-off: connect to the next lower fret on the same string">
                             <span aria-hidden="true">P</span> Pull-off
