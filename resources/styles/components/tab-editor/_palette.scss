@@ -160,6 +160,8 @@
         display: grid;
         width: max-content;
         max-width: calc(100vw - 2rem);
+        overflow-y: auto;
+        scrollbar-width: thin;
         padding: $size-2;
         border: 1px solid hsl(var(--neutral-800) / .2);
         border-radius: $border-radius-2;
@@ -180,7 +182,20 @@
         // RHYTHM CONTROLS
         &__rhythm {
             align-self: start;
+            max-height: calc(100dvh - var(--tab-editor-dock-height, 0px));
+            overflow-y: auto;
+            overscroll-behavior-y: contain;
+            scrollbar-width: thin;
             background: hsl(var(--neutral-100));
+
+            &::-webkit-scrollbar {
+                width: 6px;
+            }
+
+            &::-webkit-scrollbar-thumb {
+                background-color: hsl(var(--neutral-800) / .25);
+                border-radius: 999px;
+            }
 
             border-block-end: 1px solid transparent;
 
@@ -190,8 +205,22 @@
         //-PALETTE-
         &__rhythm {
             flex-direction: column;
+            flex-wrap: nowrap;
             align-items: stretch;
             gap: $size-4;
+        }
+
+        &__palette-section {
+            flex-shrink: 0;
+        }
+
+        &__slide-options {
+            width: 100%;
+            max-width: 100%;
+
+            .tab-editor__palette-tool {
+                white-space: normal;
+            }
         }
 
         &__palette-durations,
