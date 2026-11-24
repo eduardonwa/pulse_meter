@@ -6,6 +6,38 @@
         border-block: 1px solid hsl(var(--neutral-800) / .2);
     }
 
+    &__view-switch {
+        display: inline-flex;
+        align-items: center;
+        padding: 3px;
+        gap: 3px;
+        background: hsl(var(--neutral-800) / .08);
+        border-radius: .5rem;
+
+        button {
+            min-height: 34px;
+            padding: $size-1 $size-3;
+            border: 0;
+            border-radius: .35rem;
+            background: transparent;
+            color: inherit;
+            font: inherit;
+            font-size: 13px;
+            cursor: pointer;
+
+            &.is-active {
+                background: hsl(var(--neutral-100));
+                box-shadow: 0 1px 4px hsl(var(--neutral-900) / .14);
+                font-weight: 700;
+            }
+
+            &:focus-visible {
+                outline: 2px solid currentColor;
+                outline-offset: 2px;
+            }
+        }
+    }
+
     &__quick-settings,
     &__utility-actions {
         display: flex;
