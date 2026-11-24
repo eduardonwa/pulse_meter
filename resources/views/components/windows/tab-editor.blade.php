@@ -162,6 +162,8 @@
                                     <div><dt>Navigate notes</dt><dd>← / →</dd></div>
                                     <div><dt>Change string</dt><dd>↑ / ↓</dd></div>
                                     <div><dt>Change duration</dt><dd>+ / -</dd></div>
+                                    <div><dt>Hammer-on</dt><dd>H</dd></div>
+                                    <div><dt>Pull-off</dt><dd>P</dd></div>
                                     <div><dt>Extend selection</dt><dd>Shift + ← / →</dd></div>
                                     <div><dt>Undo</dt><dd>Ctrl/Cmd + Z</dd></div>
                                     <div><dt>Redo</dt><dd>Ctrl/Cmd + Shift + Z</dd></div>
