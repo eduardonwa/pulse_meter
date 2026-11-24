@@ -182,6 +182,7 @@ export function pasteTabFragment(draft, index, fragment, numerator = 4, denomina
         const destination = prefix.length || replaceRest ? target : target + Math.max(0, packed.length - 1);
         if (destination > 0) tempos[destination] = draft.tempos[target];
     }
+    const initialBpm = pastedTempos[0];
     for (const [measure, tempo] of Object.entries(pastedTempos)) {
         if (Number(measure) > 0) tempos[measure] = tempo;
     }
@@ -202,7 +203,7 @@ export function pasteTabFragment(draft, index, fragment, numerator = 4, denomina
         beats[start + count] = { ...beats[start + count] };
         delete beats[start + count].tie;
     }
-    return { draft: { ...draft, beats: normalizeTabTies(normalizeTabLegato(beats)), breaks, tempos }, start, count };
+    return { draft: { ...draft, beats: normalizeTabTies(normalizeTabLegato(beats)), breaks, tempos }, start, count, ...(initialBpm !== undefined ? { initialBpm } : {}) };
 }
 
 export function shiftTabBreaks(breaks, index, delta) {
@@ -379,21 +380,21 @@ export function serializeTabDraft(draft, numerator = 4, bpm = 100, denominator =
         if (tempo !== undefined && (!Number.isInteger(tempo) || tempo < 30 || tempo > 400)) throw new RangeError('Invalid measure tempo');
         const prefix = measureIndex > 0 && tempo !== undefined ? `\\tempo ${tempo} ` : '';
         return prefix + measure.notes.map(beat => {
-        const notes = tabBeatNotes(beat);
-        if (beat.tie && tabTieSource(draft.beats, beat.index) === null) {
-            throw new RangeError('Tie needs the same fret and string as the preceding note.');
-        }
-        if (beat.legato && !tabLegatoDirection(draft.beats, beat.index)) {
-            throw new RangeError('Legato needs two consecutive notes on the same string at different frets.');
-        }
-        if (beat.slide && (!validTabSlide(draft.beats, beat.index, beat.slide) || beat.legato)) {
-            throw new RangeError('Invalid slide.');
-        }
-        const effects = [beat.legato ? 'h' : null, beat.palmMute ? 'pm' : null, beat.tie ? 't' : null, beat.slide].filter(Boolean);
-        const content = beat.rest ? 'r' : notes.length === 1
-            ? `${notes[0].fret}.${notes[0].string}${effects.length ? `{${effects.join(' ')}}` : ''}`
-            : `(${notes.map(note => `${note.fret}.${note.string}${beat.palmMute ? '{pm}' : ''}`).join(' ')})`;
-        return `:${beat.duration} ${content}${tabRhythmProperties(beat)}`;
+            const notes = tabBeatNotes(beat);
+            if (beat.tie && tabTieSource(draft.beats, beat.index) === null) {
+                throw new RangeError('Tie needs the same fret and string as the preceding note.');
+            }
+            if (beat.legato && !tabLegatoDirection(draft.beats, beat.index)) {
+                throw new RangeError('Legato needs two consecutive notes on the same string at different frets.');
+            }
+            if (beat.slide && (!validTabSlide(draft.beats, beat.index, beat.slide) || beat.legato)) {
+                throw new RangeError('Invalid slide.');
+            }
+            const effects = [beat.legato ? 'h' : null, beat.palmMute ? 'pm' : null, beat.tie ? 't' : null, beat.slide].filter(Boolean);
+            const content = beat.rest ? 'r' : notes.length === 1
+                ? `${notes[0].fret}.${notes[0].string}${effects.length ? `{${effects.join(' ')}}` : ''}`
+                : `(${notes.map(note => `${note.fret}.${note.string}${beat.palmMute ? '{pm}' : ''}`).join(' ')})`;
+            return `:${beat.duration} ${content}${tabRhythmProperties(beat)}`;
         }).join(' ');
     }).join(' | ');
     return `\\tempo ${Number(bpm)}\n\\instrument ${instrument}\n\\ts ${Number(numerator)} ${Number(denominator)}\n\\staff {tabs}\n.\n${body}`;
