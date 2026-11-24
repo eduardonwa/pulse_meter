@@ -406,6 +406,28 @@
         height: fit-content;
         max-height: min(90dvh, 34rem);
 
+        &[open] {
+            animation: pulse-sheet-enter 280ms cubic-bezier(.22, 1, .36, 1) both;
+        }
+
+        @keyframes pulse-sheet-enter {
+            from {
+                opacity: 0;
+                transform: translateY(24px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            &[open] {
+                animation: none;
+            }
+        }
+
         &__content {
             padding: 0;
         }
