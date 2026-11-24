@@ -358,6 +358,12 @@
         border-block-end: 1px solid hsl(var(--neutral-950) / .2);
         padding-block-end: $size-4;
 
+        @include mq(large) {
+            border-block-end: 1px solid transparent;
+
+            outline: 1px solid red;
+        }
+
         .button {
             display: flex;
             align-items: center;
@@ -735,6 +741,8 @@
                 > .pulse-settings-bar {
                     grid-column: 1;
                     grid-row: 1;
+
+                    align-self: stretch;
                 }
 
                 > .time-signature__playback {
