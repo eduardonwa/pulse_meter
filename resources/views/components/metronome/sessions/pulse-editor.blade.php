@@ -154,8 +154,8 @@
                     </button>
 
                     <button class="button" data-type="accent" type="button"
-                        @click="$refs.pulseSettingsSheet.close(); $nextTick(() => openPatternDialog())"
-                        aria-label="New or choose pattern"
+                        @click="$refs.pulseSettingsSheet.close(); resetPulse()"
+                        aria-label="Create a new Common Time (4/4) pattern"
                     >
                         <x-lucide-plus />
                         New
