@@ -393,6 +393,7 @@ async function mountAlphaTab(element) {
 
             display: {
                 staveProfile: 'Tab',
+                ...(isAdminPreview && !originalMusicXml ? { stretchForce: 1.5 } : {}),
                 // Keep playback-only MusicXML scores within the editor viewport.
                 // Other Practice scores retain alphaTab's default page padding.
                 ...(isAdminPreview && originalMusicXml ? { padding: [16, 18] } : {}),
