@@ -164,6 +164,7 @@
                                     <div><dt>Change duration</dt><dd>+ / -</dd></div>
                                     <div><dt>Hammer-on</dt><dd>H</dd></div>
                                     <div><dt>Pull-off</dt><dd>P</dd></div>
+                                    <div><dt>Palm mute</dt><dd>M</dd></div>
                                     <div><dt>Extend selection</dt><dd>Shift + ← / →</dd></div>
                                     <div><dt>Undo</dt><dd>Ctrl/Cmd + Z</dd></div>
                                     <div><dt>Redo</dt><dd>Ctrl/Cmd + Shift + Z</dd></div>
@@ -258,6 +259,13 @@
                             title="Pull-off: connect to the next lower fret on the same string">
                             <span aria-hidden="true">P</span> Pull-off
                         </button>
+                        <button type="button" class="tab-editor__palette-tool"
+                            :class="{ 'is-active': Boolean(tabDraft.beats[tabSelectedIndex]?.palmMute) }"
+                            :aria-pressed="Boolean(tabDraft.beats[tabSelectedIndex]?.palmMute).toString()"
+                            @click="toggleTabEditorPalmMute()"
+                            title="Toggle palm mute on selected notes (M)">
+                            <span aria-hidden="true">P.M.</span> Palm mute
+                        </button>
                         </div>
                     </details>
                 </aside>
@@ -292,6 +300,9 @@
                                                 @click="column.insertion ? selectTabEditorInsertion(column.index, stringIndex + 1) : clickTabCell(column.index, stringIndex + 1, $event); $refs.tabEditorScoreFocus?.focus()"
                                             >
                                                 <span x-text="column.insertion ? (stringIndex + 1 === tabDraft.string ? '+' : '·') : (tabEditorNoteAt(column.index, stringIndex + 1) ?? '·')"></span>
+                                                <span class="tab-editor__palm-mute-mark"
+                                                    x-show="!column.insertion && tabEditorPalmMuteAt(column.index, stringIndex + 1)"
+                                                    x-cloak aria-hidden="true">P.M.</span>
                                                 <template x-if="!column.insertion && tabEditorLegatoSegment(column.index, stringIndex + 1, system)">
                                                     <svg class="tab-editor__legato-arc" aria-hidden="true"
                                                         :width="tabEditorLegatoSegment(column.index, stringIndex + 1, system).width"
