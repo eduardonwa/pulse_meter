@@ -331,22 +331,44 @@
                             title="Toggle palm mute on selected notes (M)">
                             <span aria-hidden="true">P.M.</span> Palm mute
                         </button>
-                        <template x-for="slide in [
-                            { code: 'ss', name: 'Shift slide', symbol: '/' },
-                            { code: 'sl', name: 'Legato slide', symbol: '⌣/' },
-                            { code: 'sib', name: 'Slide in from below', symbol: '↗' },
-                            { code: 'sia', name: 'Slide in from above', symbol: '↘' },
-                            { code: 'sou', name: 'Slide out upwards', symbol: '↗' },
-                            { code: 'sod', name: 'Slide out downwards', symbol: '↘' }
-                        ]" :key="slide.code">
-                            <button type="button" class="tab-editor__palette-tool"
-                                :class="{ 'is-active': tabDraft.beats[tabSelectedIndex]?.slide === slide.code }"
-                                :aria-pressed="(tabDraft.beats[tabSelectedIndex]?.slide === slide.code).toString()"
-                                :title="slide.name" @click="toggleTabEditorSlide(slide.code)">
-                                <span aria-hidden="true" x-text="slide.symbol"></span>
-                                <span x-text="slide.name"></span>
-                            </button>
-                        </template>
+                        <div class="tab-editor__slide-tool" x-data="{
+                            slideOpen: false,
+                            selectedSlide: 'ss',
+                            slides: [
+                                { code: 'ss', name: 'Slide', symbol: '/' },
+                                { code: 'sl', name: 'Legato slide', symbol: '⌣/' },
+                                { code: 'sib', name: 'Slide in from below', symbol: '↗' },
+                                { code: 'sia', name: 'Slide in from above', symbol: '↘' },
+                                { code: 'sou', name: 'Slide out upwards', symbol: '↗' },
+                                { code: 'sod', name: 'Slide out downwards', symbol: '↘' }
+                            ]
+                        }" @click.outside="slideOpen = false" @keydown.escape.stop="slideOpen = false">
+                            <div class="tab-editor__slide-split">
+                                <button type="button" class="tab-editor__palette-tool"
+                                    :class="{ 'is-active': tabDraft.beats[tabSelectedIndex]?.slide === selectedSlide }"
+                                    :aria-pressed="(tabDraft.beats[tabSelectedIndex]?.slide === selectedSlide).toString()"
+                                    :title="slides.find(slide => slide.code === selectedSlide).name"
+                                    @click="toggleTabEditorSlide(selectedSlide)">
+                                    <span aria-hidden="true" x-text="slides.find(slide => slide.code === selectedSlide).symbol"></span>
+                                    <span x-text="slides.find(slide => slide.code === selectedSlide).name"></span>
+                                </button>
+                                <button type="button" class="tab-editor__slide-toggle" aria-label="Choose slide type"
+                                    aria-controls="tab-editor-slide-options" :aria-expanded="slideOpen.toString()"
+                                    @click="slideOpen = !slideOpen">
+                                    <x-lucide-chevron-down width="16" height="16" aria-hidden="true" />
+                                </button>
+                            </div>
+                            <div id="tab-editor-slide-options" class="tab-editor__slide-options" x-show="slideOpen" x-cloak role="group" aria-label="Slide types">
+                                <template x-for="slide in slides" :key="slide.code">
+                                    <button type="button" class="tab-editor__palette-tool"
+                                        :aria-pressed="(selectedSlide === slide.code).toString()"
+                                        @click="selectedSlide = slide.code; slideOpen = false">
+                                        <span aria-hidden="true" x-text="slide.symbol"></span>
+                                        <span x-text="slide.name"></span>
+                                    </button>
+                                </template>
+                            </div>
+                        </div>
                         </div>
                     </details>
                 </aside>
