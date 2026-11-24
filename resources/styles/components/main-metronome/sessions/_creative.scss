@@ -494,65 +494,10 @@
             }
 
             @include mq(large) {
-                display: grid;
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-                grid-template-areas:
-                    "beats beats"
-                    "editing editing"
-                    "playback transport"
-                    "settings actions";
-                column-gap: $size-4;
-                row-gap: var(--flow-spacer);
                 padding: $size-4 0;
 
                 > * {
                     margin-inline: 0;
-                    margin-block-start: 0;
-                }
-
-                > .time-signature__beats {
-                    grid-area: beats;
-                }
-
-                > .time-signature__editing-row {
-                    grid-area: editing;
-                }
-
-                // Allow the two controls to occupy separate rows without
-                // changing their DOM order on mobile or medium.
-                > .time-signature__control-row {
-                    display: contents;
-
-                    > * {
-                        padding-inline: $size-4;
-                    }
-
-                    > .time-signature__playback {
-                        grid-area: playback;
-                        min-width: 0;
-                    }
-
-                    > .pulse-settings-bar {
-                        grid-area: settings;
-                        min-width: 0;
-                        padding-block-end: 0;
-                        align-items: stretch;
-
-                        > .button {
-                            height: 100%;
-                        }
-                    }
-                }
-
-                > .creative-transport--desktop {
-                    grid-area: transport;
-                    min-width: 0;
-                    border-block-end: 0;
-                }
-
-                > .time-signature__actions {
-                    grid-area: actions;
-                    min-width: 0;
                 }
             }
         }
@@ -801,8 +746,40 @@
             }
 
             @include mq(large) {
-                > * + * {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                grid-template-areas:
+                    "playback transport"
+                    "settings actions";
+                align-items: stretch;
+                gap: $size-4;
+
+                > * {
+                    min-width: 0;
                     margin-block-start: 0;
+                }
+
+                > .time-signature__playback {
+                    grid-area: playback;
+                }
+
+                > .creative-transport--desktop {
+                    grid-area: transport;
+                    border-block-end: 0;
+                }
+
+                > .pulse-settings-bar {
+                    grid-area: settings;
+                    padding-block-end: 0;
+                    align-items: stretch;
+
+                    > .button {
+                        height: 100%;
+                    }
+                }
+
+                > .time-signature__actions {
+                    grid-area: actions;
                 }
             }
         }
