@@ -447,6 +447,10 @@
 
         &__value {
             min-width: 0;
+
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
         }
 
         &__pattern-controls {
