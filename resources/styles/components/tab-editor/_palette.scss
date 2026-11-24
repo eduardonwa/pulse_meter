@@ -182,7 +182,7 @@
         // RHYTHM CONTROLS
         &__rhythm {
             align-self: start;
-            max-height: calc(100dvh - var(--tab-editor-dock-height, 0px));
+            max-height: var(--tab-editor-palette-height, 100dvh);
             overflow-y: auto;
             overscroll-behavior-y: contain;
             scrollbar-width: thin;
