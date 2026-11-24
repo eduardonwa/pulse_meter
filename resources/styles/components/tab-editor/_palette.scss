@@ -18,19 +18,53 @@
     }
 
     &__palette-section {
-        display: flex;
-        flex-direction: column;
-        gap: $size-2;
         min-width: 0;
+
+        > .tab-editor__palette-durations,
+        > .tab-editor__palette-effects {
+            margin-block-start: $size-2;
+        }
     }
 
     &__palette-heading {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: $size-2;
         margin: 0;
+        list-style: none;
+        cursor: pointer;
         font-size: 12px;
         font-weight: 700;
         letter-spacing: .04em;
         text-transform: uppercase;
         color: hsl(var(--neutral-800) / .75);
+
+        &::-webkit-details-marker {
+            display: none;
+        }
+
+        svg {
+            width: 16px;
+            height: 16px;
+            flex: 0 0 auto;
+            transition: transform 160ms ease;
+        }
+
+        &:focus-visible {
+            outline: 2px solid currentColor;
+            outline-offset: 2px;
+        }
+    }
+
+    &__palette-section:not([open]) > .tab-editor__palette-heading svg {
+        transform: rotate(-90deg);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        &__palette-heading svg {
+            transition: none;
+        }
     }
 
     &__palette-durations,
