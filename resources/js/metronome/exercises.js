@@ -1,6 +1,6 @@
 import { tablatureEditorMethods } from "./tablature-editor-controller.js";
 import { tabEditor } from "./tab-editor.js";
-import { createTabDraft, TAB_STRINGS } from "./alphatab/tab-editor.js";
+import { createTabDraft } from "./alphatab/tab-editor.js";
 
 export function exercises() {
     return {
@@ -12,17 +12,12 @@ export function exercises() {
         tabRedoHistory: [],
         tabDraft: createTabDraft(),
         tabFullMusicXml: null,
-        tabStringNames: TAB_STRINGS,
         tabSelectedIndex: 0,
         tabInsertAtBar: false,
         tabSelectedIndices: [],
         tabSelectionAnchor: null,
-        tabDragAnchor: null,
-        tabDragging: false,
-        tabDragMoved: false,
         tabDigitPending: null,
         tabDigitTimer: null,
-        tabViewportWidth: 700,
 
         // EXERCISE STATE
         activeExerciseIndex: null,
