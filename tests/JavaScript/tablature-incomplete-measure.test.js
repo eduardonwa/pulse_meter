@@ -5,6 +5,8 @@ import { createTabDraft } from '../../resources/js/metronome/alphatab/tab-editor
 
 function editor() {
     const instance = exercises()
+    instance.$refs = {}
+    instance.$nextTick = callback => callback()
     instance.stepForm = { time_signature_numerator: 7, time_signature_denominator: 8 }
     instance.tabDraft = {
         ...createTabDraft(),
@@ -40,7 +42,7 @@ test('validation log lists only incomplete and overfull measures with reasons', 
     assert.equal(instance.tabEditorMeasureWarnings()[0].status, 'complete')
 })
 
-test('adding a sixteenth rest at the final + completes a measure with one unit remaining', () => {
+test('adding a sixteenth rest at the final Score insertion completes a measure with one unit remaining', () => {
     const instance = editor()
     instance.stepForm = { time_signature_numerator: 4, time_signature_denominator: 4 }
     instance.tabDraft = {
@@ -55,10 +57,11 @@ test('adding a sixteenth rest at the final + completes a measure with one unit r
     assert.equal(instance.tabEditorMeasureLayout()[0].used, 15)
     instance.selectTabEditorInsertion(8, 6)
     instance.addTabEditorRest()
-    assert.equal(instance.tabDraft.beats.length, 9)
+    assert.equal(instance.tabDraft.beats.length, 10)
+    assert.deepEqual(instance.tabDraft.beats[9], { rest: true, duration: 1 })
     assert.deepEqual(instance.tabDraft.beats[8], { rest: true, duration: 16 })
     assert.equal(instance.tabEditorMeasureLayout()[0].used, 16)
-    assert.equal(instance.tabEditorMeasureStatus(), '1 measure(s) · all complete')
+    assert.equal(instance.tabEditorMeasureStatus(), '2 measure(s) · all complete')
 })
 
 test('inserting a final rest clears inherited triplet when only a sixteenth remains', () => {
@@ -76,8 +79,9 @@ test('inserting a final rest clears inherited triplet when only a sixteenth rema
     }
     instance.selectTabEditorInsertion(8, 6)
     instance.addTabEditorRest()
-    assert.deepEqual(instance.tabDraft.beats.at(-1), { rest: true, duration: 16 })
-    assert.equal(instance.tabEditorMeasureStatus(), '1 measure(s) · all complete')
+    assert.deepEqual(instance.tabDraft.beats[8], { rest: true, duration: 16 })
+    assert.deepEqual(instance.tabDraft.beats[9], { rest: true, duration: 1 })
+    assert.equal(instance.tabEditorMeasureStatus(), '2 measure(s) · all complete')
 })
 
 test('R keyboard shortcut inserts a sixteenth rest at the final insertion slot', () => {
@@ -101,14 +105,15 @@ test('R keyboard shortcut inserts a sixteenth rest at the final insertion slot',
         preventDefault() { prevented = true },
     })
     assert.equal(prevented, true)
-    assert.deepEqual(instance.tabDraft.beats.at(-1), { rest: true, duration: 16 })
-    assert.equal(instance.tabEditorMeasureStatus(), '1 measure(s) · all complete')
+    assert.deepEqual(instance.tabDraft.beats[8], { rest: true, duration: 16 })
+    assert.deepEqual(instance.tabDraft.beats[9], { rest: true, duration: 1 })
+    assert.equal(instance.tabEditorMeasureStatus(), '2 measure(s) · all complete')
 })
 
 test('Score click selects the corresponding note using the existing tab editor model', () => {
     const instance = editor()
     const preview = {}
-    instance.$refs = { tabEditorPreview: preview, tabEditorScoreFocus: { focus() {} } }
+    instance.$refs = { tabEditorPreview: preview, tabEditorScoreKeyboard: { focus() {} } }
     instance.$nextTick = callback => callback()
     instance.tabFullMusicXml = null
     instance.tabDraft.breaks = []
