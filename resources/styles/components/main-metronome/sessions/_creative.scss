@@ -473,6 +473,17 @@
         border: var(--border);
         border-radius: $border-radius-2;
 
+        &__content {
+            padding: $size-4;
+
+            // Section outlines can reach the container edges, while content
+            // keeps the same consistent horizontal inset.
+            > * {
+                margin-inline: -$size-4;
+                padding-inline: $size-4;
+            }
+        }
+
         > div:not(.creative-transport) {
             .heading {
                 padding-block-end: $size-3;
