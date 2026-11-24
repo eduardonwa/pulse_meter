@@ -493,6 +493,9 @@
         }
 
         @include mq(medium) {
+            width: min(610px, calc(100vw - 2rem));
+            max-width: 610px;
+
             &__header,
             &__section {
                 padding: $size-5;
