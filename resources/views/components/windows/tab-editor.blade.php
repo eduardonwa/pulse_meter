@@ -231,11 +231,18 @@
                         </button>
 
                         <button type="button" class="tab-editor__palette-tool"
-                            :class="{ 'is-active': Boolean(tabDraft.beats[tabSelectedIndex]?.legato) }"
-                            :aria-pressed="Boolean(tabDraft.beats[tabSelectedIndex]?.legato).toString()"
-                            @click="toggleTabEditorLegato()"
-                            title="Connect the selected note to the following note on the same string (hammer-on or pull-off)">
-                            <span aria-hidden="true">H/P</span> Legato
+                            :class="{ 'is-active': Boolean(tabDraft.beats[tabSelectedIndex]?.legato) && tabLegatoDirection(tabDraft.beats, tabSelectedIndex) === 'H' }"
+                            :aria-pressed="(Boolean(tabDraft.beats[tabSelectedIndex]?.legato) && tabLegatoDirection(tabDraft.beats, tabSelectedIndex) === 'H').toString()"
+                            @click="toggleTabEditorLegato('H')"
+                            title="Hammer-on: connect to the next higher fret on the same string">
+                            <span aria-hidden="true">H</span> Hammer-on
+                        </button>
+                        <button type="button" class="tab-editor__palette-tool"
+                            :class="{ 'is-active': Boolean(tabDraft.beats[tabSelectedIndex]?.legato) && tabLegatoDirection(tabDraft.beats, tabSelectedIndex) === 'P' }"
+                            :aria-pressed="(Boolean(tabDraft.beats[tabSelectedIndex]?.legato) && tabLegatoDirection(tabDraft.beats, tabSelectedIndex) === 'P').toString()"
+                            @click="toggleTabEditorLegato('P')"
+                            title="Pull-off: connect to the next lower fret on the same string">
+                            <span aria-hidden="true">P</span> Pull-off
                         </button>
                     </div>
                 </aside>
@@ -270,7 +277,15 @@
                                                 @click="column.insertion ? selectTabEditorInsertion(column.index, stringIndex + 1) : clickTabCell(column.index, stringIndex + 1, $event); $refs.tabEditorScoreFocus?.focus()"
                                             >
                                                 <span x-text="column.insertion ? (stringIndex + 1 === tabDraft.string ? '+' : '·') : (tabEditorNoteAt(column.index, stringIndex + 1) ?? '·')"></span>
-                                                <span class="tab-editor__legato-mark" x-show="!column.insertion && tabEditorLegatoAt(column.index, stringIndex + 1)" x-text="tabEditorLegatoAt(column.index, stringIndex + 1)" aria-hidden="true"></span>
+                                                <template x-if="!column.insertion && tabEditorLegatoSegment(column.index, stringIndex + 1, system)">
+                                                    <svg class="tab-editor__legato-arc" aria-hidden="true"
+                                                        :width="tabEditorLegatoSegment(column.index, stringIndex + 1, system).width"
+                                                        height="21"
+                                                        :viewBox="`0 0 ${tabEditorLegatoSegment(column.index, stringIndex + 1, system).width} 21`">
+                                                        <path :d="`M 0 18 Q ${tabEditorLegatoSegment(column.index, stringIndex + 1, system).width / 2} -3 ${tabEditorLegatoSegment(column.index, stringIndex + 1, system).width} 18`" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"></path>
+                                                        <text :x="tabEditorLegatoSegment(column.index, stringIndex + 1, system).width / 2" y="8" text-anchor="middle" x-text="tabEditorLegatoSegment(column.index, stringIndex + 1, system).direction"></text>
+                                                    </svg>
+                                                </template>
                                             </button>
                                         </template>
                                     </div>
