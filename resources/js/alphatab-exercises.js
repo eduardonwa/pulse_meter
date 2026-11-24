@@ -312,7 +312,7 @@ function escapeDirectiveString(value) {
 
 function applyMetadata(alphaTex, metadata) {
     let pattern = String(alphaTex)
-        .replace(/\\tempo\s+\d+(?:\.\d+)?/gi, '')
+        .replace(/\\tempo\s+\d+(?:\.\d+)?/i, '')
 
     const directives = []
 
