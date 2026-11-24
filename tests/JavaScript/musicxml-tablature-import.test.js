@@ -59,7 +59,7 @@ function fakeDocument() {
     }
 }
 
-test('MusicXML import separates meter changes and skips unsupported notes visibly', () => {
+test('MusicXML import preserves meter changes and separates unsupported measures visibly', () => {
     let parsedXml = ''
     const parser = {
         parseFromString(text) {
@@ -75,14 +75,17 @@ test('MusicXML import separates meter changes and skips unsupported notes visibl
     assert.equal(imported.title, 'Test guitar exercise')
     assert.deepEqual(imported.sections.map(section =>
         [section.firstMeasure, section.lastMeasure, section.numerator, section.denominator]
-    ), [[1, 2, 7, 8], [3, 3, 4, 4], [5, 5, 7, 8]])
+    ), [[1, 3, 7, 8], [5, 5, 7, 8]])
     assert.equal(imported.warnings.length, 1)
     assert.match(imported.warnings[0], /Measure 4: Only 3:2 triplets/)
     const first = imported.sections[0]
-    assert.equal(first.draft.beats.length, 14)
-    assert.deepEqual(first.draft.breaks, [7])
+    assert.equal(first.draft.beats.length, 18)
+    assert.deepEqual(first.draft.breaks, [7, 14])
+    assert.deepEqual(first.draft.signatures, { 2: { numerator: 4, denominator: 4 } })
+    assert.deepEqual(layoutTabMeasures(first.draft, 7, 8).map(bar => bar.capacity), [14, 14, 16])
     assert.ok(layoutTabMeasures(first.draft, 7, 8).every(item => item.complete))
     assert.match(serializeTabDraft(first.draft, 7, 120, 8), /\\ts 7 8/)
+    assert.match(serializeTabDraft(first.draft, 7, 120, 8), /\| \\ts 4 4 /)
 })
 
 test('MusicXML rejects entity declarations', () => {
