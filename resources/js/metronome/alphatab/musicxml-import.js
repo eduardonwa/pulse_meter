@@ -1,4 +1,4 @@
-import { createTabDraft, TAB_DURATIONS, tabBeatUnits, tabTieSource, tabLegatoDirection, tabTempoAt } from './tab-editor.js'
+import { createTabDraft, TAB_DURATIONS, tabBeatUnits, tabTieSource, tabLegatoDirection, tabTempoAt, tabSignatureAt } from './tab-editor.js'
 
 const SUPPORTED_DENOMINATORS = [2, 4, 8, 16]
 
@@ -301,13 +301,17 @@ export function parseMusicXmlTab(xmlText, parser = null) {
             active = null
             continue
         }
-        if (!active || active.numerator !== numerator || active.denominator !== denominator) {
+        if (!active) {
             active = { numerator, denominator, bpm: measureBpm, firstMeasure: i + 1, lastMeasure: i + 1,
                 draft: createTabDraft() }
             sections.push(active)
         }
         if (active.draft.beats.length) {
             const measureIndex = i + 1 - active.firstMeasure
+            const previousSignature = tabSignatureAt(active.draft, measureIndex - 1, active.numerator, active.denominator)
+            if (numerator !== previousSignature.numerator || denominator !== previousSignature.denominator) {
+                active.draft.signatures[measureIndex] = { numerator, denominator }
+            }
             const previousBpm = tabTempoAt(active.draft, measureIndex - 1, active.bpm)
             if (measureBpm !== previousBpm) active.draft.tempos[measureIndex] = measureBpm
             active.draft.breaks.push(active.draft.beats.length)
