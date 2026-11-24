@@ -140,6 +140,17 @@ export function tabBeatNotes(beat) {
     return beat.notes ?? [{ fret: beat.fret, string: beat.string }];
 }
 
+// Palm mute applies to the selected rhythmic positions (all notes in a chord).
+export function toggleTabPalmMute(beats, indices) {
+    const selected = new Set(indices.filter(index => Number.isInteger(index) && index >= 0 && index < beats.length));
+    const targets = [...selected].filter(index => !beats[index]?.rest && tabBeatNotes(beats[index]).length);
+    if (!targets.length) return beats;
+    const enable = targets.some(index => !beats[index].palmMute);
+    return beats.map((beat, index) => targets.includes(index)
+        ? { ...beat, ...(enable ? { palmMute: true } : { palmMute: false }) }
+        : beat);
+}
+
 export function setTabBeatNote(beat, fret, string) {
     if (!beat || beat.rest || !Number.isInteger(fret) || fret < 0 || fret > 24 ||
         !Number.isInteger(string) || string < 1 || string > 6) throw new RangeError('Invalid note');
@@ -162,9 +173,10 @@ export function serializeTabDraft(draft, numerator = 4, bpm = 100, denominator =
         if (beat.legato && !tabLegatoDirection(draft.beats, beat.index)) {
             throw new RangeError('Legato needs two consecutive notes on the same string at different frets.');
         }
+        const effects = [beat.legato ? 'h' : null, beat.palmMute ? 'pm' : null].filter(Boolean);
         const content = beat.rest ? 'r' : notes.length === 1
-            ? `${notes[0].fret}.${notes[0].string}${beat.legato ? '{h}' : ''}`
-            : `(${notes.map(note => `${note.fret}.${note.string}`).join(' ')})`;
+            ? `${notes[0].fret}.${notes[0].string}${effects.length ? `{${effects.join(' ')}}` : ''}`
+            : `(${notes.map(note => `${note.fret}.${note.string}${beat.palmMute ? '{pm}' : ''}`).join(' ')})`;
         return `:${beat.duration} ${content}${tabRhythmProperties(beat)}`;
     }).join(' ')).join(' | ');
     return `\\tempo ${Number(bpm)}\n\\instrument ${instrument}\n\\ts ${Number(numerator)} ${Number(denominator)}\n\\staff {tabs}\n.\n${body}`;
@@ -194,7 +206,7 @@ export function parseTabDraft(alphaTex) {
     const breaks = [];
     for (const measure of content[4].split('|')) {
         if (beats.length) breaks.push(beats.length);
-        const tokens = measure.trim().match(/:\d+\s+(?:\((?:\d+\.\d+\s*){2,6}\)|\d+\.\d+(?:\{h\})?|r)(?:\s+\{\s*(?:d|tu 3)(?:\s+(?:d|tu 3))?\s*\})?/g) ?? [];
+        const tokens = measure.trim().match(/:\d+\s+(?:\((?:\d+\.\d+(?:\{pm\})?\s*){2,6}\)|\d+\.\d+(?:\{(?:h pm|h|pm)\})?|r)(?:\s+\{\s*(?:d|tu 3)(?:\s+(?:d|tu 3))?\s*\})?/g) ?? [];
         if (!tokens.length || tokens.join(' ').replace(/\s+/g, ' ') !== measure.trim().replace(/\s+/g, ' ')) {
             throw new Error('This tablature contains unsupported notation');
         }
@@ -215,16 +227,24 @@ export function parseTabDraft(alphaTex) {
                 ? body.slice(1, -1).trim().split(/\s+/)
                 : [body];
             const notes = raw.map(part => {
-                const note = /^(\d+)\.(\d+)(\{h\})?$/.exec(part);
-                if (!note || (note[3] && raw.length !== 1)) throw new Error('Unsupported chord');
-                return { fret: Number(note[1]), string: Number(note[2]), ...(note[3] ? { legato: true } : {}) };
+                const note = /^(\d+)\.(\d+)(?:\{(h pm|h|pm)\})?$/.exec(part);
+                if (!note || (note[3]?.includes('h') && raw.length !== 1)) throw new Error('Unsupported chord');
+                return { fret: Number(note[1]), string: Number(note[2]),
+                    ...(note[3]?.includes('h') ? { legato: true } : {}),
+                    ...(note[3]?.includes('pm') ? { palmMute: true } : {}) };
             });
             if (notes.length > 6 || notes.some(note => note.fret > 24 ||
                 note.string < 1 || note.string > 6) ||
                 new Set(notes.map(note => note.string)).size !== notes.length) {
                 throw new Error('Invalid chord');
             }
-            beats.push(notes.length === 1 ? { ...notes[0], duration, ...rhythm } : { notes, duration, ...rhythm });
+            if (notes.length > 1 && notes.some(note => Boolean(note.palmMute) !== Boolean(notes[0].palmMute))) {
+                throw new Error('All notes in a chord must share palm mute.');
+            }
+            const palmMute = notes[0].palmMute ? { palmMute: true } : {};
+            beats.push(notes.length === 1
+                ? { ...notes[0], duration, ...rhythm }
+                : { notes: notes.map(({ fret, string }) => ({ fret, string })), duration, ...rhythm, ...palmMute });
         }
     }
     const draft = { ...createTabDraft(), beats, instrument, breaks };
