@@ -50,7 +50,12 @@ function updateEditorScoreCaret(element, api) {
         caret?.remove()
         return
     }
-    const { measureIndex, beatIndex, insertion } = selection
+    const { measureIndex, beatIndex, insertion, after, newMeasure } = selection
+    // A new bar has no rendered geometry until its first beat is entered.
+    if (newMeasure) {
+        caret?.remove()
+        return
+    }
     const bars = api.score.tracks?.[0]?.staves?.[0]?.bars
     const bar = bars?.[measureIndex]
     const beat = bar?.voices?.[0]?.beats?.[beatIndex]
@@ -72,7 +77,16 @@ function updateEditorScoreCaret(element, api) {
     const head = bounds.notes?.find(item =>
         editorStringFromAlphaTab(item.note?.string) === selectedString)?.noteHeadBounds
         ?? bounds.notes?.[0]?.noteHeadBounds
-    const beatX = head ? head.x + head.w / 2 : bounds.onNotesX
+    let beatX = head ? head.x + head.w / 2 : bounds.onNotesX
+    if (insertion) {
+        const barBounds = bounds.barBounds
+        const neighbor = barBounds.beats[beatIndex + (after ? 1 : -1)]
+        const edge = after
+            ? (neighbor?.onNotesX ?? barBounds.realBounds.x + barBounds.realBounds.w)
+            : (neighbor?.onNotesX ?? bounds.realBounds.x)
+        // Center the insertion slot in the rendered gap, not a fixed offset.
+        beatX = (bounds.onNotesX + edge) / 2
+    }
     const screenX = surfaceRect.left + beatX
     const screenY = surfaceRect.top + bounds.realBounds.y + bounds.realBounds.h / 2
     let centerY
@@ -99,7 +113,7 @@ function updateEditorScoreCaret(element, api) {
         element.appendChild(caret)
     }
     caret.classList.toggle('is-insertion', Boolean(insertion))
-    caret.style.left = `${centerX + (insertion ? 14 : 0)}px`
+    caret.style.left = `${centerX}px`
     caret.style.top = `${centerY}px`
     // Fit a TAB number without obscuring its neighbors or the notation.
     caret.style.width = '23px'
