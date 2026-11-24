@@ -372,7 +372,6 @@
                         </template>
                         <div class="tab-editor__slide-tool" x-data="{
                             slideOpen: false,
-                            slideAbove: false,
                             selectedSlide: 'ss',
                             slides: [
                                 { code: 'ss', name: 'Slide', symbol: '/' },
@@ -382,7 +381,9 @@
                                 { code: 'sou', name: 'Slide out upwards', symbol: '↗' },
                                 { code: 'sod', name: 'Slide out downwards', symbol: '↘' }
                             ]
-                        }" @click.outside="slideOpen = false" @keydown.escape.stop="slideOpen = false">
+                        }" @click.outside="slideOpen = false" @keydown.escape.stop="slideOpen = false"
+                            @scroll.window.capture="if (slideOpen && $event.target !== $refs.slideOptions) slideOpen = false"
+                            @resize.window="slideOpen = false">
                             <div class="tab-editor__slide-split">
                                 <button type="button" class="tab-editor__palette-tool"
                                     :class="{ 'is-active': tabDraft.beats[tabSelectedIndex]?.slide === selectedSlide }"
@@ -395,21 +396,27 @@
                                 <button type="button" class="tab-editor__slide-toggle" aria-label="Choose slide type"
                                     aria-controls="tab-editor-slide-options" :aria-expanded="slideOpen.toString()"
                                     @click="slideOpen = !slideOpen; if (slideOpen) $nextTick(() => {
-                                        const trigger = $el.getBoundingClientRect();
+                                        const trigger = $el.parentElement.getBoundingClientRect();
                                         const dialog = $el.closest('dialog').getBoundingClientRect();
                                         const dock = $el.closest('.tab-editor').querySelector('.tab-editor__bottom-dock').getBoundingClientRect();
+                                        const menu = $refs.slideOptions;
+                                        const top = Math.max(dialog.top, 0);
                                         const bottom = Math.min(dialog.bottom, window.innerHeight, dock.top);
-                                        const palette = $el.closest('.tab-editor__rhythm').getBoundingClientRect();
-                                        const above = Math.max(0, trigger.top - Math.max(dialog.top, palette.top, 0));
-                                        const below = Math.max(0, Math.min(bottom, palette.bottom) - trigger.bottom);
-                                        $refs.slideOptions.style.removeProperty('max-height');
-                                        slideAbove = $refs.slideOptions.scrollHeight > below && above > below;
-                                        $refs.slideOptions.style.maxHeight = (slideAbove ? above : below) + 'px';
+                                        const left = Math.max(dialog.left, 0);
+                                        const right = Math.min(dialog.right, window.innerWidth);
+                                        menu.style.maxWidth = Math.max(0, right - left) + 'px';
+                                        menu.style.removeProperty('max-height');
+                                        const above = Math.max(0, trigger.top - top);
+                                        const below = Math.max(0, bottom - trigger.bottom);
+                                        const opensAbove = menu.scrollHeight > below && above > below;
+                                        menu.style.maxHeight = (opensAbove ? above : below) + 'px';
+                                        menu.style.left = Math.max(left, Math.min(trigger.left, right - menu.offsetWidth)) + 'px';
+                                        menu.style.top = (opensAbove ? trigger.top - menu.offsetHeight : trigger.bottom) + 'px';
                                     })">
                                     <x-lucide-chevron-down width="16" height="16" aria-hidden="true" />
                                 </button>
                             </div>
-                            <div id="tab-editor-slide-options" class="tab-editor__slide-options" x-ref="slideOptions" :class="{ 'opens-above': slideAbove }" x-show="slideOpen" x-cloak role="group" aria-label="Slide types">
+                            <div id="tab-editor-slide-options" class="tab-editor__slide-options" x-ref="slideOptions" x-show="slideOpen" x-cloak role="group" aria-label="Slide types">
                                 <template x-for="slide in slides" :key="slide.code">
                                     <button type="button" class="tab-editor__palette-tool"
                                         :aria-pressed="(selectedSlide === slide.code).toString()"
