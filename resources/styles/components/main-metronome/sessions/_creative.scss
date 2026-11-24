@@ -493,7 +493,7 @@
                 padding-inline: $size-4;
             }
 
-            @include mq(large) {
+            @include mq(medium) {
                 padding: $size-4 0;
 
                 > * {
