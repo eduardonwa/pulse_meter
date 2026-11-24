@@ -19,40 +19,28 @@ function editorStringFromAlphaTab(value) {
     return Number.isInteger(value) && value >= 1 && value <= 6 ? 7 - value : null
 }
 
-// A BeatBounds.visualBounds spans the rhythmic position (and can include
-// both notation and TAB staves). It cannot locate a guitar string. Use the
-// individual number bounds from AlphaTab, including for chord notes.
-function editorScoreNoteHeads(beatBounds) {
-    if (!beatBounds?.notes) return []
-    // Note bounds can occur in multiple rendered staves. The TAB stave is
-    // below standard notation, so use the lowest rendering of each string.
-    const perString = new Map()
-    for (const item of beatBounds.notes) {
-        const string = editorStringFromAlphaTab(item.note?.string)
-        const rect = item.noteHeadBounds
-        if (string === null ||
-            !rect || !Number.isFinite(rect.x) || !Number.isFinite(rect.y)) continue
-        const centerY = rect.y + rect.h / 2
-        if (!perString.has(string) || centerY > perString.get(string).centerY) {
-            perString.set(string, { string, rect, centerY })
-        }
-    }
-    return [...perString.values()]
-}
+// AlphaTab 1.8 paints TAB staff lines as filled SVG rectangles, split
+// around fret numbers. Read their actual centers once per rendered SVG.
+const editorStaffLines = new WeakMap()
 
-function editorScoreStringSpacing(heads) {
-    const values = []
-    for (let i = 0; i < heads.length; i++) {
-        for (let j = i + 1; j < heads.length; j++) {
-            const delta = heads[j].string - heads[i].string
-            if (!delta) continue
-            const spacing = (heads[j].centerY - heads[i].centerY) / delta
-            // Reject measurements between distinct systems/staves.
-            if (spacing > 4 && spacing < 28) values.push(spacing)
+function editorScoreStaffLines(svg, color) {
+    if (editorStaffLines.has(svg)) return editorStaffLines.get(svg)
+    const lines = new Set()
+    for (const rect of svg.querySelectorAll('rect[fill]')) {
+        if (rect.getAttribute('fill').toLowerCase() !== color) continue
+        const width = Number(rect.getAttribute('width'))
+        const height = Number(rect.getAttribute('height'))
+        const y = Number(rect.getAttribute('y'))
+        if (height > 0 && width > height && Number.isFinite(y)) {
+            lines.add(y + height / 2)
         }
     }
-    values.sort((a, b) => a - b)
-    return values.length ? values[Math.floor(values.length / 2)] : null
+    const result = [...lines].sort((a, b) => a - b)
+    // Editable scores contain a single six-string TAB staff per system.
+    // Never invent a line if the SVG does not expose all six.
+    const geometry = result.length === 6 ? result : null
+    editorStaffLines.set(svg, geometry)
+    return geometry
 }
 
 function updateEditorScoreCaret(element, api) {
@@ -72,36 +60,38 @@ function updateEditorScoreCaret(element, api) {
         return
     }
     const selectedString = Number(selection.string)
-    const ownHeads = editorScoreNoteHeads(bounds)
-    const direct = ownHeads.find(head => head.string === selectedString)
-
-    let centerX
-    let centerY
-    if (direct) {
-        centerX = direct.rect.x + direct.rect.w / 2
-        centerY = direct.centerY
-    } else {
-        // Moving vertically onto an empty string still needs a visible
-        // cursor on that exact TAB line. Derive its Y from rendered numbers
-        // in the same bar, never from the beat's full-height bounds.
-        const barHeads = []
-        for (const candidate of bar.voices?.[0]?.beats ?? []) {
-            const candidateBounds = api.boundsLookup.findBeat(candidate)
-            barHeads.push(...editorScoreNoteHeads(candidateBounds))
-        }
-        const reference = ownHeads[0] ?? barHeads[0]
-        if (!reference) {
-            caret?.remove()
-            return
-        }
-        const spacing = editorScoreStringSpacing(barHeads) ?? 10
-        centerX = ownHeads[0]
-            ? ownHeads[0].rect.x + ownHeads[0].rect.w / 2
-            : bounds.realBounds.x + bounds.realBounds.w / 2
-        centerY = reference.centerY + (selectedString - reference.string) * spacing
+    const surface = element.querySelector('.at-surface')
+    const color = api.settings.display.resources.staffLineColor.rgba.toLowerCase()
+    if (!surface || !Number.isInteger(selectedString) || selectedString < 1 || selectedString > 6) {
+        caret?.remove()
+        return
     }
-
-    if (!Number.isFinite(centerX) || !Number.isFinite(centerY)) return
+    const surfaceRect = surface.getBoundingClientRect()
+    const hostRect = element.getBoundingClientRect()
+    // BoundsLookup uses the AlphaTab surface origin, not the editor host.
+    const head = bounds.notes?.find(item =>
+        editorStringFromAlphaTab(item.note?.string) === selectedString)?.noteHeadBounds
+        ?? bounds.notes?.[0]?.noteHeadBounds
+    const beatX = head ? head.x + head.w / 2 : bounds.onNotesX
+    const screenX = surfaceRect.left + beatX
+    const screenY = surfaceRect.top + bounds.realBounds.y + bounds.realBounds.h / 2
+    let centerY
+    for (const svg of surface.querySelectorAll('svg')) {
+        const box = svg.getBoundingClientRect()
+        if (screenX < box.left || screenX > box.right ||
+            screenY < box.top || screenY > box.bottom) continue
+        const lines = editorScoreStaffLines(svg, color)
+        const matrix = svg.getScreenCTM()
+        if (!lines || !matrix) continue
+        centerY = new DOMPoint(0, lines[selectedString - 1]).matrixTransform(matrix).y
+        break
+    }
+    if (!Number.isFinite(screenX) || !Number.isFinite(centerY)) {
+        caret?.remove()
+        return
+    }
+    const centerX = screenX - hostRect.left - element.clientLeft + element.scrollLeft
+    centerY = centerY - hostRect.top - element.clientTop + element.scrollTop
     if (!caret) {
         caret = document.createElement('div')
         caret.className = 'tab-editor-score-caret'
@@ -289,6 +279,7 @@ async function mountAlphaTab(element) {
             core: {
                 fontDirectory: '/font/',
                 includeNoteBounds: isAdminPreview,
+                ...(isAdminPreview && !originalMusicXml ? { enableLazyLoading: false } : {}),
             },
 
             display: {
