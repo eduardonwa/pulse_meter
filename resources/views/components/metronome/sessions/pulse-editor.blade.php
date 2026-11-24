@@ -1,7 +1,7 @@
 <div class="pulse-editor">
     <x-metronome.creative-transport variant="mobile" />
 
-    <div class="time-signature">
+    <div class="time-signature flow" style="--flow-spacer: 1rem;">
         <x-metronome.pulse-beats
             groups="getPatternGroups()"
             beat-action="applyEditorTool(item.beat)"
