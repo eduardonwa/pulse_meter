@@ -9,11 +9,38 @@ export function tabEditor() {
     tabScoreView: 'grid',
     tabScorePreviewError: '',
     tabScoreRenderedKey: '',
+    syncTabEditorScoreCaret() {
+        const element = this.$refs?.tabEditorPreview
+        if (!element || typeof window === 'undefined') return
+        if (this.tabScoreView !== 'score' || this.tabFullMusicXml ||
+            !this.tabDraft.beats.length) {
+            window.dispatchEvent(new CustomEvent('alphatab:editor-caret', {
+                detail: { element, selection: null },
+            }))
+            return
+        }
+        const count = this.tabDraft.beats.length
+        const insertion = Boolean(this.tabInsertAtBar || this.tabSelectedIndex >= count)
+        const index = Math.max(0, Math.min(this.tabSelectedIndex, count - 1))
+        const measures = this.tabEditorMeasureLayout()
+        const measureIndex = measures.findIndex(measure =>
+            measure.notes.some(note => note.index === index))
+        if (measureIndex < 0) return
+        const beatIndex = measures[measureIndex].notes.findIndex(note => note.index === index)
+        window.dispatchEvent(new CustomEvent('alphatab:editor-caret', {
+            detail: { element, selection: {
+                measureIndex, beatIndex, insertion, string: this.tabDraft.string,
+            } },
+        }))
+    },
     setTabScoreView(view) {
         if (!['grid', 'score'].includes(view) || this.tabScoreView === view) return
         this.tabScoreView = view
-        if (view === 'score') this.$nextTick(() => this.renderTabScorePreview())
-        else this.$nextTick(() => this.updateTabEditorWidth())
+        this.$nextTick(() => {
+            if (view === 'score') this.renderTabScorePreview()
+            else this.updateTabEditorWidth()
+            this.syncTabEditorScoreCaret()
+        })
     },
     renderTabScorePreview() {
         if (this.tabScoreView !== 'score' || this.tabFullMusicXml) return
