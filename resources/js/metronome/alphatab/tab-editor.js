@@ -638,3 +638,9 @@ export function playbackAlphaTex(alphaTex) {
         return alphaTex;
     }
 }
+
+// Editing must retain every beat, including beats beyond the meter limit.
+// Routine playback keeps its existing meter-safe representation.
+export function editorPreviewAlphaTex(alphaTex, editable = false) {
+    return editable ? alphaTex : playbackAlphaTex(alphaTex);
+}
