@@ -103,6 +103,10 @@
             white-space: nowrap;
             color: hsl(var(--primary-800));
             pointer-events: none;
+
+            &.has-legato {
+                top: -29px;
+            }
         }
 
         &.is-insertion {
