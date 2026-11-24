@@ -258,5 +258,70 @@ test('MusicXML identifies tempo changes and unsupported connections separately f
     assert.equal(imported.sections[0].bpm, 173)
     assert.equal(imported.limitations.length, 2)
     assert.match(imported.limitations[0], /tempo changes/)
-    assert.match(imported.limitations[1], /ties, slides or slurs/)
+    assert.match(imported.limitations[1], /slide connections/)
+})
+
+
+function connectionNote(fret, endpoints = [], technical = []) {
+    return el('note', [
+        el('duration', '4'),
+        el('notations', [
+            el('technical', [el('string', '1'), el('fret', String(fret)), ...technical]),
+            ...endpoints,
+        ]),
+    ])
+}
+
+const endpoint = (kind, type, number = '1') => el(kind, [], { type, number })
+const connectionMeasure = (number, notes) => el('measure', [
+    el('attributes', [el('divisions', '4')]), ...notes,
+], { number: String(number) })
+
+test('MusicXML imports a tie across a measure boundary and a legato slide', () => {
+    const imported = importMeasures([
+        connectionMeasure(1, [connectionNote(2), connectionNote(3), connectionNote(5),
+            connectionNote(7, [endpoint('tied', 'start')])]),
+        connectionMeasure(2, [
+            connectionNote(7, [endpoint('tied', 'stop')]),
+            connectionNote(8, [endpoint('slur', 'start'), endpoint('slide', 'start', '3')]),
+            connectionNote(4, [endpoint('slur', 'stop'), endpoint('slide', 'stop', '3')]),
+            connectionNote(2),
+        ]),
+    ])
+    assert.deepEqual(imported.warnings, [])
+    assert.deepEqual(imported.limitations, [])
+    const draft = imported.sections[0].draft
+    assert.equal(draft.beats[4].tie, true)
+    assert.equal(draft.beats[5].slide, 'sl')
+    assert.ok(draft.beats.every(beat => !Object.hasOwn(beat, 'connections')))
+    assert.match(serializeTabDraft(draft), /7\.1\{t\}/)
+    assert.match(serializeTabDraft(draft), /8\.1\{sl\}/)
+})
+
+test('MusicXML imports explicit hammer-on, pull-off and ordinary slide endpoints', () => {
+    const imported = importMeasures([
+        connectionMeasure(1, [
+            connectionNote(2, [], [endpoint('hammer-on', 'start')]),
+            connectionNote(4, [], [endpoint('hammer-on', 'stop'), endpoint('pull-off', 'start')]),
+            connectionNote(2, [endpoint('slide', 'start')], [endpoint('pull-off', 'stop')]),
+            connectionNote(7, [endpoint('slide', 'stop')]),
+        ]),
+    ])
+    assert.deepEqual(imported.limitations, [])
+    const beats = imported.sections[0].draft.beats
+    assert.equal(beats[0].legato, true)
+    assert.equal(beats[1].legato, true)
+    assert.equal(beats[2].slide, 'ss')
+})
+
+test('MusicXML does not guess the technique represented by an isolated slur', () => {
+    const imported = importMeasures([
+        connectionMeasure(1, [
+            connectionNote(2, [endpoint('slur', 'start')]),
+            connectionNote(4, [endpoint('slur', 'stop')]),
+            connectionNote(5), connectionNote(7),
+        ]),
+    ])
+    assert.match(imported.limitations[0], /slur connections/)
+    assert.equal(imported.sections[0].draft.beats[0].legato, undefined)
 })
