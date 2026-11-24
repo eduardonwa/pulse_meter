@@ -165,6 +165,7 @@
                                     <div><dt>Hammer-on</dt><dd>H</dd></div>
                                     <div><dt>Pull-off</dt><dd>P</dd></div>
                                     <div><dt>Palm mute</dt><dd>M</dd></div>
+                                    <div><dt>Tie</dt><dd>L</dd></div>
                                     <div><dt>Extend selection</dt><dd>Shift + ← / →</dd></div>
                                     <div><dt>Undo</dt><dd>Ctrl/Cmd + Z</dd></div>
                                     <div><dt>Redo</dt><dd>Ctrl/Cmd + Shift + Z</dd></div>
@@ -239,6 +240,13 @@
                             <span aria-hidden="true">𝄽</span> Rest
                         </button>
 
+                        <button type="button" class="tab-editor__palette-tool"
+                            :class="{ 'is-active': Boolean(tabDraft.beats[tabSelectedIndex]?.tie) }"
+                            :aria-pressed="Boolean(tabDraft.beats[tabSelectedIndex]?.tie).toString()"
+                            @click="toggleTabEditorTie()" title="Tie selected note to preceding note (L)">
+                            <span aria-hidden="true">⌣</span> Tie
+                        </button>
+
                         </div>
                     </details>
 
@@ -299,11 +307,18 @@
                                                 @pointerenter="!column.insertion && extendTabDrag(column.index)"
                                                 @click="column.insertion ? selectTabEditorInsertion(column.index, stringIndex + 1) : clickTabCell(column.index, stringIndex + 1, $event); $refs.tabEditorScoreFocus?.focus()"
                                             >
-                                                <span x-text="column.insertion ? (stringIndex + 1 === tabDraft.string ? '+' : '·') : (tabEditorNoteAt(column.index, stringIndex + 1) ?? '·')"></span>
+                                                <span x-text="column.insertion ? (stringIndex + 1 === tabDraft.string ? '+' : '·') : (tabEditorTieAt(column.index, stringIndex + 1) ? '(' + tabEditorNoteAt(column.index, stringIndex + 1) + ')' : (tabEditorNoteAt(column.index, stringIndex + 1) ?? '·'))"></span>
                                                 <span class="tab-editor__palm-mute-mark"
                                                     :class="{ 'has-legato': tabEditorLegatoAt(column.index, stringIndex + 1) }"
                                                     x-show="!column.insertion && tabEditorPalmMuteAt(column.index, stringIndex + 1)"
                                                     x-cloak aria-hidden="true">P.M.</span>
+                                                <template x-if="!column.insertion && tabEditorTieSegment(column.index, stringIndex + 1, system)">
+                                                    <svg class="tab-editor__tie-arc" aria-hidden="true"
+                                                        :width="tabEditorTieSegment(column.index, stringIndex + 1, system).width" height="18"
+                                                        :viewBox="`0 0 ${tabEditorTieSegment(column.index, stringIndex + 1, system).width} 18`">
+                                                        <path :d="`M 0 15 Q ${tabEditorTieSegment(column.index, stringIndex + 1, system).width / 2} -3 ${tabEditorTieSegment(column.index, stringIndex + 1, system).width} 15`" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"></path>
+                                                    </svg>
+                                                </template>
                                                 <template x-if="!column.insertion && tabEditorLegatoSegment(column.index, stringIndex + 1, system)">
                                                     <svg class="tab-editor__legato-arc" aria-hidden="true"
                                                         :width="tabEditorLegatoSegment(column.index, stringIndex + 1, system).width"
