@@ -493,12 +493,32 @@
                 padding-inline: $size-4;
             }
 
+            // The control-row is a wrapper: its inner sections own the
+            // horizontal inset so their dividers can span the full width.
+            > .time-signature__control-row {
+                padding-inline: 0;
+
+                > .time-signature__playback,
+                > .pulse-settings-bar,
+                > .time-signature__actions {
+                    padding-inline: $size-4;
+                }
+            }
+
             @include mq(medium) {
                 padding: $size-4 0;
 
                 > * {
                     margin-inline: 0;
                     padding-inline: 0;
+                }
+
+                > .time-signature__control-row {
+                    > .time-signature__playback,
+                    > .pulse-settings-bar,
+                    > .time-signature__actions {
+                        padding-inline: 0;
+                    }
                 }
             }
         }
