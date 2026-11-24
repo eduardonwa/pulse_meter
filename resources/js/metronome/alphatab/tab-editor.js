@@ -37,6 +37,12 @@ export function appendTabNote(draft, fret = draft.fret, string = draft.string) {
         beats: [...draft.beats, { fret: number, string: line, duration, ...(draft.dotted ? { dotted: true } : {}), ...(draft.tuplet === 3 ? { tuplet: 3 } : {}) }],
     };
 }
+// A single whole rest represents a full measure in AlphaTab, in any meter.
+export function isTabFullMeasureRest(notes) {
+    return notes.length === 1 && notes[0].rest && notes[0].duration === 1 &&
+        !notes[0].dotted && !notes[0].tuplet;
+}
+
 export function layoutTabMeasures(draft, numerator = 4, denominator = 4) {
     const meter = Number(numerator);
     if (!Number.isInteger(meter) || meter < 1 || meter > 16) {
@@ -51,6 +57,7 @@ export function layoutTabMeasures(draft, numerator = 4, denominator = 4) {
     let units = 0;
     for (const [index, beat] of draft.beats.entries()) {
         if (boundaries.has(index) && current.length) {
+            if (isTabFullMeasureRest(current)) units = capacity;
             measures.push({ notes: current, endIndex: index - 1, complete: Math.abs(units - capacity) < 1e-7, used: units, capacity, overflowBeforeIndex: null });
             current = [];
             units = 0;
@@ -59,6 +66,7 @@ export function layoutTabMeasures(draft, numerator = 4, denominator = 4) {
         units += tabBeatUnits(beat);
     }
     if (current.length) {
+        if (isTabFullMeasureRest(current)) units = capacity;
         measures.push({ notes: current, endIndex: draft.beats.length - 1, complete: Math.abs(units - capacity) < 1e-7, used: units, capacity, overflowBeforeIndex: null });
     }
     return measures;
@@ -85,10 +93,11 @@ export function breaksForInsertedTabNote(draft, index, duration, numerator = 4, 
     const beats = draft.beats;
     const boundaries = draft.breaks ?? [];
     const previousBoundary = Math.max(0, ...boundaries.filter(value => value < index));
-    const used = beats.slice(previousBoundary, index)
-        .reduce((total, beat) => total + tabBeatUnits(beat), 0);
-    const size = tabBeatUnits({ duration, dotted: draft.dotted, tuplet: draft.tuplet });
+    const previousBeats = beats.slice(previousBoundary, index);
     const capacity = Number(numerator) * 16 / Number(denominator);
+    const used = isTabFullMeasureRest(previousBeats) ? capacity :
+        previousBeats.reduce((total, beat) => total + tabBeatUnits(beat), 0);
+    const size = tabBeatUnits({ duration, dotted: draft.dotted, tuplet: draft.tuplet });
     const nextLength = beats.length + 1;
     const shifted = updateTabBreaks(boundaries, index, 'insert', nextLength);
     if (index === beats.length && used > 0 && used + size > capacity + 1e-7) {
@@ -340,7 +349,7 @@ export function serializeTabPlayback(draft, numerator = 4, bpm = 100, denominato
         if (beats.length) breaks.push(beats.length);
         let used = 0;
         for (const beat of measure.notes) {
-            const amount = tabBeatUnits(beat);
+            const amount = isTabFullMeasureRest(measure.notes) ? capacity : tabBeatUnits(beat);
             if (used + amount > capacity + 1e-7) break;
             const { index, ...note } = beat;
             beats.push(note);
