@@ -359,9 +359,9 @@
         padding-block-end: $size-4;
 
         @include mq(large) {
-            border-block-end: 1px solid transparent;
-
-            outline: 1px solid red;
+            display: flex;
+            align-items: flex-end;
+            border-block-end: 0;
         }
 
         .button {
@@ -733,6 +733,7 @@
                 grid-template-columns: repeat(2, minmax(0, 1fr));
                 align-items: stretch;
                 gap: $size-4;
+                border-block-end: var(--border);
 
                 > * + * {
                     margin-block-start: 0;
@@ -759,6 +760,10 @@
             padding-block-end: $size-4;
             
             border-block-end: var(--border);
+
+            @include mq(large) {
+                border-block-end: 0;
+            }
 
             .tool-group {
                 display: flex;
