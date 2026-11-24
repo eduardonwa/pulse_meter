@@ -41,67 +41,7 @@
                 </div>
             </header>
 
-            {{-- import --}}
-            <section class="tab-editor__import-bar" aria-label="Import options">
-                <label class="button" data-type="secondary" data-variant="outline">
-                    Import MusicXML
-                    <input type="file" accept=".xml,.musicxml,application/xml,text/xml"
-                        @change="importPrototypeMusicXml($event)" class="sr-only">
-                </label>
 
-                <div class="tab-editor__import-panel" x-show="prototypeMusicXmlFullSource" x-cloak role="region" aria-label="MusicXML import result">
-                    <div class="tab-editor__import-result">
-                        <strong class="verdict" x-text="canImportPrototypeMusicXmlForEditing() ? 'Ready to edit' : 'Playback only'"></strong>
-                        <p class="reasoning" x-text="canImportPrototypeMusicXmlForEditing()
-                            ? 'This tablature is compatible with the Dorelog editor. Import it to edit the complete tablature.'
-                            : 'This score contains notation the Dorelog editor cannot represent as one editable exercise. You can still import the complete score for playback.'"></p>
-                    </div>
-
-                    <details class="tab-editor__import-warnings" x-ref="tabEditorImportDetails" x-show="!canImportPrototypeMusicXmlForEditing()" x-cloak>
-                        <summary>Why is editing unavailable?</summary>
-                        
-                        <div class="tab-editor__import-details">
-                            <p x-show="prototypeMusicXmlImport?.sections?.length > 1"
-                                x-text="prototypeMusicXmlHasMultipleTimeSignatures()
-                                    ? 'This score contains separate sections, including changes of time signature. The editor currently supports one time signature per exercise.'
-                                    : 'This score contains separate sections because some measures cannot be edited.'"></p>
-
-                            <div x-show="(prototypeMusicXmlImport?.sections?.length ?? 0) > 1">
-                                <strong>Compatible sections</strong>
-                                <ul>
-                                    <template x-for="(section, index) in (prototypeMusicXmlImport?.sections ?? [])" :key="index">
-                                        <li x-text="`${section.firstMeasure === section.lastMeasure ? 'Measure' : 'Measures'} ${section.firstMeasure}${section.firstMeasure === section.lastMeasure ? '' : '–' + section.lastMeasure}: ${section.numerator}/${section.denominator}`"></li>
-                                    </template>
-                                </ul>
-                            </div>
-
-                            <p x-show="prototypeMusicXmlIssue" x-text="prototypeMusicXmlIssue"></p>
-                            
-                            <div x-show="prototypeMusicXmlImport?.warnings?.length">
-                                <strong>Unsupported measures</strong>
-                                <ul>
-                                    <template x-for="(warning, index) in (prototypeMusicXmlImport?.warnings ?? [])" :key="index">
-                                        <li x-text="warning"></li>
-                                    </template>
-                                </ul>
-                            </div>
-                        </div>
-                    </details>
-
-                    <div class="tab-editor__import-actions">
-                        <button class="button" data-type="primary" type="button" x-show="canImportPrototypeMusicXmlForEditing()" x-cloak @click="applyPrototypeMusicXmlSection()">
-                            Import for editing
-                        </button>
-                        
-                        <button class="button" data-type="primary" type="button" x-show="!canImportPrototypeMusicXmlForEditing()" x-cloak @click="applyPrototypeMusicXmlFullScore()">
-                            Import for playback
-                        </button>
-                        <button class="button" data-type="outline" type="button" @click="dismissPrototypeMusicXml()">
-                            Dismiss
-                        </button>
-                    </div>
-                </div>
-            </section>
 
             {{-- Quick settings and additional exercise information --}}
             <section class="tab-editor__utility-bar" aria-label="Exercise information"
@@ -109,6 +49,12 @@
             >
                 <div class="tab-editor__utility-row">
                     <div class="tab-editor__utility-actions">
+                        <label class="button" data-type="secondary" data-variant="outline">
+                            Import MusicXML
+                            <input type="file" accept=".xml,.musicxml,application/xml,text/xml"
+                                @change="importPrototypeMusicXml($event)" class="sr-only">
+                        </label>
+
                         <button class="button" data-type="outline" type="button"
                             aria-controls="tab-editor-info-panel"
                             :aria-expanded="infoOpen.toString()"
@@ -191,6 +137,58 @@
                             <option value="27">Clean guitar</option>
                         </select>
                     </label>
+                </div>
+                <div class="tab-editor__import-panel" x-show="prototypeMusicXmlFullSource" x-cloak role="region" aria-label="MusicXML import result">
+                    <div class="tab-editor__import-result">
+                        <strong class="verdict" x-text="canImportPrototypeMusicXmlForEditing() ? 'Ready to edit' : 'Playback only'"></strong>
+                        <p class="reasoning" x-text="canImportPrototypeMusicXmlForEditing()
+                            ? 'This tablature is compatible with the Dorelog editor. Import it to edit the complete tablature.'
+                            : 'This score contains notation the Dorelog editor cannot represent as one editable exercise. You can still import the complete score for playback.'"></p>
+                    </div>
+
+                    <details class="tab-editor__import-warnings" x-ref="tabEditorImportDetails" x-show="!canImportPrototypeMusicXmlForEditing()" x-cloak>
+                        <summary>Why is editing unavailable?</summary>
+                        
+                        <div class="tab-editor__import-details">
+                            <p x-show="prototypeMusicXmlImport?.sections?.length > 1"
+                                x-text="prototypeMusicXmlHasMultipleTimeSignatures()
+                                    ? 'This score contains separate sections, including changes of time signature. The editor currently supports one time signature per exercise.'
+                                    : 'This score contains separate sections because some measures cannot be edited.'"></p>
+
+                            <div x-show="(prototypeMusicXmlImport?.sections?.length ?? 0) > 1">
+                                <strong>Compatible sections</strong>
+                                <ul>
+                                    <template x-for="(section, index) in (prototypeMusicXmlImport?.sections ?? [])" :key="index">
+                                        <li x-text="`${section.firstMeasure === section.lastMeasure ? 'Measure' : 'Measures'} ${section.firstMeasure}${section.firstMeasure === section.lastMeasure ? '' : '–' + section.lastMeasure}: ${section.numerator}/${section.denominator}`"></li>
+                                    </template>
+                                </ul>
+                            </div>
+
+                            <p x-show="prototypeMusicXmlIssue" x-text="prototypeMusicXmlIssue"></p>
+                            
+                            <div x-show="prototypeMusicXmlImport?.warnings?.length">
+                                <strong>Unsupported measures</strong>
+                                <ul>
+                                    <template x-for="(warning, index) in (prototypeMusicXmlImport?.warnings ?? [])" :key="index">
+                                        <li x-text="warning"></li>
+                                    </template>
+                                </ul>
+                            </div>
+                        </div>
+                    </details>
+
+                    <div class="tab-editor__import-actions">
+                        <button class="button" data-type="primary" type="button" x-show="canImportPrototypeMusicXmlForEditing()" x-cloak @click="applyPrototypeMusicXmlSection()">
+                            Import for editing
+                        </button>
+                        
+                        <button class="button" data-type="primary" type="button" x-show="!canImportPrototypeMusicXmlForEditing()" x-cloak @click="applyPrototypeMusicXmlFullScore()">
+                            Import for playback
+                        </button>
+                        <button class="button" data-type="outline" type="button" @click="dismissPrototypeMusicXml()">
+                            Dismiss
+                        </button>
+                    </div>
                 </div>
             </section>
 
