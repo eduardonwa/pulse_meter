@@ -1,6 +1,6 @@
 import {
     createTabDraft, appendTabNote, serializeTabDraft, parseTabDraft,
-    layoutTabMeasures, isTabFullMeasureRest, selectTabNoteIndices, changeSelectedTabDurations,
+    layoutTabMeasures, isTabFullMeasureRest, selectTabNoteIndices, copyTabFragment, pasteTabFragment, changeSelectedTabDurations,
     changeSelectedTabRhythm, tabBeatUnits, clearTabNotes, updateTabBreaks,
     breaksForInsertedTabNote, tabBeatNotes, setTabBeatNote,
     removeTabNoteAtString, tabLegatoDirection, toggleTabLegato, normalizeTabLegato, toggleTabPalmMute, tabTieSource, toggleTabTie, normalizeTabTies, TAB_DURATIONS
@@ -659,6 +659,38 @@ export function tablatureEditorMethods() {
             this.tabSelectionAnchor = null;
         },
 
+        tabClipboard: [],
+
+        copyTabEditorSelection(cut = false) {
+            this.finishPendingTabDigit(false);
+            if (this.tabInsertAtBar) return;
+            const indices = this.tabSelectedIndices.length
+                ? this.tabSelectedIndices : [this.tabSelectedIndex];
+            const fragment = copyTabFragment(this.tabDraft, indices,
+                this.stepForm.time_signature_numerator, this.stepForm.time_signature_denominator);
+            if (!fragment.length) return;
+            this.tabClipboard = fragment;
+            if (cut) this.undoTabEditorNote();
+        },
+
+        pasteTabEditorSelection() {
+            if (!this.tabClipboard.length) return;
+            this.finishPendingTabDigit(false);
+            try {
+                const result = pasteTabFragment(this.tabDraft, this.tabSelectedIndex, this.tabClipboard,
+                    this.stepForm.time_signature_numerator, this.stepForm.time_signature_denominator,
+                    this.tabInsertAtBar);
+                if (!result) return;
+                this.recordTabEditorUndo();
+                this.tabDraft = result.draft;
+                this.selectTabEditorCell(result.start, this.tabDraft.string);
+                this.tabSelectedIndices = Array.from({ length: result.count }, (_, i) => result.start + i);
+                this.tabSelectedIndex = result.start + result.count - 1;
+            } catch (error) {
+                this.showToast?.(error.message, 'error');
+            }
+        },
+
         handleTabEditorKey(event) {
             const tag = event.target?.tagName;
             // Keep native text-field undo, but allow score undo even when a
@@ -666,6 +698,15 @@ export function tablatureEditorMethods() {
             if (['INPUT', 'TEXTAREA', 'SELECT'].includes(tag)) return;
             if (event.ctrlKey || event.metaKey) {
                 const key = event.key.toLowerCase();
+                if (this.tabScoreView === 'score' && !this.tabFullMusicXml &&
+                    !event.altKey && !event.shiftKey && ['c', 'x', 'v'].includes(key) &&
+                    tag !== 'BUTTON' && !event.target?.isContentEditable) {
+                    event.preventDefault();
+                    if (event.repeat || this.prototypePlaying || this.prototypePlaybackLoading) return;
+                    if (key === 'v') this.pasteTabEditorSelection();
+                    else this.copyTabEditorSelection(key === 'x');
+                    return;
+                }
                 if (key === 'z' || (key === 'y' && !event.shiftKey)) {
                     event.preventDefault();
                     if (event.shiftKey || key === 'y') this.redoTabEditorChange();
