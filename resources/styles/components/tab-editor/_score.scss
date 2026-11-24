@@ -92,6 +92,19 @@
             }
         }
 
+        .tab-editor__palm-mute-mark {
+            position: absolute;
+            z-index: 4;
+            top: -11px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 9px;
+            font-weight: 700;
+            white-space: nowrap;
+            color: hsl(var(--primary-800));
+            pointer-events: none;
+        }
+
         &.is-insertion {
             color: hsl(var(--primary-800));
             background: hsl(var(--primary-200) / .35);
