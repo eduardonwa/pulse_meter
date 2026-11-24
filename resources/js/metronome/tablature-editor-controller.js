@@ -3,7 +3,7 @@ import {
     layoutTabMeasures, isTabFullMeasureRest, selectTabNoteIndices, copyTabFragment, pasteTabFragment, changeSelectedTabDurations,
     changeSelectedTabRhythm, tabBeatUnits, clearTabNotes, updateTabBreaks,
     breaksForInsertedTabNote, tabBeatNotes, setTabBeatNote,
-    removeTabNoteAtString, tabLegatoDirection, toggleTabLegato, normalizeTabLegato, toggleTabPalmMute, toggleTabTie, normalizeTabTies, toggleTabSlide, toggleTabPickStroke, TAB_DURATIONS, tabTempoAt, setTabMeasureTempo, shiftTabMeasureTempos
+    removeTabNoteAtString, tabLegatoDirection, toggleTabLegato, normalizeTabLegato, toggleTabPalmMute, toggleTabTie, normalizeTabTies, toggleTabSlide, toggleTabPickStroke, TAB_DURATIONS, tabTempoAt, setTabMeasureTempo, shiftTabMeasureChanges, tabSignatureAt, setTabMeasureSignature
 } from "./alphatab/tab-editor.js";
 
 // The Alpine component spreads these actions into its existing exercise state.
@@ -141,13 +141,50 @@ export function tablatureEditorMethods() {
             this.tabDraft = setTabMeasureTempo(this.tabDraft, index, null);
         },
 
-        removeTabEditorMeasureTempos(indices) {
+        tabEditorCurrentSignature() {
+            return tabSignatureAt(this.tabDraft, this.tabEditorActiveMeasureIndex(),
+                this.stepForm.time_signature_numerator, this.stepForm.time_signature_denominator);
+        },
+
+        tabEditorHasSignatureChange() {
+            return Object.hasOwn(this.tabDraft.signatures ?? {}, this.tabEditorActiveMeasureIndex());
+        },
+
+        changeTabEditorSignature(numerator, denominator) {
+            const signature = { numerator: Number(numerator), denominator: Number(denominator) };
+            const current = this.tabEditorCurrentSignature();
+            if (signature.numerator === current.numerator && signature.denominator === current.denominator) return;
+            this.finishPendingTabDigit(false);
+            this.recordTabEditorUndo();
+            const index = this.tabEditorActiveMeasureIndex();
+            if (index <= 0 || this.tabFullMusicXml) {
+                this.stepForm.time_signature_numerator = signature.numerator;
+                this.stepForm.time_signature_denominator = signature.denominator;
+            } else this.tabDraft = setTabMeasureSignature(this.tabDraft, index, signature);
+        },
+
+        removeTabEditorSignatureChange() {
+            if (!this.tabEditorHasSignatureChange()) return;
+            this.finishPendingTabDigit(false);
+            this.recordTabEditorUndo();
+            this.tabDraft = setTabMeasureSignature(this.tabDraft, this.tabEditorActiveMeasureIndex(), null);
+        },
+
+        removeTabEditorMeasureChanges(indices) {
             let tempos = this.tabDraft.tempos ?? {};
+            let signatures = this.tabDraft.signatures ?? {};
             for (const index of [...indices].sort((a, b) => b - a)) {
-                if (index === 0 && tempos[1] !== undefined) this.stepForm.bpm = tempos[1];
-                tempos = shiftTabMeasureTempos(tempos, index, 1);
+                if (index === 0) {
+                    if (tempos[1] !== undefined) this.stepForm.bpm = tempos[1];
+                    if (signatures[1]) {
+                        this.stepForm.time_signature_numerator = signatures[1].numerator;
+                        this.stepForm.time_signature_denominator = signatures[1].denominator;
+                    }
+                }
+                tempos = shiftTabMeasureChanges(tempos, index, 1);
+                signatures = shiftTabMeasureChanges(signatures, index, 1);
             }
-            return tempos;
+            return { tempos, signatures };
         },
 
         deleteTabEditorMeasure() {
@@ -166,8 +203,8 @@ export function tablatureEditorMethods() {
                 .map(position => position > measure.endIndex ? position - length : position)
                 .filter(position => position > 0 && position < beats.length))];
             if (!beats.length) beats.push({ rest: true, duration: 1 });
-            const tempos = this.removeTabEditorMeasureTempos([measureIndex]);
-            this.tabDraft = { ...this.tabDraft, beats: normalizeTabTies(normalizeTabLegato(beats)), breaks, tempos };
+            const changes = this.removeTabEditorMeasureChanges([measureIndex]);
+            this.tabDraft = { ...this.tabDraft, beats: normalizeTabTies(normalizeTabLegato(beats)), breaks, ...changes };
             this.selectTabEditorCell(Math.min(start, beats.length - 1), this.tabDraft.string);
             this.$nextTick(() => this.$refs.tabEditorScoreKeyboard?.focus());
         },
@@ -227,7 +264,10 @@ export function tablatureEditorMethods() {
             const previousBreak = Math.max(0, ...(this.tabDraft.breaks ?? []).filter(value => value < index));
             const used = this.tabDraft.beats.slice(previousBreak, index)
                 .reduce((total, beat) => total + tabBeatUnits(beat), 0);
-            const available = Number(this.stepForm.time_signature_numerator) * 16 / Number(this.stepForm.time_signature_denominator) - used;
+            const previous = this.tabEditorMeasureLayout().find(measure => measure.endIndex === index - 1);
+            const signature = tabSignatureAt(this.tabDraft, this.tabEditorActiveMeasureIndex(),
+                this.stepForm.time_signature_numerator, this.stepForm.time_signature_denominator);
+            const available = (previous?.capacity ?? signature.numerator * 16 / signature.denominator) - used;
             this.selectTabEditorCell(index, string);
             this.tabInsertAtBar = true;
             this.tabSelectedIndices = [];
@@ -415,6 +455,8 @@ export function tablatureEditorMethods() {
             return {
                 draft: JSON.parse(JSON.stringify(this.tabDraft)),
                 bpm: this.stepForm?.bpm,
+                numerator: this.stepForm?.time_signature_numerator,
+                denominator: this.stepForm?.time_signature_denominator,
                 selectedIndex: this.tabSelectedIndex,
                 selectedIndices: [...this.tabSelectedIndices],
                 selectionAnchor: this.tabSelectionAnchor,
@@ -425,6 +467,8 @@ export function tablatureEditorMethods() {
         restoreTabEditorSnapshot(snapshot) {
             this.tabDraft = snapshot.draft;
             if (this.stepForm && snapshot.bpm !== undefined) this.stepForm.bpm = snapshot.bpm;
+            if (this.stepForm && snapshot.numerator !== undefined) this.stepForm.time_signature_numerator = snapshot.numerator;
+            if (this.stepForm && snapshot.denominator !== undefined) this.stepForm.time_signature_denominator = snapshot.denominator;
             this.tabSelectedIndex = snapshot.selectedIndex;
             this.tabSelectedIndices = snapshot.selectedIndices;
             this.tabInsertAtBar = snapshot.insertAtBar;
@@ -613,7 +657,7 @@ export function tablatureEditorMethods() {
             const removed = this.tabEditorMeasureLayout().map((measure, index) => ({ measure, index }))
                 .filter(({ measure }) => measure.notes.every(note => selected.includes(note.index)))
                 .map(({ index }) => index);
-            const tempos = this.removeTabEditorMeasureTempos(removed);
+            const changes = this.removeTabEditorMeasureChanges(removed);
             const beats = [...this.tabDraft.beats];
             let breaks = [...(this.tabDraft.breaks ?? [])];
             for (const index of selected) {
@@ -621,7 +665,7 @@ export function tablatureEditorMethods() {
                 breaks = updateTabBreaks(breaks, index, 'delete', beats.length);
             }
             if (!beats.length) beats.push({ rest: true, duration: 1 });
-            this.tabDraft = { ...this.tabDraft, beats: normalizeTabTies(normalizeTabLegato(beats)), breaks, tempos };
+            this.tabDraft = { ...this.tabDraft, beats: normalizeTabTies(normalizeTabLegato(beats)), breaks, ...changes };
             this.selectTabEditorCell(Math.min(selected.at(-1), beats.length - 1), this.tabDraft.string);
         },
 
@@ -650,6 +694,10 @@ export function tablatureEditorMethods() {
                 this.recordTabEditorUndo();
                 this.tabDraft = result.draft;
                 if (result.initialBpm !== undefined) this.stepForm.bpm = result.initialBpm;
+                if (result.initialSignature) {
+                    this.stepForm.time_signature_numerator = result.initialSignature.numerator;
+                    this.stepForm.time_signature_denominator = result.initialSignature.denominator;
+                }
                 this.selectTabEditorCell(result.start, this.tabDraft.string);
                 this.tabSelectedIndices = Array.from({ length: result.count }, (_, i) => result.start + i);
                 this.tabSelectedIndex = result.start + result.count - 1;
