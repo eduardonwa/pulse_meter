@@ -27,19 +27,27 @@ export function changeSelectedTabRhythm(beats, indices, changes) {
 export function createTabDraft() {
     return { beats: [], duration: 8, dotted: false, tuplet: null, string: 1, fret: 0, instrument: 25, breaks: [], tempos: {}, signatures: {} };
 }
-// Tempo changes are sparse, keyed by zero-based measure index.
-export function tabTempoAt(draft, measureIndex, initialBpm) {
-    let bpm = Number(initialBpm);
-    for (const [index, value] of Object.entries(draft.tempos ?? {}).sort(([a], [b]) => Number(a) - Number(b))) {
+// Measure changes are sparse, keyed by zero-based measure index.
+function tabMeasureValueAt(changes, measureIndex, initialValue) {
+    let result = initialValue;
+    for (const [index, value] of Object.entries(changes ?? {}).sort(([a], [b]) => Number(a) - Number(b))) {
         if (Number(index) > measureIndex) break;
-        bpm = value;
+        result = value;
     }
-    return bpm;
+    return result;
+}
+
+export function tabTempoAt(draft, measureIndex, initialBpm) {
+    return tabMeasureValueAt(draft.tempos, measureIndex, Number(initialBpm));
+}
+
+function validateMeasureChangeIndex(draft, measureIndex) {
+    if (!Number.isInteger(measureIndex) || measureIndex < 1 ||
+        measureIndex >= layoutTabMeasures(draft).length) throw new RangeError('Choose a measure after the first measure');
 }
 
 export function setTabMeasureTempo(draft, measureIndex, bpm) {
-    if (!Number.isInteger(measureIndex) || measureIndex < 1 ||
-        measureIndex >= layoutTabMeasures(draft).length) throw new RangeError('Choose a measure after the first measure');
+    validateMeasureChangeIndex(draft, measureIndex);
     const tempos = { ...draft.tempos };
     if (bpm === null) delete tempos[measureIndex];
     else {
@@ -69,17 +77,12 @@ function validateSignature(numerator, denominator) {
 }
 
 export function tabSignatureAt(draft, measureIndex, numerator = 4, denominator = 4) {
-    let signature = validateSignature(numerator, denominator);
-    for (const [index, value] of Object.entries(draft.signatures ?? {}).sort(([a], [b]) => Number(a) - Number(b))) {
-        if (Number(index) > measureIndex) break;
-        signature = validateSignature(value.numerator, value.denominator);
-    }
-    return signature;
+    const signature = tabMeasureValueAt(draft.signatures, measureIndex, validateSignature(numerator, denominator));
+    return validateSignature(signature.numerator, signature.denominator);
 }
 
 export function setTabMeasureSignature(draft, measureIndex, signature) {
-    if (!Number.isInteger(measureIndex) || measureIndex < 1 ||
-        measureIndex >= layoutTabMeasures(draft).length) throw new RangeError('Choose a measure after the first measure');
+    validateMeasureChangeIndex(draft, measureIndex);
     const signatures = { ...draft.signatures };
     if (signature === null) delete signatures[measureIndex];
     else signatures[measureIndex] = validateSignature(signature.numerator, signature.denominator);
@@ -214,7 +217,7 @@ export function pasteTabFragment(draft, index, fragment, numerator = 4, denomina
     });
     suffix.forEach(beat => append(beat, isTabFullMeasureRest(original)));
     flush();
-    const tempos = shiftTabMeasureTempos(draft.tempos, target, original.length ? 1 : 0, packed.length);
+    const tempos = shiftTabMeasureChanges(draft.tempos, target, original.length ? 1 : 0, packed.length);
     // Preserve the destination's instruction at its original surviving content.
     if (original.length && draft.tempos?.[target] !== undefined) {
         const destination = prefix.length || replaceRest ? target : target + Math.max(0, packed.length - 1);
