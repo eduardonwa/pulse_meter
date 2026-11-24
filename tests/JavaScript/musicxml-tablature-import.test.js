@@ -249,16 +249,16 @@ test('Guitar Pro import rejects offsets and missing fret rather than inventing n
     assert.match(imported.warnings[1], /Measure 3: MusicXML must contain valid guitar string and fret/)
 })
 
-test('MusicXML identifies tempo changes and unsupported connections separately from invalid measures', () => {
+test('MusicXML imports measure tempo changes and reports unsupported connections', () => {
     const imported = importMeasures([
         guitarProMeasure(1, { tempo: 173 }),
         guitarProMeasure(2, { tempo: 183, connection: true }),
     ])
     assert.deepEqual(imported.warnings, [])
     assert.equal(imported.sections[0].bpm, 173)
-    assert.equal(imported.limitations.length, 2)
-    assert.match(imported.limitations[0], /tempo changes/)
-    assert.match(imported.limitations[1], /slide connections/)
+    assert.deepEqual(imported.sections[0].draft.tempos, { 1: 183 })
+    assert.equal(imported.limitations.length, 1)
+    assert.match(imported.limitations[0], /slide connections/)
 })
 
 
@@ -324,4 +324,32 @@ test('MusicXML does not guess the technique represented by an isolated slur', ()
     ])
     assert.match(imported.limitations[0], /slur connections/)
     assert.equal(imported.sections[0].draft.beats[0].legato, undefined)
+})
+
+
+test('MusicXML preserves inherited tempos and subsequent measure changes', () => {
+    const imported = importMeasures([
+        guitarProMeasure(1, { tempo: 173 }),
+        guitarProMeasure(2, { tempo: 183 }),
+        guitarProMeasure(3),
+        guitarProMeasure(4, { tempo: 173 }),
+    ])
+    assert.deepEqual(imported.warnings, [])
+    assert.deepEqual(imported.limitations, [])
+    assert.equal(imported.sections.length, 1)
+    const section = imported.sections[0]
+    assert.equal(section.bpm, 173)
+    assert.deepEqual(section.draft.tempos, { 1: 183, 3: 173 })
+})
+
+test('MusicXML reports mid-measure tempo changes rather than moving them to the barline', () => {
+    const bar = connectionMeasure(1, [
+        connectionNote(2),
+        el('direction', [el('sound', [], { tempo: '183' })]),
+        connectionNote(4), connectionNote(5), connectionNote(7),
+    ])
+    const imported = importMeasures([bar])
+    assert.deepEqual(imported.warnings, [])
+    assert.match(imported.limitations[0], /tempo changes within measures/)
+    assert.deepEqual(imported.sections[0].draft.tempos, {})
 })
