@@ -331,6 +331,22 @@
                             title="Toggle palm mute on selected notes (M)">
                             <span aria-hidden="true">P.M.</span> Palm mute
                         </button>
+                        <template x-for="slide in [
+                            { code: 'ss', name: 'Shift slide', symbol: '/' },
+                            { code: 'sl', name: 'Legato slide', symbol: '⌣/' },
+                            { code: 'sib', name: 'Slide in from below', symbol: '↗' },
+                            { code: 'sia', name: 'Slide in from above', symbol: '↘' },
+                            { code: 'sou', name: 'Slide out upwards', symbol: '↗' },
+                            { code: 'sod', name: 'Slide out downwards', symbol: '↘' }
+                        ]" :key="slide.code">
+                            <button type="button" class="tab-editor__palette-tool"
+                                :class="{ 'is-active': tabDraft.beats[tabSelectedIndex]?.slide === slide.code }"
+                                :aria-pressed="(tabDraft.beats[tabSelectedIndex]?.slide === slide.code).toString()"
+                                :title="slide.name" @click="toggleTabEditorSlide(slide.code)">
+                                <span aria-hidden="true" x-text="slide.symbol"></span>
+                                <span x-text="slide.name"></span>
+                            </button>
+                        </template>
                         </div>
                     </details>
                 </aside>
