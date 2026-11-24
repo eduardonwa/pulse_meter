@@ -3,7 +3,7 @@ import {
     layoutTabMeasures, selectTabNoteIndices, changeSelectedTabDurations,
     changeSelectedTabRhythm, tabBeatUnits, clearTabNotes, updateTabBreaks,
     breaksForInsertedTabNote, tabBeatNotes, setTabBeatNote,
-    removeTabNoteAtString, TAB_DURATIONS
+    removeTabNoteAtString, tabLegatoDirection, toggleTabLegato, normalizeTabLegato, TAB_DURATIONS
 } from "./alphatab/tab-editor.js";
 
 // The Alpine component spreads these actions into its existing exercise state.
@@ -173,6 +173,42 @@ export function tablatureEditorMethods() {
             return this.tabEditorMeasureWarnings().filter(measure => measure.status !== 'complete');
         },
 
+        tabEditorLegatoDirection(index) {
+            return tabLegatoDirection(this.tabDraft.beats, index);
+        },
+
+        tabEditorLegatoAt(index, string) {
+            const beat = this.tabDraft.beats[index];
+            if (!beat?.legato || !tabLegatoDirection(this.tabDraft.beats, index)) return null;
+            return tabBeatNotes(beat)[0]?.string === string
+                ? tabLegatoDirection(this.tabDraft.beats, index) : null;
+        },
+
+        tabEditorLegatoSegment(index, string, system) {
+            const direction = this.tabEditorLegatoAt(index, string);
+            if (!direction) return null;
+            const currentColumn = system.findIndex(column => !column.insertion && column.index === index);
+            if (currentColumn < 0) return null;
+            const nextColumn = system.findIndex(column => !column.insertion && column.index === index + 1);
+            if (nextColumn < 0) return null;
+            // A barline insertion column may sit between the notes; derive the
+            // horizontal distance from the displayed columns, not beat indices.
+            return { direction, width: (nextColumn - currentColumn) * 40 };
+        },
+
+        toggleTabEditorLegato(technique) {
+            this.finishPendingTabDigit(false);
+            const index = this.tabSelectedIndex;
+            if (this.tabInsertAtBar) return;
+            try {
+                const beats = toggleTabLegato(this.tabDraft.beats, index, technique);
+                this.recordTabEditorUndo();
+                this.tabDraft = { ...this.tabDraft, beats: normalizeTabLegato(beats) };
+            } catch (error) {
+                this.showToast?.(error.message, 'error');
+            }
+        },
+
         tabEditorNoteAt(index, string) {
             const note = this.tabDraft.beats[index];
             if (note?.rest) return null;
@@ -254,9 +290,9 @@ export function tablatureEditorMethods() {
                     this.recordTabEditorUndo();
                     this.tabDraft = {
                         ...this.tabDraft,
-                        beats: this.tabDraft.beats.map((note, index) =>
+                        beats: normalizeTabLegato(this.tabDraft.beats.map((note, index) =>
                             index === pending.index ? setTabBeatNote(note, fret, pending.string) : note
-                        ),
+                        )),
                         fret,
                     };
                     this.finishPendingTabDigit();
@@ -365,7 +401,7 @@ export function tablatureEditorMethods() {
                 ? breaksForInsertedTabNote(this.tabDraft, index, beat.duration, this.stepForm.time_signature_numerator, this.stepForm.time_signature_denominator)
                 : this.tabDraft.breaks;
             this.recordTabEditorUndo();
-            this.tabDraft = { ...this.tabDraft, beats, breaks };
+            this.tabDraft = { ...this.tabDraft, beats: normalizeTabLegato(beats), breaks };
             this.tabSelectedIndex = Math.min(beats.length, index + 1);
             this.tabInsertAtBar = false;
             this.tabSelectedIndices = [];
@@ -382,7 +418,7 @@ export function tablatureEditorMethods() {
                     tabBeatNotes(occupiedBeat).some(note => note.string === this.tabDraft.string)) {
                     this.recordTabEditorUndo();
                     beats[this.tabSelectedIndex] = setTabBeatNote(occupiedBeat, this.tabDraft.fret, this.tabDraft.string);
-                    this.tabDraft = { ...this.tabDraft, beats };
+                    this.tabDraft = { ...this.tabDraft, beats: normalizeTabLegato(beats) };
                     this.tabSelectedIndices = [this.tabSelectedIndex];
                     this.tabSelectionAnchor = this.tabSelectedIndex;
                     return;
@@ -394,7 +430,7 @@ export function tablatureEditorMethods() {
                 if (isChordEntry) {
                     this.recordTabEditorUndo();
                     beats[this.tabSelectedIndex] = setTabBeatNote(current, this.tabDraft.fret, this.tabDraft.string);
-                    this.tabDraft = { ...this.tabDraft, beats };
+                    this.tabDraft = { ...this.tabDraft, beats: normalizeTabLegato(beats) };
                     this.tabSelectedIndices = [this.tabSelectedIndex];
                     this.tabSelectionAnchor = this.tabSelectedIndex;
                     return;
@@ -406,7 +442,7 @@ export function tablatureEditorMethods() {
                 } else {
                     beats.splice(this.tabSelectedIndex, 0, next.beats.at(-1));
                 }
-                this.tabDraft = { ...next, beats, breaks: beats.length > this.tabDraft.beats.length ? breaksForInsertedTabNote(this.tabDraft, this.tabSelectedIndex, next.beats.at(-1).duration, this.stepForm.time_signature_numerator, this.stepForm.time_signature_denominator) : this.tabDraft.breaks };
+                this.tabDraft = { ...next, beats: normalizeTabLegato(beats), breaks: beats.length > this.tabDraft.beats.length ? breaksForInsertedTabNote(this.tabDraft, this.tabSelectedIndex, next.beats.at(-1).duration, this.stepForm.time_signature_numerator, this.stepForm.time_signature_denominator) : this.tabDraft.breaks };
                 this.tabSelectedIndex = Math.min(beats.length, this.tabSelectedIndex + 1);
                 this.tabInsertAtBar = false;
                 this.tabSelectedIndices = [];
@@ -433,7 +469,7 @@ export function tablatureEditorMethods() {
                     selected.has(index) ? removeTabNoteAtString(beat, this.tabDraft.string) : beat);
             if (beats.every((beat, index) => beat === this.tabDraft.beats[index])) return;
             this.recordTabEditorUndo();
-            this.tabDraft = { ...this.tabDraft, beats };
+            this.tabDraft = { ...this.tabDraft, beats: normalizeTabLegato(beats) };
         },
 
         // Delete removes selected beat positions; Backspace clears the current
@@ -454,7 +490,7 @@ export function tablatureEditorMethods() {
                 beats.splice(index, 1);
                 breaks = updateTabBreaks(breaks, index, 'delete', beats.length);
             }
-            this.tabDraft = { ...this.tabDraft, beats, breaks };
+            this.tabDraft = { ...this.tabDraft, beats: normalizeTabLegato(beats), breaks };
             this.tabSelectedIndex = Math.min(selected.at(-1), beats.length);
             this.tabInsertAtBar = false;
             this.tabSelectedIndices = [];
@@ -478,6 +514,13 @@ export function tablatureEditorMethods() {
             // Score cells are buttons for accessibility, but they must still
             // accept Delete, Backspace and the existing tab keyboard controls.
             if (tag === 'BUTTON' && !event.target?.classList?.contains('tab-editor__cell')) return;
+            const techniqueKey = event.key.toLowerCase();
+            if (!event.ctrlKey && !event.metaKey && !event.altKey && !event.repeat &&
+                (techniqueKey === 'h' || techniqueKey === 'p')) {
+                event.preventDefault();
+                this.toggleTabEditorLegato(techniqueKey.toUpperCase());
+                return;
+            }
             if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
                 event.preventDefault();
                 const delta = event.key === 'ArrowUp' ? -1 : 1;

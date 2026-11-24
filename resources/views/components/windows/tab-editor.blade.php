@@ -162,6 +162,8 @@
                                     <div><dt>Navigate notes</dt><dd>← / →</dd></div>
                                     <div><dt>Change string</dt><dd>↑ / ↓</dd></div>
                                     <div><dt>Change duration</dt><dd>+ / -</dd></div>
+                                    <div><dt>Hammer-on</dt><dd>H</dd></div>
+                                    <div><dt>Pull-off</dt><dd>P</dd></div>
                                     <div><dt>Extend selection</dt><dd>Shift + ← / →</dd></div>
                                     <div><dt>Undo</dt><dd>Ctrl/Cmd + Z</dd></div>
                                     <div><dt>Redo</dt><dd>Ctrl/Cmd + Shift + Z</dd></div>
@@ -200,8 +202,10 @@
                 @pointerup.window="endTabDrag()"
                 @pointercancel.window="endTabDrag()"
             >
-                <aside class="tab-editor__rhythm" aria-label="Rhythm tools">
-                    <div class="tab-editor__palette-durations" role="group" aria-label="Note duration">
+                <aside class="tab-editor__rhythm" aria-label="Tablature tools">
+                    <details class="tab-editor__palette-section" open>
+                        <summary class="tab-editor__palette-heading">Rhythm<x-lucide-chevron-down aria-hidden="true" /></summary>
+                        <div class="tab-editor__palette-durations" role="group" aria-label="Note duration">
                         <template x-for="item in [
                             { duration: 1, name: 'Whole', symbol: '𝅝' },
                             { duration: 2, name: 'Half', symbol: '𝅗𝅥' },
@@ -217,7 +221,11 @@
                         </template>
                     </div>
 
-                    <div class="tab-editor__palette-effects" role="group" aria-label="Rhythm modifiers">
+                    </details>
+
+                    <details class="tab-editor__palette-section" open>
+                        <summary class="tab-editor__palette-heading">Notation<x-lucide-chevron-down aria-hidden="true" /></summary>
+                        <div class="tab-editor__palette-effects" role="group" aria-label="Notation controls">
                         <button type="button" class="tab-editor__palette-tool" :class="{ 'is-active': tabDraft.dotted }" :aria-pressed="Boolean(tabDraft.dotted).toString()" @click="setTabEditorRhythm({ dotted: !tabDraft.dotted })" title="Dotted duration: one and a half times the selected value">
                             <span aria-hidden="true">♩.</span> Dotted
                         </button>
@@ -229,7 +237,29 @@
                         <button type="button" class="tab-editor__palette-tool" @click="addTabEditorRest()" title="Insert or replace with a rest">
                             <span aria-hidden="true">𝄽</span> Rest
                         </button>
-                    </div>
+
+                        </div>
+                    </details>
+
+                    <details class="tab-editor__palette-section" open>
+                        <summary class="tab-editor__palette-heading">Techniques<x-lucide-chevron-down aria-hidden="true" /></summary>
+                        <div class="tab-editor__palette-effects" role="group" aria-label="Playing techniques">
+                        <button type="button" class="tab-editor__palette-tool"
+                            :class="{ 'is-active': Boolean(tabDraft.beats[tabSelectedIndex]?.legato) && tabEditorLegatoDirection(tabSelectedIndex) === 'H' }"
+                            :aria-pressed="(Boolean(tabDraft.beats[tabSelectedIndex]?.legato) && tabEditorLegatoDirection(tabSelectedIndex) === 'H').toString()"
+                            @click="toggleTabEditorLegato('H')"
+                            title="Hammer-on: connect to the next higher fret on the same string">
+                            <span aria-hidden="true">H</span> Hammer-on
+                        </button>
+                        <button type="button" class="tab-editor__palette-tool"
+                            :class="{ 'is-active': Boolean(tabDraft.beats[tabSelectedIndex]?.legato) && tabEditorLegatoDirection(tabSelectedIndex) === 'P' }"
+                            :aria-pressed="(Boolean(tabDraft.beats[tabSelectedIndex]?.legato) && tabEditorLegatoDirection(tabSelectedIndex) === 'P').toString()"
+                            @click="toggleTabEditorLegato('P')"
+                            title="Pull-off: connect to the next lower fret on the same string">
+                            <span aria-hidden="true">P</span> Pull-off
+                        </button>
+                        </div>
+                    </details>
                 </aside>
 
                 <div class="tab-editor__score" x-ref="tabEditorScore" @pointerup.window="endTabDrag()" @pointercancel.window="endTabDrag()" @resize.window="updateTabEditorWidth()" tabindex="0" role="group" aria-label="Interactive six-string tablature">
@@ -260,8 +290,17 @@
                                                 @pointerdown="!column.insertion && startTabDrag(column.index, stringIndex + 1, $event)"
                                                 @pointerenter="!column.insertion && extendTabDrag(column.index)"
                                                 @click="column.insertion ? selectTabEditorInsertion(column.index, stringIndex + 1) : clickTabCell(column.index, stringIndex + 1, $event); $refs.tabEditorScoreFocus?.focus()"
-                                                x-text="column.insertion ? (stringIndex + 1 === tabDraft.string ? '+' : '·') : (tabEditorNoteAt(column.index, stringIndex + 1) ?? '·')"
                                             >
+                                                <span x-text="column.insertion ? (stringIndex + 1 === tabDraft.string ? '+' : '·') : (tabEditorNoteAt(column.index, stringIndex + 1) ?? '·')"></span>
+                                                <template x-if="!column.insertion && tabEditorLegatoSegment(column.index, stringIndex + 1, system)">
+                                                    <svg class="tab-editor__legato-arc" aria-hidden="true"
+                                                        :width="tabEditorLegatoSegment(column.index, stringIndex + 1, system).width"
+                                                        height="21"
+                                                        :viewBox="`0 0 ${tabEditorLegatoSegment(column.index, stringIndex + 1, system).width} 21`">
+                                                        <path :d="`M 0 18 Q ${tabEditorLegatoSegment(column.index, stringIndex + 1, system).width / 2} -3 ${tabEditorLegatoSegment(column.index, stringIndex + 1, system).width} 18`" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"></path>
+                                                        <text :x="tabEditorLegatoSegment(column.index, stringIndex + 1, system).width / 2" y="8" text-anchor="middle" x-text="tabEditorLegatoSegment(column.index, stringIndex + 1, system).direction"></text>
+                                                    </svg>
+                                                </template>
                                             </button>
                                         </template>
                                     </div>

@@ -102,6 +102,38 @@ export function breaksForInsertedTabNote(draft, index, duration, numerator = 4, 
     return shifted;
 }
 
+// A legato link belongs to the starting note; {h} encodes both H and P.
+export function tabLegatoDirection(beats, index) {
+    const current = tabBeatNotes(beats[index]);
+    const next = tabBeatNotes(beats[index + 1]);
+    if (current.length !== 1 || next.length !== 1) return null;
+    if (current[0].string !== next[0].string || current[0].fret === next[0].fret) return null;
+    return next[0].fret > current[0].fret ? 'H' : 'P';
+}
+
+// Editing a fret, string, or beat can invalidate an existing link.
+// Remove only orphaned links while preserving all valid legato effects.
+export function normalizeTabLegato(beats) {
+    return beats.map((beat, index) => beat.legato && !tabLegatoDirection(beats, index)
+        ? (() => { const { legato, ...rest } = beat; return rest; })()
+        : beat);
+}
+
+export function toggleTabLegato(beats, index, technique = null) {
+    const direction = tabLegatoDirection(beats, index);
+    if (!direction) {
+        throw new RangeError('Legato needs two consecutive notes on the same string at different frets.');
+    }
+    if (technique && technique !== direction) {
+        throw new RangeError(technique === 'H'
+            ? 'Hammer-on requires the following fret to be higher.'
+            : 'Pull-off requires the following fret to be lower.');
+    }
+    return beats.map((beat, i) => i === index
+        ? { ...beat, ...(beat.legato ? { legato: false } : { legato: true }) }
+        : beat);
+}
+
 // Legacy beats contain one fret/string; chord beats contain several notes.
 export function tabBeatNotes(beat) {
     if (!beat || beat.rest) return [];
@@ -127,8 +159,11 @@ export function serializeTabDraft(draft, numerator = 4, bpm = 100, denominator =
     const measures = layoutTabMeasures(draft, numerator, denominator);
     const body = measures.map(measure => measure.notes.map(beat => {
         const notes = tabBeatNotes(beat);
+        if (beat.legato && !tabLegatoDirection(draft.beats, beat.index)) {
+            throw new RangeError('Legato needs two consecutive notes on the same string at different frets.');
+        }
         const content = beat.rest ? 'r' : notes.length === 1
-            ? `${notes[0].fret}.${notes[0].string}`
+            ? `${notes[0].fret}.${notes[0].string}${beat.legato ? '{h}' : ''}`
             : `(${notes.map(note => `${note.fret}.${note.string}`).join(' ')})`;
         return `:${beat.duration} ${content}${tabRhythmProperties(beat)}`;
     }).join(' ')).join(' | ');
@@ -159,7 +194,7 @@ export function parseTabDraft(alphaTex) {
     const breaks = [];
     for (const measure of content[4].split('|')) {
         if (beats.length) breaks.push(beats.length);
-        const tokens = measure.trim().match(/:\d+\s+(?:\((?:\d+\.\d+\s*){2,6}\)|\d+\.\d+|r)(?:\s+\{\s*(?:d|tu 3)(?:\s+(?:d|tu 3))?\s*\})?/g) ?? [];
+        const tokens = measure.trim().match(/:\d+\s+(?:\((?:\d+\.\d+\s*){2,6}\)|\d+\.\d+(?:\{h\})?|r)(?:\s+\{\s*(?:d|tu 3)(?:\s+(?:d|tu 3))?\s*\})?/g) ?? [];
         if (!tokens.length || tokens.join(' ').replace(/\s+/g, ' ') !== measure.trim().replace(/\s+/g, ' ')) {
             throw new Error('This tablature contains unsupported notation');
         }
@@ -180,9 +215,9 @@ export function parseTabDraft(alphaTex) {
                 ? body.slice(1, -1).trim().split(/\s+/)
                 : [body];
             const notes = raw.map(part => {
-                const note = /^(\d+)\.(\d+)$/.exec(part);
-                if (!note) throw new Error('Unsupported chord');
-                return { fret: Number(note[1]), string: Number(note[2]) };
+                const note = /^(\d+)\.(\d+)(\{h\})?$/.exec(part);
+                if (!note || (note[3] && raw.length !== 1)) throw new Error('Unsupported chord');
+                return { fret: Number(note[1]), string: Number(note[2]), ...(note[3] ? { legato: true } : {}) };
             });
             if (notes.length > 6 || notes.some(note => note.fret > 24 ||
                 note.string < 1 || note.string > 6) ||
