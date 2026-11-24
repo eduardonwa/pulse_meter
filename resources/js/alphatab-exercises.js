@@ -13,9 +13,42 @@ const renderedBpms = new WeakMap()
 const playbackRequests = new WeakMap()
 const editorScoreCursors = new WeakMap()
 
-// The editing caret is independent from alphaTab's playback cursor.
-// Position it using the bounds of the rendered beat, never by guessing
-// pixel widths from the original Grid editor.
+// A BeatBounds.visualBounds spans the rhythmic position (and can include
+// both notation and TAB staves). It cannot locate a guitar string. Use the
+// individual number bounds from AlphaTab, including for chord notes.
+function editorScoreNoteHeads(beatBounds) {
+    if (!beatBounds?.notes) return []
+    // Note bounds can occur in multiple rendered staves. The TAB stave is
+    // below standard notation, so use the lowest rendering of each string.
+    const perString = new Map()
+    for (const item of beatBounds.notes) {
+        const string = Number(item.note?.string)
+        const rect = item.noteHeadBounds
+        if (!Number.isInteger(string) || string < 1 || string > 6 ||
+            !rect || !Number.isFinite(rect.x) || !Number.isFinite(rect.y)) continue
+        const centerY = rect.y + rect.h / 2
+        if (!perString.has(string) || centerY > perString.get(string).centerY) {
+            perString.set(string, { string, rect, centerY })
+        }
+    }
+    return [...perString.values()]
+}
+
+function editorScoreStringSpacing(heads) {
+    const values = []
+    for (let i = 0; i < heads.length; i++) {
+        for (let j = i + 1; j < heads.length; j++) {
+            const delta = heads[j].string - heads[i].string
+            if (!delta) continue
+            const spacing = (heads[j].centerY - heads[i].centerY) / delta
+            // Reject measurements between distinct systems/staves.
+            if (spacing > 4 && spacing < 28) values.push(spacing)
+        }
+    }
+    values.sort((a, b) => a - b)
+    return values.length ? values[Math.floor(values.length / 2)] : null
+}
+
 function updateEditorScoreCaret(element, api) {
     const selection = editorScoreCursors.get(element)
     let caret = element.querySelector(':scope > .tab-editor-score-caret')
@@ -24,16 +57,45 @@ function updateEditorScoreCaret(element, api) {
         return
     }
     const { measureIndex, beatIndex, insertion } = selection
-    const score = api.score
-    const beat = score.tracks?.[0]?.staves?.[0]?.bars?.[measureIndex]?.voices?.[0]?.beats?.[beatIndex]
+    const bars = api.score.tracks?.[0]?.staves?.[0]?.bars
+    const bar = bars?.[measureIndex]
+    const beat = bar?.voices?.[0]?.beats?.[beatIndex]
     const bounds = beat && api.boundsLookup.findBeat(beat)
     if (!bounds) {
         caret?.remove()
         return
     }
-    const noteBounds = bounds.notes?.find(item => item.note?.string === selection.string)
-    const rect = noteBounds?.noteHeadBounds ?? bounds.visualBounds
-    if (!rect || !Number.isFinite(rect.x) || !Number.isFinite(rect.y)) return
+    const selectedString = Number(selection.string)
+    const ownHeads = editorScoreNoteHeads(bounds)
+    const direct = ownHeads.find(head => head.string === selectedString)
+
+    let centerX
+    let centerY
+    if (direct) {
+        centerX = direct.rect.x + direct.rect.w / 2
+        centerY = direct.centerY
+    } else {
+        // Moving vertically onto an empty string still needs a visible
+        // cursor on that exact TAB line. Derive its Y from rendered numbers
+        // in the same bar, never from the beat's full-height bounds.
+        const barHeads = []
+        for (const candidate of bar.voices?.[0]?.beats ?? []) {
+            const candidateBounds = api.boundsLookup.findBeat(candidate)
+            barHeads.push(...editorScoreNoteHeads(candidateBounds))
+        }
+        const reference = ownHeads[0] ?? barHeads[0]
+        if (!reference) {
+            caret?.remove()
+            return
+        }
+        const spacing = editorScoreStringSpacing(barHeads) ?? 10
+        centerX = ownHeads[0]
+            ? ownHeads[0].rect.x + ownHeads[0].rect.w / 2
+            : bounds.realBounds.x + bounds.realBounds.w / 2
+        centerY = reference.centerY + (selectedString - reference.string) * spacing
+    }
+
+    if (!Number.isFinite(centerX) || !Number.isFinite(centerY)) return
     if (!caret) {
         caret = document.createElement('div')
         caret.className = 'tab-editor-score-caret'
@@ -41,15 +103,11 @@ function updateEditorScoreCaret(element, api) {
         element.appendChild(caret)
     }
     caret.classList.toggle('is-insertion', Boolean(insertion))
-    // Highlight a readable tab cell rather than drawing another playhead.
-    // Center around the selected note head; empty-string selections use the
-    // beat's visual bounds so the caret remains visible.
-    const width = Math.max(25, Math.min(40, rect.w + 12))
-    const height = Math.max(24, Math.min(34, rect.h + 8))
-    caret.style.left = `${rect.x + (insertion ? rect.w : rect.w / 2)}px`
-    caret.style.top = `${rect.y + rect.h / 2}px`
-    caret.style.width = `${width}px`
-    caret.style.height = `${height}px`
+    caret.style.left = `${centerX + (insertion ? 14 : 0)}px`
+    caret.style.top = `${centerY}px`
+    // Fit a TAB number without obscuring its neighbors or the notation.
+    caret.style.width = '23px'
+    caret.style.height = '21px'
 }
 
 // Track the actual score loaded into an alphaTab instance, not just its dataset.
