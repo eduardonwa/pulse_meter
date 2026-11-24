@@ -72,6 +72,15 @@
 
         cursor: pointer;
 
+        .tab-editor__legato-mark {
+            position: absolute;
+            top: -4px;
+            right: 1px;
+            font-size: 10px;
+            font-weight: 800;
+            color: hsl(var(--primary-800));
+        }
+
         &.is-insertion {
             color: hsl(var(--primary-800));
             background: hsl(var(--primary-200) / .35);
