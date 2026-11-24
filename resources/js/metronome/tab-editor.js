@@ -45,8 +45,17 @@ export function tabEditor() {
         if (!['grid', 'score'].includes(view) || this.tabScoreView === view) return
         this.tabScoreView = view
         this.$nextTick(() => {
-            if (view === 'score') this.renderTabScorePreview()
-            else this.updateTabEditorWidth()
+            if (view === 'score') {
+                if (!this.tabDraft.beats.length) {
+                    // A new score starts with one editable measure.
+                    this.tabDraft = { ...this.tabDraft, beats: [{ rest: true, duration: 1 }], breaks: [] }
+                    this.selectTabEditorCell(0, this.tabDraft.string)
+                } else if (this.tabSelectedIndex >= this.tabDraft.beats.length) {
+                    this.selectTabEditorCell(this.tabDraft.beats.length - 1, this.tabDraft.string)
+                }
+                this.renderTabScorePreview()
+                this.$refs.tabEditorScoreKeyboard?.focus()
+            } else this.updateTabEditorWidth()
             this.syncTabEditorScoreCaret()
         })
     },
