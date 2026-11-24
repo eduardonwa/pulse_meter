@@ -10,6 +10,9 @@ import {
     toggleTabLegato,
     normalizeTabLegato,
     toggleTabPalmMute,
+    tabTieSource,
+    toggleTabTie,
+    normalizeTabTies,
 } from '../../resources/js/metronome/alphatab/tab-editor.js'
 
 const sevenEighthNotes = {
@@ -181,4 +184,45 @@ test('palm mute acts on selected notes and ignores rests', () => {
     assert.equal(off[0].palmMute, false)
     assert.equal(off[2].palmMute, false)
     assert.deepEqual(toggleTabPalmMute(beats, [1]), beats)
+})
+
+test('tied destination round-trips through AlphaTex across a barline', () => {
+    const draft = {
+        ...createTabDraft(),
+        breaks: [2],
+        beats: [
+            { fret: 5, string: 6, duration: 2 },
+            { fret: 4, string: 6, duration: 2 },
+            { fret: 4, string: 6, duration: 8, tie: true },
+            { rest: true, duration: 8 },
+        ],
+    }
+    assert.equal(tabTieSource(draft.beats, 2), 1)
+    const alphaTex = serializeTabDraft(draft)
+    assert.ok(alphaTex.includes('4.6{t}'))
+    assert.deepEqual(parseTabDraft(alphaTex).draft.beats, draft.beats)
+    assert.equal(playbackAlphaTex(alphaTex), alphaTex)
+})
+
+test('tie toggles on destination note and rejects different pitches and rests', () => {
+    const beats = [{ fret: 4, string: 6, duration: 8 }, { fret: 4, string: 6, duration: 16 }]
+    assert.equal(toggleTabTie(beats, 1)[1].tie, true)
+    assert.equal(toggleTabTie(toggleTabTie(beats, 1), 1)[1].tie, false)
+    assert.throws(() => toggleTabTie(beats, 0), RangeError)
+    assert.throws(() => toggleTabTie([beats[0], { ...beats[1], fret: 5 }], 1), RangeError)
+    assert.throws(() => toggleTabTie([beats[0], { rest: true, duration: 16 }], 1), RangeError)
+    assert.equal(normalizeTabTies([beats[0], { ...beats[1], fret: 5, tie: true }])[1].tie, undefined)
+})
+
+test('tie and palm mute round-trip on the same destination note', () => {
+    const draft = {
+        ...createTabDraft(),
+        beats: [
+            { fret: 4, string: 6, duration: 4 },
+            { fret: 4, string: 6, duration: 4, palmMute: true, tie: true },
+        ],
+    }
+    const alphaTex = serializeTabDraft(draft)
+    assert.ok(alphaTex.includes('4.6{pm t}'))
+    assert.deepEqual(parseTabDraft(alphaTex).draft.beats, draft.beats)
 })
