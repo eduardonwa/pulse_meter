@@ -49,11 +49,6 @@
             >
                 <div class="tab-editor__utility-row">
                     <div class="tab-editor__utility-actions">
-                        <label class="button" data-type="secondary" data-variant="outline">
-                            Import MusicXML
-                            <input type="file" accept=".xml,.musicxml,application/xml,text/xml"
-                                @change="importPrototypeMusicXml($event)" class="sr-only">
-                        </label>
 
                         <button class="button" data-type="outline" type="button"
                             aria-controls="tab-editor-info-panel"
@@ -118,6 +113,11 @@
                             </div>
                         </div>
                     </div>
+                    <label class="button" data-type="secondary" data-variant="outline">
+                        Import MusicXML
+                        <input type="file" accept=".xml,.musicxml,application/xml,text/xml"
+                            @change="importPrototypeMusicXml($event)" class="sr-only">
+                    </label>
                 </div>
 
                 <div id="tab-editor-info-panel" class="tab-editor__info-panel"
