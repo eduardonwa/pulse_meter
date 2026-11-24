@@ -30,6 +30,10 @@ export function tabEditor() {
             this.tabScorePreviewError = error?.message || 'Unable to render this tablature.'
             return
         }
+        // A render-only update replaces the score in the same AlphaTab
+        // instance; the next Play must load its current audio, not resume
+        // a cached version of the previous draft.
+        this.prototypePlaybackScore = null
         window.dispatchEvent(new CustomEvent('alphatab:preview-draft', {
             detail: { element, alphaTex, bpm: Number(this.stepForm.bpm),
                 instrument: this.tabDraft.instrument, renderOnly: true },
