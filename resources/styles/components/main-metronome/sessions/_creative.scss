@@ -492,6 +492,14 @@
                 margin-inline: -$size-4;
                 padding-inline: $size-4;
             }
+
+            @include mq(large) {
+                padding: $size-4 0;
+
+                > * {
+                    margin-inline: 0;
+                }
+            }
         }
 
         > div:not(.creative-transport) {
