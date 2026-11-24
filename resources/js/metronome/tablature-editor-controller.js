@@ -548,7 +548,7 @@ export function tablatureEditorMethods() {
                 beats.splice(index, 1);
                 breaks = updateTabBreaks(breaks, index, 'delete', beats.length);
             }
-            if (!beats.length && this.tabScoreView === 'score') beats.push({ rest: true, duration: 1 });
+            if (!beats.length) beats.push({ rest: true, duration: 1 });
             this.tabDraft = { ...this.tabDraft, beats: normalizeTabTies(normalizeTabLegato(beats)), breaks };
             this.selectTabEditorCell(Math.min(selected.at(-1), beats.length - 1), this.tabDraft.string);
         },
