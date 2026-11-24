@@ -7,6 +7,7 @@
     @alphatab:score-started.window="startPrototypeScorePlayhead($event)"
     @alphatab:playback-finished.window="finishPrototypePlayback($event)"
     @alphatab:load-error.window="prototypePlaybackError($event)"
+    @alphatab:editor-select.window="selectTabEditorScoreBeat($event)"
 >
     {{-- Display toasts inside the modal's top layer while it is open. --}}
     <div class="toaster" data-align="bottom" data-pos="right" aria-live="polite" aria-atomic="true">
@@ -347,7 +348,7 @@
                 
                 <span x-ref="tabEditorScoreFocus" class="sr-only" tabindex="-1">Tab keyboard controls</span>
                 <div class="tab-editor__score-preview" x-show="!tabFullMusicXml && tabScoreView === 'score'" x-cloak>
-                    <p class="tab-editor__score-preview-hint">Score preview · Edit notes in Grid for now.</p>
+                    <p class="tab-editor__score-preview-hint">Score editor · Click a note, then use the keyboard or tools.</p>
                     <p class="tab-editor__score-preview-error" role="status" x-show="tabScorePreviewError" x-text="tabScorePreviewError"></p>
                     <p class="tab-editor__score-preview-empty" x-show="!tabDraft.beats.length">Add notes in Grid to see your score here.</p>
                 </div>
