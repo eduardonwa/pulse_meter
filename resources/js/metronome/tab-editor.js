@@ -6,6 +6,35 @@ export function tabEditor() {
     return {
     prototypeMessage: '',
     prototypeMessageType: 'success',
+    tabScoreView: 'grid',
+    tabScorePreviewError: '',
+    setTabScoreView(view) {
+        if (!['grid', 'score'].includes(view) || this.tabScoreView === view) return
+        this.tabScoreView = view
+        if (view === 'score') this.$nextTick(() => this.renderTabScorePreview())
+        else this.$nextTick(() => this.updateTabEditorWidth())
+    },
+    renderTabScorePreview() {
+        if (this.tabScoreView !== 'score' || this.tabFullMusicXml) return
+        const element = this.$refs.tabEditorPreview
+        if (!element) return
+        this.tabScorePreviewError = ''
+        if (!this.tabDraft.beats.length) return
+        let alphaTex
+        try {
+            alphaTex = serializeTabDraft(this.tabDraft,
+                this.stepForm.time_signature_numerator,
+                Number(this.stepForm.bpm),
+                this.stepForm.time_signature_denominator)
+        } catch (error) {
+            this.tabScorePreviewError = error?.message || 'Unable to render this tablature.'
+            return
+        }
+        window.dispatchEvent(new CustomEvent('alphatab:preview-draft', {
+            detail: { element, alphaTex, bpm: Number(this.stepForm.bpm),
+                instrument: this.tabDraft.instrument, renderOnly: true },
+        }))
+    },
     redesignTransportStorageKey() {
         const index = this.tabEditorEditingIndex
         const step = index === null ? null : this.steps[index]
@@ -13,6 +42,8 @@ export function tabEditor() {
         return 'dorelog:tab-editor:transport-v1:' + id
     },
     prepareRedesignEditor() {
+        this.tabScoreView = 'grid'
+        this.tabScorePreviewError = ''
         this.prototypeMessage = ''
         this.prototypeMessageType = 'success'
         this.prototypePlaying = false
