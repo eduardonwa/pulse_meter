@@ -205,7 +205,7 @@
             </section>
 
             {{-- main editing area --}}
-            <section class="tab-editor__workspace" aria-label="Tablature workspace"
+            <section class="tab-editor__workspace" :class="{ 'is-imported-score': Boolean(tabFullMusicXml) }" aria-label="Tablature workspace"
                 x-init="$nextTick(() => updateTabEditorWidth()); $watch('tabDraft', () => { if (tabScoreView === 'score') $nextTick(() => renderTabScorePreview()) }); $watch('stepForm.bpm', () => { if (tabScoreView === 'score') $nextTick(() => renderTabScorePreview()) }); $watch('stepForm.time_signature_numerator', () => { if (tabScoreView === 'score') $nextTick(() => renderTabScorePreview()) }); $watch('stepForm.time_signature_denominator', () => { if (tabScoreView === 'score') $nextTick(() => renderTabScorePreview()) })"
                 @keydown="handleTabEditorKey($event)"
                 @resize.window="updateTabEditorWidth()"
