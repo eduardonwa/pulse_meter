@@ -93,3 +93,45 @@ test('validation log lists only incomplete and overfull measures with reasons', 
     assert.match(issues[1].message, /Measure 3: .* over limit/)
     assert.equal(instance.tabEditorMeasureWarnings()[0].status, 'complete')
 })
+
+test('adding a sixteenth rest at the final + completes a measure with one unit remaining', () => {
+    const instance = editor()
+    instance.stepForm = { time_signature_numerator: 4, time_signature_denominator: 4 }
+    instance.tabDraft = {
+        ...createTabDraft(),
+        duration: 16,
+        beats: [
+            ...Array.from({ length: 7 }, (_, fret) => ({ fret, string: 6, duration: 8 })),
+            { fret: 7, string: 6, duration: 16 },
+        ],
+        breaks: [],
+    }
+    assert.equal(instance.tabEditorMeasureLayout()[0].used, 15)
+    const slot = instance.tabEditorDisplayColumns().at(-1)
+    assert.deepEqual(slot, { index: 8, insertion: true, measureEnd: true })
+    instance.selectTabEditorInsertion(slot.index, 6)
+    instance.addTabEditorRest()
+    assert.equal(instance.tabDraft.beats.length, 9)
+    assert.deepEqual(instance.tabDraft.beats[8], { rest: true, duration: 16 })
+    assert.equal(instance.tabEditorMeasureLayout()[0].used, 16)
+    assert.equal(instance.tabEditorMeasureStatus(), '1 measure(s) · all complete')
+})
+
+test('inserting a final rest clears inherited triplet when only a sixteenth remains', () => {
+    const instance = editor()
+    instance.stepForm = { time_signature_numerator: 4, time_signature_denominator: 4 }
+    instance.tabDraft = {
+        ...createTabDraft(),
+        duration: 16,
+        tuplet: 3,
+        beats: [
+            ...Array.from({ length: 7 }, (_, fret) => ({ fret, string: 6, duration: 8 })),
+            { fret: 7, string: 6, duration: 16 },
+        ],
+        breaks: [],
+    }
+    instance.selectTabEditorInsertion(8, 6)
+    instance.addTabEditorRest()
+    assert.deepEqual(instance.tabDraft.beats.at(-1), { rest: true, duration: 16 })
+    assert.equal(instance.tabEditorMeasureStatus(), '1 measure(s) · all complete')
+})
