@@ -263,15 +263,34 @@
 
                 <aside class="tab-editor__rhythm" x-show="!tabFullMusicXml" aria-label="Tablature tools"
                     x-data="{
-                        dockObserver: null,
+                        paletteObserver: null,
+                        updatePaletteHeight: null,
+                        paletteDialog: null,
                         init() {
-                            const dock = this.$el.closest('.tab-editor').querySelector('.tab-editor__bottom-dock');
-                            const update = () => this.$el.style.setProperty('--tab-editor-dock-height', dock.offsetHeight + 'px');
-                            this.dockObserver = new ResizeObserver(update);
-                            this.dockObserver.observe(dock);
-                            update();
+                            const palette = this.$el;
+                            const dialog = palette.closest('dialog');
+                            const dock = palette.closest('.tab-editor').querySelector('.tab-editor__bottom-dock');
+                            this.paletteDialog = dialog;
+                            this.updatePaletteHeight = () => {
+                                if (!palette.getClientRects().length) return;
+                                const top = Math.max(palette.getBoundingClientRect().top, dialog.getBoundingClientRect().top, 0);
+                                const bottom = Math.min(dock.getBoundingClientRect().top, dialog.getBoundingClientRect().bottom, window.innerHeight);
+                                palette.style.setProperty('--tab-editor-palette-height', Math.max(0, bottom - top) + 'px');
+                            };
+                            this.paletteObserver = new ResizeObserver(this.updatePaletteHeight);
+                            this.paletteObserver.observe(dialog);
+                            this.paletteObserver.observe(dock);
+                            this.paletteObserver.observe(palette.closest('.tab-editor__workspace').querySelector('.tab-editor__edit-toolbar'));
+                            this.paletteObserver.observe(palette.closest('.tab-editor').querySelector('.tab-editor__utility-bar'));
+                            dialog.addEventListener('scroll', this.updatePaletteHeight, { passive: true });
+                            window.addEventListener('resize', this.updatePaletteHeight);
+                            this.$nextTick(this.updatePaletteHeight);
                         },
-                        destroy() { this.dockObserver?.disconnect(); }
+                        destroy() {
+                            this.paletteObserver?.disconnect();
+                            this.paletteDialog?.removeEventListener('scroll', this.updatePaletteHeight);
+                            window.removeEventListener('resize', this.updatePaletteHeight);
+                        }
                     }">
                     <details class="tab-editor__palette-section" open>
                         <summary class="tab-editor__palette-heading">Rhythm<x-lucide-chevron-down aria-hidden="true" /></summary>
