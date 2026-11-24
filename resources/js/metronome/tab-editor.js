@@ -6,7 +6,7 @@ export function tabEditor() {
     return {
     prototypeMessage: '',
     prototypeMessageType: 'success',
-    tabScoreView: 'grid',
+    tabScoreView: 'score',
     tabScorePreviewError: '',
     tabScoreRenderedKey: '',
     syncTabEditorScoreCaret() {
@@ -44,23 +44,27 @@ export function tabEditor() {
             } },
         }))
     },
+    initializeTabScoreView() {
+        this.stopPrototypePlayheadAnimation()
+        if (!this.tabDraft.beats.length) {
+            this.tabDraft = { ...this.tabDraft, beats: [{ rest: true, duration: 1 }], breaks: [] }
+            this.selectTabEditorCell(0, this.tabDraft.string)
+        } else if (this.tabSelectedIndex >= this.tabDraft.beats.length) {
+            this.selectTabEditorCell(this.tabDraft.beats.length - 1, this.tabDraft.string)
+        }
+        this.renderTabScorePreview()
+        this.$refs.tabEditorScoreKeyboard?.focus({ preventScroll: true })
+        this.syncTabEditorScoreCaret()
+    },
     setTabScoreView(view) {
         if (!['grid', 'score'].includes(view) || this.tabScoreView === view) return
         this.tabScoreView = view
         this.$nextTick(() => {
-            if (view === 'score') {
-                this.stopPrototypePlayheadAnimation()
-                if (!this.tabDraft.beats.length) {
-                    // A new score starts with one editable measure.
-                    this.tabDraft = { ...this.tabDraft, beats: [{ rest: true, duration: 1 }], breaks: [] }
-                    this.selectTabEditorCell(0, this.tabDraft.string)
-                } else if (this.tabSelectedIndex >= this.tabDraft.beats.length) {
-                    this.selectTabEditorCell(this.tabDraft.beats.length - 1, this.tabDraft.string)
-                }
-                this.renderTabScorePreview()
-                this.$refs.tabEditorScoreKeyboard?.focus()
-            } else this.updateTabEditorWidth()
-            this.syncTabEditorScoreCaret()
+            if (view === 'score') this.initializeTabScoreView()
+            else {
+                this.updateTabEditorWidth()
+                this.syncTabEditorScoreCaret()
+            }
         })
     },
     renderTabScorePreview() {
@@ -97,7 +101,7 @@ export function tabEditor() {
         return 'dorelog:tab-editor:transport-v1:' + id
     },
     prepareRedesignEditor() {
-        this.tabScoreView = 'grid'
+        this.tabScoreView = 'score'
         this.tabScorePreviewError = ''
         this.tabScoreRenderedKey = ''
         this.prototypeMessage = ''
