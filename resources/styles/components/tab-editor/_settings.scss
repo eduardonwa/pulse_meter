@@ -36,6 +36,13 @@
         flex-wrap: wrap;
     }
 
+    // Keep Info and Shortcuts in their own row, aligned with BPM on desktop.
+    @include mq(large) {
+        &__utility-row {
+            margin-inline-start: calc(180px + 1rem);
+        }
+    }
+
     &__field {
         display: flex;
         gap: $size-2;
