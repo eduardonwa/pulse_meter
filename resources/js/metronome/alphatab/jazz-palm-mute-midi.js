@@ -41,8 +41,8 @@ export function routeJazzPalmMuteMidi(file, score, midi) {
         }
     }
     if (switched) {
-        // Insert before tick-zero note-ons; this only affects this MIDI file.
-        events.unshift(new midi.ProgramChangeEvent(0, 0, mutedChannel, 43))
+        // Insert into the real MidiFile, not a merged events snapshot.
+        file.addEvent(new midi.ProgramChangeEvent(0, 0, mutedChannel, 43))
     }
     return switched
 }

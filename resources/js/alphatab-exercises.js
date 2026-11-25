@@ -248,7 +248,6 @@ const routineLoopModes = new WeakMap()
 // Editor previews have independent, per-element transport controls.
 // Routine/practice preference functions remain unchanged.
 const editorPreviewOptions = new WeakMap()
-const editorJazzMutePreviews = new WeakMap()
 function applyEditorPreviewOptions(element, api) {
     const options = editorPreviewOptions.get(element)
     if (!options || !api) return false
@@ -520,7 +519,7 @@ async function mountAlphaTab(element) {
         if (isAdminPreview) {
             // The audition selection is transient and never changes saved AlphaTex.
             api.midiLoad.on(file => {
-                if (editorJazzMutePreviews.get(api) !== true) return
+                if (element.dataset.jazzPalmMuteTest !== 'true') return
                 routeJazzPalmMuteMidi(file, api.score, alphaTab.midi)
             })
         }
@@ -670,6 +669,7 @@ window.addEventListener('alphatab:preview-draft', async event => {
         ? null : Number(guitarBankTestPreset)
     const testProgram = !musicXml && play && testPrograms.has(requestedTestProgram)
         ? requestedTestProgram : null
+    element.dataset.jazzPalmMuteTest = testProgram === 35 ? 'true' : 'false'
     const desiredFont = testProgram !== null
         ? '/soundfont/dorelog-6.sf3'
         : musicXml ? '/soundfont/sonivox.sf2' : guitarFontForInstrument(selectedInstrument)
@@ -697,7 +697,6 @@ window.addEventListener('alphatab:preview-draft', async event => {
     element.dataset.bpm = String(Number(bpm) || 100)
 
     // Mount if needed, then replace the score on subsequent previews.
-    const alreadyMounted = instances.has(element)
     let api
     try {
         api = await mountAlphaTab(element)
@@ -711,10 +710,9 @@ window.addEventListener('alphatab:preview-draft', async event => {
     if (!api || !element.isConnected || playbackRequests.get(element) !== request || playbackGeneration !== request) return
 
     if (activeApi && activeApi !== api) activeApi.stop()
-    editorJazzMutePreviews.set(api, testProgram === 35)
     activeApi = api
     const scoreKey = musicXml ?? pattern
-    if (alreadyMounted && editorLoadedScores.get(element) !== scoreKey) {
+    if (editorLoadedScores.get(element) !== scoreKey) {
         api.stop()
         if (musicXml) {
             // Native file loading is asynchronous. Never play the previous
