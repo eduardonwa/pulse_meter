@@ -5,7 +5,6 @@ export const CUSTOM_GUITAR_FONTS = {
     29: '/soundfont/dorelog-6.sf3',
     30: '/soundfont/dorelog-6.sf3',
     31: '/soundfont/dorelog-6.sf3',
-    32: '/soundfont/steel-gtr.sf2',
 }
 
 export const GUITAR_PLAYBACK_PROGRAMS = {
@@ -13,7 +12,6 @@ export const GUITAR_PLAYBACK_PROGRAMS = {
     29: 49, // Overdrive GU DynPick
     30: 55, // Dist SG Dynamic
     31: 35, // Jazz Guitar GU
-    32: 0,  // Steel Guitar custom SF2
 }
 
 export function guitarFontForInstrument(instrument) {
