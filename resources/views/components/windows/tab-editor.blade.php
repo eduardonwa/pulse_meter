@@ -141,11 +141,13 @@
                     </label>
                     @if(app()->environment('local'))
                         <label class="tab-editor__field">
-                            <span>Jazz SF3 test (playback only)</span>
+                            <span>Dorelog GTRS SF3 test (playback only)</span>
                             <select :value="guitarBankTestPreset" @change="selectGuitarBankTestPreset($event.target.value)">
                                 <option value="">Off (use instrument above)</option>
                                 <option value="35">Jazz Guitar GU</option>
                                 <option value="43">Muted Guitar GU</option>
+                                <option value="49">Overdrive GU DynPick</option>
+                                <option value="55">Dist SG Dynamic</option>
                             </select>
                         </label>
                     @endif

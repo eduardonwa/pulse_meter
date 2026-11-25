@@ -11,7 +11,7 @@ export function tabEditor() {
     // Local-only Jazz SoundFont audition; not saved in the tab draft.
     guitarBankTestPreset: '',
     selectGuitarBankTestPreset(value) {
-        const allowed = ['', '35', '43']
+        const allowed = ['', '35', '43', '49', '55']
         if (!allowed.includes(value)) return
         this.stopPrototypePlayback()
         this.guitarBankTestPreset = value

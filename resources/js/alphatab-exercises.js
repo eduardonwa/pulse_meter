@@ -655,7 +655,7 @@ window.addEventListener('alphatab:preview-draft', async event => {
     const request = ++playbackGeneration
     playbackRequests.set(element, request)
     const selectedInstrument = Number(instrument ?? scoreGuitarInstrument(alphaTex))
-    const testPrograms = new Set([35, 43])
+    const testPrograms = new Set([35, 43, 49, 55])
     const requestedTestProgram = guitarBankTestPreset === '' || guitarBankTestPreset == null
         ? null : Number(guitarBankTestPreset)
     const testProgram = !musicXml && play && testPrograms.has(requestedTestProgram)
