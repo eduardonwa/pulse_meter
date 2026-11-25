@@ -634,7 +634,7 @@ function selectEditorFont(api, url) {
 }
 
 window.addEventListener('alphatab:preview-draft', async event => {
-    const { element, alphaTex, musicXml, bpm, play, instrument, transportOptions, renderOnly, guitarBankTestPreset, guitarBankTestFormat } = event.detail ?? {}
+    const { element, alphaTex, musicXml, bpm, play, instrument, transportOptions, renderOnly, guitarBankTestPreset } = event.detail ?? {}
     if (!element) return
 
     if (!play && !renderOnly) {
@@ -655,13 +655,13 @@ window.addEventListener('alphatab:preview-draft', async event => {
     const request = ++playbackGeneration
     playbackRequests.set(element, request)
     const selectedInstrument = Number(instrument ?? scoreGuitarInstrument(alphaTex))
-    const testPrograms = new Set([7, 8, 9, 12, 13, 14, 15, 35, 43, 49, 55])
+    const testPrograms = new Set([35, 43])
     const requestedTestProgram = guitarBankTestPreset === '' || guitarBankTestPreset == null
         ? null : Number(guitarBankTestPreset)
     const testProgram = !musicXml && play && testPrograms.has(requestedTestProgram)
         ? requestedTestProgram : null
     const desiredFont = testProgram !== null
-        ? (guitarBankTestFormat === 'sf3' ? '/soundfont/dorelog-6.sf3' : '/soundfont/dorelog-50.sf2')
+        ? '/soundfont/dorelog-6.sf3'
         : musicXml ? '/soundfont/sonivox.sf2' : guitarFontForInstrument(selectedInstrument)
     let pattern = alphaTex
         ? soundFontPlaybackTex(applyMetadata(editorPreviewAlphaTex(alphaTex, element.dataset.scoreEditable === 'true'), {
