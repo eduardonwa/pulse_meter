@@ -3,6 +3,7 @@ import { editorPreviewAlphaTex } from './metronome/alphatab/tab-editor.js'
 import { guitarFontForInstrument, scoreGuitarInstrument, soundFontPlaybackTex } from './metronome/alphatab/soundfont-instruments.js'
 import { installMidiReloadListener, loadReplacementMusicXml } from './metronome/alphatab/midi-reload.js'
 import { fixAlphaTabMidiInfoGetter } from './metronome/alphatab/fix-midi-info-getter.js'
+import { routeJazzPalmMuteMidi } from './metronome/alphatab/jazz-palm-mute-midi.js'
 let alphaTabModule = null
 let activeApi = null
 
@@ -247,6 +248,7 @@ const routineLoopModes = new WeakMap()
 // Editor previews have independent, per-element transport controls.
 // Routine/practice preference functions remain unchanged.
 const editorPreviewOptions = new WeakMap()
+const editorJazzMutePreviews = new WeakMap()
 function applyEditorPreviewOptions(element, api) {
     const options = editorPreviewOptions.get(element)
     if (!options || !api) return false
@@ -515,6 +517,14 @@ async function mountAlphaTab(element) {
             )
         })
 
+        if (isAdminPreview) {
+            // The audition selection is transient and never changes saved AlphaTex.
+            api.midiLoad.on(file => {
+                if (editorJazzMutePreviews.get(api) !== true) return
+                routeJazzPalmMuteMidi(file, api.score, alphaTab.midi)
+            })
+        }
+
         // Register before any MIDI is loaded: adding a midiLoaded listener later
         // triggers alphaTab 1.8.4's recursive loadedMidiInfo getter.
         installMidiReloadListener(api)
@@ -701,6 +711,7 @@ window.addEventListener('alphatab:preview-draft', async event => {
     if (!api || !element.isConnected || playbackRequests.get(element) !== request || playbackGeneration !== request) return
 
     if (activeApi && activeApi !== api) activeApi.stop()
+    editorJazzMutePreviews.set(api, testProgram === 35)
     activeApi = api
     const scoreKey = musicXml ?? pattern
     if (alreadyMounted && editorLoadedScores.get(element) !== scoreKey) {
