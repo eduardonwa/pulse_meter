@@ -2,7 +2,7 @@
 
 .tab-editor {
     &__utility-bar {
-        padding: $size-3;
+        padding: $size-4 $size-3;
         border-block: 1px solid hsl(var(--neutral-800) / .2);
     }
 
