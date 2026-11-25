@@ -2,7 +2,7 @@
 
 .tab-editor {
     &__utility-bar {
-        padding: $size-3;
+        padding: $size-4 $size-3;
         border-block: 1px solid hsl(var(--neutral-800) / .2);
     }
 
@@ -34,6 +34,24 @@
     &__utility-actions {
         align-items: center;
         flex-wrap: wrap;
+    }
+
+    // The utility buttons and their expanded Info fields occupy separate
+    // rows above the score, but share the same left edge as BPM on desktop.
+    @include mq(large) {
+        &__utility-row,
+        &__info-panel {
+            margin-inline-start: calc(180px + 1rem);
+        }
+
+        // Exercise name fills the row; the instrument only needs its own width.
+        &__info-panel {
+            grid-template-columns: minmax(0, 1fr) max-content;
+
+            > .tab-editor__field:last-child {
+                width: max-content;
+            }
+        }
     }
 
     &__field {
@@ -102,9 +120,6 @@
             grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
             gap: $size-3;
             
-            padding-block-start: $size-3;
-            margin-block-start: $size-3;
-            border-block-start: 1px solid hsl(var(--neutral-800) / .15);
         }
 
         &__shortcuts {
