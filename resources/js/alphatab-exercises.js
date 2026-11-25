@@ -1,4 +1,3 @@
-import distortionGuitarSoundFontUrl from '@dsebastien/music-notation-sounds/generaluser/p030.sf3?url'
 import { isAlphaTabCountInEnabled } from './metronome/alphatab/count-in-preference.js'
 import { editorPreviewAlphaTex } from './metronome/alphatab/tab-editor.js'
 import { installMidiReloadListener, loadReplacementMusicXml } from './metronome/alphatab/midi-reload.js'
@@ -619,17 +618,19 @@ function hasDistortionInstrument(alphaTex) {
 }
 function ensureDistortionSoundFont(api) {
     if (!distortionFontLoads.has(api)) {
-        const loading = new Promise((resolve, reject) => {
-            const complete = () => resolve()
-            api.soundFontLoaded.on(complete)
-            try {
-                if (!api.loadSoundFont(distortionGuitarSoundFontUrl, true)) {
-                    reject(new Error('Could not start loading GeneralUser distortion guitar'))
+        const loading = (async () => {
+            const { default: url } = await import('@dsebastien/music-notation-sounds/generaluser/p030.sf3?url')
+            await new Promise((resolve, reject) => {
+                api.soundFontLoaded.on(resolve)
+                try {
+                    if (!api.loadSoundFont(url, true)) {
+                        reject(new Error('Could not start loading GeneralUser distortion guitar'))
+                    }
+                } catch (error) {
+                    reject(error)
                 }
-            } catch (error) {
-                reject(error)
-            }
-        })
+            })
+        })()
         distortionFontLoads.set(api, loading)
         loading.catch(() => distortionFontLoads.delete(api))
     }
