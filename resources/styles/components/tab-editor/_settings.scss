@@ -43,6 +43,15 @@
         &__info-panel {
             margin-inline-start: calc(180px + 1rem);
         }
+
+        // Exercise name fills the row; the instrument only needs its own width.
+        &__info-panel {
+            grid-template-columns: minmax(0, 1fr) max-content;
+
+            > .tab-editor__field:last-child {
+                width: max-content;
+            }
+        }
     }
 
     &__field {
