@@ -1,12 +1,13 @@
-// Route Jazz palm-muted attacks to the dedicated muted preset on a separate
-// MIDI channel. Using a second channel avoids cutting off sustained clean notes.
-export function routeJazzPalmMuteMidi(file, score, midi) {
+// Route palm-muted attacks to a dedicated guitar preset on a separate MIDI
+// channel, avoiding interruption of sustained unmuted notes.
+// Jazz: 43; Overdrive: 50. No changes to Distortion.
+export function routeJazzPalmMuteMidi(file, score, midi, mutedProgram = 43) {
     const beats = score?.tracks?.[0]?.staves?.[0]?.bars?.flatMap(bar =>
         bar.voices?.flatMap(voice => voice.beats ?? []) ?? []) ?? []
     const mutedTicks = new Set(beats
         .filter(beat => beat.notes?.some(note => note.isPalmMute))
         .map(beat => beat.absolutePlaybackStart + (file.tickShift ?? 0)))
-    if (!mutedTicks.size) return 0
+    if (!mutedTicks.size || ![43, 50].includes(mutedProgram)) return 0
 
     const events = file.events
     const usedChannels = new Set(events
@@ -20,7 +21,6 @@ export function routeJazzPalmMuteMidi(file, score, midi) {
     // channel where their matching attack was sent.
     const active = new Map()
     let switched = 0
-    let sourceChannel = null
     for (const event of events) {
         if (event.type !== midi.MidiEventType.NoteOn &&
             event.type !== midi.MidiEventType.NoteOff) continue
@@ -31,7 +31,6 @@ export function routeJazzPalmMuteMidi(file, score, midi) {
             if (!active.has(key)) active.set(key, [])
             active.get(key).push(useMuted)
             if (useMuted) {
-                sourceChannel ??= event.channel
                 event.channel = mutedChannel
                 switched++
             }
@@ -42,7 +41,7 @@ export function routeJazzPalmMuteMidi(file, score, midi) {
     }
     if (switched) {
         // Insert into the real MidiFile, not a merged events snapshot.
-        file.addEvent(new midi.ProgramChangeEvent(0, 0, mutedChannel, 43))
+        file.addEvent(new midi.ProgramChangeEvent(0, 0, mutedChannel, mutedProgram))
     }
     return switched
 }

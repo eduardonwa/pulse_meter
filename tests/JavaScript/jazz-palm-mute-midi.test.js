@@ -43,3 +43,19 @@ test('leaves scores without palm mute untouched', () => {
     assert.equal(routeJazzPalmMuteMidi({ events }, { tracks: [] }, midi), 0)
     assert.equal(events.length, 1)
 })
+
+test('routes Overdrive palm mute through preset 50', () => {
+    const events = [note(128, 480, 52), note(144, 720, 52, 0)]
+    const file = { events, addEvent(event) { this.events.unshift(event) } }
+    assert.equal(routeJazzPalmMuteMidi(file, score(), midi, 50), 1)
+    assert.equal(events[0].program, 50)
+    assert.equal(events[1].channel, 15)
+    assert.equal(events[2].channel, 15)
+})
+
+test('rejects a muted preset outside the approved audition presets', () => {
+    const events = [note(128, 480, 52)]
+    const file = { events, addEvent() { throw Error('should not add program') } }
+    assert.equal(routeJazzPalmMuteMidi(file, score(), midi, 55), 0)
+    assert.equal(events[0].channel, 0)
+})

@@ -519,8 +519,9 @@ async function mountAlphaTab(element) {
         if (isAdminPreview) {
             // The audition selection is transient and never changes saved AlphaTex.
             api.midiLoad.on(file => {
-                if (element.dataset.jazzPalmMuteTest !== 'true') return
-                routeJazzPalmMuteMidi(file, api.score, alphaTab.midi)
+                const mutedProgram = Number(element.dataset.guitarPalmMuteProgram)
+                if (mutedProgram !== 43 && mutedProgram !== 50) return
+                routeJazzPalmMuteMidi(file, api.score, alphaTab.midi, mutedProgram)
             })
         }
 
@@ -669,9 +670,12 @@ window.addEventListener('alphatab:preview-draft', async event => {
         ? null : Number(guitarBankTestPreset)
     const testProgram = !musicXml && play && testPrograms.has(requestedTestProgram)
         ? requestedTestProgram : null
-    element.dataset.jazzPalmMuteTest = testProgram === 35 ? 'true' : 'false'
+    // Jazz uses preset 43; Overdrive uses the newly isolated preset 50.
+    // This stays preview-only until we validate the SF3 in the browser.
+    element.dataset.guitarPalmMuteProgram = testProgram === 35 ? '43'
+        : testProgram === 49 ? '50' : ''
     const desiredFont = testProgram !== null
-        ? '/soundfont/dorelog-6.sf3'
+        ? '/soundfont/dorelog-6-v2.sf3'
         : musicXml ? '/soundfont/sonivox.sf2' : guitarFontForInstrument(selectedInstrument)
     let pattern = alphaTex
         ? soundFontPlaybackTex(applyMetadata(editorPreviewAlphaTex(alphaTex, element.dataset.scoreEditable === 'true'), {
