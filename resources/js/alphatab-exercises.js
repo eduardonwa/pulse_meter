@@ -612,6 +612,10 @@ window.addEventListener('alphatab:update', async event => {
 // Keep the preferred acoustic preset at program 0.
 const auditionFonts = {
     acoustic: { url: '/soundfont/acoustic.sf2', program: 0 },
+    'steel-gtr': { url: '/soundfont/steel-gtr.sf2', program: 0 },
+    'power-gtr': { url: '/soundfont/power-gtr.sf2', program: 0 },
+    'overdrive-gtr': { url: '/soundfont/overdrive-gtr.sf2', program: 0 },
+    'metal-master': { url: '/soundfont/metal-master.sf2', program: 0 },
 }
 const auditionFontStates = new WeakMap()
 
