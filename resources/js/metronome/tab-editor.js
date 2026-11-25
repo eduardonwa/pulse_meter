@@ -8,6 +8,12 @@ export function tabEditor() {
     prototypeMessageType: 'success',
     tabScorePreviewError: '',
     tabScoreRenderedKey: '',
+    experimentalSound: '',
+    selectEditorInstrument(value) {
+        this.stopPrototypePlayback()
+        this.experimentalSound = ['overdrive', 'snes58', 'snes84'].includes(value) ? value : ''
+        if (!this.experimentalSound) this.tabDraft.instrument = Number(value)
+    },
     syncTabEditorScoreCaret() {
         const element = this.$refs?.tabEditorPreview
         if (!element || typeof window === 'undefined') return
@@ -88,6 +94,7 @@ export function tabEditor() {
         return 'dorelog:tab-editor:transport-v1:' + id
     },
     prepareRedesignEditor() {
+        this.experimentalSound = ''
         this.tabScorePreviewError = ''
         this.tabScoreRenderedKey = ''
         this.prototypeMessage = ''
@@ -213,7 +220,7 @@ export function tabEditor() {
             this.prototypeMessage = error?.message || 'Unable to play this tablature.'
             return
         }
-        const source = this.tabFullMusicXml ?? alphaTex
+        const source = this.tabFullMusicXml ?? `${alphaTex}|${this.experimentalSound}`
         if (source === this.prototypePlaybackScore) {
             window.dispatchEvent(new CustomEvent('alphatab:play-pause', { detail: { element } }))
             return
@@ -225,7 +232,7 @@ export function tabEditor() {
         this.prototypePlaybackScore = source
         window.dispatchEvent(new CustomEvent('alphatab:preview-draft', {
             detail: { element, alphaTex, musicXml: this.tabFullMusicXml, bpm: Number(this.stepForm.bpm),
-                instrument: this.tabDraft.instrument, seekPercent,
+                instrument: this.tabDraft.instrument, experimentalSound: this.experimentalSound, seekPercent,
                 transportOptions: this.prototypeTransportOptions(), play: true },
         }))
     },
