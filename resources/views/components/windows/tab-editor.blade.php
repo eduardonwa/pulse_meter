@@ -131,26 +131,14 @@
 
                     <label class="tab-editor__field">
                         <span>Instrument</span>
-                        <select x-model.number="tabDraft.instrument">
-                            <option value="24">Nylon guitar</option>
-                            <option value="25">Steel guitar</option>
-                            <option value="26">Jazz guitar</option>
-                            <option value="27">Clean guitar</option>
+                        <select x-model.number="tabDraft.instrument" @change="stopPrototypePlayback()">
+                            <option value="25">Steel guitar (Sonivox)</option>
+                            <option value="27">Clean guitar (Sonivox)</option>
+                            <option value="28">Acoustic</option>
+                            <option value="29">Overdrive GTR</option>
+                            <option value="30">Metal Master</option>
                         </select>
                     </label>
-                    @if(app()->environment('local'))
-                        <label class="tab-editor__field">
-                            <span>Sound test (playback only)</span>
-                            <select :value="auditionSound" @change="selectAuditionSound($event.target.value)">
-                                <option value="">Off (use instrument above)</option>
-                                <option value="acoustic">Acoustic SF2</option>
-                                <option value="steel-gtr">SSC 500 Steel SF2</option>
-                                <option value="power-gtr">FP Power Guitar SF2</option>
-                                <option value="overdrive-gtr">Overdrive Guitar SF2</option>
-                                <option value="metal-master">MetalMaster SF2</option>
-                            </select>
-                        </label>
-                    @endif
                 </div>
                 <div class="tab-editor__import-panel" x-show="prototypeMusicXmlFullSource" x-cloak role="region" aria-label="MusicXML import result">
                     <div class="tab-editor__import-result">

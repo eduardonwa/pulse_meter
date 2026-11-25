@@ -8,13 +8,6 @@ export function tabEditor() {
     prototypeMessageType: 'success',
     tabScorePreviewError: '',
     tabScoreRenderedKey: '',
-    // Local-only playback comparison; not part of the saved tab draft.
-    auditionSound: '',
-    selectAuditionSound(value) {
-        if (!['', 'acoustic', 'steel-gtr', 'power-gtr', 'overdrive-gtr', 'metal-master'].includes(value)) return
-        this.stopPrototypePlayback()
-        this.auditionSound = value
-    },
     syncTabEditorScoreCaret() {
         const element = this.$refs?.tabEditorPreview
         if (!element || typeof window === 'undefined') return
@@ -95,7 +88,6 @@ export function tabEditor() {
         return 'dorelog:tab-editor:transport-v1:' + id
     },
     prepareRedesignEditor() {
-        this.auditionSound = ''
         this.tabScorePreviewError = ''
         this.tabScoreRenderedKey = ''
         this.prototypeMessage = ''
@@ -221,7 +213,7 @@ export function tabEditor() {
             this.prototypeMessage = error?.message || 'Unable to play this tablature.'
             return
         }
-        const source = `${this.tabFullMusicXml ?? alphaTex}|${this.auditionSound}`
+        const source = this.tabFullMusicXml ?? alphaTex
         if (source === this.prototypePlaybackScore) {
             window.dispatchEvent(new CustomEvent('alphatab:play-pause', { detail: { element } }))
             return
@@ -233,7 +225,7 @@ export function tabEditor() {
         this.prototypePlaybackScore = source
         window.dispatchEvent(new CustomEvent('alphatab:preview-draft', {
             detail: { element, alphaTex, musicXml: this.tabFullMusicXml, bpm: Number(this.stepForm.bpm),
-                instrument: this.tabDraft.instrument, auditionSound: this.auditionSound, seekPercent,
+                instrument: this.tabDraft.instrument, seekPercent,
                 transportOptions: this.prototypeTransportOptions(), play: true },
         }))
     },
