@@ -608,12 +608,14 @@ window.addEventListener('alphatab:update', async event => {
     renderedBpms.set(element, bpm)
 })
 
-// The two local test files stay in public/soundfont and out of Git.
-// A replacement font can contain its own program map, so start with
-// program 0 (single-preset SoundFonts typically use 0); adjust after listening
-// if a particular file exposes a different preset.
+// Local-only SoundFont auditions, not saved into tablatures.
+// The new guitar banks start at program 0 until their SF2 preset tables
+// are inspected; some banks may require a different program to play.
 const auditionFonts = {
     acoustic: { url: '/soundfont/acoustic.sf2', program: 0 },
+    'electric-gtr': { url: '/soundfont/electric-gtr.sf2', program: 0 },
+    'electric-ibanez-gtr': { url: '/soundfont/electric-ibanez-gtr.sf2', program: 0 },
+    'power-gtr': { url: '/soundfont/power-gtr.sf2', program: 0 },
 }
 const auditionFontStates = new WeakMap()
 

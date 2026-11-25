@@ -144,6 +144,9 @@
                             <select :value="auditionSound" @change="selectAuditionSound($event.target.value)">
                                 <option value="">Off (use instrument above)</option>
                                 <option value="acoustic">Acoustic SF2</option>
+                                <option value="electric-gtr">Electric Guitar SF2</option>
+                                <option value="electric-ibanez-gtr">Electric Ibanez SF2</option>
+                                <option value="power-gtr">Power Guitar SF2</option>
                             </select>
                         </label>
                     @endif
