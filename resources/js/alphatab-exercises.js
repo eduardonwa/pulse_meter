@@ -673,7 +673,7 @@ window.addEventListener('alphatab:preview-draft', async event => {
     // This is a playback-only adjustment for the local SF2 audition.
     if (selectedAudition && pattern) {
         pattern = pattern.replace(/(\\staff\s*\{\s*tabs\s*\})/i,
-            '$1\\n\\tuning (E4 B3 G3 D3 A2 E2)')
+            '$1' + "\n\\tuning (E4 B3 G3 D3 A2 E2)")
     }
     if (musicXml) {
         element.dataset.musicxml = musicXml
