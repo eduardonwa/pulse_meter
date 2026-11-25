@@ -19,7 +19,6 @@
     "dependencies": {
         "@coderline/alphatab": "^1.8.4",
         "@coderline/alphatab-vite": "^1.8.4",
-        "@dsebastien/music-notation-sounds": "^0.1.1",
         "driver.js": "1.4.0"
     }
 }

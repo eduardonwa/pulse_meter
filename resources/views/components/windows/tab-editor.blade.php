@@ -131,22 +131,12 @@
 
                     <label class="tab-editor__field">
                         <span>Instrument</span>
-                        <select x-bind:value="String(tabDraft.instrument)" @change="selectEditorInstrument($event.target.value)">
-                            <option value="24" x-show="tabDraft.instrument === 24" :disabled="tabDraft.instrument !== 24">Nylon guitar (Legacy)</option>
+                        <select x-model.number="tabDraft.instrument">
+                            <option value="24">Nylon guitar</option>
                             <option value="25">Steel guitar</option>
-                            <option value="26" x-show="tabDraft.instrument === 26" :disabled="tabDraft.instrument !== 26">Jazz guitar (Legacy)</option>
-                            <option value="27" x-show="tabDraft.instrument === 27" :disabled="tabDraft.instrument !== 27">Clean guitar (Legacy)</option>
-                            <option value="30">Distortion guitar (GeneralUser)</option>
+                            <option value="26">Jazz guitar</option>
+                            <option value="27">Clean guitar</option>
                         </select>
-                        @if(app()->environment('local'))
-                            <span>SGM test (playback only)</span>
-                            <select x-model="experimentalSound" @change="selectSgmTestSound($event.target.value)">
-                                <option value="">Off — use selected instrument</option>
-                                <option value="sgm-clean">Clean guitar (SGM)</option>
-                                <option value="sgm-muted">Muted guitar (SGM)</option>
-                                <option value="sgm-overdrive">Overdrive guitar (SGM)</option>
-                            </select>
-                        @endif
                     </label>
                 </div>
                 <div class="tab-editor__import-panel" x-show="prototypeMusicXmlFullSource" x-cloak role="region" aria-label="MusicXML import result">

@@ -545,7 +545,6 @@ async function mountAlphaTab(element) {
         renderedBpms.set(element, originalMusicXml ? musicXmlFirstTempo(originalMusicXml, bpm) : bpm)
 
         await readyPromise
-        if (hasDistortionInstrument(pattern)) await ensureDistortionSoundFont(api)
         if (isAdminPreview) editorLoadedScores.set(element, originalMusicXml ?? pattern)
 
         return api
@@ -609,63 +608,8 @@ window.addEventListener('alphatab:update', async event => {
     renderedBpms.set(element, bpm)
 })
 
-// Load the GeneralUser preset once per synth, after Sonivox. The returned
-// boolean only acknowledges that loading started; soundFontLoaded confirms
-// the synthesizer has finished decoding the samples.
-const distortionFontLoads = new WeakMap()
-const editorSoundFontStates = new WeakMap()
-const sgmTestPrograms = { 'sgm-clean': 27, 'sgm-muted': 28, 'sgm-overdrive': 29 }
-function hasDistortionInstrument(alphaTex) {
-    return /\\instrument\s+30(?:\s|$)/m.test(alphaTex ?? '')
-}
-function ensureDistortionSoundFont(api) {
-    if (!distortionFontLoads.has(api)) {
-        const loading = (async () => {
-            const { default: url } = await import('@dsebastien/music-notation-sounds/generaluser/p030.sf3?url')
-            await new Promise((resolve, reject) => {
-                api.soundFontLoaded.on(resolve)
-                try {
-                    if (!api.loadSoundFont(url, true)) {
-                        reject(new Error('Could not start loading GeneralUser distortion guitar'))
-                    }
-                } catch (error) {
-                    reject(error)
-                }
-            })
-        })()
-        distortionFontLoads.set(api, loading)
-        loading.catch(() => distortionFontLoads.delete(api))
-    }
-    return distortionFontLoads.get(api)
-}
-
-// Changes are serialized: never replace a bank while another load is pending.
-// The SGM file exists only in local public/soundfont and is not committed.
-function switchEditorSoundFont(api, mode, distortion) {
-    let state = editorSoundFontStates.get(api)
-    if (!state) {
-        state = { mode: 'sonivox', pending: Promise.resolve() }
-        editorSoundFontStates.set(api, state)
-    }
-    state.pending = state.pending.catch(() => {}).then(async () => {
-        if (mode !== state.mode) {
-            const url = mode === 'sgm' ? '/soundfont/SGM-V2.01.sf3' : '/soundfont/sonivox.sf2'
-            await new Promise((resolve, reject) => {
-                api.soundFontLoaded.on(resolve)
-                try {
-                    if (!api.loadSoundFont(url, false)) reject(new Error('Could not load ' + url))
-                } catch (error) { reject(error) }
-            })
-            state.mode = mode
-            if (mode === 'sonivox') distortionFontLoads.delete(api)
-        }
-        if (mode === 'sonivox' && distortion) await ensureDistortionSoundFont(api)
-    })
-    return state.pending
-}
-
 window.addEventListener('alphatab:preview-draft', async event => {
-    const { element, alphaTex, musicXml, bpm, play, instrument, transportOptions, renderOnly, experimentalSound } = event.detail ?? {}
+    const { element, alphaTex, musicXml, bpm, play, instrument, transportOptions, renderOnly } = event.detail ?? {}
     if (!element) return
 
     if (!play && !renderOnly) {
@@ -685,10 +629,8 @@ window.addEventListener('alphatab:preview-draft', async event => {
 
     const request = ++playbackGeneration
     playbackRequests.set(element, request)
-    const sgmProgram = !musicXml && play ? sgmTestPrograms[experimentalSound] : undefined
-    const auditionInstrument = sgmProgram ?? Number(instrument ?? 25)
-    let pattern = alphaTex
-        ? applyMetadata(editorPreviewAlphaTex(alphaTex, element.dataset.scoreEditable === 'true'), { bpm: Number(bpm) || 100, instrument: auditionInstrument })
+    const pattern = alphaTex
+        ? applyMetadata(editorPreviewAlphaTex(alphaTex, element.dataset.scoreEditable === 'true'), { bpm: Number(bpm) || 100, instrument: Number(instrument ?? 25) })
         : null
     if (musicXml) {
         element.dataset.musicxml = musicXml
@@ -715,9 +657,7 @@ window.addEventListener('alphatab:preview-draft', async event => {
 
     if (activeApi && activeApi !== api) activeApi.stop()
     activeApi = api
-    const scoreKey = musicXml ?? pattern
-    if (playbackRequests.get(element) !== request || playbackGeneration !== request) return
-    if (alreadyMounted && editorLoadedScores.get(element) !== scoreKey) {
+    if (alreadyMounted && editorLoadedScores.get(element) !== (musicXml ?? alphaTex)) {
         api.stop()
         if (musicXml) {
             // Native file loading is asynchronous. Never play the previous
@@ -732,19 +672,7 @@ window.addEventListener('alphatab:preview-draft', async event => {
                 return
             }
         } else api.tex(pattern)
-        editorLoadedScores.set(element, scoreKey)
-    }
-    if (playbackRequests.get(element) !== request || playbackGeneration !== request) return
-    // The local SGM audition overrides only playback, not the saved AlphaTex.
-    // Restore the regular bank on the next normal preview.
-    try {
-        await switchEditorSoundFont(api, sgmProgram !== undefined ? 'sgm' : 'sonivox',
-            sgmProgram === undefined && hasDistortionInstrument(pattern))
-    } catch (error) {
-        window.dispatchEvent(new CustomEvent('alphatab:load-error', {
-            detail: { element, message: error?.message ?? 'Could not load the selected SoundFont' },
-        }))
-        return
+        editorLoadedScores.set(element, musicXml ?? alphaTex)
     }
     if (playbackRequests.get(element) !== request || playbackGeneration !== request) return
     if (renderOnly) {
