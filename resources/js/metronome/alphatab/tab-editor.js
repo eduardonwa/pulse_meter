@@ -1,7 +1,8 @@
 // A compact guitar tab model; advanced techniques and multiple voices remain unsupported.
 export const TAB_STRINGS = ['e', 'B', 'G', 'D', 'A', 'E'];
 export const TAB_DURATIONS = [1, 2, 4, 8, 16];
-export const TAB_INSTRUMENTS = [24, 25, 26, 27];
+// Legacy GM programs remain supported alongside GeneralUser distortion.
+export const TAB_INSTRUMENTS = [24, 25, 26, 27, 30];
 
 export function tabBeatUnits(beat) {
     const duration = Number(beat.duration);

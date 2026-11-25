@@ -1,3 +1,4 @@
+import distortionGuitarSoundFontUrl from '@dsebastien/music-notation-sounds/generaluser/p030.sf3?url'
 import { isAlphaTabCountInEnabled } from './metronome/alphatab/count-in-preference.js'
 import { editorPreviewAlphaTex } from './metronome/alphatab/tab-editor.js'
 import { installMidiReloadListener, loadReplacementMusicXml } from './metronome/alphatab/midi-reload.js'
@@ -545,6 +546,7 @@ async function mountAlphaTab(element) {
         renderedBpms.set(element, originalMusicXml ? musicXmlFirstTempo(originalMusicXml, bpm) : bpm)
 
         await readyPromise
+        if (hasDistortionInstrument(pattern)) await ensureDistortionSoundFont(api)
         if (isAdminPreview) editorLoadedScores.set(element, originalMusicXml ?? pattern)
 
         return api
@@ -608,34 +610,34 @@ window.addEventListener('alphatab:update', async event => {
     renderedBpms.set(element, bpm)
 })
 
-// Local editor audition only; never persist experimental MIDI patches.
-const experimentalPatches = {
-    stock29: { program: 29, bank: 0 },
-    stock30: { program: 30, bank: 0 },
-    overdrive: { file: 'overdriven-guitar.sf2', program: 29, bank: 0 },
-    snes58: { file: 'snes.sf2', program: 30, bank: 58 },
-    snes84: { file: 'snes.sf2', program: 30, bank: 84 },
+// Load the GeneralUser preset once per synth, after Sonivox. The returned
+// boolean only acknowledges that loading started; soundFontLoaded confirms
+// the synthesizer has finished decoding the samples.
+const distortionFontLoads = new WeakMap()
+function hasDistortionInstrument(alphaTex) {
+    return /\\instrument\\s+30(?:\\s|$)/m.test(alphaTex ?? '')
 }
-const auditionFonts = new WeakMap()
-
-async function loadAuditionFont(api, file) {
-    let loaded = auditionFonts.get(api)
-    if (!loaded) auditionFonts.set(api, loaded = new Map())
-    if (!loaded.has(file)) {
-        const promise = (async () => {
-            const response = await fetch('/soundfont/' + file)
-            if (!response.ok) throw new Error('Could not load ' + file)
-            const bytes = new Uint8Array(await response.arrayBuffer())
-            api.loadSoundFont(bytes, true)
-        })()
-        loaded.set(file, promise)
-        promise.catch(() => loaded.delete(file))
+function ensureDistortionSoundFont(api) {
+    if (!distortionFontLoads.has(api)) {
+        const loading = new Promise((resolve, reject) => {
+            const complete = () => resolve()
+            api.soundFontLoaded.on(complete)
+            try {
+                if (!api.loadSoundFont(distortionGuitarSoundFontUrl, true)) {
+                    reject(new Error('Could not start loading GeneralUser distortion guitar'))
+                }
+            } catch (error) {
+                reject(error)
+            }
+        })
+        distortionFontLoads.set(api, loading)
+        loading.catch(() => distortionFontLoads.delete(api))
     }
-    await loaded.get(file)
+    return distortionFontLoads.get(api)
 }
 
 window.addEventListener('alphatab:preview-draft', async event => {
-    const { element, alphaTex, musicXml, bpm, play, instrument, transportOptions, renderOnly, experimentalSound } = event.detail ?? {}
+    const { element, alphaTex, musicXml, bpm, play, instrument, transportOptions, renderOnly } = event.detail ?? {}
     if (!element) return
 
     if (!play && !renderOnly) {
@@ -655,16 +657,9 @@ window.addEventListener('alphatab:preview-draft', async event => {
 
     const request = ++playbackGeneration
     playbackRequests.set(element, request)
-    const patch = !musicXml && play ? experimentalPatches[experimentalSound] : null
     let pattern = alphaTex
         ? applyMetadata(editorPreviewAlphaTex(alphaTex, element.dataset.scoreEditable === 'true'), { bpm: Number(bpm) || 100, instrument: Number(instrument ?? 25) })
         : null
-    if (patch && !patch.file && pattern) {
-        pattern = applyMetadata(editorPreviewAlphaTex(alphaTex, element.dataset.scoreEditable === 'true'), { bpm: Number(bpm) || 100, instrument: patch.program })
-    } else if (patch && pattern) {
-        pattern = pattern.replace(/^\s*\\instrument\b[^\r\n]*(?:\r?\n|$)/gmi, '')
-        pattern = `\\track { instrument ${patch.program} bank ${patch.bank} }\n${pattern}`
-    }
     if (musicXml) {
         element.dataset.musicxml = musicXml
         delete element.dataset.alphaTex
@@ -690,17 +685,9 @@ window.addEventListener('alphatab:preview-draft', async event => {
 
     if (activeApi && activeApi !== api) activeApi.stop()
     activeApi = api
-    const scoreKey = musicXml ?? (patch ? pattern : alphaTex)
-    if (patch?.file) {
-        try {
-            await loadAuditionFont(api, patch.file)
-        } catch (error) {
-            window.dispatchEvent(new CustomEvent('alphatab:load-error', { detail: { element, message: error.message } }))
-            return
-        }
-    }
+    const scoreKey = musicXml ?? alphaTex
     if (playbackRequests.get(element) !== request || playbackGeneration !== request) return
-    if ((alreadyMounted || patch) && editorLoadedScores.get(element) !== scoreKey) {
+    if (alreadyMounted && editorLoadedScores.get(element) !== scoreKey) {
         api.stop()
         if (musicXml) {
             // Native file loading is asynchronous. Never play the previous
@@ -716,6 +703,17 @@ window.addEventListener('alphatab:preview-draft', async event => {
             }
         } else api.tex(pattern)
         editorLoadedScores.set(element, scoreKey)
+    }
+    if (playbackRequests.get(element) !== request || playbackGeneration !== request) return
+    if (hasDistortionInstrument(pattern)) {
+        try {
+            await ensureDistortionSoundFont(api)
+        } catch (error) {
+            window.dispatchEvent(new CustomEvent('alphatab:load-error', {
+                detail: { element, message: error?.message ?? 'Could not load GeneralUser distortion guitar' },
+            }))
+            return
+        }
     }
     if (playbackRequests.get(element) !== request || playbackGeneration !== request) return
     if (renderOnly) {
