@@ -8,8 +8,14 @@ export function tabEditor() {
     prototypeMessageType: 'success',
     tabScorePreviewError: '',
     tabScoreRenderedKey: '',
-    // SF3 preview only. Do not persist this choice in the tablature.
+    // SF2/SF3 comparison only. Do not persist test choices in the tablature.
     guitarBankTestPreset: '',
+    guitarBankTestFormat: 'sf2',
+    selectGuitarBankTestFormat(value) {
+        if (!['sf2', 'sf3'].includes(value)) return
+        this.stopPrototypePlayback()
+        this.guitarBankTestFormat = value
+    },
     selectGuitarBankTestPreset(value) {
         const allowed = ['', '7', '8', '9', '12', '13', '14', '15', '35', '43', '49', '55']
         if (!allowed.includes(value)) return
@@ -97,6 +103,7 @@ export function tabEditor() {
     },
     prepareRedesignEditor() {
         this.guitarBankTestPreset = ''
+        this.guitarBankTestFormat = 'sf2'
         this.tabScorePreviewError = ''
         this.tabScoreRenderedKey = ''
         this.prototypeMessage = ''
@@ -222,7 +229,7 @@ export function tabEditor() {
             this.prototypeMessage = error?.message || 'Unable to play this tablature.'
             return
         }
-        const source = `${this.tabFullMusicXml ?? alphaTex}|${this.guitarBankTestPreset}`
+        const source = `${this.tabFullMusicXml ?? alphaTex}|${this.guitarBankTestPreset}|${this.guitarBankTestFormat}`
         if (source === this.prototypePlaybackScore) {
             window.dispatchEvent(new CustomEvent('alphatab:play-pause', { detail: { element } }))
             return
@@ -234,7 +241,8 @@ export function tabEditor() {
         this.prototypePlaybackScore = source
         window.dispatchEvent(new CustomEvent('alphatab:preview-draft', {
             detail: { element, alphaTex, musicXml: this.tabFullMusicXml, bpm: Number(this.stepForm.bpm),
-                instrument: this.tabDraft.instrument, guitarBankTestPreset: this.guitarBankTestPreset, seekPercent,
+                instrument: this.tabDraft.instrument, guitarBankTestPreset: this.guitarBankTestPreset,
+                guitarBankTestFormat: this.guitarBankTestFormat, seekPercent,
                 transportOptions: this.prototypeTransportOptions(), play: true },
         }))
     },

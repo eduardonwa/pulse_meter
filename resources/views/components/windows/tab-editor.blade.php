@@ -141,7 +141,7 @@
                     </label>
                     @if(app()->environment('local'))
                         <label class="tab-editor__field">
-                            <span>Dorelog GTRS SF3 test (playback only)</span>
+                            <span>Dorelog GTRS sound test (playback only)</span>
                             <select :value="guitarBankTestPreset" @change="selectGuitarBankTestPreset($event.target.value)">
                                 <option value="">Off (use instrument above)</option>
                                 <optgroup label="Steel">
@@ -165,6 +165,13 @@
                                 <optgroup label="Distortion">
                                     <option value="55">Dist SG Dynamic</option>
                                 </optgroup>
+                            </select>
+                        </label>
+                        <label class="tab-editor__field">
+                            <span>SoundFont format</span>
+                            <select :value="guitarBankTestFormat" @change="selectGuitarBankTestFormat($event.target.value)">
+                                <option value="sf2">SF2 original (50 MB)</option>
+                                <option value="sf3">SF3 compressed (6 MB)</option>
                             </select>
                         </label>
                     @endif
