@@ -131,18 +131,12 @@
 
                     <label class="tab-editor__field">
                         <span>Instrument</span>
-                        <select x-bind:value="experimentalSound || String(tabDraft.instrument)" @change="selectEditorInstrument($event.target.value)">
+                        <select x-bind:value="String(tabDraft.instrument)" @change="selectEditorInstrument($event.target.value)">
                             <option value="24" x-show="tabDraft.instrument === 24" :disabled="tabDraft.instrument !== 24">Nylon guitar (Legacy)</option>
                             <option value="25">Steel guitar</option>
                             <option value="26" x-show="tabDraft.instrument === 26" :disabled="tabDraft.instrument !== 26">Jazz guitar (Legacy)</option>
                             <option value="27" x-show="tabDraft.instrument === 27" :disabled="tabDraft.instrument !== 27">Clean guitar (Legacy)</option>
-                            @if(app()->environment('local'))
-                                <option value="stock29">Overdriven guitar (Sonivox)</option>
-                                <option value="stock30">Distortion guitar (Sonivox)</option>
-                                <option value="overdrive">Overdriven guitar (external test)</option>
-                                <option value="snes58">SNES – Distorted Guitar 2 (test)</option>
-                                <option value="snes84">SNES – Distorted Guitar (test)</option>
-                            @endif
+                            <option value="30">Distortion guitar (GeneralUser)</option>
                         </select>
                     </label>
                 </div>
