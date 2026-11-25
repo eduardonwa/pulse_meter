@@ -634,7 +634,7 @@ function selectEditorFont(api, url) {
 }
 
 window.addEventListener('alphatab:preview-draft', async event => {
-    const { element, alphaTex, musicXml, bpm, play, instrument, transportOptions, renderOnly } = event.detail ?? {}
+    const { element, alphaTex, musicXml, bpm, play, instrument, transportOptions, renderOnly, guitarBankTestPreset } = event.detail ?? {}
     if (!element) return
 
     if (!play && !renderOnly) {
@@ -655,12 +655,27 @@ window.addEventListener('alphatab:preview-draft', async event => {
     const request = ++playbackGeneration
     playbackRequests.set(element, request)
     const selectedInstrument = Number(instrument ?? scoreGuitarInstrument(alphaTex))
-    const desiredFont = musicXml ? '/soundfont/sonivox.sf2' : guitarFontForInstrument(selectedInstrument)
-    const pattern = alphaTex
+    const testPrograms = new Set([7, 8, 9, 12, 13, 14, 15, 35, 43, 49, 55])
+    const requestedTestProgram = guitarBankTestPreset === '' || guitarBankTestPreset == null
+        ? null : Number(guitarBankTestPreset)
+    const testProgram = !musicXml && play && testPrograms.has(requestedTestProgram)
+        ? requestedTestProgram : null
+    const desiredFont = testProgram !== null ? '/soundfont/dorelog-gtrs.sf3'
+        : musicXml ? '/soundfont/sonivox.sf2' : guitarFontForInstrument(selectedInstrument)
+    let pattern = alphaTex
         ? soundFontPlaybackTex(applyMetadata(editorPreviewAlphaTex(alphaTex, element.dataset.scoreEditable === 'true'), {
             bpm: Number(bpm) || 100, instrument: selectedInstrument,
         }))
         : null
+    if (testProgram !== null && pattern) {
+        // Audition program 0–127 of the compressed SF3 without saving it.
+        // Force standard guitar tuning so non-GM program numbers keep six strings.
+        pattern = pattern.replace(/^\\instrument\s+\d+\s*$/m, '\\instrument ' + testProgram)
+        if (!/^\\tuning\b/m.test(pattern)) {
+            pattern = pattern.replace(/(\\staff\s*\{\s*tabs\s*\})/i,
+                '$1' + '\n\\tuning (E4 B3 G3 D3 A2 E2)')
+        }
+    }
     if (musicXml) {
         element.dataset.musicxml = musicXml
         delete element.dataset.alphaTex

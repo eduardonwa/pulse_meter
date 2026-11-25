@@ -139,6 +139,35 @@
                             <option value="30">Metal Master</option>
                         </select>
                     </label>
+                    @if(app()->environment('local'))
+                        <label class="tab-editor__field">
+                            <span>Dorelog GTRS SF3 test (playback only)</span>
+                            <select :value="guitarBankTestPreset" @change="selectGuitarBankTestPreset($event.target.value)">
+                                <option value="">Off (use instrument above)</option>
+                                <optgroup label="Steel">
+                                    <option value="7">Steel Layered Mute</option>
+                                    <option value="8">Steel Finger Pick</option>
+                                    <option value="9">Rol Steel Guitar 1</option>
+                                </optgroup>
+                                <optgroup label="Nylon">
+                                    <option value="12">Nylon 1</option>
+                                    <option value="13">Nylon 1 Expressive</option>
+                                    <option value="14">Nylon 1 Vel Slide</option>
+                                    <option value="15">Nylon1 Express VS</option>
+                                </optgroup>
+                                <optgroup label="Clean / Jazz">
+                                    <option value="35">Jazz Guitar GU</option>
+                                    <option value="43">Muted Guitar GU</option>
+                                </optgroup>
+                                <optgroup label="Overdrive">
+                                    <option value="49">Overdrive GU DynPick</option>
+                                </optgroup>
+                                <optgroup label="Distortion">
+                                    <option value="55">Dist SG Dynamic</option>
+                                </optgroup>
+                            </select>
+                        </label>
+                    @endif
                 </div>
                 <div class="tab-editor__import-panel" x-show="prototypeMusicXmlFullSource" x-cloak role="region" aria-label="MusicXML import result">
                     <div class="tab-editor__import-result">

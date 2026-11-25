@@ -8,6 +8,14 @@ export function tabEditor() {
     prototypeMessageType: 'success',
     tabScorePreviewError: '',
     tabScoreRenderedKey: '',
+    // SF3 preview only. Do not persist this choice in the tablature.
+    guitarBankTestPreset: '',
+    selectGuitarBankTestPreset(value) {
+        const allowed = ['', '7', '8', '9', '12', '13', '14', '15', '35', '43', '49', '55']
+        if (!allowed.includes(value)) return
+        this.stopPrototypePlayback()
+        this.guitarBankTestPreset = value
+    },
     syncTabEditorScoreCaret() {
         const element = this.$refs?.tabEditorPreview
         if (!element || typeof window === 'undefined') return
@@ -88,6 +96,7 @@ export function tabEditor() {
         return 'dorelog:tab-editor:transport-v1:' + id
     },
     prepareRedesignEditor() {
+        this.guitarBankTestPreset = ''
         this.tabScorePreviewError = ''
         this.tabScoreRenderedKey = ''
         this.prototypeMessage = ''
@@ -213,7 +222,7 @@ export function tabEditor() {
             this.prototypeMessage = error?.message || 'Unable to play this tablature.'
             return
         }
-        const source = this.tabFullMusicXml ?? alphaTex
+        const source = `${this.tabFullMusicXml ?? alphaTex}|${this.guitarBankTestPreset}`
         if (source === this.prototypePlaybackScore) {
             window.dispatchEvent(new CustomEvent('alphatab:play-pause', { detail: { element } }))
             return
@@ -225,7 +234,7 @@ export function tabEditor() {
         this.prototypePlaybackScore = source
         window.dispatchEvent(new CustomEvent('alphatab:preview-draft', {
             detail: { element, alphaTex, musicXml: this.tabFullMusicXml, bpm: Number(this.stepForm.bpm),
-                instrument: this.tabDraft.instrument, seekPercent,
+                instrument: this.tabDraft.instrument, guitarBankTestPreset: this.guitarBankTestPreset, seekPercent,
                 transportOptions: this.prototypeTransportOptions(), play: true },
         }))
     },
