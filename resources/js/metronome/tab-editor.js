@@ -11,7 +11,7 @@ export function tabEditor() {
     // Local-only playback comparison; not part of the saved tab draft.
     auditionSound: '',
     selectAuditionSound(value) {
-        if (!['', 'acoustic', 'clean-strat'].includes(value)) return
+        if (!['', 'acoustic'].includes(value)) return
         this.stopPrototypePlayback()
         this.auditionSound = value
     },

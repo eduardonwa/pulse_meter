@@ -614,7 +614,6 @@ window.addEventListener('alphatab:update', async event => {
 // if a particular file exposes a different preset.
 const auditionFonts = {
     acoustic: { url: '/soundfont/acoustic.sf2', program: 0 },
-    'clean-strat': { url: '/soundfont/clean-strat.sf2', program: 27 },
 }
 const auditionFontStates = new WeakMap()
 

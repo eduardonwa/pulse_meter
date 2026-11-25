@@ -144,7 +144,6 @@
                             <select :value="auditionSound" @change="selectAuditionSound($event.target.value)">
                                 <option value="">Off (use instrument above)</option>
                                 <option value="acoustic">Acoustic SF2</option>
-                                <option value="clean-strat">Clean Strat SF2</option>
                             </select>
                         </label>
                     @endif
