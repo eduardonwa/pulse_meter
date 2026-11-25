@@ -131,11 +131,12 @@
 
                     <label class="tab-editor__field">
                         <span>Instrument</span>
-                        <select x-model.number="tabDraft.instrument">
-                            <option value="24">Nylon guitar</option>
-                            <option value="25">Steel guitar</option>
-                            <option value="26">Jazz guitar</option>
-                            <option value="27">Clean guitar</option>
+                        <select x-model.number="tabDraft.instrument" @change="stopPrototypePlayback()">
+                            <option value="25">Steel Guitar</option>
+                            <option value="28">Acoustic</option>
+                            <option value="31">Jazz Clean</option>
+                            <option value="29">Overdrive</option>
+                            <option value="30">Distortion</option>
                         </select>
                     </label>
                 </div>
