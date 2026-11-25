@@ -20,7 +20,6 @@ export function routeJazzPalmMuteMidi(file, score, midi) {
     // channel where their matching attack was sent.
     const active = new Map()
     let switched = 0
-    let sourceChannel = null
     for (const event of events) {
         if (event.type !== midi.MidiEventType.NoteOn &&
             event.type !== midi.MidiEventType.NoteOff) continue
@@ -31,7 +30,6 @@ export function routeJazzPalmMuteMidi(file, score, midi) {
             if (!active.has(key)) active.set(key, [])
             active.get(key).push(useMuted)
             if (useMuted) {
-                sourceChannel ??= event.channel
                 event.channel = mutedChannel
                 switched++
             }

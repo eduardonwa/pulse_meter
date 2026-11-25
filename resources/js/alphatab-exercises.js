@@ -410,7 +410,7 @@ async function mountAlphaTab(element) {
 
         const alphaTab = await getAlphaTab()
         const pattern = encodedAlphaTex ? decodeBase64(encodedAlphaTex) : null
-        element.dataset.jazzPalmMuteTest = !originalMusicXml && scoreGuitarInstrument(pattern) === 31 ? 'true' : 'false'
+        element.dataset.jazzPalmMuteEnabled = !originalMusicXml && scoreGuitarInstrument(pattern) === 31 ? 'true' : 'false'
         const initialFont = !originalMusicXml ? guitarFontForInstrument(scoreGuitarInstrument(pattern)) : '/soundfont/sonivox.sf2'
 
         const api = new alphaTab.AlphaTabApi(element, {
@@ -519,7 +519,7 @@ async function mountAlphaTab(element) {
 
         // Jazz (Dorelog ID 31) uses preset 43 for palm-muted notes.
         api.midiLoad.on(file => {
-            if (element.dataset.jazzPalmMuteTest !== 'true') return
+            if (element.dataset.jazzPalmMuteEnabled !== 'true') return
             routeJazzPalmMuteMidi(file, api.score, alphaTab.midi)
         })
 
@@ -663,7 +663,7 @@ window.addEventListener('alphatab:preview-draft', async event => {
     const request = ++playbackGeneration
     playbackRequests.set(element, request)
     const selectedInstrument = Number(instrument ?? scoreGuitarInstrument(alphaTex))
-    element.dataset.jazzPalmMuteTest = !musicXml && selectedInstrument === 31 ? 'true' : 'false'
+    element.dataset.jazzPalmMuteEnabled = !musicXml && selectedInstrument === 31 ? 'true' : 'false'
     const desiredFont = musicXml ? '/soundfont/sonivox.sf2' : guitarFontForInstrument(selectedInstrument)
     const pattern = alphaTex
         ? soundFontPlaybackTex(applyMetadata(editorPreviewAlphaTex(alphaTex, element.dataset.scoreEditable === 'true'), {
@@ -713,7 +713,7 @@ window.addEventListener('alphatab:preview-draft', async event => {
         editorLoadedScores.set(element, scoreKey)
     }
     if (playbackRequests.get(element) !== request || playbackGeneration !== request) return
-    // Switch the SF2 without changing the persisted instrument ID or notation.
+    // Load the selected SoundFont without changing persisted notation.
     if (element.dataset.adminPreview === 'true' && !renderOnly) {
         try {
             await selectEditorFont(api, desiredFont)

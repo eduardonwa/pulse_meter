@@ -1,5 +1,5 @@
-// Persist stable Dorelog instrument IDs; translate only for alphaTab playback.
-// 24–27 retain their legacy Sonivox meaning; 28 remains acoustic.
+// Keep saved instrument IDs stable; translate them only for alphaTab playback.
+// Existing IDs 24–27 retain their legacy Sonivox meaning.
 export const CUSTOM_GUITAR_FONTS = {
     28: '/soundfont/acoustic.sf2',
     29: '/soundfont/dorelog-6.sf3',
