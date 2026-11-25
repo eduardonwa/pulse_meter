@@ -120,8 +120,6 @@
             grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
             gap: $size-3;
             
-            padding-block-start: $size-3;
-            margin-block-start: $size-3;
         }
 
         &__shortcuts {
