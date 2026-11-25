@@ -609,13 +609,9 @@ window.addEventListener('alphatab:update', async event => {
 })
 
 // Local-only SoundFont auditions, not saved into tablatures.
-// The new guitar banks start at program 0 until their SF2 preset tables
-// are inspected; some banks may require a different program to play.
+// Keep the preferred acoustic preset at program 0.
 const auditionFonts = {
     acoustic: { url: '/soundfont/acoustic.sf2', program: 0 },
-    'electric-gtr': { url: '/soundfont/electric-gtr.sf2', program: 0 },
-    'electric-ibanez-gtr': { url: '/soundfont/electric-ibanez-gtr.sf2', program: 0 },
-    'power-gtr': { url: '/soundfont/power-gtr.sf2', program: 0 },
 }
 const auditionFontStates = new WeakMap()
 
