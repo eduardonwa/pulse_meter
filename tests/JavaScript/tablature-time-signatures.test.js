@@ -245,7 +245,7 @@ test('clipboard preserves chords, rhythms, techniques and measure breaks', () =>
     assert.deepEqual(parseTabDraft(serializeTabDraft(result.draft)).draft.beats, draft.beats);
 });
 
-test('partial clipboard inserts without overwriting and splits overflowing measures', () => {
+test('partial clipboard inserts without overwriting or splitting overflowing measures', () => {
     const draft = { ...createTabDraft(), beats: [
         { fret: 3, string: 6, duration: 2 },
         { fret: 5, string: 6, duration: 2 },
@@ -253,7 +253,11 @@ test('partial clipboard inserts without overwriting and splits overflowing measu
     const fragment = copyTabFragment(draft, [0]);
     const result = pasteTabFragment(draft, 1, fragment);
     assert.deepEqual(result.draft.beats.map(beat => beat.fret), [3, 3, 5]);
-    assert.deepEqual(result.draft.breaks, [2]);
+    assert.deepEqual(result.draft.breaks, []);
+    const [measure] = layoutTabMeasures(result.draft);
+    assert.equal(measure.used, 24);
+    assert.equal(measure.capacity, 16);
+    assert.equal(measure.complete, false);
     assert.equal(result.start, 1);
 });
 

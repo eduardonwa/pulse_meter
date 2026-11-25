@@ -166,3 +166,17 @@ test('initial meter changes are included in undo and redo', () => {
     assert.deepEqual(state.tabEditorCurrentSignature(), { numerator: 3, denominator: 4 })
     assert.deepEqual(state.tabDraft.signatures, score().signatures)
 })
+
+
+test('pasting notes from an incomplete bar keeps the destination bar even when overflowing', () => {
+    for (const duration of [8, 16]) {
+        const source = Array.from({ length: 4 }, (_, fret) => ({ fret, string: 1, duration }))
+        const draft = { ...createTabDraft(), beats: [...notes(7), ...source], breaks: [7] }
+        const fragment = copyTabFragment(draft, [7, 8, 9, 10])
+        assert.equal(fragment[0].wholeMeasure, false)
+        const result = pasteTabFragment(draft, 7, fragment, 4, 4, true)
+        assert.deepEqual(result.draft.breaks, [11])
+        assert.deepEqual(result.draft.beats.slice(7, 11), source)
+        assert.equal(editor(result.draft).tabEditorMeasureWarnings()[0].status, 'overflow')
+    }
+})
