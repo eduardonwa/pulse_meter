@@ -615,7 +615,7 @@ window.addEventListener('alphatab:update', async event => {
 // the synthesizer has finished decoding the samples.
 const distortionFontLoads = new WeakMap()
 function hasDistortionInstrument(alphaTex) {
-    return /\\instrument\\s+30(?:\\s|$)/m.test(alphaTex ?? '')
+    return /\\instrument\s+30(?:\s|$)/m.test(alphaTex ?? '')
 }
 function ensureDistortionSoundFont(api) {
     if (!distortionFontLoads.has(api)) {
