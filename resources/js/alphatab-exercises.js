@@ -665,9 +665,16 @@ window.addEventListener('alphatab:preview-draft', async event => {
     playbackRequests.set(element, request)
     const selectedAudition = !musicXml && play && Object.hasOwn(auditionFonts, auditionSound) ? auditionSound : ''
     const program = selectedAudition ? auditionFonts[selectedAudition].program : Number(instrument ?? 25)
-    const pattern = alphaTex
+    let pattern = alphaTex
         ? applyMetadata(editorPreviewAlphaTex(alphaTex, element.dataset.scoreEditable === 'true'), { bpm: Number(bpm) || 100, instrument: program })
         : null
+    // MIDI program 0 is a piano. Without an explicit tuning alphaTab gives
+    // its TAB staff zero strings, then rejects every fret.string note.
+    // This is a playback-only adjustment for the local SF2 audition.
+    if (selectedAudition && pattern) {
+        pattern = pattern.replace(/(\\staff\s*\{\s*tabs\s*\})/i,
+            '$1\\n\\tuning (E4 B3 G3 D3 A2 E2)')
+    }
     if (musicXml) {
         element.dataset.musicxml = musicXml
         delete element.dataset.alphaTex
