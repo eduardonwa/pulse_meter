@@ -11,7 +11,7 @@ export function tabEditor() {
     experimentalSound: '',
     selectEditorInstrument(value) {
         this.stopPrototypePlayback()
-        this.experimentalSound = ['overdrive', 'snes58', 'snes84'].includes(value) ? value : ''
+        this.experimentalSound = ['overdrive', 'snes58', 'snes84', 'stock29', 'stock30'].includes(value) ? value : ''
         if (!this.experimentalSound) this.tabDraft.instrument = Number(value)
     },
     syncTabEditorScoreCaret() {
