@@ -8,10 +8,17 @@ export function tabEditor() {
     prototypeMessageType: 'success',
     tabScorePreviewError: '',
     tabScoreRenderedKey: '',
+    experimentalSound: '',
+    selectSgmTestSound(value) {
+        if (!['', 'sgm-clean', 'sgm-muted', 'sgm-overdrive'].includes(value)) return
+        this.stopPrototypePlayback()
+        this.experimentalSound = value
+    },
     selectEditorInstrument(value) {
         const instrument = Number(value)
         if (![24, 25, 26, 27, 30].includes(instrument)) return
         this.stopPrototypePlayback()
+        this.experimentalSound = ''
         this.tabDraft.instrument = instrument
     },
     syncTabEditorScoreCaret() {
@@ -94,6 +101,7 @@ export function tabEditor() {
         return 'dorelog:tab-editor:transport-v1:' + id
     },
     prepareRedesignEditor() {
+        this.experimentalSound = ''
         this.tabScorePreviewError = ''
         this.tabScoreRenderedKey = ''
         this.prototypeMessage = ''
@@ -219,7 +227,7 @@ export function tabEditor() {
             this.prototypeMessage = error?.message || 'Unable to play this tablature.'
             return
         }
-        const source = this.tabFullMusicXml ?? alphaTex
+        const source = `${this.tabFullMusicXml ?? alphaTex}|${this.experimentalSound}`
         if (source === this.prototypePlaybackScore) {
             window.dispatchEvent(new CustomEvent('alphatab:play-pause', { detail: { element } }))
             return
@@ -231,7 +239,7 @@ export function tabEditor() {
         this.prototypePlaybackScore = source
         window.dispatchEvent(new CustomEvent('alphatab:preview-draft', {
             detail: { element, alphaTex, musicXml: this.tabFullMusicXml, bpm: Number(this.stepForm.bpm),
-                instrument: this.tabDraft.instrument, seekPercent,
+                instrument: this.tabDraft.instrument, experimentalSound: this.experimentalSound, seekPercent,
                 transportOptions: this.prototypeTransportOptions(), play: true },
         }))
     },
