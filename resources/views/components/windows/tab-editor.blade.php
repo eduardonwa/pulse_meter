@@ -132,7 +132,10 @@
                     <label class="tab-editor__field">
                         <span>Instrument</span>
                         <select x-model.number="tabDraft.instrument" @change="stopPrototypePlayback()">
+                            <option value="25">Steel Guitar (Sonivox)</option>
+                            <option value="27">Clean Guitar (Sonivox)</option>
                             <option value="28">Acoustic</option>
+                            <option value="32">Steel Guitar</option>
                             <option value="31">Jazz / Clean GU</option>
                             <option value="29">Overdrive GU DynPick</option>
                             <option value="30">Dist SG Dynamic</option>

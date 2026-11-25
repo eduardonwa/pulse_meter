@@ -12,12 +12,13 @@ const expected = [
     [29, '/soundfont/dorelog-6.sf3'],
     [30, '/soundfont/dorelog-6.sf3'],
     [31, '/soundfont/dorelog-6.sf3'],
+    [32, '/soundfont/steel-gtr.sf2'],
 ]
 test('guitar instrument IDs select their intended banks', () => {
     for (const [id, font] of expected) assert.equal(guitarFontForInstrument(id), font)
 })
 test('Dorelog guitar instruments preserve stored IDs and map to their SF programs', () => {
-    const programs = [[28, 0], [29, 49], [30, 55], [31, 35]]
+    const programs = [[28, 0], [29, 49], [30, 55], [31, 35], [32, 0]]
     for (const [id, program] of programs) {
         const draft = { ...createTabDraft(), instrument: id, beats: [{ duration: 4, fret: 5, string: 6 }] }
         const saved = serializeTabDraft(draft)
