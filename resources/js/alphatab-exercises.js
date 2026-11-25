@@ -1,9 +1,7 @@
 import { isAlphaTabCountInEnabled } from './metronome/alphatab/count-in-preference.js'
 import { editorPreviewAlphaTex } from './metronome/alphatab/tab-editor.js'
-import { guitarFontForInstrument, scoreGuitarInstrument, soundFontPlaybackTex } from './metronome/alphatab/soundfont-instruments.js'
 import { installMidiReloadListener, loadReplacementMusicXml } from './metronome/alphatab/midi-reload.js'
 import { fixAlphaTabMidiInfoGetter } from './metronome/alphatab/fix-midi-info-getter.js'
-import { routeJazzPalmMuteMidi } from './metronome/alphatab/jazz-palm-mute-midi.js'
 let alphaTabModule = null
 let activeApi = null
 
@@ -410,7 +408,6 @@ async function mountAlphaTab(element) {
 
         const alphaTab = await getAlphaTab()
         const pattern = encodedAlphaTex ? decodeBase64(encodedAlphaTex) : null
-        const initialFont = !originalMusicXml ? guitarFontForInstrument(scoreGuitarInstrument(pattern)) : '/soundfont/sonivox.sf2'
 
         const api = new alphaTab.AlphaTabApi(element, {
             core: {
@@ -429,7 +426,7 @@ async function mountAlphaTab(element) {
 
             player: {
                 playerMode: alphaTab.PlayerMode.EnabledSynthesizer,
-                soundFont: initialFont,
+                soundFont: '/soundfont/sonivox.sf2',
 
                 enableUserInteraction: true,
                 enableCursor: true,
@@ -516,15 +513,6 @@ async function mountAlphaTab(element) {
             )
         })
 
-        if (isAdminPreview) {
-            // The audition selection is transient and never changes saved AlphaTex.
-            api.midiLoad.on(file => {
-                const mutedProgram = Number(element.dataset.guitarPalmMuteProgram)
-                if (mutedProgram !== 43 && mutedProgram !== 50) return
-                routeJazzPalmMuteMidi(file, api.score, alphaTab.midi, mutedProgram)
-            })
-        }
-
         // Register before any MIDI is loaded: adding a midiLoaded listener later
         // triggers alphaTab 1.8.4's recursive loadedMidiInfo getter.
         installMidiReloadListener(api)
@@ -549,17 +537,15 @@ async function mountAlphaTab(element) {
             // Do not pass it through the limited Dorelog editor or alphaTex.
             api.load(new TextEncoder().encode(originalMusicXml))
         } else {
-            api.tex(soundFontPlaybackTex(applyMetadata(editorPreviewAlphaTex(pattern, element.dataset.scoreEditable === 'true'), { bpm })))
+            api.tex(applyMetadata(editorPreviewAlphaTex(pattern, element.dataset.scoreEditable === 'true'), { bpm }))
         }
 
         instances.set(element, api)
-        // The player was created with this font; avoid reloading it on first Play.
-        if (isAdminPreview) editorFontStates.set(api, { url: initialFont, pending: Promise.resolve() })
         readyPromises.set(element, readyPromise)
         renderedBpms.set(element, originalMusicXml ? musicXmlFirstTempo(originalMusicXml, bpm) : bpm)
 
         await readyPromise
-        if (isAdminPreview) editorLoadedScores.set(element, originalMusicXml ?? soundFontPlaybackTex(applyMetadata(editorPreviewAlphaTex(pattern, element.dataset.scoreEditable === 'true'), { bpm })))
+        if (isAdminPreview) editorLoadedScores.set(element, originalMusicXml ?? pattern)
 
         return api
     })()
@@ -622,29 +608,8 @@ window.addEventListener('alphatab:update', async event => {
     renderedBpms.set(element, bpm)
 })
 
-// Keep editor playback fonts in sync with the saved instrument.
-const editorFontStates = new WeakMap()
-function selectEditorFont(api, url) {
-    let state = editorFontStates.get(api)
-    if (!state) {
-        state = { url: '', pending: Promise.resolve() }
-        editorFontStates.set(api, state)
-    }
-    state.pending = state.pending.catch(() => {}).then(async () => {
-        if (state.url === url) return
-        await new Promise((resolve, reject) => {
-            api.soundFontLoaded.on(resolve)
-            try {
-                if (!api.loadSoundFont(url, false)) reject(new Error('Unable to load ' + url))
-            } catch (error) { reject(error) }
-        })
-        state.url = url
-    })
-    return state.pending
-}
-
 window.addEventListener('alphatab:preview-draft', async event => {
-    const { element, alphaTex, musicXml, bpm, play, instrument, transportOptions, renderOnly, guitarBankTestPreset } = event.detail ?? {}
+    const { element, alphaTex, musicXml, bpm, play, instrument, transportOptions, renderOnly } = event.detail ?? {}
     if (!element) return
 
     if (!play && !renderOnly) {
@@ -664,33 +629,9 @@ window.addEventListener('alphatab:preview-draft', async event => {
 
     const request = ++playbackGeneration
     playbackRequests.set(element, request)
-    const selectedInstrument = Number(instrument ?? scoreGuitarInstrument(alphaTex))
-    const testPrograms = new Set([35, 43, 49, 55])
-    const requestedTestProgram = guitarBankTestPreset === '' || guitarBankTestPreset == null
-        ? null : Number(guitarBankTestPreset)
-    const testProgram = !musicXml && play && testPrograms.has(requestedTestProgram)
-        ? requestedTestProgram : null
-    // Jazz uses preset 43; Overdrive uses the newly isolated preset 50.
-    // This stays preview-only until we validate the SF3 in the browser.
-    element.dataset.guitarPalmMuteProgram = testProgram === 35 ? '43'
-        : testProgram === 49 ? '50' : ''
-    const desiredFont = testProgram !== null
-        ? '/soundfont/dorelog-6-v2.sf3'
-        : musicXml ? '/soundfont/sonivox.sf2' : guitarFontForInstrument(selectedInstrument)
-    let pattern = alphaTex
-        ? soundFontPlaybackTex(applyMetadata(editorPreviewAlphaTex(alphaTex, element.dataset.scoreEditable === 'true'), {
-            bpm: Number(bpm) || 100, instrument: selectedInstrument,
-        }))
+    const pattern = alphaTex
+        ? applyMetadata(editorPreviewAlphaTex(alphaTex, element.dataset.scoreEditable === 'true'), { bpm: Number(bpm) || 100, instrument: Number(instrument ?? 25) })
         : null
-    if (testProgram !== null && pattern) {
-        // Audition program 0–127 of the compressed SF3 without saving it.
-        // Force standard guitar tuning so non-GM program numbers keep six strings.
-        pattern = pattern.replace(/^\\instrument\s+\d+\s*$/m, '\\instrument ' + testProgram)
-        if (!/^\\tuning\b/m.test(pattern)) {
-            pattern = pattern.replace(/(\\staff\s*\{\s*tabs\s*\})/i,
-                '$1' + '\n\\tuning (E4 B3 G3 D3 A2 E2)')
-        }
-    }
     if (musicXml) {
         element.dataset.musicxml = musicXml
         delete element.dataset.alphaTex
@@ -701,6 +642,7 @@ window.addEventListener('alphatab:preview-draft', async event => {
     element.dataset.bpm = String(Number(bpm) || 100)
 
     // Mount if needed, then replace the score on subsequent previews.
+    const alreadyMounted = instances.has(element)
     let api
     try {
         api = await mountAlphaTab(element)
@@ -715,8 +657,7 @@ window.addEventListener('alphatab:preview-draft', async event => {
 
     if (activeApi && activeApi !== api) activeApi.stop()
     activeApi = api
-    const scoreKey = musicXml ?? pattern
-    if (editorLoadedScores.get(element) !== scoreKey) {
+    if (alreadyMounted && editorLoadedScores.get(element) !== (musicXml ?? alphaTex)) {
         api.stop()
         if (musicXml) {
             // Native file loading is asynchronous. Never play the previous
@@ -731,21 +672,7 @@ window.addEventListener('alphatab:preview-draft', async event => {
                 return
             }
         } else api.tex(pattern)
-        editorLoadedScores.set(element, scoreKey)
-    }
-    if (playbackRequests.get(element) !== request || playbackGeneration !== request) return
-    // Switch the SF2 without changing the persisted instrument ID or notation.
-    if (element.dataset.adminPreview === 'true' && !renderOnly) {
-        try {
-            await selectEditorFont(api, desiredFont)
-        } catch (error) {
-            if (playbackRequests.get(element) === request) {
-                window.dispatchEvent(new CustomEvent('alphatab:load-error', {
-                    detail: { element, message: error?.message ?? 'Unable to load SoundFont' },
-                }))
-            }
-            return
-        }
+        editorLoadedScores.set(element, musicXml ?? alphaTex)
     }
     if (playbackRequests.get(element) !== request || playbackGeneration !== request) return
     if (renderOnly) {

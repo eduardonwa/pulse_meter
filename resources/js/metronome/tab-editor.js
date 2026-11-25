@@ -8,14 +8,6 @@ export function tabEditor() {
     prototypeMessageType: 'success',
     tabScorePreviewError: '',
     tabScoreRenderedKey: '',
-    // Local-only Jazz SoundFont audition; not saved in the tab draft.
-    guitarBankTestPreset: '',
-    selectGuitarBankTestPreset(value) {
-        const allowed = ['', '35', '43', '49', '55']
-        if (!allowed.includes(value)) return
-        this.stopPrototypePlayback()
-        this.guitarBankTestPreset = value
-    },
     syncTabEditorScoreCaret() {
         const element = this.$refs?.tabEditorPreview
         if (!element || typeof window === 'undefined') return
@@ -96,7 +88,6 @@ export function tabEditor() {
         return 'dorelog:tab-editor:transport-v1:' + id
     },
     prepareRedesignEditor() {
-        this.guitarBankTestPreset = ''
         this.tabScorePreviewError = ''
         this.tabScoreRenderedKey = ''
         this.prototypeMessage = ''
@@ -222,7 +213,7 @@ export function tabEditor() {
             this.prototypeMessage = error?.message || 'Unable to play this tablature.'
             return
         }
-        const source = `${this.tabFullMusicXml ?? alphaTex}|${this.guitarBankTestPreset}`
+        const source = this.tabFullMusicXml ?? alphaTex
         if (source === this.prototypePlaybackScore) {
             window.dispatchEvent(new CustomEvent('alphatab:play-pause', { detail: { element } }))
             return
@@ -234,8 +225,7 @@ export function tabEditor() {
         this.prototypePlaybackScore = source
         window.dispatchEvent(new CustomEvent('alphatab:preview-draft', {
             detail: { element, alphaTex, musicXml: this.tabFullMusicXml, bpm: Number(this.stepForm.bpm),
-                instrument: this.tabDraft.instrument, guitarBankTestPreset: this.guitarBankTestPreset,
-                seekPercent,
+                instrument: this.tabDraft.instrument, seekPercent,
                 transportOptions: this.prototypeTransportOptions(), play: true },
         }))
     },
