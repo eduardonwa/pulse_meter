@@ -543,6 +543,8 @@ async function mountAlphaTab(element) {
         }
 
         instances.set(element, api)
+        // The player was created with this font; avoid reloading it on first Play.
+        if (isAdminPreview) editorFontStates.set(api, { url: initialFont, pending: Promise.resolve() })
         readyPromises.set(element, readyPromise)
         renderedBpms.set(element, originalMusicXml ? musicXmlFirstTempo(originalMusicXml, bpm) : bpm)
 
