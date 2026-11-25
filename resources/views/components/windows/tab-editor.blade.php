@@ -131,11 +131,16 @@
 
                     <label class="tab-editor__field">
                         <span>Instrument</span>
-                        <select x-model.number="tabDraft.instrument">
+                        <select x-bind:value="experimentalSound || String(tabDraft.instrument)" @change="selectEditorInstrument($event.target.value)">
                             <option value="24">Nylon guitar</option>
                             <option value="25">Steel guitar</option>
                             <option value="26">Jazz guitar</option>
                             <option value="27">Clean guitar</option>
+                            @if(app()->environment('local'))
+                                <option value="overdrive">Overdriven guitar (test)</option>
+                                <option value="snes58">SNES – Distorted Guitar 2 (test)</option>
+                                <option value="snes84">SNES – Distorted Guitar (test)</option>
+                            @endif
                         </select>
                     </label>
                 </div>
