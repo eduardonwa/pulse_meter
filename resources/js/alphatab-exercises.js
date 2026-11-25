@@ -610,6 +610,8 @@ window.addEventListener('alphatab:update', async event => {
 
 // Local editor audition only; never persist experimental MIDI patches.
 const experimentalPatches = {
+    stock29: { program: 29, bank: 0 },
+    stock30: { program: 30, bank: 0 },
     overdrive: { file: 'overdriven-guitar.sf2', program: 29, bank: 0 },
     snes58: { file: 'snes.sf2', program: 30, bank: 58 },
     snes84: { file: 'snes.sf2', program: 30, bank: 84 },
@@ -657,7 +659,9 @@ window.addEventListener('alphatab:preview-draft', async event => {
     let pattern = alphaTex
         ? applyMetadata(editorPreviewAlphaTex(alphaTex, element.dataset.scoreEditable === 'true'), { bpm: Number(bpm) || 100, instrument: Number(instrument ?? 25) })
         : null
-    if (patch && pattern) {
+    if (patch && !patch.file && pattern) {
+        pattern = applyMetadata(editorPreviewAlphaTex(alphaTex, element.dataset.scoreEditable === 'true'), { bpm: Number(bpm) || 100, instrument: patch.program })
+    } else if (patch && pattern) {
         pattern = pattern.replace(/^\s*\\instrument\b[^\r\n]*(?:\r?\n|$)/gmi, '')
         pattern = `\\track { instrument ${patch.program} bank ${patch.bank} }\n${pattern}`
     }
@@ -687,7 +691,7 @@ window.addEventListener('alphatab:preview-draft', async event => {
     if (activeApi && activeApi !== api) activeApi.stop()
     activeApi = api
     const scoreKey = musicXml ?? (patch ? pattern : alphaTex)
-    if (patch) {
+    if (patch?.file) {
         try {
             await loadAuditionFont(api, patch.file)
         } catch (error) {
