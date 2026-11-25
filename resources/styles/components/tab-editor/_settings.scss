@@ -36,9 +36,11 @@
         flex-wrap: wrap;
     }
 
-    // Keep Info and Shortcuts in their own row, aligned with BPM on desktop.
+    // The utility buttons and their expanded Info fields occupy separate
+    // rows above the score, but share the same left edge as BPM on desktop.
     @include mq(large) {
-        &__utility-row {
+        &__utility-row,
+        &__info-panel {
             margin-inline-start: calc(180px + 1rem);
         }
     }
