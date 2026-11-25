@@ -138,6 +138,16 @@
                             <option value="27">Clean guitar</option>
                         </select>
                     </label>
+                    @if(app()->environment('local'))
+                        <label class="tab-editor__field">
+                            <span>Sound test (playback only)</span>
+                            <select :value="auditionSound" @change="selectAuditionSound($event.target.value)">
+                                <option value="">Off (use instrument above)</option>
+                                <option value="acoustic">Acoustic SF2</option>
+                                <option value="clean-strat">Clean Strat SF2</option>
+                            </select>
+                        </label>
+                    @endif
                 </div>
                 <div class="tab-editor__import-panel" x-show="prototypeMusicXmlFullSource" x-cloak role="region" aria-label="MusicXML import result">
                     <div class="tab-editor__import-result">

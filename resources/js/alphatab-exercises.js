@@ -608,8 +608,42 @@ window.addEventListener('alphatab:update', async event => {
     renderedBpms.set(element, bpm)
 })
 
+// The two local test files stay in public/soundfont and out of Git.
+// A replacement font can contain its own program map, so start with
+// program 0 (single-preset SoundFonts typically use 0); adjust after listening
+// if a particular file exposes a different preset.
+const auditionFonts = {
+    acoustic: { url: '/soundfont/acoustic.sf2', program: 0 },
+    'clean-strat': { url: '/soundfont/clean-strat.sf2', program: 0 },
+}
+const auditionFontStates = new WeakMap()
+
+function selectAuditionFont(api, selected) {
+    let state = auditionFontStates.get(api)
+    if (!state) {
+        state = { current: '', pending: Promise.resolve() }
+        auditionFontStates.set(api, state)
+    }
+    // Serialize changes to avoid a late callback from an older load
+    // replacing the currently selected sound.
+    state.pending = state.pending.catch(() => {}).then(async () => {
+        if (state.current === selected) return
+        const url = auditionFonts[selected]?.url ?? '/soundfont/sonivox.sf2'
+        await new Promise((resolve, reject) => {
+            api.soundFontLoaded.on(resolve)
+            try {
+                if (!api.loadSoundFont(url, false)) {
+                    reject(new Error('Unable to load ' + url))
+                }
+            } catch (error) { reject(error) }
+        })
+        state.current = selected
+    })
+    return state.pending
+}
+
 window.addEventListener('alphatab:preview-draft', async event => {
-    const { element, alphaTex, musicXml, bpm, play, instrument, transportOptions, renderOnly } = event.detail ?? {}
+    const { element, alphaTex, musicXml, bpm, play, instrument, transportOptions, renderOnly, auditionSound } = event.detail ?? {}
     if (!element) return
 
     if (!play && !renderOnly) {
@@ -629,8 +663,10 @@ window.addEventListener('alphatab:preview-draft', async event => {
 
     const request = ++playbackGeneration
     playbackRequests.set(element, request)
+    const selectedAudition = !musicXml && play && Object.hasOwn(auditionFonts, auditionSound) ? auditionSound : ''
+    const program = selectedAudition ? auditionFonts[selectedAudition].program : Number(instrument ?? 25)
     const pattern = alphaTex
-        ? applyMetadata(editorPreviewAlphaTex(alphaTex, element.dataset.scoreEditable === 'true'), { bpm: Number(bpm) || 100, instrument: Number(instrument ?? 25) })
+        ? applyMetadata(editorPreviewAlphaTex(alphaTex, element.dataset.scoreEditable === 'true'), { bpm: Number(bpm) || 100, instrument: program })
         : null
     if (musicXml) {
         element.dataset.musicxml = musicXml
@@ -657,7 +693,8 @@ window.addEventListener('alphatab:preview-draft', async event => {
 
     if (activeApi && activeApi !== api) activeApi.stop()
     activeApi = api
-    if (alreadyMounted && editorLoadedScores.get(element) !== (musicXml ?? alphaTex)) {
+    const scoreKey = musicXml ?? pattern
+    if (alreadyMounted && editorLoadedScores.get(element) !== scoreKey) {
         api.stop()
         if (musicXml) {
             // Native file loading is asynchronous. Never play the previous
@@ -672,7 +709,23 @@ window.addEventListener('alphatab:preview-draft', async event => {
                 return
             }
         } else api.tex(pattern)
-        editorLoadedScores.set(element, musicXml ?? alphaTex)
+        editorLoadedScores.set(element, scoreKey)
+    }
+    if (playbackRequests.get(element) !== request || playbackGeneration !== request) return
+    // Change only the editor synth bank, never the stored AlphaTex.
+    if (element.dataset.adminPreview === 'true' && !renderOnly) {
+        try {
+            if (selectedAudition || auditionFontStates.get(api)?.current) {
+                await selectAuditionFont(api, selectedAudition)
+            }
+        } catch (error) {
+            if (playbackRequests.get(element) === request) {
+                window.dispatchEvent(new CustomEvent('alphatab:load-error', {
+                    detail: { element, message: error?.message ?? 'Unable to load SoundFont' },
+                }))
+            }
+            return
+        }
     }
     if (playbackRequests.get(element) !== request || playbackGeneration !== request) return
     if (renderOnly) {
