@@ -658,8 +658,8 @@ window.addEventListener('alphatab:preview-draft', async event => {
         ? applyMetadata(editorPreviewAlphaTex(alphaTex, element.dataset.scoreEditable === 'true'), { bpm: Number(bpm) || 100, instrument: Number(instrument ?? 25) })
         : null
     if (patch && pattern) {
-        pattern = pattern.replace(/^\\s*\\\\instrument\\b[^\\r\\n]*(?:\\r?\\n|$)/gmi, '')
-        pattern = `\\\\track { instrument ${patch.program} bank ${patch.bank} }\\n${pattern}`
+        pattern = pattern.replace(/^\s*\\instrument\b[^\r\n]*(?:\r?\n|$)/gmi, '')
+        pattern = `\\track { instrument ${patch.program} bank ${patch.bank} }\n${pattern}`
     }
     if (musicXml) {
         element.dataset.musicxml = musicXml
