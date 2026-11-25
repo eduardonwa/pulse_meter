@@ -148,9 +148,9 @@ export function copyTabFragment(draft, indices, numerator = 4, denominator = 4) 
             return beat;
         });
         return { beats, fullRest: isTabFullMeasureRest(measure.notes),
-            wholeMeasure: beats.length === measure.notes.length,
-            ...(beats.length === measure.notes.length && draft.tempos?.[measureIndex] !== undefined ? { tempo: draft.tempos[measureIndex] } : {}),
-            ...(beats.length === measure.notes.length ? { signature: tabSignatureAt(draft, measureIndex, numerator, denominator) } : {}) };
+            wholeMeasure: measure.complete && beats.length === measure.notes.length,
+            ...(measure.complete && beats.length === measure.notes.length && draft.tempos?.[measureIndex] !== undefined ? { tempo: draft.tempos[measureIndex] } : {}),
+            ...(measure.complete && beats.length === measure.notes.length ? { signature: tabSignatureAt(draft, measureIndex, numerator, denominator) } : {}) };
     }).filter(group => group.beats.length);
 }
 
@@ -164,9 +164,8 @@ export function pasteTabFragment(draft, index, fragment, numerator = 4, denomina
         ? measures.findIndex(measure => measure.endIndex === index - 1) : -1;
     const current = measures.findIndex(measure => measure.notes.some(note => note.index === index));
     const firstGroup = fragment[0];
-    const firstSize = firstGroup.fullRest ? Infinity : tabBeatUnits(firstGroup.beats[0]);
     const usePrevious = previous >= 0 && !firstGroup.wholeMeasure &&
-        measures[previous].used + firstSize <= measures[previous].capacity + 1e-7;
+        !isTabFullMeasureRest(groups[previous]);
     const target = usePrevious ? previous : current >= 0 ? current : groups.length;
     const original = groups[target] ?? [];
     const offset = usePrevious ? original.length : current >= 0 ? index - measures[current].notes[0].index : 0;
@@ -193,11 +192,10 @@ export function pasteTabFragment(draft, index, fragment, numerator = 4, denomina
     };
     const append = (beat, fullRest = false) => {
         const size = fullRest ? capacity : tabBeatUnits(beat);
-        if (size > capacity + 1e-7) throw new RangeError('A copied note is longer than the destination measure.');
-        if (fullRest || used + size > capacity + 1e-7) flush();
+        if (fullRest) flush();
         bar.push(beat);
         used += size;
-        if (fullRest || used >= capacity - 1e-7) flush();
+        if (fullRest) flush();
     };
     prefix.forEach(beat => append(beat));
     const start = groups.slice(0, target).reduce((total, group) => total + group.length, 0) + prefix.length;
