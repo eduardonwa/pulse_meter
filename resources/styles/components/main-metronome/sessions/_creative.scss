@@ -22,7 +22,6 @@
         margin-block-end: $size-4;
         
         background: $color-neutral-100;
-        border-block-end: 1px solid hsl(var(--neutral-950) / .1);
 
         &__tempo {
             min-width: 0;
@@ -88,51 +87,14 @@
             }
 
             &--mobile {
-                display: none;
-            }
-
-            &--desktop {
-                position: static;
                 display: grid;
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-                align-items: end;
-                width: 100%;
-                margin: 0;
-                padding: 0 $size-4 $size-4;
-                background: $color-neutral-100;
-                border-block-end: var(--border);
+                position: static;
 
-                .creative-transport__tempo {
-                    min-width: 0;
-                    justify-content: flex-start;
-                }
+                grid-template-columns: 180px 140px;
+                justify-content: end;
 
-                .creative-transport__bpm {
-                    flex: 1 1 auto;
-                    width: 100%;
-                    height: 40px;
-                    grid-template-columns: 28px minmax(0, 1fr) 28px;
-
-                    .picker-column {
-                        width: 100%;
-                        min-width: 0;
-                        max-width: none;
-                        height: 40px;
-                        line-height: 40px;
-
-                        .picker-option {
-                            height: 40px;
-                        }
-                    }
-
-                    .number-picker__control {
-                        height: 40px;
-                    }
-                }
-
-                .creative-transport__play {
-                    min-width: 0;
-                }
+                padding-inline: 0;
+                margin-block-end: 0;
             }
         }
     }
@@ -378,8 +340,7 @@
     }
 
     .pulse-settings-bar {
-        border-block-end: 1px solid hsl(var(--neutral-950) / .2);
-        padding-block-end: $size-4;
+        border-block: 1px solid hsl(var(--neutral-950) / .2);
 
         @include mq(large) {
             display: flex;
@@ -527,54 +488,146 @@
     }
 
     .time-signature {
-        --flow-spacer: 1rem;
         --border: 1px solid hsl(var(--neutral-950) / .2);
         border: var(--border);
         border-radius: $border-radius-2;
 
+        display: grid;
+
+        grid-template-areas: 
+            "content"
+            "management";
+
+        @include mq(medium) {
+            grid-template-columns: auto minmax(0, 1fr);
+            grid-template-areas: "management content";
+        }
+
         &__content {
-            padding: $size-4;
+            grid-area: content;
+
+            padding: 0;
 
             > * {
-                margin-inline: -$size-4;
-                padding-inline: $size-4;
+                padding: $size-4;
+                min-width: 0;
             }
 
-            > .time-signature__control-row {
-                padding-inline: 0;
+            @include mq(medium) {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                
+                grid-template-areas:
+                    "beats beats"
+                    "subdivision editing"
+                    "playback playback"
+                    "transport transport"
+                ;
 
-                > .time-signature__playback,
-                > .pulse-settings-bar,
-                > .time-signature__actions {
-                    padding-inline: $size-4;
+                > .time-signature__beats { grid-area: beats; }
+                > .time-signature__subdivision { grid-area: subdivision; }
+                > .time-signature__rhythm-tools { grid-area: editing; }
+                > .time-signature__playback { grid-area: playback; }
+                > .creative-transport--desktop { grid-area: transport; }
+            }
+
+            @include mq(large) {
+                grid-template-columns:
+                    minmax(0, 3fr)
+                    minmax(0, 4fr)
+                    minmax(0, 2fr);
+
+                grid-template-areas:
+                    "beats beats beats"
+                    "subdivision editing playback"
+                    "transport transport transport";
+            }
+        }
+
+        &__management {
+            padding: 0;
+            grid-area: management;
+
+            > * {
+                padding: $size-4;
+                min-width: 0;
+            }
+
+            .button {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: $size-2;
+
+                cursor: pointer;
+                
+                svg {
+                    width: 20px;
+                    height: 20px;
+                    flex-shrink: 0;
+                    stroke: $color-neutral-800;
+                }
+
+                &[data-type="primary"] {
+                    svg {
+                        stroke: $color-primary-50;
+                    }
+                }
+
+                &[data-type="primary"][data-variant="outline"] {
+                    svg {
+                        stroke: $color-primary-800;
+                    }
+
+                    &:hover {
+                        svg {
+                            stroke: $color-primary-50;
+                        }
+                    }
+                }
+            }
+
+            .time-signature__actions {
+                display: flex;
+                align-items: center;
+                gap: $size-3;
+
+                .button {
+                    flex: 1 1 0;
+                    min-width: 0;
+                    padding: .8rem;
                 }
             }
 
             @include mq(medium) {
-                padding: $size-4 0;
+                display: flex;
+                flex-direction: column;
+                border-inline-end: var(--border);
 
                 > * {
-                    margin-inline: 0;
-                    padding-inline: 0;
+                    padding: $size-2;
                 }
 
-                > .time-signature__beats {
-                    padding-inline: $size-4;
+                .pulse-settings-bar {
+                    border-block: 0;
                 }
 
-                > .time-signature__editing-row {
-                    > .time-signature__rhythm-tools,
-                    > .time-signature__subdivision {
-                        min-width: 0;
-                        padding-inline: $size-4;
+                .button {
+                    width: 40px;
+                    height: 40px;
+                    padding: 0;
+
+                    span {
+                        display: none;
                     }
                 }
 
-                > .time-signature__control-row {
-                    > .time-signature__playback,
-                    > .pulse-settings-bar,
-                    > .time-signature__actions {
-                        padding-inline: $size-4;
+                .time-signature__actions {
+                    flex-direction: column;
+
+                    .button {
+                        flex: 0 0 auto;
+                        padding: 0;
                     }
                 }
             }
@@ -662,8 +715,6 @@
             flex-direction: column;
             gap: .5rem;
 
-            padding-block-end: $size-4;
-
             .beat-groups {
                 display: flex;
                 flex-wrap: wrap;
@@ -747,31 +798,7 @@
             }
         }
 
-        &__editing-row {
-            > .time-signature__rhythm-tools,
-            > .time-signature__subdivision {
-                .heading {
-                    padding-block-end: $size-3;
-                    font-size: 14px;
-                    color: hsl(var(--neutral-950) / .6);
-                }
-            }
-
-            @include mq(medium) {
-                display: grid;
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-            }
-        }
-
         &__subdivision {
-            .heading {
-                padding-block-start: $size-3;
-
-                @include mq(medium) {
-                    padding-block-start: 0;
-                }
-            }
-
             .subdivision-options {
                 display: grid;
                 grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -789,100 +816,10 @@
                 }
             }
         }
-    
-        &__rhythm-tools {
-            display: flex;
-            flex-direction: column;
-            flex-wrap: wrap;
-
-            .tool-group {
-                display: flex;
-                flex-direction: column;
-                flex-wrap: wrap;
-                gap: $size-3;
-
-                .button {
-                    &.is-selected {
-                        outline: 2px solid currentColor;
-                        outline-offset: 4px;
-                    }
-                }
-
-                @include mq(medium) {
-                    flex-direction: row;
-                }
-            }
-        }
-
-        &__control-row {
-            > * + * {
-                margin-block-start: var(--flow-spacer);
-            }
-
-            @include mq(large) {
-                display: grid;
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-                grid-template-areas:
-                    "playback transport"
-                    "settings actions";
-                align-items: stretch;
-                gap: $size-4;
-
-                // One divider spanning both columns between playback and settings.
-                &::before {
-                    content: "";
-                    grid-column: 1 / -1;
-                    grid-row: 2;
-                    align-self: start;
-                    border-block-start: var(--border);
-                    transform: translateY(-$size-2);
-                    pointer-events: none;
-                }
-
-                > * {
-                    min-width: 0;
-                    margin-block-start: 0;
-                }
-
-                > .time-signature__playback {
-                    grid-area: playback;
-                }
-
-                > .creative-transport--desktop {
-                    grid-area: transport;
-                    border-block-end: 0;
-                }
-
-                > .pulse-settings-bar {
-                    grid-area: settings;
-                    padding-block-start: $size-4;
-                    padding-block-end: 0;
-                    align-items: stretch;
-
-                    > .button {
-                        height: 100%;
-                    }
-                }
-
-                > .time-signature__actions {
-                    grid-area: actions;
-                    padding-block-start: $size-4;
-                }
-            }
-        }
 
         &__playback {
             flex-direction: column;
             flex-wrap: wrap;
-
-            padding-block-end: $size-4;
-            
-            border-block-end: var(--border);
-
-            @include mq(large) {
-                padding-block-end: $size-4;
-                border-block-end: 0;
-            }
 
             .tool-group {
                 display: flex;
@@ -906,16 +843,29 @@
             }
         }
     
-        &__actions {
-            width: 100%;
+        &__rhythm-tools {
             display: flex;
-            align-items: center;
-            gap: $size-3;
+            flex-direction: column;
+            flex-wrap: wrap;
 
-            .button {
-                flex: 1 1 0;
-                min-width: 0;
-                padding: .8rem;
+            .tool-group {
+                display: flex;
+                flex-direction: column;
+                flex-wrap: wrap;
+                gap: $size-3;
+
+                .button {
+                    border: 1px solid hsl(var(--neutral-800) / .4);
+
+                    &.is-selected {
+                        outline: 2px solid currentColor;
+                        outline-offset: 4px;
+                    }
+                }
+
+                @include mq(medium) {
+                    flex-direction: row;
+                }
             }
         }
     }
