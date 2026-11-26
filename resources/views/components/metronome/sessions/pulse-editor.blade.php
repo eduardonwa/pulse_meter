@@ -94,7 +94,7 @@
                 </div>
             </div>
 
-            <x-metronome.creative-transport variant="desktop" />
+            {{-- <x-metronome.creative-transport variant="desktop" /> --}}
         </div>
 
         <div class="time-signature__management">
