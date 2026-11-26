@@ -2,10 +2,6 @@
     <x-metronome.creative-transport variant="mobile" />
 
     <div class="time-signature">
-        <div class="time-signature__sidebar">
-
-        </div>
-
         <div class="time-signature__content">
             <x-metronome.pulse-beats
                 groups="getPatternGroups()"
@@ -99,24 +95,26 @@
             </div>
 
             <x-metronome.creative-transport variant="desktop" />
+        </div>
 
-            <div class="time-signature__management">
-                <div class="pulse-settings-bar">
-                    <button class="button" data-type="outline" type="button" @click="$refs.pulseSettingsSheet.showModal()" aria-haspopup="dialog">
-                        <x-lucide-sliders-vertical />
-                        Pattern Settings
-                    </button>
-                </div>
-    
-                <div class="time-signature__actions">
-                    <button class="button" data-type="primary" type="button" @click="pulseDraft.origin === 'new' ? openPulsePatternNameDialog('new') : savePulsePattern()" x-show="pulseDraft.origin === 'new' || pulseDraft.origin === 'user'">
-                        Save
-                    </button>
-    
-                    <button class="button" data-type="primary" data-variant="outline" type="button" @click="openPulsePatternNameDialog('copy')" x-show="pulseDraft.origin === 'preset' || pulseDraft.origin === 'user'">
-                        Save as copy
-                    </button>
-                </div>
+        <div class="time-signature__management">
+            <div class="time-signature__actions">
+                <button class="button" data-type="primary" type="button" @click="pulseDraft.origin === 'new' ? openPulsePatternNameDialog('new') : savePulsePattern()" x-show="pulseDraft.origin === 'new' || pulseDraft.origin === 'user'" title="Save" aria-label="Save">
+                    <x-lucide-save />
+                    <span>Save</span>
+                </button>
+
+                <button class="button" data-type="primary" data-variant="outline" type="button" @click="openPulsePatternNameDialog('copy')" x-show="pulseDraft.origin === 'preset' || pulseDraft.origin === 'user'" title="Save as copy" aria-label="Save as copy">
+                    <x-lucide-copy />
+                    <span>Save as copy</span>
+                </button>
+            </div>
+
+            <div class="pulse-settings-bar">
+                <button class="button" data-type="outline" type="button" @click="$refs.pulseSettingsSheet.showModal()" aria-haspopup="dialog" title="Pattern settings" aria-label="Pattern settings">
+                    <x-lucide-sliders-vertical />
+                    <span>Pattern Settings</span>
+                </button>
             </div>
         </div>
     </div>

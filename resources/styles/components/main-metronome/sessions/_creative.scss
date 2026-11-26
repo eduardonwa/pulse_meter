@@ -559,24 +559,19 @@
                     "beats beats"
                     "subdivision editing"
                     "playback playback"
-                    "settings settings"
                     "transport transport"
-                    "actions actions"
                 ;
 
                 > .time-signature__beats { grid-area: beats; }
                 > .time-signature__subdivision { grid-area: subdivision; }
                 > .time-signature__rhythm-tools { grid-area: editing; }
                 > .time-signature__playback { grid-area: playback; }
-                > .pulse-settings-bar { grid-area: settings; }
                 > .creative-transport--desktop { grid-area: transport; }
-                > .time-signature__actions { grid-area: actions; }
             }
         }
 
         &__management {
             padding: 0;
-            
             grid-area: management;
 
             > * {
@@ -584,9 +579,76 @@
                 min-width: 0;
             }
 
+            .button {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: $size-2;
+
+                cursor: pointer;
+                
+                svg {
+                    width: 20px;
+                    height: 20px;
+                    flex-shrink: 0;
+                    stroke: $color-neutral-800;
+                }
+
+                &[data-type="primary"] {
+                    svg {
+                        stroke: $color-primary-50;
+                    }
+                }
+
+                &[data-type="primary"][data-variant="outline"] {
+                    svg {
+                        stroke: $color-primary-800;
+                    }
+                }
+            }
+
+            .time-signature__actions {
+                display: flex;
+                align-items: center;
+                gap: $size-3;
+
+                .button {
+                    flex: 1 1 0;
+                    min-width: 0;
+                    padding: .8rem;
+                }
+            }
+
             @include mq(medium) {
+                display: flex;
+                flex-direction: column;
+                border-inline-end: var(--border);
+
                 > * {
                     padding: $size-2;
+                }
+
+                .pulse-settings-bar {
+                    border-block: 0;
+                }
+
+                .button {
+                    width: 40px;
+                    height: 40px;
+                    padding: 0;
+
+                    span {
+                        display: none;
+                    }
+                }
+
+                .time-signature__actions {
+                    flex-direction: column;
+
+                    .button {
+                        flex: 0 0 auto;
+                        padding: 0;
+                    }
                 }
             }
         }
@@ -824,19 +886,6 @@
                 @include mq(medium) {
                     flex-direction: row;
                 }
-            }
-        }
-    
-        &__actions {
-            width: 100%;
-            display: flex;
-            align-items: center;
-            gap: $size-3;
-
-            .button {
-                flex: 1 1 0;
-                min-width: 0;
-                padding: .8rem;
             }
         }
     }
