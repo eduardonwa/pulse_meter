@@ -2,6 +2,10 @@
     <x-metronome.creative-transport variant="mobile" />
 
     <div class="time-signature">
+        <div class="time-signature__sidebar">
+
+        </div>
+
         <div class="time-signature__content">
             <x-metronome.pulse-beats
                 groups="getPatternGroups()"
@@ -93,24 +97,26 @@
                     </button>
                 </div>
             </div>
-    
-            <div class="pulse-settings-bar">
-                <button class="button" data-type="outline" type="button" @click="$refs.pulseSettingsSheet.showModal()" aria-haspopup="dialog">
-                    <x-lucide-sliders-vertical />
-                    Pattern Settings
-                </button>
-            </div>
 
             <x-metronome.creative-transport variant="desktop" />
 
-            <div class="time-signature__actions">
-                <button class="button" data-type="primary" type="button" @click="pulseDraft.origin === 'new' ? openPulsePatternNameDialog('new') : savePulsePattern()" x-show="pulseDraft.origin === 'new' || pulseDraft.origin === 'user'">
-                    Save
-                </button>
-
-                <button class="button" data-type="primary" data-variant="outline" type="button" @click="openPulsePatternNameDialog('copy')" x-show="pulseDraft.origin === 'preset' || pulseDraft.origin === 'user'">
-                    Save as copy
-                </button>
+            <div class="time-signature__management">
+                <div class="pulse-settings-bar">
+                    <button class="button" data-type="outline" type="button" @click="$refs.pulseSettingsSheet.showModal()" aria-haspopup="dialog">
+                        <x-lucide-sliders-vertical />
+                        Pattern Settings
+                    </button>
+                </div>
+    
+                <div class="time-signature__actions">
+                    <button class="button" data-type="primary" type="button" @click="pulseDraft.origin === 'new' ? openPulsePatternNameDialog('new') : savePulsePattern()" x-show="pulseDraft.origin === 'new' || pulseDraft.origin === 'user'">
+                        Save
+                    </button>
+    
+                    <button class="button" data-type="primary" data-variant="outline" type="button" @click="openPulsePatternNameDialog('copy')" x-show="pulseDraft.origin === 'preset' || pulseDraft.origin === 'user'">
+                        Save as copy
+                    </button>
+                </div>
             </div>
         </div>
     </div>

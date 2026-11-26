@@ -530,7 +530,20 @@
         border: var(--border);
         border-radius: $border-radius-2;
 
+        display: grid;
+
+        grid-template-areas: 
+            "content"
+            "management";
+
+        @include mq(medium) {
+            grid-template-columns: auto minmax(0, 1fr);
+            grid-template-areas: "management content";
+        }
+
         &__content {
+            grid-area: content;
+
             padding: 0;
 
             > * {
@@ -558,6 +571,23 @@
                 > .pulse-settings-bar { grid-area: settings; }
                 > .creative-transport--desktop { grid-area: transport; }
                 > .time-signature__actions { grid-area: actions; }
+            }
+        }
+
+        &__management {
+            padding: 0;
+            
+            grid-area: management;
+
+            > * {
+                padding: $size-4;
+                min-width: 0;
+            }
+
+            @include mq(medium) {
+                > * {
+                    padding: $size-2;
+                }
             }
         }
 
