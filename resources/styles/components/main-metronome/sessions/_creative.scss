@@ -378,8 +378,7 @@
     }
 
     .pulse-settings-bar {
-        border-block-end: 1px solid hsl(var(--neutral-950) / .2);
-        padding-block: $size-4;
+        border-block: 1px solid hsl(var(--neutral-950) / .2);
 
         @include mq(large) {
             display: flex;
@@ -526,57 +525,39 @@
         }
     }
 
-    .time-signature {       
-        --flow-spacer: 1rem;
+    .time-signature {
         --border: 1px solid hsl(var(--neutral-950) / .2);
         border: var(--border);
         border-radius: $border-radius-2;
 
         &__content {
-            padding: $size-4;
-            
+            padding: 0;
+
             > * {
-                margin-inline: -$size-4;
-                padding-inline: $size-4;
-            }
-
-            > .time-signature__control-row {
-                padding-inline: 0;
-
-                > .time-signature__playback,
-                > .pulse-settings-bar,
-                > .time-signature__actions {
-                    padding-inline: $size-4;
-                }
+                padding: $size-4;
+                min-width: 0;
             }
 
             @include mq(medium) {
-                padding: $size-4 0;
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                
+                grid-template-areas:
+                    "beats beats"
+                    "subdivision editing"
+                    "playback playback"
+                    "settings settings"
+                    "transport transport"
+                    "actions actions"
+                ;
 
-                > * {
-                    margin-inline: 0;
-                    padding-inline: 0;
-                }
-
-                > .time-signature__beats {
-                    padding-inline: $size-4;
-                }
-
-                > .time-signature__editing-row {
-                    > .time-signature__rhythm-tools,
-                    > .time-signature__subdivision {
-                        min-width: 0;
-                        padding-inline: $size-4;
-                    }
-                }
-
-                > .time-signature__control-row {
-                    > .time-signature__playback,
-                    > .pulse-settings-bar,
-                    > .time-signature__actions {
-                        padding-inline: $size-4;
-                    }
-                }
+                > .time-signature__beats { grid-area: beats; }
+                > .time-signature__subdivision { grid-area: subdivision; }
+                > .time-signature__rhythm-tools { grid-area: editing; }
+                > .time-signature__playback { grid-area: playback; }
+                > .pulse-settings-bar { grid-area: settings; }
+                > .creative-transport--desktop { grid-area: transport; }
+                > .time-signature__actions { grid-area: actions; }
             }
         }
 
@@ -662,8 +643,6 @@
             flex-direction: column;
             gap: .5rem;
 
-            padding-block-end: $size-4;
-
             .beat-groups {
                 display: flex;
                 flex-wrap: wrap;
@@ -747,22 +726,6 @@
             }
         }
 
-        &__editing-row {
-            > .time-signature__rhythm-tools,
-            > .time-signature__subdivision {
-                .heading {
-                    padding-block-end: $size-3;
-                    font-size: 14px;
-                    color: hsl(var(--neutral-950) / .6);
-                }
-            }
-
-            @include mq(medium) {
-                display: grid;
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-            }
-        }
-
         &__subdivision {
             .subdivision-options {
                 display: grid;
@@ -785,11 +748,6 @@
         &__playback {
             flex-direction: column;
             flex-wrap: wrap;
-            
-            @include mq(large) {
-                padding-block-end: $size-4;
-                border-block-end: 0;
-            }
 
             .tool-group {
                 display: flex;
@@ -818,10 +776,6 @@
             flex-direction: column;
             flex-wrap: wrap;
 
-            border-block-end: var(--border);
-
-            padding: $size-4;
-
             .tool-group {
                 display: flex;
                 flex-direction: column;
@@ -842,62 +796,8 @@
                 }
             }
         }
-
-        &__control-row {
-            @include mq(large) {
-                display: grid;
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-                grid-template-areas:
-                    "playback transport"
-                    "settings actions";
-                align-items: stretch;
-                gap: $size-4;
-
-                &::before {
-                    content: "";
-                    grid-column: 1 / -1;
-                    grid-row: 2;
-                    align-self: start;
-                    border-block-start: var(--border);
-                    transform: translateY(-$size-2);
-                    pointer-events: none;
-                }
-
-                > * {
-                    min-width: 0;
-                    margin-block-start: 0;
-                }
-
-                > .time-signature__playback {
-                    grid-area: playback;
-                }
-
-                > .creative-transport--desktop {
-                    grid-area: transport;
-                    border-block-end: 0;
-                }
-
-                > .pulse-settings-bar {
-                    grid-area: settings;
-                    padding-block-start: $size-4;
-                    padding-block-end: 0;
-                    align-items: stretch;
-
-                    > .button {
-                        height: 100%;
-                    }
-                }
-
-                > .time-signature__actions {
-                    grid-area: actions;
-                    padding-block-start: $size-4;
-                }
-            }
-        }
     
         &__actions {
-            padding-block-start: $size-4;
-
             width: 100%;
             display: flex;
             align-items: center;
