@@ -379,7 +379,7 @@
 
     .pulse-settings-bar {
         border-block-end: 1px solid hsl(var(--neutral-950) / .2);
-        padding-block-end: $size-4;
+        padding-block: $size-4;
 
         @include mq(large) {
             display: flex;
@@ -526,7 +526,7 @@
         }
     }
 
-    .time-signature {
+    .time-signature {       
         --flow-spacer: 1rem;
         --border: 1px solid hsl(var(--neutral-950) / .2);
         border: var(--border);
@@ -534,7 +534,7 @@
 
         &__content {
             padding: $size-4;
-
+            
             > * {
                 margin-inline: -$size-4;
                 padding-inline: $size-4;
@@ -764,14 +764,6 @@
         }
 
         &__subdivision {
-            .heading {
-                padding-block-start: $size-3;
-
-                @include mq(medium) {
-                    padding-block-start: 0;
-                }
-            }
-
             .subdivision-options {
                 display: grid;
                 grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -789,11 +781,46 @@
                 }
             }
         }
+
+        &__playback {
+            flex-direction: column;
+            flex-wrap: wrap;
+            
+            @include mq(large) {
+                padding-block-end: $size-4;
+                border-block-end: 0;
+            }
+
+            .tool-group {
+                display: flex;
+                align-items: center;
+                flex-wrap: wrap;
+                gap: $size-3;
+
+                .button {
+                    flex: 1;
+                    min-width: 0;
+                    &:active {
+                        transform: scale(0.96);
+                    }
+
+                    &.is-selected {
+                        color: $color-neutral-50;
+                        background: $color-neutral-950;
+                    }
+                }
+
+            }
+        }
     
         &__rhythm-tools {
             display: flex;
             flex-direction: column;
             flex-wrap: wrap;
+
+            border-block-end: var(--border);
+
+            padding: $size-4;
 
             .tool-group {
                 display: flex;
@@ -802,6 +829,8 @@
                 gap: $size-3;
 
                 .button {
+                    border: 1px solid hsl(var(--neutral-800) / .4);
+
                     &.is-selected {
                         outline: 2px solid currentColor;
                         outline-offset: 4px;
@@ -815,10 +844,6 @@
         }
 
         &__control-row {
-            > * + * {
-                margin-block-start: var(--flow-spacer);
-            }
-
             @include mq(large) {
                 display: grid;
                 grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -828,7 +853,6 @@
                 align-items: stretch;
                 gap: $size-4;
 
-                // One divider spanning both columns between playback and settings.
                 &::before {
                     content: "";
                     grid-column: 1 / -1;
@@ -870,43 +894,10 @@
                 }
             }
         }
-
-        &__playback {
-            flex-direction: column;
-            flex-wrap: wrap;
-
-            padding-block-end: $size-4;
-            
-            border-block-end: var(--border);
-
-            @include mq(large) {
-                padding-block-end: $size-4;
-                border-block-end: 0;
-            }
-
-            .tool-group {
-                display: flex;
-                align-items: center;
-                flex-wrap: wrap;
-                gap: $size-3;
-
-                .button {
-                    flex: 1;
-                    min-width: 0;
-                    &:active {
-                        transform: scale(0.96);
-                    }
-
-                    &.is-selected {
-                        color: $color-neutral-50;
-                        background: $color-neutral-950;
-                    }
-                }
-
-            }
-        }
     
         &__actions {
+            padding-block-start: $size-4;
+
             width: 100%;
             display: flex;
             align-items: center;

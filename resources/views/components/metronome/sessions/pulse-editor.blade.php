@@ -3,122 +3,122 @@
 
     <div class="time-signature">
         <div class="time-signature__content flow">
-        <x-metronome.pulse-beats
-            groups="getPatternGroups()"
-            beat-action="applyEditorTool(item.beat)"
-            subdivision-action="applyEditorToolToSubdivision(item.beat, subdivisionIndex)"
-        />
+            <x-metronome.pulse-beats
+                groups="getPatternGroups()"
+                beat-action="applyEditorTool(item.beat)"
+                subdivision-action="applyEditorToolToSubdivision(item.beat, subdivisionIndex)"
+            />
 
-        <div class="time-signature__editing-row">
-            <div class="time-signature__rhythm-tools">
-                <h2 class="heading">Editing</h2>
-    
-                <div class="tool-group">
-                    <button class="button" type="button" data-tether-trigger
-                        @click="
-                            editorTool = 'accent';
-                            startToolTether($event);
-                        "
-                        :class="{ 'is-selected': editorTool === 'accent' }"
+            <div class="time-signature__editing-row">
+                <div class="time-signature__subdivision">
+                    <h2 class="heading">Subdivision</h2>
+        
+                    <div class="subdivision-options" role="group" aria-label="Subdivision">
+                        <template x-for="option in subdivisionOptions" :key="option.value">
+                            <button class="button" type="button"
+                                @click="setSubdivision(option.value)"
+                                :class="{ 'is-selected': subdivision === option.value }"
+                                :aria-pressed="subdivision === option.value"
+                                x-text="option.value === 1 ? 'Off' : option.label"
+                            ></button>
+                        </template>
+                    </div>
+                </div>
+            </div>
+
+            <div class="time-signature__control-row">
+                <div class="time-signature__playback">
+                    <h2 class="heading">Playback</h2>
+        
+                    <div class="tool-group">
+                        <button
+                            class="button"
+                            type="button"
+                            @click="creativePlaybackMode = 'click'"
+                            :class="{ 'is-selected': creativePlaybackMode === 'click' }"
+                        >
+                            Click
+                        </button>
+        
+                        <button
+                            class="button"
+                            type="button"
+                            @click="creativePlaybackMode = 'pulse'"
+                            :class="{ 'is-selected': creativePlaybackMode === 'pulse' }"
+                        >
+                            Pulse
+                        </button>
+                    </div>
+                </div>
+
+                <div class="time-signature__rhythm-tools">
+                    <h2 class="heading">Editing</h2>
+        
+                    <div class="tool-group">
+                        <button class="button" type="button" data-tether-trigger
+                            @click="
+                                editorTool = 'accent';
+                                startToolTether($event);
+                            "
+                            :class="{ 'is-selected': editorTool === 'accent' }"
+                        >
+                            Accent
+                        </button>
+        
+                        <button class="button" type="button" data-tether-trigger
+                            @click="
+                                editorTool = 'click';
+                                startToolTether($event);
+                            "
+                            :class="{ 'is-selected': editorTool === 'click' }"
+                        >
+                            Click
+                        </button>
+        
+                        <button class="button" type="button" data-tether-trigger
+                            @click="
+                                editorTool = 'rest';
+                                startToolTether($event);
+                            "
+                            :class="{ 'is-selected': editorTool === 'rest' }"
+                        >
+                            Rest
+                        </button>
+        
+                        <button class="button" type="button" data-tether-trigger
+                            @click="
+                                editorTool = 'groupStart';
+                                startToolTether($event);
+                            "
+                            :class="{ 'is-selected': editorTool === 'groupStart' }"
+                        >
+                            Group start
+                        </button>
+                    </div>
+                </div>
+        
+                <div class="pulse-settings-bar">
+                    <button class="button" data-type="outline" type="button"
+                        @click="$refs.pulseSettingsSheet.showModal()"
+                        aria-haspopup="dialog"
                     >
-                        Accent
+                        <x-lucide-sliders-vertical />
+                        Pattern Settings
                     </button>
-    
-                    <button class="button" type="button" data-tether-trigger
-                        @click="
-                            editorTool = 'click';
-                            startToolTether($event);
-                        "
-                        :class="{ 'is-selected': editorTool === 'click' }"
-                    >
-                        Click
+                </div>
+
+                <x-metronome.creative-transport variant="desktop" />
+
+                <div class="time-signature__actions">
+                    <button class="button" data-type="primary" type="button" @click="pulseDraft.origin === 'new' ? openPulsePatternNameDialog('new') : savePulsePattern()" x-show="pulseDraft.origin === 'new' || pulseDraft.origin === 'user'">
+                        Save
                     </button>
-    
-                    <button class="button" type="button" data-tether-trigger
-                        @click="
-                            editorTool = 'rest';
-                            startToolTether($event);
-                        "
-                        :class="{ 'is-selected': editorTool === 'rest' }"
-                    >
-                        Rest
-                    </button>
-    
-                    <button class="button" type="button" data-tether-trigger
-                        @click="
-                            editorTool = 'groupStart';
-                            startToolTether($event);
-                        "
-                        :class="{ 'is-selected': editorTool === 'groupStart' }"
-                    >
-                        Group start
+
+                    <button class="button" data-type="primary" data-variant="outline" type="button" @click="openPulsePatternNameDialog('copy')" x-show="pulseDraft.origin === 'preset' || pulseDraft.origin === 'user'">
+                        Save as copy
                     </button>
                 </div>
             </div>
-    
-            <div class="time-signature__subdivision">
-                <h2 class="heading">Subdivision</h2>
-    
-                <div class="subdivision-options" role="group" aria-label="Subdivision">
-                    <template x-for="option in subdivisionOptions" :key="option.value">
-                        <button class="button" type="button"
-                            @click="setSubdivision(option.value)"
-                            :class="{ 'is-selected': subdivision === option.value }"
-                            :aria-pressed="subdivision === option.value"
-                            x-text="option.value === 1 ? 'Off' : option.label"
-                        ></button>
-                    </template>
-                </div>
-            </div>
-        </div>
-
-        <div class="time-signature__control-row">
-            <div class="time-signature__playback">
-                <h2 class="heading">Playback</h2>
-    
-                <div class="tool-group">
-                    <button
-                        class="button"
-                        type="button"
-                        @click="creativePlaybackMode = 'click'"
-                        :class="{ 'is-selected': creativePlaybackMode === 'click' }"
-                    >
-                        Click
-                    </button>
-    
-                    <button
-                        class="button"
-                        type="button"
-                        @click="creativePlaybackMode = 'pulse'"
-                        :class="{ 'is-selected': creativePlaybackMode === 'pulse' }"
-                    >
-                        Pulse
-                    </button>
-                </div>
-            </div>
-    
-            <div class="pulse-settings-bar">
-                <button class="button" data-type="outline" type="button"
-                    @click="$refs.pulseSettingsSheet.showModal()"
-                    aria-haspopup="dialog"
-                >
-                    <x-lucide-sliders-vertical />
-                    Pattern Settings
-                </button>
-            </div>
-
-            <x-metronome.creative-transport variant="desktop" />
-
-            <div class="time-signature__actions">
-                <button class="button" data-type="primary" type="button" @click="pulseDraft.origin === 'new' ? openPulsePatternNameDialog('new') : savePulsePattern()" x-show="pulseDraft.origin === 'new' || pulseDraft.origin === 'user'">
-                    Save
-                </button>
-
-                <button class="button" data-type="primary" data-variant="outline" type="button" @click="openPulsePatternNameDialog('copy')" x-show="pulseDraft.origin === 'preset' || pulseDraft.origin === 'user'">
-                    Save as copy
-                </button>
-            </div>
-        </div>
         </div>
     </div>
 
