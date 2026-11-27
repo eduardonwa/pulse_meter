@@ -1,7 +1,7 @@
 import { readFileSync, writeFileSync } from 'node:fs'
 
 const original = 'this.channelNoteOn(this._metronomeChannel, SynthConstants.MetronomeKey, 95 / 127);'
-const accented = 'this.channelNoteOn(this._metronomeChannel, SynthConstants.MetronomeKey, (m.event?.metronomeNumerator === 0 ? 127 : 70) / 127);'
+const accented = 'this.channelNoteOn(this._metronomeChannel, SynthConstants.MetronomeKey, (m.event?.metronomeNumerator === 0 ? 127 : 40) / 127);'
 
 export function patchAlphaTabMetronome(source) {
     if (source.split(original).length !== 2 ||
