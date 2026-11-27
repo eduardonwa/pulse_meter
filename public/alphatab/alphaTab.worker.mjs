@@ -48,7 +48,7 @@
 * @preserve
 * @license
 */
-import * as alphaTab from "./alphaTab.core.mjs";
+import * as alphaTab from "./alphaTab.core.accent.mjs";
 //#region src/alphaTab.worker.ts
 /**@target web */
 alphaTab.Environment.initializeWorker();
