@@ -24,7 +24,17 @@ export function patchAlphaTabMetronome(source) {
         }
         sequencer = sequencer.replace(before, after)
     }
-    return (source.slice(0, start) + sequencer + source.slice(end)).replace(original, accented)
+    const patched = (source.slice(0, start) + sequencer + source.slice(end)).replace(original, accented)
+    return patchAlphaTabCursor(patched)
+}
+
+export function patchAlphaTabCursor(source) {
+    const before = 'this._cursorUpdateTick(e.currentTick, false, cursorSpeed, false, e.isSeek);'
+    const after = 'this._cursorUpdateTick(e.currentTick, e.isSeek, cursorSpeed, false, e.isSeek || this._dorelogCursorWasSeek);\\n                this._dorelogCursorWasSeek = e.isSeek;'
+    if (source.split(before).length !== 2) {
+        throw new Error('AlphaTab cursor implementation changed; review the seek patch.')
+    }
+    return source.replace(before, after.replace('\\n', '\n'))
 }
 
 export function prepareAlphaTabMetronome() {
