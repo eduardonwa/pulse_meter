@@ -48,8 +48,8 @@
 * @preserve
 * @license
 */
-import * as alphaTab from "./alphaTab.core.mjs";
-export * from "./alphaTab.core.mjs";
+import * as alphaTab from "./alphaTab.core.accent.mjs";
+export * from "./alphaTab.core.accent.mjs";
 //#region src/alphaTab.main.ts
 if (alphaTab.Environment.isRunningInWorker) alphaTab.Environment.initializeWorker();
 else if (alphaTab.Environment.isRunningInAudioWorklet) alphaTab.Environment.initializeAudioWorklet();
