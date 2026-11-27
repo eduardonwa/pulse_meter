@@ -3,6 +3,10 @@ import laravel from 'laravel-vite-plugin';
 import { bunny } from 'laravel-vite-plugin/fonts';
 import tailwindcss from '@tailwindcss/vite';
 
+import { prepareAlphaTabMetronome } from './scripts/patch-alphatab-metronome.mjs';
+
+prepareAlphaTabMetronome();
+
 export default defineConfig({
     plugins: [
         laravel({
